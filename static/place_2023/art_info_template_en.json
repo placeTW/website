@@ -1,0 +1,10 @@
+{
+    "art_id": {
+        "title": "Title of art, to be displayed in large text",
+        "blurb": "Blurb of art, to be displayed in underneath title",
+        "desc": "description of text, can have html or other markup inside"
+    },
+    "notes": [
+        "art_id is a str_with_no_spaces_that_uniquely_identifies_art"
+    ]
+}

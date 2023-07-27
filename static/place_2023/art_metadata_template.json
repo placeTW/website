@@ -1,0 +1,22 @@
+{
+    "art_id": {
+        "pixels": [
+            "a list of pixels of the art and maybe colour, like this:",
+            [
+                200,
+                300,
+                "#ffffff"
+            ],
+            [
+                200,
+                301,
+                "#ffffff"
+            ]
+        ],
+        "other_metadata_fields": "etc"
+    },
+    "notes": [
+        "art_id is a str_with_no_spaces_that_uniquely_identifies_art",
+        "this art_metadata file exists so that pixel information is not redundantly copied with each translation"
+    ]
+}
