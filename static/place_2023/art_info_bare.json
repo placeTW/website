@@ -1,72 +1,86 @@
-{
-    "capoo": {
+[
+    {
+        "art_id": "capoo",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "chip": {
+    {
+        "art_id": "chip",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "taipei_101": {
+    {
+        "art_id": "taipei_101",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "formosan_bear": {
+    {
+        "art_id": "formosan_bear",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "boba_tea_bear": {
+    {
+        "art_id": "boba_tea_bear",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "tw_magpie": {
+    {
+        "art_id": "tw_magpie",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "heart_baltics": {
+    {
+        "art_id": "heart_baltics",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "heart_bretons": {
+    {
+        "art_id": "heart_bretons",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "lt_pengium_boba": {
+    {
+        "art_id": "lt_pengium_boba",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "indep_flag": {
+    {
+        "art_id": "indep_flag",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "tw_beer": {
+    {
+        "art_id": "tw_beer",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "apple_cider": {
+    {
+        "art_id": "apple_cider",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "tatung_rice_cooker": {
+    {
+        "art_id": "tatung_rice_cooker",
         "title": "",
         "blurb": "",
         "desc": ""
     },
-    "tsmc_logo": {
+    {
+        "art_id": "tsmc_logo",
         "title": "",
         "blurb": "",
         "desc": ""
     }
-}
+]
