@@ -46,7 +46,9 @@
         "title": "Boba Tea",
         "blurb": "Popular Taiwanese drink",
         "desc": "Boba Tea is a famous drink originating from Taiwan. Since then, it has spread around the world and become a popular drink.",
-        "links": []
+        "links": [
+            "https://en.wikipedia.org/wiki/Bubble_tea"
+        ]
     },
     {
         "art_id": "tw_magpie",
@@ -76,7 +78,9 @@
         "title": "Lithuanian Penguin Drink Boba Tea",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
-        "links": []
+        "links": [
+            "https://en.wikipedia.org/wiki/Bubble_tea"
+        ]
     },
     {
         "art_id": "indep_flag",
