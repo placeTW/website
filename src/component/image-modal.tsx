@@ -5,7 +5,7 @@ import {
   ModalContent,
   ModalOverlay,
 } from "@chakra-ui/react";
-import React from "react";
+import { FC } from "react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -14,7 +14,7 @@ interface ModalProps {
   altText: string;
 }
 
-const ImageModal: React.FC<ModalProps> = ({
+const ImageModal: FC<ModalProps> = ({
   isOpen,
   onClose,
   imageUrl,

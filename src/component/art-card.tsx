@@ -8,19 +8,19 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import React from "react";
 import { useTranslation } from "react-i18next";
 import { ArtInfo } from "../types/art";
 import ImageModal from "./image-modal";
+import { FC, useState } from "react";
 
 interface ArtCardProps {
   artPiece: ArtInfo;
 }
 
-const ArtCard: React.FC<ArtCardProps> = ({ artPiece }) => {
+const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
   const { t } = useTranslation();
-  const [showFullText, setShowFullText] = React.useState(false);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [showFullText, setShowFullText] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleImageClick = () => {
     setIsModalOpen(true);
