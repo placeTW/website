@@ -99,9 +99,12 @@
     {
         "art_id": "tatung_rice_cooker",
         "title": "Tatung Rice Cooker",
-        "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
-        "links": []
+        "blurb": "Emblematic rice cooker",
+        "desc": "The Taiwanese rice cooker from the brand Tatung is Taiwan's emblematic cooking appliance, known for its durability and introduced in 1960. Even abroad, Taiwanese people will do their best to get their hands on this brand to cook rice.",
+        "links": [
+            "https://taiwantoday.tw/news.php?unit=8,29,32,45&post=12699",
+            "https://www.tatung.com/en/products/index/513"
+        ]
     },
     {
         "art_id": "tsmc_logo",
