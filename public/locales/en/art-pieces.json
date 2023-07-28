@@ -2,9 +2,10 @@
     {
         "art_id": "capoo",
         "title": "BugCat Capoo",
-        "blurb": "A popular character by Taiwanese artist Yara.",
-        "desc": "A cartoon character resembling a chubby blue cat with six legs. He is the namesake and main subject of a webcomic strip on Facebook and Instagram, cartoon clips on YouTube, and stickers on LINE and other social media. He was created by the Taiwanese artist Yara in 2014. He is commonly accompanied by his owner Lala and fellow pet DogDog, a talented fellow pet, as well as the bunny Tutu, who has a one-sided crush on Capoo. As a result of Capoo's popularity, he has spawned a wide variety of merchandise and attractions, ranging from clothing and plushies to a permanent merch shop and cafe in Taichung. There is also a Capoo-themed convenience store in Taipei.",
+        "blurb": "Popular character by Taiwanese artist Yara.",
+        "desc": "A cartoon character resembling a chubby blue cat with six legs. He is the namesake and main subject of a webcomic strip on Facebook and Instagram, cartoon clips on YouTube, and stickers on LINE and other social media. He was created by the Taiwanese artist Yara in 2014 and has since become a cultural phenomenon in Taiwan. He is commonly accompanied by his owner Lala and fellow pet DogDog, a talented fellow pet, as well as the bunny Tutu, who has a one-sided crush on Capoo. As a result of Capoo's popularity, he has spawned a wide variety of merchandise and attractions, ranging from clothing and plushies to a permanent merch shop and cafe in Taichung. There is also a Capoo-themed convenience store in Taipei.",
         "links": [
+            "https://www.instagram.com/bugcat_capoo/?hl=en",
             "https://www.youtube.com/@BugCatCapoo",
             "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
             "https://store.line.me/stickershop/author/24287/en"
@@ -114,7 +115,10 @@
         "art_id": "tsmc_logo",
         "title": "TSMC Logo",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
-        "links": []
+        "desc": "Taiwan Semiconductor Manufacturing Company Limited (TSMC) is one of the most influential global semiconductor manufacturing companies in the world. It is headquartered in Hsinchu, Taiwan, the country's tech center. 92% of the world's most advanced semiconductors are manufactured by it and its Taiwanese counterparts.",
+        "links": [
+            "https://www.tsmc.com/english",
+            "https://en.wikipedia.org/wiki/TSMC"
+        ]
     }
 ]
