@@ -1,20 +1,20 @@
 import { Spinner } from "@chakra-ui/react";
-import React from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import ArtCards from "../component/art-cards";
+import ArtCardsGrid from "../component/art-cards-grid";
 import { ArtInfo } from "../types/art";
 
 const Gallery = () => {
   const { i18n } = useTranslation();
-  const [loading, setLoading] = React.useState(true);
-  const [artPieces, setArtPieces] = React.useState<ArtInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [artPieces, setArtPieces] = useState<ArtInfo[]>([]);
 
   const updateArtPieces = (artPieces: ArtInfo[]) => {
     setArtPieces(artPieces);
     setLoading(false);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchArtPieces = async (lang: string) => {
       try {
         const jsonPath = `/locales/${lang}/art-pieces.json`;
@@ -36,7 +36,7 @@ const Gallery = () => {
   if (loading) {
     return <Spinner size="xl" />;
   } else {
-    return <ArtCards artPieces={artPieces} />;
+    return <ArtCardsGrid artPieces={artPieces} />;
   }
 };
 
