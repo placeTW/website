@@ -1,86 +1,86 @@
 [
     {
         "art_id": "capoo",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "chip",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "taipei_101",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "formosan_bear",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "boba_tea_bear",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "tw_magpie",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "heart_baltics",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "heart_bretons",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "lt_pengium_boba",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "indep_flag",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "tw_beer",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "apple_cider",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "tatung_rice_cooker",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
     {
         "art_id": "tsmc_logo",
-        "title": "",
-        "blurb": "",
-        "desc": ""
+        "title": "Sample Title",
+        "blurb": "This is a short description of the art.",
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     }
 ]
