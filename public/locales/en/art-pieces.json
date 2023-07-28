@@ -1,86 +1,109 @@
 [
     {
         "art_id": "capoo",
-        "title": "2023",
-        "blurb": "Bugcat Capoo",
-        "desc": "A cartoon character resembling a chubby blue cat with six legs. He is the namesake and main subject of a webcomic strip on Facebook and Instagram, cartoon clips on YouTube, and stickers on LINE and other social media. He was created by the Taiwanese artist Yara in 2014."
+        "title": "BugCat Capoo",
+        "blurb": "A popular character by Taiwanese artist Yara.",
+        "desc": "A cartoon character resembling a chubby blue cat with six legs. He is the namesake and main subject of a webcomic strip on Facebook and Instagram, cartoon clips on YouTube, and stickers on LINE and other social media. He was created by the Taiwanese artist Yara in 2014.",
+        "links": [
+            "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
+            "https://store.line.me/stickershop/author/24287/en"
+        ]
     },
     {
         "art_id": "chip",
-        "title": "Sample Title",
-        "blurb": "Blurb",
-        "desc": "Very short"
+        "title": "Chip",
+        "blurb": "",
+        "desc": "A printed chip. One of Taiwan's largest industry is semiconductors.",
+        "links": []
     },
     {
         "art_id": "taipei_101",
-        "title": "Sample Title",
-        "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "title": "Taipei 101",
+        "blurb": "Iconic building in the heart of the capital",
+        "desc": "The tallest building in Taiwan. Located in the capital Taipei, it is popular destination for locals and tourists alike. It hosts high-end stores, restaurants, and an observation tower on top.",
+        "links": [
+            "https://www.taipei-101.com.tw/",
+            "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
+            "https://en.wikipedia.org/wiki/Taipei_101"
+        ]
     },
     {
         "art_id": "formosan_bear",
-        "title": "Sample Title",
-        "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "title": "Formosan Black Bear",
+        "blurb": "National symbol of Taiwan",
+        "desc": "The Formosan black bear is a bear endemic to Taiwan. They are considered a Taiwanese national symbol. They are famous for their distinctive V-collars, and they are the largest land animals in Taiwan.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Formosan_black_bear"
+        ]
     },
     {
         "art_id": "boba_tea_bear",
-        "title": "Sample Title",
-        "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "title": "Boba Tea",
+        "blurb": "Popular Taiwanese drink",
+        "desc": "Boba Tea is a famous drink originating from Taiwan. Since then, it has spread around the world and become a popular drink.",
+        "links": []
     },
     {
         "art_id": "tw_magpie",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     },
     {
         "art_id": "heart_baltics",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     },
     {
         "art_id": "heart_bretons",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     },
     {
         "art_id": "lt_pengium_boba",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     },
     {
         "art_id": "indep_flag",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     },
     {
         "art_id": "tw_beer",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     },
     {
         "art_id": "apple_cider",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     },
     {
         "art_id": "tatung_rice_cooker",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     },
     {
         "art_id": "tsmc_logo",
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
+        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
+        "links": []
     }
 ]
