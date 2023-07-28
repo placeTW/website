@@ -6,25 +6,23 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { ArtInfo } from "../types/art";
 
 interface ArtCardProps {
-  artId: string;
-  title: string;
-  blurb: string;
-  desc: string;
+  artPiece: ArtInfo;
 }
 
-const ArtCard: React.FC<ArtCardProps> = ({ artId, title, blurb, desc }) => {
+const ArtCard: React.FC<ArtCardProps> = ({ artPiece }) => {
   return (
     <Box boxShadow="2xl" overflow="hidden" rounded="md">
       {/* Image */}
       <Box flex="1" display="flex" alignItems="center" justifyContent="center">
         <Image
-          alt={artId}
+          alt={artPiece.art_id}
           fallbackSrc="https://via.placeholder.com/200"
           h="200px"
           objectFit="cover"
-          src={`/images/${artId}.png`}
+          src={`/images/${artPiece.art_id}.png`}
         />
       </Box>
 
@@ -38,7 +36,7 @@ const ArtCard: React.FC<ArtCardProps> = ({ artId, title, blurb, desc }) => {
             fontSize={"sm"}
             letterSpacing={1.1}
           >
-            {title}
+            {artPiece.title}
           </Text>
 
           {/* Blurb */}
@@ -48,11 +46,11 @@ const ArtCard: React.FC<ArtCardProps> = ({ artId, title, blurb, desc }) => {
             fontSize={"2xl"}
             fontFamily={"body"}
           >
-            {blurb}
+            {artPiece.blurb}
           </Heading>
 
           {/* Desc */}
-          <Text color={"gray.500"}>{desc}</Text>
+          <Text color={"gray.500"}>{artPiece.desc}</Text>
         </Stack>
       </Box>
     </Box>
