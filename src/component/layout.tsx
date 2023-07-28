@@ -1,26 +1,19 @@
-const Header = () => {
-  return (
-    <header>
-      <h1>Header</h1>
-    </header>
-  );
-};
-
-const Footer = () => {
-  return (
-    <footer>
-      <h1>Footer</h1>
-    </footer>
-  );
-}
+import { Box } from "@chakra-ui/react";
+import Navbar from "./navbar";
+import Footer from "./footer";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div>
-      <Header />
-      <div className="container">{children}</div>
+    <Box w="100vw">
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Rest of the content */}
+      <Box p={4}>{children}</Box>
+
+      {/* Footer */}
       <Footer />
-    </div>
+    </Box>
   );
 };
 

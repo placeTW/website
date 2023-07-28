@@ -1,0 +1,27 @@
+import React from 'react';
+import { Box, Flex, Spacer, Link, Heading } from '@chakra-ui/react';
+
+const Navbar = () => {
+  return (
+    <Box bg="blue.500" px={4} py={2}>
+      <Flex alignItems="center" maxW='xxl'>
+        <Heading as="h1" size="lg" color="white">
+          PlaceTW
+        </Heading>
+
+        <Spacer />
+
+        <Box>
+          <Link href="/" color="white" mr={4}>
+            Home
+          </Link>
+          <Link href="#" color="white" mr={4}>
+            About
+          </Link>
+        </Box>
+      </Flex>
+    </Box>
+  );
+};
+
+export default Navbar;
