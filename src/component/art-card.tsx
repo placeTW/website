@@ -2,10 +2,12 @@ import {
   Box,
   Heading,
   Image,
+  Link,
   Stack,
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+import React from "react";
 import { ArtInfo } from "../types/art";
 
 interface ArtCardProps {
@@ -13,6 +15,13 @@ interface ArtCardProps {
 }
 
 const ArtCard: React.FC<ArtCardProps> = ({ artPiece }) => {
+  const [showFullText, setShowFullText] = React.useState(false);
+  const maxTextLength = 100;
+
+  const toggleShowText = () => {
+    setShowFullText(!showFullText);
+  };
+
   return (
     <Box boxShadow="2xl" overflow="hidden" rounded="md">
       {/* Image */}
@@ -50,7 +59,23 @@ const ArtCard: React.FC<ArtCardProps> = ({ artPiece }) => {
           </Heading>
 
           {/* Desc */}
-          <Text color={"gray.500"}>{artPiece.desc}</Text>
+          <Text color={"gray.500"}>
+            <Text>
+              {/* Show either full or sliced description */}
+              {showFullText
+                ? artPiece.desc
+                : artPiece.desc.slice(0, maxTextLength)}
+              {/* Show "..." when not showing full text and text is too long */}
+              {!showFullText && artPiece.desc.length > maxTextLength && "..."}
+            </Text>
+
+            {/* Show more/less */}
+            {artPiece.desc.length > maxTextLength && (
+              <Link onClick={toggleShowText} variant="link" cursor="pointer">
+                {showFullText ? "Show less" : "Show more"}
+              </Link>
+            )}
+          </Text>
         </Stack>
       </Box>
     </Box>
