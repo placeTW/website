@@ -1,5 +1,6 @@
 import {
   Box,
+  Collapse,
   Heading,
   Image,
   Link,
@@ -8,6 +9,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ArtInfo } from "../types/art";
 import ImageModal from "./image-modal";
 
@@ -16,9 +18,9 @@ interface ArtCardProps {
 }
 
 const ArtCard: React.FC<ArtCardProps> = ({ artPiece }) => {
+  const { t } = useTranslation();
   const [showFullText, setShowFullText] = React.useState(false);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const maxTextLength = 100;
 
   const handleImageClick = () => {
     setIsModalOpen(true);
@@ -77,23 +79,16 @@ const ArtCard: React.FC<ArtCardProps> = ({ artPiece }) => {
           </Heading>
 
           {/* Desc */}
-          <Text color={"gray.500"}>
-            <Text>
-              {/* Show either full or sliced description */}
-              {showFullText
-                ? artPiece.desc
-                : artPiece.desc.slice(0, maxTextLength)}
-              {/* Show "..." when not showing full text and text is too long */}
-              {!showFullText && artPiece.desc.length > maxTextLength && "..."}
-            </Text>
+          <Collapse startingHeight={60} in={showFullText}>
+            <Text color={"gray.500"}>{artPiece.desc}</Text>
+          </Collapse>
 
-            {/* Show more/less */}
-            {artPiece.desc.length > maxTextLength && (
-              <Link onClick={toggleShowText} variant="link" cursor="pointer">
-                {showFullText ? "Show less" : "Show more"}
-              </Link>
-            )}
-          </Text>
+          {/* Show more/less */}
+          <Link onClick={toggleShowText} variant="link" cursor="pointer">
+            <Text fontWeight="semibold">
+              {showFullText ? t("Show less") : t("Show more")}
+            </Text>
+          </Link>
         </Stack>
       </Box>
 
