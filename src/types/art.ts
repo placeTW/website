@@ -3,5 +3,4 @@ export interface ArtInfo {
   title: string;
   blurb: string;
   desc: string;
-  img: string;
 }
