@@ -1,7 +1,7 @@
 [
     {
         "art_id": "capoo",
-        "title": "Sample Title",
+        "title": "BugCat Capoo",
         "blurb": "This is a short description of the art.",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long."
     },
