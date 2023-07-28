@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { ArtInfo } from "../types/art";
+import ImageModal from "./image-modal";
 
 interface ArtCardProps {
   artPiece: ArtInfo;
@@ -16,25 +17,42 @@ interface ArtCardProps {
 
 const ArtCard: React.FC<ArtCardProps> = ({ artPiece }) => {
   const [showFullText, setShowFullText] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
   const maxTextLength = 100;
+
+  const handleImageClick = () => {
+    setIsModalOpen(true);
+  };
 
   const toggleShowText = () => {
     setShowFullText(!showFullText);
   };
 
+  const imageUrl = `/images/${artPiece.art_id}.png`;
+
   return (
     <Box boxShadow="2xl" overflow="hidden" rounded="md">
-      {/* Image */}
-      <Box flex="1" display="flex" alignItems="center" justifyContent="center">
+      {/* Top image */}
+      <Box
+        _hover={{ transform: "scale(1.1)" }} // zoom-in effect on hover
+        alignItems="center"
+        cursor="pointer"
+        display="flex"
+        flex="1"
+        justifyContent="center"
+        transition="transform 1s" // zoom-in/out animation transition
+      >
         <Image
-          alt={artPiece.art_id}
+          alt={artPiece.desc}
           fallbackSrc="https://via.placeholder.com/200"
           h="200px"
           objectFit="cover"
-          src={`/images/${artPiece.art_id}.png`}
+          onClick={handleImageClick}
+          src={imageUrl}
         />
       </Box>
 
+      {/* Bottom */}
       <Box p={6}>
         <Stack>
           {/* Title */}
@@ -78,6 +96,14 @@ const ArtCard: React.FC<ArtCardProps> = ({ artPiece }) => {
           </Text>
         </Stack>
       </Box>
+
+      {/* Image modal */}
+      <ImageModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        imageUrl={imageUrl}
+        altText={artPiece.desc}
+      />
     </Box>
   );
 };
