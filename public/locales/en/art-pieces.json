@@ -46,9 +46,11 @@
     {
         "art_id": "tw_magpie",
         "title": "Taiwan Blue Magpie",
-        "blurb": "Blurb",
-        "desc": "The Taiwan Blue Magpie is a bird endemic to Taiwan. It is famous for its distinctive appearance and relationships with Taiwanese aboriginal tribes, some which hold this bird sacred.",
-        "links": []
+        "blurb": "Famous and sacred Taiwanese bird",
+        "desc": "The Taiwan Blue Magpie is a bird endemic to Taiwan. It is famous for its friendliness with humans, distinctive appearance and relationship with Taiwanese aboriginal tribes, some which hold this bird sacred.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
+        ]
     },
     {
         "art_id": "heart_baltics",
@@ -81,9 +83,11 @@
     {
         "art_id": "tw_beer",
         "title": "Taiwan Beer",
-        "blurb": "Blurb",
-        "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
-        "links": []
+        "blurb": "Famous Taiwanese beverage",
+        "desc": "Commonly found in bars and convenience stores alike, Taiwan Beer is one of Taiwan's most famous and recognizable beverages.",
+        "links": [
+            "https://www.twbeer.com.tw/aboutEN"
+        ]
     },
     {
         "art_id": "apple_cider",
