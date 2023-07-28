@@ -16,6 +16,9 @@ const Navbar = () => {
           <Link href="/" color="white" mr={4}>
             Home
           </Link>
+          <Link href="/gallery" color="white" mr={4}>
+            Gallery
+          </Link>
           <Link href="#" color="white" mr={4}>
             About
           </Link>
