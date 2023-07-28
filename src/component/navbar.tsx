@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Flex, Spacer, Link, Heading } from '@chakra-ui/react';
+import LanguageSwitcher from './language-switcher';
 
 const Navbar = () => {
   return (
@@ -18,6 +19,7 @@ const Navbar = () => {
           <Link href="#" color="white" mr={4}>
             About
           </Link>
+          <LanguageSwitcher />
         </Box>
       </Flex>
     </Box>

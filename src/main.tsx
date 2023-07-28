@@ -5,6 +5,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomePage from "./pages";
 import Layout from "./component/layout";
+import './i18n';
 
 const router = createBrowserRouter([
   {
@@ -12,7 +13,6 @@ const router = createBrowserRouter([
     element: <HomePage />,
   },
 ]);
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChakraProvider>
