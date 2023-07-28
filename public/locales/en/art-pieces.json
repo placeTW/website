@@ -32,6 +32,15 @@
         ]
     },
     {
+        "art_id": "tw_flag",
+        "title": "Flag of Taiwan",
+        "blurb": "National flag of Taiwan",
+        "desc": "Official flag of Taiwan. Also commonly known as the 'Blue Sky, White Sun' flag, it is internationally known as a symbol of Taiwan. The flag is also associated with the government of the Republic of China and its establishing party, the Kuomintang (KMT), and is sometimes a source of domestic controversy due to the latter's history. Despite this, it is generally used by most Taiwanese people abroad as an identifying symbol. The flag can also be found on all domestic national government buildings, embassies abroad, and those who wish to see greater international recognition for Taiwan, especially since Taiwanese teams cannot compete under this flag (or even under the name 'Taiwan') in most international events.",
+        "links": [
+            "https://en.mofa.gov.tw/"
+        ]
+    },
+    {
         "art_id": "formosan_bear",
         "title": "Formosan Black Bear",
         "blurb": "National symbol of Taiwan",
