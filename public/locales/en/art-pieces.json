@@ -11,10 +11,12 @@
     },
     {
         "art_id": "chip",
-        "title": "Chip",
-        "blurb": "",
-        "desc": "A printed chip. One of Taiwan's largest industry is semiconductors.",
-        "links": []
+        "title": "Printed Circuit Board",
+        "blurb": "Printed circuit board with microprocessors",
+        "desc": "A printed circuit board with microprocessors. One of Taiwan's largest and most important industries is the production of semiconductors.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Printed_circuit_board"
+        ]
     },
     {
         "art_id": "taipei_101",
