@@ -4,7 +4,7 @@ export default {
   contextSeparator: "_",
   createOldCatalogs: false,
   defaultNamespace: "translation",
-  defaultValue: "",
+  defaultValue: "---",
   indentation: 2,
   keepRemoved: false,
   keySeparator: false,
