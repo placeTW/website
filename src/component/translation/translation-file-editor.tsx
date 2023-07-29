@@ -33,8 +33,6 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Within /locale/{language}/{filename}.json, fetch all the translations
-    // and update the editor.
     const fetchTranslations = async (
       lang: string
     ): Promise<Record<string, string>> => {
@@ -88,7 +86,6 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
           </TableCaption>
           <Thead>
             <Tr>
-              <Th key="id"></Th>
               {Object.entries(locales).map(([language, locale]) => (
                 <Th
                   key={language}
@@ -109,13 +106,10 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
             <Tbody>
               {Array.from(translationKeys).map((key) => (
                 <Tr key={key}>
-                  <Td fontSize="xs" key="id">
-                    {key}
-                  </Td>
-                  {Object.entries(locales).map(([language, locale]) => (
+                  {Object.entries(locales).map(([language]) => (
                     <Td key={language}>
                       <Input
-                        disabled={locale.default || !canEditLanguage(language)}
+                        disabled={!canEditLanguage(language)}
                         variant="outline"
                         minW={275}
                         value={getTranslation(language, key)}

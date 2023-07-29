@@ -97,7 +97,10 @@ const TranslationVerification = ({ session }: { session: Session }) => {
                     />
                   )}
                   {metadata.get(filename)?.type === "list" && (
-                    <TranslationListEditor />
+                    <TranslationListEditor
+                      filename={filename}
+                      editableLangs={officialLocales}
+                    />
                   )}
                 </TabPanel>
               );
