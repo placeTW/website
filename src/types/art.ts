@@ -3,4 +3,5 @@ export interface ArtInfo {
   title: string;
   blurb: string;
   desc: string;
+  links: string[];
 }
