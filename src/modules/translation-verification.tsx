@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import TranslationFileEditor from "../component/translation/translation-file-editor";
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import TranslationListEditor from "../component/translation/translation-list-editor";
+import { useTranslation } from "react-i18next";
 
 interface Metadata {
   type: string;
@@ -11,6 +12,8 @@ interface Metadata {
 }
 
 const TranslationVerification = ({ session }: { session: Session }) => {
+  const { t } = useTranslation();
+
   const [verified, setVerified] = useState(false);
   const [translationFilenames, setTranslationFilenames] = useState<string[]>(
     []
@@ -76,7 +79,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
         onClick={() => supabase.auth.signOut()}
         className="button block full-width"
       >
-        Log out
+        {t("Log out")}
       </button>
       {verified && !loading && translationFilenames && metadata.size > 0 && (
         <Tabs>
@@ -101,6 +104,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
           </TabPanels>
         </Tabs>
       )}
+      {loading && <p>Loading...</p>}
     </div>
   );
 };
