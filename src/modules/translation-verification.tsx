@@ -84,13 +84,13 @@ const TranslationVerification = ({ session }: { session: Session }) => {
         <Tabs>
           <TabList>
             {translationFilenames.map((filename) => {
-              return <Tab>{filename}</Tab>;
+              return <Tab key={filename}>{filename}</Tab>;
             })}
           </TabList>
           <TabPanels>
             {translationFilenames.map((filename) => {
               return (
-                <TabPanel>
+                <TabPanel key={filename}>
                   {metadata.get(filename)?.type === "file" && (
                     <TranslationFileEditor filename={filename} />
                   )}

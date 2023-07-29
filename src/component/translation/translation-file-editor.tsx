@@ -64,7 +64,6 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
       setLoading(false);
-      console.log(translationData)
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filename, i18n, translationKeys]);
@@ -104,7 +103,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
             <Tr>
               {Object.entries(locales).map(([language, locale]) => (
                 <Th
-                  key={language}
+                  key={language + "-language"}
                   fontSize="lg"
                   minW={30}
                   color={canEditLanguage(language) ? "black" : "lightgray"}
@@ -124,7 +123,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                 {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   Object.keys(locales).map((language) => (
-                    <Td>
+                    <Td key={language + "-button"}>
                       <GithubSubmitButton
                         filename={`${language}/${filename}`}
                         data={JSON.stringify(

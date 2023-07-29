@@ -36,6 +36,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
   const [dataKeys, setDataKeys] = useState<Set<string>>(new Set());
 
   const [loading, setLoading] = useState(false);
+  const [edited, setEdited] = useState(false);
 
   useEffect(() => {
     // Within /locale/{language}/{filename}.json, fetch all the translations
@@ -80,6 +81,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
     ).then(() => {
       setLoading(false);
       console.log(dataKeys);
+      console.log(translationKeys);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -91,7 +93,29 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
   const getData = (language: string): TranslationListData[] => {
     return translationData.get(language) ?? ([] as TranslationListData[]);
   };
-  
+
+  useEffect(() => {
+    if (!edited) return;
+    window.addEventListener("beforeunload", alertUser);
+    return () => {
+      window.removeEventListener("beforeunload", alertUser);
+    };
+  }, [edited]);
+  const alertUser = (e: {
+    preventDefault: () => void;
+    returnValue: string;
+  }) => {
+    e.preventDefault();
+    e.returnValue = "";
+  };
+
+  const getTranslationData = (language: string, index: number) => {
+    return translationData.get(language)?.[index] ?? {};
+  };
+
+  useEffect(() => {
+    console.log(translationData);
+  }, [translationData]);
 
   return (
     <>
@@ -104,7 +128,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
             <Tr>
               {Object.entries(locales).map(([language, locale]) => (
                 <Th
-                  key={language}
+                  key={language + "-language"}
                   fontSize="lg"
                   minW={30}
                   color={canEditLanguage(language) ? "black" : "lightgray"}
@@ -124,7 +148,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
                 {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   Object.keys(locales).map((language) => (
-                    <Td>
+                    <Td key={language + "-button"}>
                       <GithubSubmitButton
                         filename={`${language}/${filename}`}
                         data={JSON.stringify(getData(language), null, 2)}
@@ -137,22 +161,28 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
 
               {Array.from(translationKeys).map((key) => (
                 <Tr key={key}>
-                  {Object.entries(locales).map(([language]) => (
+                  {Object.keys(locales).map((language) => (
                     <Td key={language}>
                       <TranslationListItem
+                        key={key}
                         dataKeys={Array.from(dataKeys)}
-                        translationData={
-                          translationData
-                            .get(language)
-                            ?.find(
-                              (translation) =>
-                                translation[
-                                  Object.keys(translation).find((key) =>
-                                    key.includes("id")
-                                  ) ?? "id"
-                                ] === key
-                            ) as TranslationListData
-                        }
+                        translationData={getTranslationData(
+                          language,
+                          Array.from(translationKeys).indexOf(key)
+                        )}
+                        index={Array.from(translationKeys).indexOf(key)}
+                        onEdit={(key, value, index) => {
+                          console.log(index);
+                          console.log(key, value);
+                          const newData = [...translationData.get(language) ?? []];
+                          if (newData && index !== undefined && index !== -1) {
+                            newData[index][key] = value;
+                            setTranslationData(
+                              new Map(translationData.set(language, newData))
+                            );
+                            setEdited(true);
+                          }
+                        }}
                       />
                     </Td>
                   ))}
