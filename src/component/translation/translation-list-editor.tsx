@@ -46,6 +46,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
       try {
         const jsonPath = `/locales/${lang}/${filename}`;
         const response = await fetch(jsonPath);
+        console.log(response);
         if (!response.ok) {
           throw new Error(`Failed to fetch the json ${jsonPath}`);
         }
