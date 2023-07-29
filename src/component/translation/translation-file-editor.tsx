@@ -12,6 +12,7 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
+import GithubSubmitButton from "./github-submit-button";
 
 interface Props {
   filename: string;
@@ -65,6 +66,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     ).then(() => {
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filename, i18n, translationKeys]);
 
   const getTranslation = (language: string, key: string): string => {
@@ -77,64 +79,67 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
   };
 
   return (
-    <TableContainer>
-      <Table overflowX="auto" whiteSpace="nowrap">
-        <TableCaption placement="top" fontSize="xl">
-          {filename}
-        </TableCaption>
-        <Thead>
-          <Tr>
-            <Th key="id"></Th>
-            {Object.entries(locales).map(([language, locale]) => (
-              <Th
-                key={language}
-                fontSize="lg"
-                minW={30}
-                color={canEditLanguage(language) ? "black" : "lightgray"}
-              >
-                <div>{`${locale.displayName}`}</div>
-                {officialLocales.includes(i18n.language) &&
-                  i18n.language !== language && (
-                    <div>{`(${locale[i18n.language as keyof Locale]})`}</div>
-                  )}
-              </Th>
-            ))}
-          </Tr>
-        </Thead>
-        {!loading && (
-          <Tbody>
-            {Array.from(translationKeys).map((key) => (
-              <Tr key={key}>
-                <Td fontSize="xs" key="id">
-                  {key}
-                </Td>
-                {Object.entries(locales).map(([language, locale]) => (
-                  <Td key={language}>
-                    <Input
-                      disabled={locale.default || !canEditLanguage(language)}
-                      variant="outline"
-                      minW={275}
-                      value={getTranslation(language, key)}
-                      placeholder={"(Placeholder) " + key}
-                      color={getTranslation(language, key) ? "black" : "red"}
-                      _placeholder={{ opacity: 0.4, color: "inherit" }}
-                      onChange={(event) => {
-                        const newTranslationData = new Map(translationData);
-                        const newTranslation =
-                          newTranslationData.get(language) ?? {};
-                        newTranslation[key] = event.target.value;
-                        newTranslationData.set(language, newTranslation);
-                        setTranslationData(newTranslationData);
-                      }}
-                    />
+    <>
+      <GithubSubmitButton filename={filename} data={translationData} />
+      <TableContainer>
+        <Table overflowX="auto" whiteSpace="nowrap">
+          <TableCaption placement="top" fontSize="xl">
+            {filename}
+          </TableCaption>
+          <Thead>
+            <Tr>
+              <Th key="id"></Th>
+              {Object.entries(locales).map(([language, locale]) => (
+                <Th
+                  key={language}
+                  fontSize="lg"
+                  minW={30}
+                  color={canEditLanguage(language) ? "black" : "lightgray"}
+                >
+                  <div>{`${locale.displayName}`}</div>
+                  {officialLocales.includes(i18n.language) &&
+                    i18n.language !== language && (
+                      <div>{`(${locale[i18n.language as keyof Locale]})`}</div>
+                    )}
+                </Th>
+              ))}
+            </Tr>
+          </Thead>
+          {!loading && (
+            <Tbody>
+              {Array.from(translationKeys).map((key) => (
+                <Tr key={key}>
+                  <Td fontSize="xs" key="id">
+                    {key}
                   </Td>
-                ))}
-              </Tr>
-            ))}
-          </Tbody>
-        )}
-      </Table>
-    </TableContainer>
+                  {Object.entries(locales).map(([language, locale]) => (
+                    <Td key={language}>
+                      <Input
+                        disabled={locale.default || !canEditLanguage(language)}
+                        variant="outline"
+                        minW={275}
+                        value={getTranslation(language, key)}
+                        placeholder={"(Placeholder) " + key}
+                        color={getTranslation(language, key) ? "black" : "red"}
+                        _placeholder={{ opacity: 0.4, color: "inherit" }}
+                        onChange={(event) => {
+                          const newTranslationData = new Map(translationData);
+                          const newTranslation =
+                            newTranslationData.get(language) ?? {};
+                          newTranslation[key] = event.target.value;
+                          newTranslationData.set(language, newTranslation);
+                          setTranslationData(newTranslationData);
+                        }}
+                      />
+                    </Td>
+                  ))}
+                </Tr>
+              ))}
+            </Tbody>
+          )}
+        </Table>
+      </TableContainer>
+    </>
   );
 };
 

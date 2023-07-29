@@ -8,7 +8,7 @@ import TranslationListEditor from "../component/translation/translation-list-edi
 
 interface Metadata {
   type: string;
-  item?: any;
+  interface?: string;
 }
 
 const TranslationVerification = ({ session }: { session: Session }) => {
