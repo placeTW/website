@@ -19,7 +19,6 @@ const Gallery = () => {
       try {
         const jsonPath = `/locales/${lang}/art-pieces.json`;
         const response = await fetch(jsonPath);
-        console.log(response.url);
         if (!response.ok) {
           throw new Error(`Failed to fetch the json ${jsonPath}`);
         }
