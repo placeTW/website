@@ -13,6 +13,7 @@ import {
   Tr,
 } from "@chakra-ui/react";
 import GithubSubmitButton from "./github-submit-button";
+import { useBeforeUnload } from "react-router-dom";
 
 interface Props {
   filename: string;
@@ -31,6 +32,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
   );
 
   const [loading, setLoading] = useState(false);
+  const [edited, setEdited] = useState(false);
 
   useEffect(() => {
     const fetchTranslations = async (
@@ -74,6 +76,21 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
 
   const canEditLanguage = (language: string): boolean => {
     return !editableLangs || editableLangs.includes(language);
+  };
+
+  useEffect(() => {
+    if (!edited) return;
+    window.addEventListener("beforeunload", alertUser);
+    return () => {
+      window.removeEventListener("beforeunload", alertUser);
+    };
+  }, [edited]);
+  const alertUser = (e: {
+    preventDefault: () => void;
+    returnValue: string;
+  }) => {
+    e.preventDefault();
+    e.returnValue = "";
   };
 
   return (
@@ -134,6 +151,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                         color={getTranslation(language, key) ? "black" : "red"}
                         _placeholder={{ opacity: 0.4, color: "inherit" }}
                         onChange={(event) => {
+                          setEdited(true);
                           const newTranslationData = new Map(translationData);
                           const newTranslation =
                             newTranslationData.get(language) ?? {};

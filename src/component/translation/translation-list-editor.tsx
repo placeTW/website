@@ -90,6 +90,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
   const getData = (language: string): TranslationListData[] => {
     return translationData.get(language) ?? ([] as TranslationListData[]);
   };
+  
 
   return (
     <>

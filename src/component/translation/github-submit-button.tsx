@@ -1,5 +1,7 @@
 import { Button, Icon } from "@chakra-ui/react";
 import { FaGithub } from "react-icons/fa";
+import ExportTranslationModal from "./export-translation-modal";
+import { useState } from "react";
 
 const REPOSITORY_URL =
   "https://github.com/placeTW/website/new/main/public/locales/";
@@ -12,31 +14,47 @@ interface Props {
 }
 
 const GithubSubmitButton = ({ filename, data, locale }: Props) => {
+  const [openModal, setOpenModal] = useState(false);
+
   const getUrl = (locale: string) => {
     return (
       REPOSITORY_URL +
       "?filename=" +
       filename +
-      "&value=" +
-      encodeURI(data)
+      (!needCopy(data) ? getEncodedData(data) : "")
     );
   };
 
+  const getEncodedData = (data: string) => {
+    return "&value=" + encodeURI(data);
+  };
+
+  const needCopy = (data: string) => {
+    return data.length > 1000;
+  };
+
   return (
-    <Button
-      leftIcon={<Icon as={FaGithub} />}
-      colorScheme="gray"
-      variant="outline"
-      size="md"
-      onClick={() => {
-        console.log(data);
-        // Add your GitHub submission logic here
-        // For example, you can handle the click event and submit to GitHub using an API.
-        window.open(getUrl(locale), "_blank", "noopener");
-      }}
-    >
-      Submit to GitHub
-    </Button>
+    <>
+      <Button
+        leftIcon={<Icon as={FaGithub} />}
+        colorScheme="gray"
+        variant="outline"
+        size="md"
+        onClick={() => {
+          setOpenModal(true);
+          console.log(data);
+        }}
+      >
+        Submit to GitHub
+      </Button>
+      <ExportTranslationModal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+        data={data}
+        url={getUrl(locale)}
+        needCopy={needCopy(data)}
+      />
+    </>
   );
 };
 
