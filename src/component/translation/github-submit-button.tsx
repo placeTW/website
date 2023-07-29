@@ -1,7 +1,8 @@
 import { Button, Icon } from "@chakra-ui/react";
-import { FaGithub } from "react-icons/fa";
+import { FaPaperPlane } from "react-icons/fa";
 import ExportTranslationModal from "./export-translation-modal";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const REPOSITORY_URL =
   "https://github.com/placeTW/website/new/main/public/locales/";
@@ -14,6 +15,8 @@ interface Props {
 }
 
 const GithubSubmitButton = ({ filename, data }: Props) => {
+  const { t } = useTranslation();
+
   const [openModal, setOpenModal] = useState(false);
 
   const getUrl = () => {
@@ -36,7 +39,7 @@ const GithubSubmitButton = ({ filename, data }: Props) => {
   return (
     <>
       <Button
-        leftIcon={<Icon as={FaGithub} />}
+        leftIcon={<Icon as={FaPaperPlane} />}
         colorScheme="gray"
         variant="outline"
         size="md"
@@ -45,7 +48,7 @@ const GithubSubmitButton = ({ filename, data }: Props) => {
           console.log(data);
         }}
       >
-        Submit to GitHub
+        {t("Submit Translation")}
       </Button>
       <ExportTranslationModal
         isOpen={openModal}

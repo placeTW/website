@@ -1,8 +1,11 @@
 import { Box, Flex, Spacer, Heading, Link } from "@chakra-ui/react";
 import LanguageSwitcher from "./language-switcher";
 import { Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Navbar = () => {
+  const { t } = useTranslation();
+
   return (
     <Box bg="blue.500" px={4} py={2}>
       <Flex alignItems="center" maxW="xxl">
@@ -14,13 +17,13 @@ const Navbar = () => {
 
         <Box>
           <Link as={RouterLink} to="/" color="white" mr={4}>
-            Home
+            {t("Home")}
           </Link>
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
-            Gallery
+            {t("Gallery")}
           </Link>
           <Link as={RouterLink} to="/translations" color="white" mr={4}>
-            Translations
+            {t("Translations")}
           </Link>
         </Box>
         <Box>

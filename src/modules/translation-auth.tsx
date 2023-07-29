@@ -1,7 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { supabase } from "../supabase";
 import { MouseEvent } from "react";
 
 const TranslationAuth = () => {
+  const { t } = useTranslation();
+
   const handleLogin = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
@@ -9,8 +12,8 @@ const TranslationAuth = () => {
       .signInWithOAuth({
         provider: "discord",
         options: {
-          redirectTo: window.location.origin + "/translations"
-        }
+          redirectTo: window.location.origin + "/translations",
+        },
       })
       .then((data) => {
         console.log(data);
@@ -23,10 +26,10 @@ const TranslationAuth = () => {
   return (
     <div className="row flex flex-center">
       <div className="col-6 form-widget">
-        <h1 className="header">Log in with Discord</h1>
+        <h1 className="header">{t("Log in with Discord")}</h1>
 
         <button onClick={handleLogin} className="button block full-width">
-          Log in
+          {t("Log in")}
         </button>
       </div>
     </div>

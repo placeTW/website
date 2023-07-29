@@ -64,12 +64,14 @@ const ExportTranslationModal = ({
               size="md"
               onClick={async () => {
                 if (needCopy) {
-                  await navigator.clipboard.writeText(data);
+                  await navigator.clipboard.writeText(data).then(() => {
+                    alert(t("Translation copied to clipboard."));
+                  });
                 }
                 window.open(url, "_blank", "noopener");
               }}
             >
-              Submit to GitHub
+              {t("Submit to Github")}
             </Button>
           </Box>
         </ModalFooter>
