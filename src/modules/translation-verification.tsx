@@ -2,6 +2,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import { useEffect, useState } from "react";
 import TranslationFileEditor from "../component/translation/translation-file-editor";
+import { officialLocales } from "../i18n";
 
 const TranslationVerification = ({ session }: { session: Session }) => {
   const [verified, setVerified] = useState(false);
@@ -22,7 +23,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
         Log out
       </button>
       {verified && (
-        <TranslationFileEditor filename="translation" />
+        <TranslationFileEditor filename="translation" editableLangs={officialLocales} />
       )}
     </div>
   );

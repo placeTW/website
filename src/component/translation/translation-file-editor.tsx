@@ -15,9 +15,10 @@ import {
 
 interface Props {
   filename: string;
+  editableLangs: string[];
 }
 
-const TranslationFileEditor = ({ filename }: Props) => {
+const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
   const { i18n } = useTranslation();
 
   const [translationData, setTranslationData] = useState(
@@ -64,7 +65,12 @@ const TranslationFileEditor = ({ filename }: Props) => {
     ).then(() => {
       setLoading(false);
     });
-  }, [filename, i18n, translationData, translationKeys]);
+  }, [filename, i18n, translationKeys]);
+
+  const getTranslation = (language: string, key: string): string => {
+    const translation = translationData.get(language)?.[key];
+    return translation && translation !== "---" ? translation : "";
+  };
 
   return (
     <TableContainer>
@@ -76,7 +82,7 @@ const TranslationFileEditor = ({ filename }: Props) => {
           <Tr>
             <Th key="id"></Th>
             {Object.entries(locales).map(([language, locale]) => (
-              <Th key={language} fontSize="lg" minW={30}>
+              <Th key={language} fontSize="lg" minW={30} color={editableLangs.includes(language) ? "black" : "lightgray"}>
                 <div>{`${locale.displayName}`}</div>
                 {officialLocales.includes(i18n.language) &&
                   i18n.language !== language && (
@@ -96,10 +102,13 @@ const TranslationFileEditor = ({ filename }: Props) => {
                 {Object.entries(locales).map(([language, locale]) => (
                   <Td key={language}>
                     <Input
-                      disabled={locale.default}
+                      disabled={locale.default || !editableLangs.includes(language)}
                       variant="outline"
                       minW={275}
-                      value={translationData.get(language)?.[key] ?? ""}
+                      value={getTranslation(language, key)}
+                      placeholder={"(Placeholder) " + key}
+                      color={getTranslation(language, key) ? "black" : "red"}
+                      _placeholder={{ opacity: 0.4, color: 'inherit' }}
                       onChange={(event) => {
                         const newTranslationData = new Map(translationData);
                         const newTranslation =
