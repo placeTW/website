@@ -81,7 +81,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
       console.log(dataKeys);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filename, i18n, translationKeys, dataKeys]);
+  }, [filename, i18n, dataKeys]);
 
   const canEditLanguage = (language: string): boolean => {
     return !editableLangs || editableLangs.includes(language);

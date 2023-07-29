@@ -64,6 +64,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
       setLoading(false);
+      console.log(translationData)
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filename, i18n, translationKeys]);
