@@ -13,10 +13,10 @@ interface Props {
   locale: string;
 }
 
-const GithubSubmitButton = ({ filename, data, locale }: Props) => {
+const GithubSubmitButton = ({ filename, data }: Props) => {
   const [openModal, setOpenModal] = useState(false);
 
-  const getUrl = (locale: string) => {
+  const getUrl = () => {
     return (
       REPOSITORY_URL +
       "?filename=" +
@@ -30,7 +30,7 @@ const GithubSubmitButton = ({ filename, data, locale }: Props) => {
   };
 
   const needCopy = (data: string) => {
-    return data.length > 1000;
+    return data?.length > 1000;
   };
 
   return (
@@ -51,7 +51,7 @@ const GithubSubmitButton = ({ filename, data, locale }: Props) => {
         isOpen={openModal}
         onClose={() => setOpenModal(false)}
         data={data}
-        url={getUrl(locale)}
+        url={getUrl()}
         needCopy={needCopy(data)}
       />
     </>

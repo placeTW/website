@@ -11,6 +11,7 @@ import {
   Text,
   CardBody,
   Card,
+  Box,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { FaGithub } from "react-icons/fa";
@@ -40,37 +41,37 @@ const ExportTranslationModal = ({
         <ModalBody p={0}>
           <Card>
             <CardBody>
-              <Text>You are about to submit the following translation:</Text>
-              <Textarea value={data} readOnly={true} rows={25} />
+              <Text>
+                {t("You are about to submit the following translation:")}
+              </Text>
+              <Textarea value={data} readOnly={true} rows={20} />
             </CardBody>
           </Card>
         </ModalBody>
         <ModalFooter>
           {needCopy && (
+            <Text mr={2} color="red.500" fontSize="xs">
+              {t(
+                "The translation is too long to submit directly to GitHub. Paste the translation once you are redirected to GitHub."
+              )}
+            </Text>
+          )}
+          <Box>
             <Button
               leftIcon={<Icon as={FaGithub} />}
               colorScheme="gray"
               variant="outline"
               size="md"
-              onClick={() => {
-                navigator.clipboard.writeText(data);
+              onClick={async () => {
+                if (needCopy) {
+                  await navigator.clipboard.writeText(data);
+                }
+                window.open(url, "_blank", "noopener");
               }}
-              mr={3}
             >
-              Copy to Clipboard
+              Submit to GitHub
             </Button>
-          )}
-          <Button
-            leftIcon={<Icon as={FaGithub} />}
-            colorScheme="gray"
-            variant="outline"
-            size="md"
-            onClick={() => {
-              window.open(url, "_blank", "noopener");
-            }}
-          >
-            Submit to GitHub
-          </Button>
+          </Box>
         </ModalFooter>
       </ModalContent>
     </Modal>

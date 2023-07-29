@@ -93,13 +93,11 @@ const TranslationVerification = ({ session }: { session: Session }) => {
                   {metadata.get(filename)?.type === "file" && (
                     <TranslationFileEditor
                       filename={filename}
-                      editableLangs={officialLocales}
                     />
                   )}
                   {metadata.get(filename)?.type === "list" && (
                     <TranslationListEditor
                       filename={filename}
-                      editableLangs={officialLocales}
                     />
                   )}
                 </TabPanel>
