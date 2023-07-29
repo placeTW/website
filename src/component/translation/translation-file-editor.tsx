@@ -15,7 +15,7 @@ import {
 
 interface Props {
   filename: string;
-  editableLangs: string[];
+  editableLangs?: string[];
 }
 
 const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
@@ -72,6 +72,10 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     return translation && translation !== "---" ? translation : "";
   };
 
+  const canEditLanguage = (language: string): boolean => {
+    return !editableLangs || editableLangs.includes(language);
+  };
+
   return (
     <TableContainer>
       <Table overflowX="auto" whiteSpace="nowrap">
@@ -82,7 +86,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
           <Tr>
             <Th key="id"></Th>
             {Object.entries(locales).map(([language, locale]) => (
-              <Th key={language} fontSize="lg" minW={30} color={editableLangs.includes(language) ? "black" : "lightgray"}>
+              <Th key={language} fontSize="lg" minW={30} color={canEditLanguage(language) ? "black" : "lightgray"}>
                 <div>{`${locale.displayName}`}</div>
                 {officialLocales.includes(i18n.language) &&
                   i18n.language !== language && (
@@ -102,7 +106,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                 {Object.entries(locales).map(([language, locale]) => (
                   <Td key={language}>
                     <Input
-                      disabled={locale.default || !editableLangs.includes(language)}
+                      disabled={locale.default || !canEditLanguage(language)}
                       variant="outline"
                       minW={275}
                       value={getTranslation(language, key)}
