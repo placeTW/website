@@ -6,12 +6,6 @@ import TranslationAuth from "../modules/translation-auth";
 import TranslationVerification from "../modules/translation-verification";
 
 const Translations = () => {
-  const { t } = useTranslation();
-
-  async function signout() {
-    const { error } = await supabase.auth.signOut();
-  }
-
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -21,7 +15,6 @@ const Translations = () => {
 
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      console.log(session?.user?.identities[0].id);
     });
   }, []);
 

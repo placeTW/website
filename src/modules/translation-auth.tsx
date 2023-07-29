@@ -5,11 +5,19 @@ const TranslationAuth = () => {
   const handleLogin = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "discord",
-    });
-
-    console.log(data, error);
+    await supabase.auth
+      .signInWithOAuth({
+        provider: "discord",
+        options: {
+          redirectTo: window.location.origin + "/translations"
+        }
+      })
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
