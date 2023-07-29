@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { supabase } from "../supabase";
 import { Session } from "@supabase/supabase-js";
 import TranslationAuth from "../modules/translation-auth";
