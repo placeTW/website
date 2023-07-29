@@ -32,6 +32,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
     const fetchMetadata = async (filename: string): Promise<Metadata> => {
       try {
         const response = await fetch(`/templates/${filename}`);
+        console.log(response);
         if (!response.ok) {
           throw new Error(`Failed to fetch the json ${filename}`);
         }
@@ -54,7 +55,6 @@ const TranslationVerification = ({ session }: { session: Session }) => {
     Promise.all(
       translationFilenames.map((filename) => updateMetadata(filename))
     ).then(() => {
-      console.log(metadata);
       setLoading(false);
     });
   }, [metadata, translationFilenames]);
@@ -81,7 +81,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
       >
         {t("Log out")}
       </button>
-      {verified && !loading && translationFilenames && metadata.size > 0 && (
+      {verified && !loading && (
         <Tabs>
           <TabList>
             {translationFilenames.map((filename) => {
