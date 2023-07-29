@@ -22,9 +22,6 @@ const Navbar = () => {
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
             {t("Gallery")}
           </Link>
-          <Link as={RouterLink} to="/translations" color="white" mr={4}>
-            {t("Translations")}
-          </Link>
         </Box>
         <Box>
           <LanguageSwitcher />
