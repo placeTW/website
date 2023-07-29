@@ -4,7 +4,12 @@ export default {
   contextSeparator: "_",
   createOldCatalogs: false,
   defaultNamespace: "translation",
-  defaultValue: "---",
+  defaultValue: function (locale, namespace, key, value) {
+    if (locale === "en") {
+      return value || key;
+    }
+    return "---";
+  },
   indentation: 2,
   keepRemoved: false,
   keySeparator: false,
@@ -27,6 +32,6 @@ export default {
   failOnWarnings: false,
   failOnUpdate: false,
   customValueTemplate: null,
-  resetDefaultValueLocale: null,
+  resetDefaultValueLocale: true,
   i18nextOptions: null,
 };
