@@ -2,24 +2,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabase";
 import { Session } from "@supabase/supabase-js";
+import TranslationAuth from "../modules/translation-auth";
+import TranslationVerification from "../modules/translation-verification";
 
 const Translations = () => {
   const { t } = useTranslation();
-
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-
-  const handleLogin = async (event) => {
-    event.preventDefault();
-
-    setLoading(true);
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "discord",
-    });
-
-    setLoading(false);
-  };
 
   async function signout() {
     const { error } = await supabase.auth.signOut();
@@ -40,16 +27,11 @@ const Translations = () => {
 
   return (
     <div className="row flex flex-center">
-      <div className="col-6 form-widget">
-        <h1 className="header">Supabase + React</h1>
-
-        <button onClick={handleLogin} className="button block full-width">
-          Log in with Discord
-        </button>
-        <button onClick={signout} className="button block full-width">
-          Log out
-        </button>
-      </div>
+      {!session ? (
+        <TranslationAuth />
+      ) : (
+        <TranslationVerification key={session.user.id} session={session} />
+      )}
     </div>
   );
 };
