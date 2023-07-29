@@ -19,7 +19,7 @@ const Gallery = () => {
       try {
         const jsonPath = `/locales/${lang}/art-pieces.json`;
         const response = await fetch(jsonPath);
-        console.log(response.url)
+        console.log(response.url);
         if (!response.ok) {
           throw new Error(`Failed to fetch the json ${jsonPath}`);
         }
@@ -31,8 +31,8 @@ const Gallery = () => {
       }
     };
 
-    fetchArtPieces(i18n.language);
-  }, [i18n.language]);
+    fetchArtPieces(i18n.languages[0]);
+  }, [i18n.languages]);
 
   if (loading) {
     return <Spinner size="xl" />;
