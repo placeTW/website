@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Flex, Link, IconButton, Text } from "@chakra-ui/react";
 import { FaGithub, FaReddit, FaDiscord } from "react-icons/fa";
 import { useTranslation } from "react-i18next";

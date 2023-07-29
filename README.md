@@ -1,6 +1,6 @@
-# React + TypeScript + Vite
+# PlaceTW Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The website for Taiwan's r/place community (r/placeTW), built with React + TypeScript + Vite.
 
 Currently, two official plugins are available:
 
