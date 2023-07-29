@@ -1,22 +1,25 @@
 {
-  "art_id": "id",
-  "title": {
-    "type": "string",
-    "required": true
-  },
-  "blurb": {
-    "type": "string",
-    "required": true
-  },
-  "desc": {
-    "type": "string",
-    "required": true
-  },
-  "links": {
-    "type": "array",
-    "required": false,
-    "items": {
-      "type": "string"
+  "type": "list",
+  "item": {
+    "art_id": "id",
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "blurb": {
+      "type": "string",
+      "required": true
+    },
+    "desc": {
+      "type": "string",
+      "required": true
+    },
+    "links": {
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

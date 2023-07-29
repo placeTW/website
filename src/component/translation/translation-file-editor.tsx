@@ -38,7 +38,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
       lang: string
     ): Promise<Record<string, string>> => {
       try {
-        const jsonPath = `/locales/${lang}/${filename}.json`;
+        const jsonPath = `/locales/${lang}/${filename}`;
         const response = await fetch(jsonPath);
         if (!response.ok) {
           throw new Error(`Failed to fetch the json ${jsonPath}`);
@@ -80,13 +80,18 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     <TableContainer>
       <Table overflowX="auto" whiteSpace="nowrap">
         <TableCaption placement="top" fontSize="xl">
-          {filename}.json
+          {filename}
         </TableCaption>
         <Thead>
           <Tr>
             <Th key="id"></Th>
             {Object.entries(locales).map(([language, locale]) => (
-              <Th key={language} fontSize="lg" minW={30} color={canEditLanguage(language) ? "black" : "lightgray"}>
+              <Th
+                key={language}
+                fontSize="lg"
+                minW={30}
+                color={canEditLanguage(language) ? "black" : "lightgray"}
+              >
                 <div>{`${locale.displayName}`}</div>
                 {officialLocales.includes(i18n.language) &&
                   i18n.language !== language && (
@@ -112,7 +117,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                       value={getTranslation(language, key)}
                       placeholder={"(Placeholder) " + key}
                       color={getTranslation(language, key) ? "black" : "red"}
-                      _placeholder={{ opacity: 0.4, color: 'inherit' }}
+                      _placeholder={{ opacity: 0.4, color: "inherit" }}
                       onChange={(event) => {
                         const newTranslationData = new Map(translationData);
                         const newTranslation =
