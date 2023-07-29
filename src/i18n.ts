@@ -24,6 +24,12 @@ export const locales = {
     zh: "臺灣國語",
     default: false,
   } as Locale,
+  lt: {
+    displayName: "Lietuvių",
+    en: "Lithuanian",
+    zh: "立陶宛語",
+    default: false,
+  } as Locale,
   fr: {
     displayName: "Français",
     en: "French",
