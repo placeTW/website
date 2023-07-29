@@ -13,7 +13,6 @@ import {
   Tr,
 } from "@chakra-ui/react";
 import GithubSubmitButton from "./github-submit-button";
-import { useBeforeUnload } from "react-router-dom";
 
 interface Props {
   filename: string;
