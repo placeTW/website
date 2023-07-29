@@ -8,7 +8,7 @@ export default {
     if (locale === "en") {
       return value || key;
     }
-    return "---";
+    return "";
   },
   indentation: 2,
   keepRemoved: false,

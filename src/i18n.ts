@@ -64,6 +64,7 @@ i18n
       escapeValue: false,
     },
     load: "languageOnly",
+    returnEmptyString: false,
   });
 
 export default i18n;
