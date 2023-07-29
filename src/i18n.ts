@@ -7,6 +7,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 export const locales = {
   en: { title: "English" },
   zh: { title: "🇹🇼 國語 (臺灣國）" },
+  lt: { title: "Lietuvių" },
 };
 
 i18n
