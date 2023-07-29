@@ -32,7 +32,6 @@ const TranslationVerification = ({ session }: { session: Session }) => {
     const fetchMetadata = async (filename: string): Promise<Metadata> => {
       try {
         const response = await fetch(`/templates/${filename}`);
-        console.log(response);
         if (!response.ok) {
           throw new Error(`Failed to fetch the json ${filename}`);
         }
