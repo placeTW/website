@@ -1,5 +1,6 @@
-import { Box, Flex, Spacer, Link, Heading } from "@chakra-ui/react";
+import { Box, Flex, Spacer, Heading, Link } from "@chakra-ui/react";
 import LanguageSwitcher from "./language-switcher";
+import { Link as RouterLink } from "react-router-dom";
 
 const Navbar = () => {
   return (
@@ -12,14 +13,14 @@ const Navbar = () => {
         <Spacer />
 
         <Box>
-          <Link href="/" color="white" mr={4}>
+          <Link as={RouterLink} to="/" color="white" mr={4}>
             Home
           </Link>
-          <Link href="/gallery" color="white" mr={4}>
+          <Link as={RouterLink} to="/gallery" color="white" mr={4}>
             Gallery
           </Link>
-          <Link href="#" color="white" mr={4}>
-            About
+          <Link as={RouterLink} to="/translations" color="white" mr={4}>
+            Translations
           </Link>
         </Box>
         <Box>

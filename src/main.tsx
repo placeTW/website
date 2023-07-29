@@ -2,28 +2,25 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.scss";
 import { ChakraProvider } from "@chakra-ui/react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages";
 import Gallery from "./pages/gallery";
 import Layout from "./component/layout";
-import './i18n';
+import "./i18n";
+import Translations from "./pages/translations";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <HomePage />,
-  },
-  {
-    path: "/gallery",
-    element: <Gallery />,
-  },
-]);
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChakraProvider>
-      <Layout>
-        <RouterProvider router={router} />
-      </Layout>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/translations" element={<Translations />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
     </ChakraProvider>
   </React.StrictMode>
 );
