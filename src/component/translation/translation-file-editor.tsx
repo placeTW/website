@@ -78,7 +78,6 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
 
   return (
     <>
-      <GithubSubmitButton filename={filename} data={translationData} />
       <TableContainer>
         <Table overflowX="auto" whiteSpace="nowrap">
           <TableCaption placement="top" fontSize="xl">
@@ -104,6 +103,24 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
           </Thead>
           {!loading && (
             <Tbody>
+              <Tr>
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  Object.keys(locales).map((language) => (
+                    <Td>
+                      <GithubSubmitButton
+                        filename={`${language}/${filename}`}
+                        data={JSON.stringify(
+                          translationData.get(language),
+                          null,
+                          2
+                        )}
+                        locale={language}
+                      />
+                    </Td>
+                  ))
+                }
+              </Tr>
               {Array.from(translationKeys).map((key) => (
                 <Tr key={key}>
                   {Object.entries(locales).map(([language]) => (

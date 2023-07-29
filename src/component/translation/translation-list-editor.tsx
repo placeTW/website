@@ -78,17 +78,21 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
       setLoading(false);
-      console.log(dataKeys)
+      console.log(dataKeys);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filename, i18n, translationKeys, dataKeys]);
 
   const canEditLanguage = (language: string): boolean => {
     return !editableLangs || editableLangs.includes(language);
   };
 
+  const getData = (language: string): TranslationListData[] => {
+    return translationData.get(language) ?? ([] as TranslationListData[]);
+  };
+
   return (
     <>
-      <GithubSubmitButton filename={filename} data={translationData} />
       <TableContainer>
         <Table overflowX="auto" whiteSpace="nowrap">
           <TableCaption placement="top" fontSize="xl">
@@ -114,6 +118,21 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
           </Thead>
           {!loading && (
             <Tbody>
+              <Tr>
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  Object.keys(locales).map((language) => (
+                    <Td>
+                      <GithubSubmitButton
+                        filename={`${language}/${filename}`}
+                        data={JSON.stringify(getData(language), null, 2)}
+                        locale={language}
+                      />
+                    </Td>
+                  ))
+                }
+              </Tr>
+
               {Array.from(translationKeys).map((key) => (
                 <Tr key={key}>
                   {Object.entries(locales).map(([language]) => (
