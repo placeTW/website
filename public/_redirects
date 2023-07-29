@@ -1,3 +1,4 @@
 
-/public/* /* 200
+/public/locales/* /locales/* 200
+/public/templates/* /templates/* 200
 /* /index.html 200
