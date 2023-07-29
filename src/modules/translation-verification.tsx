@@ -2,7 +2,6 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import { useEffect, useState } from "react";
 import TranslationFileEditor from "../component/translation/translation-file-editor";
-import { officialLocales } from "../i18n";
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import TranslationListEditor from "../component/translation/translation-list-editor";
 
@@ -91,14 +90,10 @@ const TranslationVerification = ({ session }: { session: Session }) => {
               return (
                 <TabPanel>
                   {metadata.get(filename)?.type === "file" && (
-                    <TranslationFileEditor
-                      filename={filename}
-                    />
+                    <TranslationFileEditor filename={filename} />
                   )}
                   {metadata.get(filename)?.type === "list" && (
-                    <TranslationListEditor
-                      filename={filename}
-                    />
+                    <TranslationListEditor filename={filename} />
                   )}
                 </TabPanel>
               );
