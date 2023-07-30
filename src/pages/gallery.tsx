@@ -26,12 +26,12 @@ const Gallery = () => {
         updateArtPieces(data);
       } catch (error) {
         console.error(`Error fetching the json: ${error}`);
-        updateArtPieces([]);
+        fetchArtPieces("en");
       }
     };
 
     fetchArtPieces(i18n.resolvedLanguage ?? i18n.languages[0]);
-  }, [i18n]);
+  }, [i18n.languages, i18n.resolvedLanguage]);
 
   if (loading) {
     return <Spinner size="xl" />;
