@@ -45,7 +45,6 @@ const GithubSubmitButton = ({ filename, data }: Props) => {
         size="md"
         onClick={() => {
           setOpenModal(true);
-          console.log(data);
         }}
       >
         {t("Submit Translation")}

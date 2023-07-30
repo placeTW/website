@@ -38,7 +38,7 @@ const TranslationListEditor = ({
 
   const [dataKeys, setDataKeys] = useState<Set<string>>(new Set());
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [edited, setEdited] = useState(false);
 
   useEffect(() => {
@@ -50,7 +50,6 @@ const TranslationListEditor = ({
       try {
         const jsonPath = `/locales/${lang}/${filename}`;
         const response = await fetch(jsonPath);
-        console.log(response);
         if (!response.ok) {
           throw new Error(`Failed to fetch the json ${jsonPath}`);
         }
@@ -78,13 +77,10 @@ const TranslationListEditor = ({
       setTranslationData(translationData.set(lang, data));
     };
 
-    setLoading(true);
     Promise.all(
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
       setLoading(false);
-      console.log(dataKeys);
-      console.log(translationKeys);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
