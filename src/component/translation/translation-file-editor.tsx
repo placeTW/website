@@ -7,6 +7,7 @@ import {
   TableContainer,
   Tbody,
   Td,
+  Textarea,
   Th,
   Thead,
   Tr,
@@ -88,6 +89,15 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     e.returnValue = "";
   };
 
+  const editText = (language: string, key: string, value: string) => {
+    const newTranslationData = new Map(translationData);
+    const newTranslation = newTranslationData.get(language) ?? {};
+    newTranslation[key] = value;
+    newTranslationData.set(language, newTranslation);
+    setTranslationData(newTranslationData);
+    setEdited(true);
+  };
+
   return (
     <>
       <TableContainer>
@@ -139,24 +149,38 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                 <Tr key={key}>
                   {Object.entries(locales).map(([language]) => (
                     <Td key={language}>
-                      <Input
-                        disabled={!canEditLanguage(language)}
-                        variant="outline"
-                        minW={275}
-                        value={getTranslation(language, key)}
-                        placeholder={"(Placeholder) " + key}
-                        color={getTranslation(language, key) ? "black" : "red"}
-                        _placeholder={{ opacity: 0.4, color: "inherit" }}
-                        onChange={(event) => {
-                          setEdited(true);
-                          const newTranslationData = new Map(translationData);
-                          const newTranslation =
-                            newTranslationData.get(language) ?? {};
-                          newTranslation[key] = event.target.value;
-                          newTranslationData.set(language, newTranslation);
-                          setTranslationData(newTranslationData);
-                        }}
-                      />
+                      {getTranslation(language, key).length < 20 ? (
+                        <Input
+                          disabled={!canEditLanguage(language)}
+                          variant="outline"
+                          minW={275}
+                          value={getTranslation(language, key)}
+                          placeholder={"(Placeholder) " + key}
+                          color={
+                            getTranslation(language, key) ? "black" : "red"
+                          }
+                          _placeholder={{ opacity: 0.4, color: "inherit" }}
+                          onChange={(event) => {
+                            editText(language, key, event.target.value);
+                          }}
+                        />
+                      ) : (
+                        <Textarea
+                          disabled={!canEditLanguage(language)}
+                          variant="outline"
+                          minW={275}
+                          value={getTranslation(language, key)}
+                          placeholder={"(Placeholder) " + key}
+                          color={
+                            getTranslation(language, key) ? "black" : "red"
+                          }
+                          wrap="soft"
+                          _placeholder={{ opacity: 0.4, color: "inherit" }}
+                          onChange={(event) => {
+                            editText(language, key, event.target.value);
+                          }}
+                        />
+                      )}
                     </Td>
                   ))}
                 </Tr>
