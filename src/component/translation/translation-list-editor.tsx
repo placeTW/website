@@ -37,9 +37,13 @@ const TranslationListEditor = ({
   );
 
   const [dataKeys, setDataKeys] = useState<Set<string>>(new Set());
+  const [idKey, setIdKey] = useState<string>("id");
 
   const [loading, setLoading] = useState(true);
   const [edited, setEdited] = useState(false);
+  const [translationsNeeded, setTranslationsNeeded] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     // Within /locale/{language}/{filename}.json, fetch all the translations
@@ -56,6 +60,7 @@ const TranslationListEditor = ({
         const data = await response.json();
         return data;
       } catch (error) {
+        setTranslationsNeeded(translationsNeeded.add(lang));
         console.error(`Error fetching the json: ${error}`);
         return [] as TranslationListData[];
       }
@@ -67,6 +72,7 @@ const TranslationListEditor = ({
         Object.keys(translation)
           .filter((key) => key.includes("id"))
           .forEach((key) => {
+            setIdKey(key);
             setTranslationKeys(translationKeys.add(translation[key] as string));
           });
         Object.keys(translation).forEach((key) => {
@@ -80,6 +86,22 @@ const TranslationListEditor = ({
     Promise.all(
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
+      // get the longest translation list
+      const max = Math.max(
+        ...Array.from(translationData.values()).map((data) => data.length)
+      );
+      // fill the translation list with empty data if it is emty
+      Array.from(translationData.keys()).forEach((lang) => {
+        const data = translationData.get(lang);
+        if (data && data.length < max) {
+          for (let i = data.length; i < max; i++) {
+            data.push({
+              [idKey]: Array.from(translationKeys)[i] ?? String(i),
+            });
+          }
+          setTranslationData(new Map(translationData.set(lang, data)));
+        }
+      });
       setLoading(false);
     });
   }, []);
@@ -125,7 +147,13 @@ const TranslationListEditor = ({
                   key={language + "-language"}
                   fontSize="lg"
                   minW={30}
-                  color={canEditLanguage(language) ? "black" : "lightgray"}
+                  color={
+                    canEditLanguage(language)
+                      ? translationsNeeded.has(language)
+                        ? "red"
+                        : "black"
+                      : "lightgray"
+                  }
                 >
                   <div>{`${locale.displayName}`}</div>
 
