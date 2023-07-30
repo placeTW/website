@@ -60,6 +60,12 @@ export const locales = {
     zh: "西班牙語",
     default: false,
   } as Locale,
+  ua: {
+    displayName: "Українська",
+    en: "Ukrainian",
+    zh: "烏克蘭語",
+    default: false,
+  } as Locale,
 };
 export const officialLocales = ["en", "zh"];
 
