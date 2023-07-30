@@ -22,7 +22,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const translations = import.meta.env.MODE === "development" ? import.meta.glob("/public/templates/*.json") : import.meta.glob("/templates/*.json");
+    const translations = import.meta.env.DEV ? import.meta.glob("/public/templates/*.json") : import.meta.glob("/templates/*.json");
     setTranslationFilenames(
       Object.keys(translations).map(getFileNameWithExtension)
     );
