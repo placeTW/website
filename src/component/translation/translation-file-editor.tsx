@@ -31,6 +31,8 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
   const [loading, setLoading] = useState(true);
   const [edited, setEdited] = useState(false);
 
+  console.log(translationData);
+
   useEffect(() => {
     const fetchTranslations = async (
       lang: string
@@ -59,7 +61,6 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     Promise.all(
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
-      console.log(translationData);
       setLoading(false);
     });
   });

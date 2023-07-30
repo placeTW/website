@@ -41,6 +41,8 @@ const TranslationListEditor = ({
   const [loading, setLoading] = useState(true);
   const [edited, setEdited] = useState(false);
 
+  console.log(translationData);
+
   useEffect(() => {
     // Within /locale/{language}/{filename}.json, fetch all the translations
     // and update the editor.
@@ -80,7 +82,6 @@ const TranslationListEditor = ({
     Promise.all(
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
-      console.log(translationData);
       setLoading(false);
     });
   });
