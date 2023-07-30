@@ -16,6 +16,7 @@ import {
 
 interface Props {
   filename: string;
+  itemKeys?: { [key: string]: string };
   editableLangs?: string[];
 }
 
@@ -23,7 +24,11 @@ export interface TranslationListData {
   [key: string]: string | string[];
 }
 
-const TranslationListEditor = ({ filename, editableLangs }: Props) => {
+const TranslationListEditor = ({
+  filename,
+  itemKeys,
+  editableLangs,
+}: Props) => {
   const { i18n } = useTranslation();
 
   const [translationData, setTranslationData] = useState(
@@ -162,6 +167,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
                       <TranslationListItem
                         key={key}
                         dataKeys={Array.from(dataKeys)}
+                        itemKeys={itemKeys}
                         translationData={getTranslationData(
                           language,
                           Array.from(translationKeys).indexOf(key)

@@ -16,6 +16,7 @@ import { FaMinus, FaPlus } from "react-icons/fa";
 interface Props {
   dataKeys: string[];
   translationData: TranslationListData | null;
+  itemKeys?: { [key: string]: string };
   index: number;
   onEdit: (key: string, value: string | string[], index: number) => void;
 }
@@ -23,6 +24,7 @@ interface Props {
 const TranslationListItem = ({
   translationData,
   dataKeys,
+  itemKeys,
   onEdit,
   index,
 }: Props) => {
@@ -30,7 +32,7 @@ const TranslationListItem = ({
     if (translationData && translationData[key]) {
       return translationData[key];
     }
-    return "";
+    return itemKeys && itemKeys[key] === "list" ? [] : "";
   };
 
   const editList = (key: string, value: string, index: number) => {
@@ -61,7 +63,8 @@ const TranslationListItem = ({
                 {key}
               </Box>
               <FormControl>
-                {getValue(key) instanceof Array ? (
+                {getValue(key) instanceof Array ||
+                (itemKeys && itemKeys[key] === "list") ? (
                   <List>
                     {(getValue(key) as string[]).map((value, index) => (
                       <ListItem>

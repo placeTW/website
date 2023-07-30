@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 
 interface Metadata {
   type: string;
-  interface?: string;
+  item?: { [key: string]: string };
 }
 
 const TranslationVerification = ({ session }: { session: Session }) => {
@@ -95,7 +95,10 @@ const TranslationVerification = ({ session }: { session: Session }) => {
                     <TranslationFileEditor filename={filename} />
                   )}
                   {metadata.get(filename)?.type === "list" && (
-                    <TranslationListEditor filename={filename} />
+                    <TranslationListEditor
+                      filename={filename}
+                      itemKeys={metadata.get(filename)?.item}
+                    />
                   )}
                 </TabPanel>
               );
