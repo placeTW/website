@@ -94,7 +94,7 @@
     {
         "art_id": "indep_flag",
         "title": "Taiwan Independence Flag",
-        "blurb": "Blurb",
+        "blurb": "Flag of the Taiwan Independence Movement",
         "desc": "The Taiwan Independence flag is a flag associated with Taiwanese nationalism and freedom, or the desire to for Taiwanese people to be independent from China. This flag has three vertical bands of green, white and green, and depicts Taiwan and surrounding islands in the center. Taiwanese independence movements have existed since the 1680s, where under Qing rule the phrase 'Every three years an uprising, every five years a rebellion' became a common phrase. Though many observers point out that Taiwan is already an independent and sovereign country, this flag is also commonly used to rally those who are critical of the actions of the Kuomintang (KMT), especially under the era of martial law. The flag also represents movements for greater international recognition for Taiwan and the ending of threats to Taiwan's sovereignity. A common anthem of the Taiwanese independence movement is 'Taiwan the Formosa', particularly the first stanza.",
         "links": [
             "https://en.wikipedia.org/wiki/Taiwan_independence_movement",
@@ -130,7 +130,7 @@
     {
         "art_id": "tsmc_logo",
         "title": "TSMC Logo",
-        "blurb": "Blurb",
+        "blurb": "Taiwanese semiconductor manufacturing company",
         "desc": "Taiwan Semiconductor Manufacturing Company Limited (TSMC) is one of the most influential global semiconductor manufacturing companies in the world. It is headquartered in Hsinchu, Taiwan, the country's tech center. 92% of the world's most advanced semiconductors are manufactured by it and its Taiwanese counterparts.",
         "links": [
             "https://www.tsmc.com/english",
