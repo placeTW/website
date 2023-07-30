@@ -14,7 +14,7 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-import { FaGithub } from "react-icons/fa";
+import { FaCopy } from "react-icons/fa";
 
 interface ModalProps {
   isOpen: boolean;
@@ -28,16 +28,16 @@ const ExportTranslationModal = ({
   isOpen,
   onClose,
   data,
-  url,
-  needCopy,
 }: ModalProps) => {
   const { t } = useTranslation();
+
+  const DISCORD_URL = "https://discord.com/channels/959467908315111444/1134276308277395537"
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{t("Submit translation")}</ModalHeader>
+        <ModalHeader>{t("Submit Translation")}</ModalHeader>
         <ModalBody p={0}>
           <Card>
             <CardBody>
@@ -49,29 +49,25 @@ const ExportTranslationModal = ({
           </Card>
         </ModalBody>
         <ModalFooter>
-          {needCopy && (
-            <Text mr={2} color="red.500" fontSize="xs">
-              {t(
-                "The translation is too long to submit directly to GitHub. Paste the translation once you are redirected to GitHub."
-              )}
-            </Text>
-          )}
+          <Text mr={2} fontSize="xs">
+            {t(
+              "Copy the translation to clipboard and go to the Discord channel to submit the translation."
+            )}
+          </Text>
           <Box>
             <Button
-              leftIcon={<Icon as={FaGithub} />}
+              leftIcon={<Icon as={FaCopy} />}
               colorScheme="gray"
               variant="outline"
               size="md"
               onClick={async () => {
-                if (needCopy) {
-                  await navigator.clipboard.writeText(data).then(() => {
-                    alert(t("Translation copied to clipboard."));
-                  });
-                }
-                window.open(url, "_blank", "noopener");
+                await navigator.clipboard.writeText(data).then(() => {
+                  alert(t("Translation copied to clipboard."));
+                });
+                window.open(DISCORD_URL, "_blank", "noopener");
               }}
             >
-              {t("Submit to Github")}
+              {t("Copy to clipboard")}
             </Button>
           </Box>
         </ModalFooter>

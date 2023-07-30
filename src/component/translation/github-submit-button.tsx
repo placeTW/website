@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const REPOSITORY_URL =
-  "https://github.com/placeTW/website/new/main/public/locales/";
+  "https://github.com/placeTW/website/edit/main/public/locales/";
 
 interface Props {
   filename: string;
@@ -14,17 +14,15 @@ interface Props {
   locale: string;
 }
 
-const GithubSubmitButton = ({ filename, data }: Props) => {
+const GithubSubmitButton = ({ filename, data, locale }: Props) => {
   const { t } = useTranslation();
 
   const [openModal, setOpenModal] = useState(false);
 
   const getUrl = () => {
     return (
-      REPOSITORY_URL +
-      "?filename=" +
-      filename +
-      (!needCopy(data) ? getEncodedData(data) : "")
+      REPOSITORY_URL + locale + "/?filename=" + filename +
+      (!needCopy(data) ? getEncodedData(data) : "&value=")
     );
   };
 

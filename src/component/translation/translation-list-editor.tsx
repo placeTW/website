@@ -147,7 +147,7 @@ const TranslationListEditor = ({
                   Object.keys(locales).map((language) => (
                     <Td key={language + "-button"}>
                       <GithubSubmitButton
-                        filename={`${language}/${filename}`}
+                        filename={filename}
                         data={JSON.stringify(getData(language), null, 2)}
                         locale={language}
                       />

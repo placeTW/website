@@ -123,7 +123,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                   Object.keys(locales).map((language) => (
                     <Td key={language + "-button"}>
                       <GithubSubmitButton
-                        filename={`${language}/${filename}`}
+                        filename={filename}
                         data={JSON.stringify(
                           translationData.get(language),
                           null,

@@ -38,9 +38,7 @@
     "title": "Taivano Vėliava",
     "blurb": "Nacionalinė Taivano vėliava",
     "desc": "Oficiali Taivano vėliava. Taip pat dažnai vadinama 'Mėlyna Dangus, Baltas Saulės' vėliava, tarptautiškai žinoma kaip Taivano simbolis. Vėliava taip pat siejama su Kinijos Respublikos vyriausybe ir jos įkūrusią partija Kuomintangų (KMT) ir kartais yra šaltinis vidaus kontroversijoms dėl šios partijos istorijos. Nepaisant to, dauguma taivaniečių užsienyje ją naudoja kaip atpažinimo simbolį. Vėliava taip pat randama visose vidaus nacionalinėse vyriausybės pastatose, užsienio ambasadose ir tų, kurie nori, kad Taivanas būtų plačiau tarptautiškai pripažintas, ypač todėl, kad Taivano komandos negali varžytis pagal šią vėliavą (ar netgi pagal pavadinimą 'Taivanas') daugelyje tarptautinių renginių.",
-    "links": [
-      "https://en.mofa.gov.tw/"
-    ]
+    "links": ["https://en.mofa.gov.tw/"]
   },
   {
     "art_id": "formosan_bear",
@@ -58,18 +56,14 @@
     "title": "Boba Arbata",
     "blurb": "Populiarus Taivano gėrimas",
     "desc": "Boba arbata yra garsus gėrimas, kilęs iš Taivano. Nuo tada jis išplito visame pasaulyje ir tapo populiarus gėrimas.",
-    "links": [
-      "https://en.wikipedia.org/wiki/Bubble_tea"
-    ]
+    "links": ["https://en.wikipedia.org/wiki/Bubble_tea"]
   },
   {
     "art_id": "tw_magpie",
     "title": "Taivano Mėlynoji Šarka",
     "blurb": "Garsus ir šventas Taivano paukštis",
     "desc": "Taivano mėlynoji šarka yra paukštis endemikas Taivane. Jis garsėja savo draugiškumu su žmonėmis, charakteristine išvaizda ir santykiu su taivaniečių aborigenais, kurių dalis jį laiko šventu.",
-    "links": [
-      "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
-    ]
+    "links": ["https://en.wikipedia.org/wiki/Taiwan_blue_magpie"]
   },
   {
     "art_id": "heart_baltics",
@@ -90,9 +84,7 @@
     "title": "Lietuvos Pingvinas Geriantis Boba Arbata",
     "blurb": "Atgaivinantis draugystės simbolis tarp Baltijos ir Taivano bendruomenių",
     "desc": "Lietuvos pingvinas geriantis boba arbata virš Taivano meno. Kai lenta išsiplėtė vertikaliai žemiau meno, Taivano ir Baltijos komandos lenkėsi užimti vietą po savo pradinėmis pozicijomis, piešdamos Taipėjų 101 ir nacionalines vėliavas atitinkamai. Dėl to buvo užimta didelė vertikali vieta. Tada Baltijos komanda sutiko suteikti vietą po lietuvių (o vėliau estų) dalimis Taivanui. Kaip draugystės simbolis, lietuvos pingvinas gavo gerti Taivano garsią bobą arbata.",
-    "links": [
-      "https://en.wikipedia.org/wiki/Bubble_tea"
-    ]
+    "links": ["https://en.wikipedia.org/wiki/Bubble_tea"]
   },
   {
     "art_id": "indep_flag",
@@ -109,9 +101,7 @@
     "title": "Taivano Alus",
     "blurb": "Garsus Taivano gėrimas",
     "desc": "Taivano alus paplitęs tiek baruose, tiek maisto prekių parduotuvėse ir yra vienas iš garsiausių ir atpažįstamiausių Taivano gėrimų.",
-    "links": [
-      "https://www.twbeer.com.tw/aboutEN"
-    ]
+    "links": ["https://www.twbeer.com.tw/aboutEN"]
   },
   {
     "art_id": "apple_cider",
