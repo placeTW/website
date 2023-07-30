@@ -35,9 +35,9 @@ const TranslationListItem = ({
     return itemKeys && itemKeys[key] === "list" ? [] : "";
   };
 
-  const editList = (key: string, value: string, index: number) => {
+  const editList = (key: string, value: string, listIndex: number) => {
     const list = getValue(key) as string[];
-    list[index] = value;
+    list[listIndex] = value;
     onEdit(key, list, index);
   };
 
@@ -47,9 +47,9 @@ const TranslationListItem = ({
     onEdit(key, list, index);
   };
 
-  const removeList = (key: string, index: number) => {
+  const removeList = (key: string, listIndex: number) => {
     const list = getValue(key) as string[];
-    list.splice(index, 1);
+    list.splice(listIndex, 1);
     onEdit(key, list, index);
   };
 
@@ -66,7 +66,7 @@ const TranslationListItem = ({
                 {getValue(key) instanceof Array ||
                 (itemKeys && itemKeys[key] === "list") ? (
                   <List>
-                    {(getValue(key) as string[]).map((value, index) => (
+                    {(getValue(key) as string[]).map((value, listIndex) => (
                       <ListItem>
                         <Input
                           type="text"
@@ -76,12 +76,12 @@ const TranslationListItem = ({
                           disabled={key.includes("id")}
                           width="auto"
                           onChange={(e) => {
-                            editList(key, e.target.value, index);
+                            editList(key, e.target.value, listIndex);
                           }}
                         />
                         <IconButton
                           aria-label="delete"
-                          onClick={() => removeList(key, index)}
+                          onClick={() => removeList(key, listIndex)}
                           icon={<FaMinus />}
                         />
                       </ListItem>
