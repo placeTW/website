@@ -61,7 +61,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     ).then(() => {
       setLoading(false);
     });
-  }, [filename]);
+  });
 
   const getTranslation = (language: string, key: string): string => {
     const translation = translationData.get(language)?.[key];

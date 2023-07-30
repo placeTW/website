@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabase";
 import { MouseEvent } from "react";
+import { Button } from "@chakra-ui/react";
 
 const TranslationAuth = () => {
   const { t } = useTranslation();
@@ -28,9 +29,9 @@ const TranslationAuth = () => {
       <div className="col-6 form-widget">
         <h1 className="header">{t("Log in with Discord")}</h1>
 
-        <button onClick={handleLogin} className="button block full-width">
+        <Button onClick={handleLogin} className="button block full-width">
           {t("Log in")}
-        </button>
+        </Button>
       </div>
     </div>
   );

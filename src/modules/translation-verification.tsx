@@ -2,7 +2,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import { useEffect, useState } from "react";
 import TranslationFileEditor from "../component/translation/translation-file-editor";
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
+import { Button, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import TranslationListEditor from "../component/translation/translation-list-editor";
 import { useTranslation } from "react-i18next";
 
@@ -74,12 +74,12 @@ const TranslationVerification = ({ session }: { session: Session }) => {
       <h1 className="header">
         Logged in as {(session?.user?.identities ?? [])[0].id}
       </h1>
-      <button
+      <Button
         onClick={() => supabase.auth.signOut()}
         className="button block full-width"
       >
         {t("Log out")}
-      </button>
+      </Button>
       {verified && !loading && (
         <Tabs>
           <TabList>
