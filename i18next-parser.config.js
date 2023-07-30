@@ -20,7 +20,7 @@ export default {
     jsx: [{ lexer: "JsxLexer" }],
     default: ["JavascriptLexer"],
   },
-  locales: ["en", "zh", "lt", "lv", "et", "fr", "cz"],
+  locales: ["en", "zh", "lt", "lv", "et", "fr", "cz", "es"],
   namespaceSeparator: false,
   output: "public/locales/$LOCALE/$NAMESPACE.json",
   pluralSeparator: false,

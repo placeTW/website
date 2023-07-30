@@ -54,6 +54,12 @@ export const locales = {
     zh: "捷克語",
     default: false,
   } as Locale,
+  es: {
+    displayName: "Español",
+    en: "Spanish",
+    zh: "西班牙語",
+    default: false,
+  } as Locale,
 };
 export const officialLocales = ["en", "zh"];
 
