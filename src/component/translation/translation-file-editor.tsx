@@ -59,6 +59,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     Promise.all(
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
+      console.log(translationData);
       setLoading(false);
     });
   });
