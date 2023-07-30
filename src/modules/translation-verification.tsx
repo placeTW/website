@@ -2,7 +2,14 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import { useEffect, useState } from "react";
 import TranslationFileEditor from "../component/translation/translation-file-editor";
-import { Button, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
+import {
+  Button,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+} from "@chakra-ui/react";
 import TranslationListEditor from "../component/translation/translation-list-editor";
 import { useTranslation } from "react-i18next";
 
@@ -15,17 +22,27 @@ const TranslationVerification = ({ session }: { session: Session }) => {
   const { t } = useTranslation();
 
   const [verified, setVerified] = useState(false);
-  const [translationFilenames, setTranslationFilenames] = useState<string[]>(
-    []
+  const [translationFilenames, setTranslationFilenames] = useState<Set<string>>(
+    new Set()
   );
   const [metadata, setMetadata] = useState<Map<string, Metadata>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const translations = import.meta.env.DEV ? import.meta.glob("/public/templates/*.json") : import.meta.glob("/templates/*.json");
-    setTranslationFilenames(
-      Object.keys(translations).map(getFileNameWithExtension)
-    );
+    const fetchTranslationFilenames = async () => {
+      const translations = import.meta.env.DEV
+        ? import.meta.glob("/public/templates/*.json")
+        : import.meta.glob("/templates/*.json");
+
+      for (const path in translations) {
+        await translations[path]().then((mod) => {
+          console.log(path, mod);
+          setTranslationFilenames(
+            translationFilenames.add(getFileNameWithExtension(path))
+          );
+        });
+      }
+    };
 
     const fetchMetadata = async (filename: string): Promise<Metadata> => {
       try {
@@ -48,12 +65,16 @@ const TranslationVerification = ({ session }: { session: Session }) => {
       setMetadata(metadata.set(filename, data));
     };
 
-    Promise.all(
-      translationFilenames.map((filename) => updateMetadata(filename))
-    ).then(() => {
-      setLoading(false);
+    fetchTranslationFilenames().then(() => {
+      Promise.all(
+        Array.from(translationFilenames).map((filename) =>
+          updateMetadata(filename)
+        )
+      ).then(() => {
+        setLoading(false);
+      });
     });
-  }, [metadata, translationFilenames]);
+  }, []);
 
   function getFileNameWithExtension(filePath: string): string {
     // Use a regular expression to match the file name with extension
@@ -80,26 +101,29 @@ const TranslationVerification = ({ session }: { session: Session }) => {
       {verified && !loading && translationFilenames && (
         <Tabs>
           <TabList>
-            {translationFilenames.map((filename) => {
+            {Array.from(translationFilenames).map((filename) => {
               return <Tab key={filename}>{filename}</Tab>;
             })}
           </TabList>
           <TabPanels>
-            {metadata && translationFilenames.map((filename) => {
-              return (
-                <TabPanel key={filename}>
-                  {metadata.get(filename) && metadata.get(filename)?.type === "file" && (
-                    <TranslationFileEditor filename={filename} />
-                  )}
-                  {metadata.get(filename) && metadata.get(filename)?.type === "list" && (
-                    <TranslationListEditor
-                      filename={filename}
-                      itemKeys={metadata.get(filename)?.item}
-                    />
-                  )}
-                </TabPanel>
-              );
-            })}
+            {metadata &&
+              Array.from(translationFilenames).map((filename) => {
+                return (
+                  <TabPanel key={filename}>
+                    {metadata.get(filename) &&
+                      metadata.get(filename)?.type === "file" && (
+                        <TranslationFileEditor filename={filename} />
+                      )}
+                    {metadata.get(filename) &&
+                      metadata.get(filename)?.type === "list" && (
+                        <TranslationListEditor
+                          filename={filename}
+                          itemKeys={metadata.get(filename)?.item}
+                        />
+                      )}
+                  </TabPanel>
+                );
+              })}
           </TabPanels>
         </Tabs>
       )}
