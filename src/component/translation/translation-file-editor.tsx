@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { officialLocales, locales, Locale } from "../../i18n";
 import { useEffect, useState } from "react";
 import {
@@ -13,6 +12,7 @@ import {
   Tr,
 } from "@chakra-ui/react";
 import GithubSubmitButton from "./github-submit-button";
+import { geti18nLanguage } from "../../utils";
 
 interface Props {
   filename: string;
@@ -20,8 +20,6 @@ interface Props {
 }
 
 const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
-  const { i18n } = useTranslation();
-
   const [translationData, setTranslationData] = useState(
     new Map<string, Record<string, string>>()
   );
@@ -66,7 +64,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
       setLoading(false);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filename, i18n, translationKeys]);
+  }, [filename, translationKeys]);
 
   const getTranslation = (language: string, key: string): string => {
     const translation = translationData.get(language)?.[key];
@@ -109,9 +107,11 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                   color={canEditLanguage(language) ? "black" : "lightgray"}
                 >
                   <div>{`${locale.displayName}`}</div>
-                  {officialLocales.includes(i18n.language) &&
-                    i18n.language !== language && (
-                      <div>{`(${locale[i18n.language as keyof Locale]})`}</div>
+                  {officialLocales.includes(geti18nLanguage()) &&
+                    geti18nLanguage() !== language && (
+                      <div>{`(${
+                        locale[geti18nLanguage() as keyof Locale]
+                      })`}</div>
                     )}
                 </Th>
               ))}

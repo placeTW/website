@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import GithubSubmitButton from "./github-submit-button";
 import { Locale, locales, officialLocales } from "../../i18n";
 import TranslationListItem from "./translation-list-item";
@@ -13,6 +12,7 @@ import {
   Tbody,
   Td,
 } from "@chakra-ui/react";
+import { geti18nLanguage } from "../../utils";
 
 interface Props {
   filename: string;
@@ -29,8 +29,6 @@ const TranslationListEditor = ({
   itemKeys,
   editableLangs,
 }: Props) => {
-  const { i18n } = useTranslation();
-
   const [translationData, setTranslationData] = useState(
     new Map<string, TranslationListData[]>()
   );
@@ -135,9 +133,12 @@ const TranslationListEditor = ({
                   color={canEditLanguage(language) ? "black" : "lightgray"}
                 >
                   <div>{`${locale.displayName}`}</div>
-                  {officialLocales.includes(i18n.language) &&
-                    i18n.language !== language && (
-                      <div>{`(${locale[i18n.language as keyof Locale]})`}</div>
+
+                  {officialLocales.includes(geti18nLanguage()) &&
+                    geti18nLanguage() !== language && (
+                      <div>{`(${
+                        locale[geti18nLanguage() as keyof Locale]
+                      })`}</div>
                     )}
                 </Th>
               ))}
