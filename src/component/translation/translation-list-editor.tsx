@@ -82,7 +82,7 @@ const TranslationListEditor = ({
     ).then(() => {
       setLoading(false);
     });
-  });
+  }, []);
 
   const canEditLanguage = (language: string): boolean => {
     return !editableLangs || editableLangs.includes(language);
