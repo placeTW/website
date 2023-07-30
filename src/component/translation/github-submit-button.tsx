@@ -53,6 +53,8 @@ const GithubSubmitButton = ({ filename, data, locale }: Props) => {
         data={data}
         url={getUrl()}
         needCopy={needCopy(data)}
+        locale={locale}
+        filename={filename}
       />
     </>
   );

@@ -22,12 +22,16 @@ interface ModalProps {
   data: string;
   url: string;
   needCopy?: boolean;
+  locale: string;
+  filename: string;
 }
 
 const ExportTranslationModal = ({
   isOpen,
   onClose,
   data,
+  locale,
+  filename
 }: ModalProps) => {
   const { t } = useTranslation();
 
@@ -61,7 +65,7 @@ const ExportTranslationModal = ({
               variant="outline"
               size="md"
               onClick={async () => {
-                await navigator.clipboard.writeText(data).then(() => {
+                await navigator.clipboard.writeText(`${locale}: ${filename}\n\`\`\`\n${data}\n\`\`\``).then(() => {
                   alert(t("Translation copied to clipboard."));
                 });
                 window.open(DISCORD_URL, "_blank", "noopener");
