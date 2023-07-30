@@ -90,10 +90,10 @@ const TranslationVerification = ({ session }: { session: Session }) => {
             {translationFilenames.map((filename) => {
               return (
                 <TabPanel key={filename}>
-                  {metadata.get(filename)?.type === "file" && (
+                  {metadata.get(filename) && metadata.get(filename)?.type === "file" && (
                     <TranslationFileEditor filename={filename} />
                   )}
-                  {metadata.get(filename)?.type === "list" && (
+                  {metadata.get(filename) && metadata.get(filename)?.type === "list" && (
                     <TranslationListEditor
                       filename={filename}
                       itemKeys={metadata.get(filename)?.item}

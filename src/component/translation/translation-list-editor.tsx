@@ -77,7 +77,6 @@ const TranslationListEditor = ({
       setTranslationData(translationData.set(lang, data));
     };
 
-    console.log(locales);
     Promise.all(
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
