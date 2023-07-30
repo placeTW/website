@@ -4,7 +4,12 @@ export default {
   contextSeparator: "_",
   createOldCatalogs: false,
   defaultNamespace: "translation",
-  defaultValue: "---",
+  defaultValue: function (locale, namespace, key, value) {
+    if (locale === "en") {
+      return value || key;
+    }
+    return "";
+  },
   indentation: 2,
   keepRemoved: false,
   keySeparator: false,
@@ -15,18 +20,18 @@ export default {
     jsx: [{ lexer: "JsxLexer" }],
     default: ["JavascriptLexer"],
   },
-  locales: ["en", "zh"],
+  locales: ["en", "zh",  "lt", "lv", "et", "fr"],
   namespaceSeparator: false,
   output: "public/locales/$LOCALE/$NAMESPACE.json",
   pluralSeparator: false,
   input: ["src/**/*.{js,jsx,ts,tsx}", "src/*.{js,jsx,ts,tsx}"],
-  sort: false,
+  sort: true,
   skipDefaultValues: false,
   useKeysAsDefaultValue: true,
   verbose: true,
   failOnWarnings: false,
   failOnUpdate: false,
   customValueTemplate: null,
-  resetDefaultValueLocale: null,
+  resetDefaultValueLocale: true,
   i18nextOptions: null,
 };

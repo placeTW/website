@@ -17,7 +17,7 @@ const LanguageSwitcher = () => {
     >
       {Object.entries(locales).map(([language, locale]) => (
         <option key={language} value={language}>
-          {locale.title}
+          {locale.displayName}
         </option>
       ))}
     </Select>

@@ -1,0 +1,10 @@
+{
+  "type": "list",
+  "item": {
+    "art_id": "string",
+    "title": "string",
+    "blurb": "string",
+    "desc": "string",
+    "links": "list"
+  }
+}

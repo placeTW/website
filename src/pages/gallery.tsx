@@ -30,8 +30,8 @@ const Gallery = () => {
       }
     };
 
-    fetchArtPieces(i18n.language);
-  }, [i18n.language]);
+    fetchArtPieces(i18n.resolvedLanguage ?? i18n.languages[0]);
+  }, [i18n]);
 
   if (loading) {
     return <Spinner size="xl" />;
