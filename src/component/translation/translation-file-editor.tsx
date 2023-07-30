@@ -56,6 +56,8 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
       });
       setTranslationData(translationData.set(lang, data));
     };
+
+    console.log(locales);
     Promise.all(
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
@@ -114,7 +116,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
               ))}
             </Tr>
           </Thead>
-          {!loading && (
+          {!loading && translationData && (
             <Tbody>
               <Tr>
                 {

@@ -77,6 +77,7 @@ const TranslationListEditor = ({
       setTranslationData(translationData.set(lang, data));
     };
 
+    console.log(locales);
     Promise.all(
       Object.keys(locales).map((lang) => updateTranslationData(lang))
     ).then(() => {
@@ -139,7 +140,7 @@ const TranslationListEditor = ({
               ))}
             </Tr>
           </Thead>
-          {!loading && (
+          {!loading && translationData && (
             <Tbody>
               <Tr>
                 {
@@ -159,7 +160,7 @@ const TranslationListEditor = ({
               {Array.from(translationKeys).map((key) => (
                 <Tr key={key}>
                   {Object.keys(locales).map((language) => (
-                    <Td key={language}>
+                    <Td key={language} verticalAlign="top">
                       <TranslationListItem
                         key={key}
                         dataKeys={Array.from(dataKeys)}
