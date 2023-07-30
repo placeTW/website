@@ -31,8 +31,6 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
   const [loading, setLoading] = useState(true);
   const [edited, setEdited] = useState(false);
 
-  console.log(translationData);
-
   useEffect(() => {
     const fetchTranslations = async (
       lang: string

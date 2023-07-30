@@ -19,7 +19,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
     []
   );
   const [metadata, setMetadata] = useState<Map<string, Metadata>>(new Map());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const translations = import.meta.glob("/public/templates/*.json");
@@ -50,7 +50,6 @@ const TranslationVerification = ({ session }: { session: Session }) => {
       setMetadata(metadata.set(filename, data));
     };
 
-    setLoading(true);
     Promise.all(
       translationFilenames.map((filename) => updateMetadata(filename))
     ).then(() => {
@@ -80,7 +79,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
       >
         {t("Log out")}
       </Button>
-      {verified && !loading && (
+      {verified && !loading && translationFilenames && (
         <Tabs>
           <TabList>
             {translationFilenames.map((filename) => {

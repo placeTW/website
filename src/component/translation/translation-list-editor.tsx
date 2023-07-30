@@ -41,8 +41,6 @@ const TranslationListEditor = ({
   const [loading, setLoading] = useState(true);
   const [edited, setEdited] = useState(false);
 
-  console.log(translationData);
-
   useEffect(() => {
     // Within /locale/{language}/{filename}.json, fetch all the translations
     // and update the editor.
