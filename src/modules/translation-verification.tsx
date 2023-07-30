@@ -22,13 +22,11 @@ const TranslationVerification = ({ session }: { session: Session }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const translations = import.meta.glob("/public/templates/*.json");
+    const translations = import.meta.env.MODE === "development" ? import.meta.glob("/public/templates/*.json") : import.meta.glob("/templates/*.json");
     setTranslationFilenames(
       Object.keys(translations).map(getFileNameWithExtension)
     );
-  }, []);
 
-  useEffect(() => {
     const fetchMetadata = async (filename: string): Promise<Metadata> => {
       try {
         const response = await fetch(`/templates/${filename}`);
@@ -87,7 +85,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
             })}
           </TabList>
           <TabPanels>
-            {translationFilenames.map((filename) => {
+            {metadata && translationFilenames.map((filename) => {
               return (
                 <TabPanel key={filename}>
                   {metadata.get(filename) && metadata.get(filename)?.type === "file" && (
