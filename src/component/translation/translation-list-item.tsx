@@ -69,6 +69,7 @@ const TranslationListItem = ({
                     {(getValue(key) as string[]).map((value, index) => (
                       <ListItem>
                         <Input
+                          type="text"
                           key={index}
                           wordBreak={"break-word"}
                           value={value}

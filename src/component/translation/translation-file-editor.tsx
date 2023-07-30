@@ -151,6 +151,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                     <Td key={language}>
                       {getTranslation(language, key).length < 20 ? (
                         <Input
+                          type="text"
                           disabled={!canEditLanguage(language)}
                           variant="outline"
                           minW={275}
