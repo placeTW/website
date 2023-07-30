@@ -30,10 +30,11 @@ const TranslationVerification = ({ session }: { session: Session }) => {
 
   useEffect(() => {
     const fetchTranslationFilenames = async () => {
-      console.log(import.meta.env)
       const translations = import.meta.env.DEV
         ? import.meta.glob("/public/templates/*.json")
         : import.meta.glob("/templates/*.json");
+
+      console.log(translations);
 
       for (const path in translations) {
         await translations[path]().then((mod) => {
