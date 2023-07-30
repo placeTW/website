@@ -11,7 +11,7 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { TranslationListData } from "./translation-list-editor";
-import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
+import { FaMinus, FaPlus } from "react-icons/fa";
 
 interface Props {
   dataKeys: string[];
