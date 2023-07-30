@@ -61,8 +61,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     ).then(() => {
       setLoading(false);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [filename]);
 
   const getTranslation = (language: string, key: string): string => {
     const translation = translationData.get(language)?.[key];
