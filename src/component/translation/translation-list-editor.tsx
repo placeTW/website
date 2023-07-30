@@ -113,10 +113,6 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
     return translationData.get(language)?.[index] ?? {};
   };
 
-  useEffect(() => {
-    console.log(translationData);
-  }, [translationData]);
-
   return (
     <>
       <TableContainer>
@@ -172,9 +168,7 @@ const TranslationListEditor = ({ filename, editableLangs }: Props) => {
                         )}
                         index={Array.from(translationKeys).indexOf(key)}
                         onEdit={(key, value, index) => {
-                          console.log(index);
-                          console.log(key, value);
-                          const newData = [...translationData.get(language) ?? []];
+                          const newData = translationData.get(language);
                           if (newData && index !== undefined && index !== -1) {
                             newData[index][key] = value;
                             setTranslationData(
