@@ -9,7 +9,7 @@ interface ArtCardsProp {
 
 const ArtCardsGrid: FC<ArtCardsProp> = ({ artPieces }) => {
   return (
-    <SimpleGrid minChildWidth="300px" spacing="40px" m={2}>
+    <SimpleGrid minChildWidth="400px" spacing="40px" m={2}>
       {artPieces.map((artPiece) => (
         <Box key={artPiece.art_id}>
           <ArtCard artPiece={artPiece} />
