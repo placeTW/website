@@ -30,6 +30,12 @@ export const locales = {
     zh: "立陶宛語",
     default: false,
   } as Locale,
+  et: {
+    displayName: "Eesti",
+    en: "Estonian",
+    zh: "愛沙尼亞語",
+    default: false,
+  } as Locale,
   fr: {
     displayName: "Français",
     en: "French",
@@ -42,22 +48,22 @@ export const locales = {
     zh: "拉脫維亞語",
     default: false,
   } as Locale,
-  et: {
-    displayName: "Eesti",
-    en: "Estonian",
-    zh: "愛沙尼亞語",
-    default: false,
-  } as Locale,
   cz: {
     displayName: "Čeština",
     en: "Czech",
     zh: "捷克語",
     default: false,
-  } as Locale,
+  },
   es: {
     displayName: "Español",
     en: "Spanish",
     zh: "西班牙語",
+    default: false,
+  } as Locale,
+  ua: {
+    displayName: "Українська",
+    en: "Ukrainian",
+    zh: "烏克蘭語",
     default: false,
   } as Locale,
 };
