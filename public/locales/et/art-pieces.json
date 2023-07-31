@@ -74,13 +74,15 @@
     "art_id": "heart_baltics",
     "title": "Balti Sõprussüda",
     "blurb": "Süda sisaldamas Taiwani ja Balti riikide lippe",
-    "desc": "Süda, mis sümboliseerib partnersust ja sõprust Baltimaadega. R/place-il olevaid südameid kasutatakse tavaliselt sõprussuhete näitamiseks naaber kunstikogukondade vahel."
+    "desc": "Süda, mis sümboliseerib partnersust ja sõprust Baltimaadega. R/place-il olevaid südameid kasutatakse tavaliselt sõprussuhete näitamiseks naaber kunstikogukondade vahel.",
+    "links": []
   },
   {
     "art_id": "heart_bretons",
     "title": "Bretoonide Sõprussüda",
     "blurb": "Süda sisaldamas Taiwani ja Bretooni lippe",
-    "desc": "Süda, mis sümboliseerib partnersust ja sõprust Britist pärit bretoonidega. R/place-il olevaid südameid kasutatakse tavaliselt sõprussuhete näitamiseks naaberkunstikogukondade vahel."
+    "desc": "Süda, mis sümboliseerib partnersust ja sõprust Britist pärit bretoonidega. R/place-il olevaid südameid kasutatakse tavaliselt sõprussuhete näitamiseks naaberkunstikogukondade vahel.",
+    "links": []
   },
   {
     "art_id": "lt_pengiun_boba",
@@ -116,7 +118,8 @@
     "art_id": "apple_cider",
     "title": "Taiwani Õunasiider",
     "blurb": " Tüüpiline jook Taiwanis",
-    "desc": "Maitsev ja odav jooki, mida saab osta poodidest ja müügiautomaatidest üle Taiwani."
+    "desc": "Maitsev ja odav jooki, mida saab osta poodidest ja müügiautomaatidest üle Taiwani.",
+    "links": []
   },
   {
     "art_id": "tatung_rice_cooker",
