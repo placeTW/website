@@ -10,7 +10,6 @@ import {
   TabPanels,
   Tabs,
 } from "@chakra-ui/react";
-import TranslationListEditor from "../component/translation/translation-list-editor";
 import { useTranslation } from "react-i18next";
 
 interface Metadata {
@@ -111,13 +110,6 @@ const TranslationVerification = ({ session }: { session: Session }) => {
                     {metadata.get(filename) &&
                       metadata.get(filename)?.type === "file" && (
                         <TranslationFileEditor filename={filename} />
-                      )}
-                    {metadata.get(filename) &&
-                      metadata.get(filename)?.type === "list" && (
-                        <TranslationListEditor
-                          filename={filename}
-                          itemKeys={metadata.get(filename)?.item}
-                        />
                       )}
                   </TabPanel>
                 );
