@@ -103,7 +103,7 @@
     "title": "Apple Sidra",
     "blurb": "Common drink in Taiwan",
     "desc": "Taiwanese apple cider. Tasty and cheap, this drink can be bought in convenience stores and vending machines all over Taiwan.",
-    "links": []
+    "links": ["https://en.wikipedia.org/wiki/Apple_Sidra"]
   },
   {
     "art_id": "tatung_rice_cooker",
