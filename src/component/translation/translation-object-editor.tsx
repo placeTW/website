@@ -17,7 +17,7 @@ import { FaMinus, FaPlus } from "react-icons/fa";
 interface TranslationObjectEditorProps {
   objectKey: string;
   data: Record<string, string | string[]>;
-  editText: (value: string) => void;
+  editText: (value: string | object) => void;
 }
 
 const TranslationObjectEditor = ({
@@ -35,7 +35,7 @@ const TranslationObjectEditor = ({
   const onEdit = (key: string, value: string | string[]) => {
     const newData = { ...data };
     newData[key] = value;
-    editText(JSON.stringify(newData, null, 2));
+    editText(newData);
   };
 
   const editList = (key: string, value: string, listIndex: number) => {
@@ -59,7 +59,9 @@ const TranslationObjectEditor = ({
   return (
     <Card className="card" minW={300}>
       <CardHeader>
-        <Heading size="md" className="card-title">{objectKey}</Heading>
+        <Heading size="md" className="card-title">
+          {objectKey}
+        </Heading>
       </CardHeader>
       <CardBody className="card-body">
         {Object.keys(data).map((dataKey) => (

@@ -12,9 +12,13 @@ import {
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 
+export interface Placeholder {
+  [key: string]: Record<string, Placeholder>;
+}
+
 interface Metadata {
   type: string;
-  item?: { [key: string]: string };
+  placeholder: Placeholder;
 }
 
 const TranslationVerification = ({ session }: { session: Session }) => {
@@ -109,7 +113,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
                   <TabPanel key={filename}>
                     {metadata.get(filename) &&
                       metadata.get(filename)?.type === "file" && (
-                        <TranslationFileEditor filename={filename} />
+                        <TranslationFileEditor filename={filename} placeholder={metadata.get(filename)?.placeholder}/>
                       )}
                   </TabPanel>
                 );

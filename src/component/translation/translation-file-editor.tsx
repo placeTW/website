@@ -15,15 +15,17 @@ import { Locale, locales, officialLocales } from "../../i18n";
 import { geti18nLanguage } from "../../utils";
 import GithubSubmitButton from "./github-submit-button";
 import TranslationObjectEditor from "./translation-object-editor";
+import { Placeholder } from "../../modules/translation-verification";
 
 interface Props {
   filename: string;
   editableLangs?: string[];
+  placeholder?: Placeholder;
 }
 
-const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
+const TranslationFileEditor = ({ filename, editableLangs, placeholder }: Props) => {
   const [translationData, setTranslationData] = useState(
-    new Map<string, Record<string, string>>(),
+    new Map<string, Record<string, string | object>>(),
   );
 
   const [translationKeys, setTranslationKeys] = useState<Set<string>>(
@@ -36,7 +38,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
   useEffect(() => {
     const fetchTranslations = async (
       lang: string,
-    ): Promise<Record<string, string>> => {
+    ): Promise<Record<string, string | object>> => {
       try {
         const jsonPath = `/locales/${lang}/${filename}`;
         const response = await fetch(jsonPath);
@@ -68,7 +70,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
 
   const getTranslation = (language: string, key: string): string | object => {
     const translation = translationData.get(language)?.[key];
-    return translation && translation !== "---" ? translation : "";
+    return translation && translation !== "---" ? translation : placeholder ?? "";
   };
 
   const canEditLanguage = (language: string): boolean => {
@@ -90,7 +92,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     e.returnValue = "";
   };
 
-  const editText = (language: string, key: string, value: string) => {
+  const editText = (language: string, key: string, value: string | object) => {
     const newTranslationData = new Map(translationData);
     const newTranslation = newTranslationData.get(language) ?? {};
     newTranslation[key] = value;
