@@ -52,10 +52,12 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
             <Image
               alt={artPiece.desc}
               fallbackSrc="https://via.placeholder.com/200"
-              h="200px"
+              h="300px"
+              w="300px"
               objectFit="cover"
               onClick={handleImageClick}
               src={imageUrl}
+              borderRadius={8}
             />
           </Box>
           <Box p={4} pb={0}>
@@ -78,9 +80,11 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
                 {artPiece.blurb}
               </Text>
 
-              <Collapse startingHeight={60} in={showFullText}>
-                <Text color={"gray.500"}>{artPiece.desc}</Text>
-              </Collapse>
+              <Box dropShadow="inner">
+                <Collapse startingHeight={60} in={showFullText}>
+                  <Text color={"gray.500"}>{artPiece.desc}</Text>
+                </Collapse>
+              </Box>
 
               <Link onClick={toggleShowText} variant="link" cursor="pointer">
                 <Text fontWeight="semibold">
