@@ -99,11 +99,11 @@
     "links": ["https://www.twbeer.com.tw/aboutEN"]
   },
   {
-    "art_id": "apple_cider",
-    "title": "Taiwan Apple Cider",
+    "art_id": "apple_sidra",
+    "title": "Apple Sidra",
     "blurb": "Common drink in Taiwan",
-    "desc": "Tasty and cheap, this drink can be bought in convenience stores and vending machines all over Taiwan.",
-    "links": []
+    "desc": "Taiwanese apple cider. Tasty and cheap, this drink can be bought in convenience stores and vending machines all over Taiwan.",
+    "links": ["https://en.wikipedia.org/wiki/Apple_Sidra"]
   },
   {
     "art_id": "tatung_rice_cooker",
