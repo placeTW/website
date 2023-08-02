@@ -1,127 +1,127 @@
 {
-    "capoo": {
-        "title": "BugCat Capoo",
-        "blurb": "Popular character by Taiwanese artist Yara.",
-        "desc": "A cartoon character resembling a chubby blue cat with six legs. He is the namesake and main subject of a webcomic strip on Facebook and Instagram, cartoon clips on YouTube, and stickers on LINE and other social media. He was created by the Taiwanese artist Yara in 2014 and has since become a cultural phenomenon in Taiwan. As a result of Capoo's popularity, he has spawned a wide variety of merchandise and attractions, ranging from clothing and plushies to a permanent merch shop and cafe in Taichung. There is also a Capoo-themed convenience store in Taipei.",
-        "links": [
-            "https://www.instagram.com/bugcat_capoo/?hl=en",
-            "https://www.youtube.com/@BugCatCapoo",
-            "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
-            "https://store.line.me/stickershop/author/24287/en"
-        ]
-    },
-    "chip": {
-        "title": "Printed Circuit Board",
-        "blurb": "Printed circuit board with microprocessors",
-        "desc": "A printed circuit board with microprocessors. One of Taiwan's largest and most important industries is the production of semiconductors.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Printed_circuit_board"
-        ]
-    },
-    "taipei_101": {
-        "title": "Taipei 101",
-        "blurb": "Iconic building in the heart of the capital",
-        "desc": "The tallest building in Taiwan and previously the tallest tower in the world. Located in the capital Taipei, it is a popular destination for locals and tourists alike. It hosts high-end stores, restaurants, and an observation tower on top. It is the site of the largest New Year's Eve fireworks in Taiwan and is well-connected in Taipei's financial district.",
-        "links": [
-            "https://www.taipei-101.com.tw/",
-            "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
-            "https://en.wikipedia.org/wiki/Taipei_101"
-        ]
-    },
-    "tw_flag": {
-        "title": "Flag of Taiwan",
-        "blurb": "National flag of Taiwan",
-        "desc": "Official flag of Taiwan. Also commonly known as the 'Blue Sky, White Sun' flag, it is internationally known as a symbol of Taiwan. The flag is also associated with the government of the Republic of China and its establishing party, the Kuomintang (KMT), and is sometimes a source of domestic controversy due to the latter's history. Despite this, it is generally used by most Taiwanese people abroad as an identifying symbol. The flag can also be found on all domestic national government buildings, embassies abroad, and those who wish to see greater international recognition for Taiwan, especially since Taiwanese teams cannot compete under this flag (or even under the name 'Taiwan') in most international events.",
-        "links": [
-            "https://en.mofa.gov.tw/"
-        ]
-    },
-    "formosan_bear": {
-        "title": "Formosan Black Bear",
-        "blurb": "National symbol of Taiwan",
-        "desc": "The Formosan black bear is a bear endemic to Taiwan. As such, they are considered a Taiwanese national symbol. They are famous for their distinctive white V-collars, and they are the largest land animals in Taiwan. Taipei's mascot is a bear named Bravo.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Formosan_black_bear",
-            "https://bravo.travel.taipei/en"
-        ]
-    },
-    "boba_tea_bear": {
-        "title": "Boba Tea",
-        "blurb": "Popular Taiwanese drink",
-        "desc": "Boba Tea is a famous drink originating from Taiwan. Since then, it has spread around the world and become a popular drink.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Bubble_tea"
-        ]
-    },
-    "tw_magpie": {
-        "title": "Taiwan Blue Magpie",
-        "blurb": "Famous and sacred Taiwanese bird",
-        "desc": "The Taiwan Blue Magpie is a bird endemic to Taiwan. It is famous for its friendliness with humans, distinctive appearance and relationship with Taiwanese aboriginal tribes, some which hold this bird sacred.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
-        ]
-    },
-    "heart_baltics": {
-        "title": "Baltic Friendship Heart",
-        "blurb": "Heart containing the Taiwan and Baltic flags",
-        "desc": "A heart symbolising the alliance and friendship with the Baltics. Hearts on r/place are commonly used to signify strong relationships between neighbouring art communities.",
-        "links": []
-    },
-    "heart_bretons": {
-        "title": "Bretons Friendship Heart",
-        "blurb": "Heart containing the Taiwan and Breton flags",
-        "desc": "A heart symbolising the alliance and friendship with the Bretons from Brittany. Hearts on r/place are commonly used to signify strong relationships between neighbouring art communities.",
-        "links": []
-    },
-    "lt_pengiun_boba": {
-        "title": "Lithuanian Penguin Drinking Boba Tea",
-        "blurb": "A refreshing symbol of friendship between the Baltics and Taiwanese communities",
-        "desc": "A Lithuanian penguin drinking boba tea above the Taiwanese art. When the canvas expanded vertically below the art, the Taiwan and Baltic teams raced to claim space beneath their original positions by drawing Taipei 101 and the national flags respectively. As a result, a large vertical space was claimed. The Baltics team then agreed to give the space beneath the Lithuanian (and later Estonian) portions to Taiwan. As a symbol of friendship, the Lithuanian penguin is given Taiwan's famous boba tea to drink.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Bubble_tea"
-        ]
-    },
-    "indep_flag": {
-        "title": "Taiwan Independence Flag",
-        "blurb": "Flag of the Taiwan Independence Movement",
-        "desc": "The Taiwan Independence flag is a flag associated with Taiwanese nationalism and freedom, or the desire to for Taiwanese people to be independent from China. This flag has three vertical bands of green, white and green, and depicts Taiwan and surrounding islands in the center. Taiwanese independence movements have existed since the 1680s, where under Qing rule the phrase 'Every three years an uprising, every five years a rebellion' became a common phrase. Though many observers point out that Taiwan is already an independent and sovereign country, this flag is also commonly used to rally those who are critical of the actions of the Kuomintang (KMT), especially under the era of martial law. The flag also represents movements for greater international recognition for Taiwan and the ending of threats to Taiwan's sovereignity. A common anthem of the Taiwanese independence movement is 'Taiwan the Formosa', particularly the first stanza.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Taiwan_independence_movement",
-            "https://en.wikipedia.org/wiki/Taiwan_the_Formosa"
-        ]
-    },
-    "tw_beer": {
-        "title": "Taiwan Beer",
-        "blurb": "Famous Taiwanese beverage",
-        "desc": "Commonly found in bars and convenience stores alike, Taiwan Beer is one of Taiwan's most famous and recognizable beverages.",
-        "links": [
-            "https://www.twbeer.com.tw/aboutEN"
-        ]
-    },
-    "apple_sidra": {
-        "title": "Apple Sidra",
-        "blurb": "Common drink in Taiwan",
-        "desc": "Taiwanese apple cider. Tasty and cheap, this drink can be bought in convenience stores and vending machines all over Taiwan.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Apple_Sidra"
-        ]
-    },
-    "tatung_rice_cooker": {
-        "title": "Tatung Rice Cooker",
-        "blurb": "Emblematic rice cooker",
-        "desc": "The Taiwanese rice cooker from the brand Tatung is Taiwan's emblematic cooking appliance, known for its durability and introduced in 1960. Even abroad, Taiwanese people will do their best to get their hands on this brand to cook rice.",
-        "links": [
-            "https://taiwantoday.tw/news.php?unit=8,29,32,45&post=12699",
-            "https://www.tatung.com/en/products/index/513"
-        ]
-    },
-    "tsmc_logo": {
-        "title": "TSMC Logo",
-        "blurb": "Taiwanese semiconductor manufacturing company",
-        "desc": "Taiwan Semiconductor Manufacturing Company Limited (TSMC) is one of the most influential global semiconductor manufacturing companies in the world. It is headquartered in Hsinchu, Taiwan, the country's tech center. 92% of the world's most advanced semiconductors are manufactured by it and its Taiwanese counterparts.",
-        "links": [
-            "https://www.tsmc.com/english",
-            "https://en.wikipedia.org/wiki/TSMC"
-        ]
-    }
+  "capoo": {
+    "title": "test (del this later)",
+    "blurb": "Popular character by Taiwanese artist Yara.",
+    "desc": "A cartoon character resembling a chubby blue cat with six legs. He is the namesake and main subject of a webcomic strip on Facebook and Instagram, cartoon clips on YouTube, and stickers on LINE and other social media. He was created by the Taiwanese artist Yara in 2014 and has since become a cultural phenomenon in Taiwan. As a result of Capoo's popularity, he has spawned a wide variety of merchandise and attractions, ranging from clothing and plushies to a permanent merch shop and cafe in Taichung. There is also a Capoo-themed convenience store in Taipei.",
+    "links": [
+      "https://www.instagram.com/bugcat_capoo/?hl=en",
+      "https://www.youtube.com/@BugCatCapoo",
+      "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
+      "https://store.line.me/stickershop/author/24287/en"
+    ]
+  },
+  "chip": {
+    "title": "Printed Circuit Board",
+    "blurb": "Printed circuit board with microprocessors",
+    "desc": "A printed circuit board with microprocessors. One of Taiwan's largest and most important industries is the production of semiconductors.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Printed_circuit_board"
+    ]
+  },
+  "taipei_101": {
+    "title": "Taipei 101",
+    "blurb": "Iconic building in the heart of the capital",
+    "desc": "The tallest building in Taiwan and previously the tallest tower in the world. Located in the capital Taipei, it is a popular destination for locals and tourists alike. It hosts high-end stores, restaurants, and an observation tower on top. It is the site of the largest New Year's Eve fireworks in Taiwan and is well-connected in Taipei's financial district.",
+    "links": [
+      "https://www.taipei-101.com.tw/",
+      "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
+      "https://en.wikipedia.org/wiki/Taipei_101"
+    ]
+  },
+  "tw_flag": {
+    "title": "Flag of Taiwan",
+    "blurb": "National flag of Taiwan",
+    "desc": "Official flag of Taiwan. Also commonly known as the 'Blue Sky, White Sun' flag, it is internationally known as a symbol of Taiwan. The flag is also associated with the government of the Republic of China and its establishing party, the Kuomintang (KMT), and is sometimes a source of domestic controversy due to the latter's history. Despite this, it is generally used by most Taiwanese people abroad as an identifying symbol. The flag can also be found on all domestic national government buildings, embassies abroad, and those who wish to see greater international recognition for Taiwan, especially since Taiwanese teams cannot compete under this flag (or even under the name 'Taiwan') in most international events.",
+    "links": [
+      "https://en.mofa.gov.tw/"
+    ]
+  },
+  "formosan_bear": {
+    "title": "Formosan Black Bear",
+    "blurb": "National symbol of Taiwan",
+    "desc": "The Formosan black bear is a bear endemic to Taiwan. As such, they are considered a Taiwanese national symbol. They are famous for their distinctive white V-collars, and they are the largest land animals in Taiwan. Taipei's mascot is a bear named Bravo.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Formosan_black_bear",
+      "https://bravo.travel.taipei/en"
+    ]
+  },
+  "boba_tea_bear": {
+    "title": "Boba Tea",
+    "blurb": "Popular Taiwanese drink",
+    "desc": "Boba Tea is a famous drink originating from Taiwan. Since then, it has spread around the world and become a popular drink.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Bubble_tea"
+    ]
+  },
+  "tw_magpie": {
+    "title": "Taiwan Blue Magpie",
+    "blurb": "Famous and sacred Taiwanese bird",
+    "desc": "The Taiwan Blue Magpie is a bird endemic to Taiwan. It is famous for its friendliness with humans, distinctive appearance and relationship with Taiwanese aboriginal tribes, some which hold this bird sacred.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
+    ]
+  },
+  "heart_baltics": {
+    "title": "Baltic Friendship Heart",
+    "blurb": "Heart containing the Taiwan and Baltic flags",
+    "desc": "A heart symbolising the alliance and friendship with the Baltics. Hearts on r/place are commonly used to signify strong relationships between neighbouring art communities.",
+    "links": []
+  },
+  "heart_bretons": {
+    "title": "Bretons Friendship Heart",
+    "blurb": "Heart containing the Taiwan and Breton flags",
+    "desc": "A heart symbolising the alliance and friendship with the Bretons from Brittany. Hearts on r/place are commonly used to signify strong relationships between neighbouring art communities.",
+    "links": []
+  },
+  "lt_pengiun_boba": {
+    "title": "Lithuanian Penguin Drinking Boba Tea",
+    "blurb": "A refreshing symbol of friendship between the Baltics and Taiwanese communities",
+    "desc": "A Lithuanian penguin drinking boba tea above the Taiwanese art. When the canvas expanded vertically below the art, the Taiwan and Baltic teams raced to claim space beneath their original positions by drawing Taipei 101 and the national flags respectively. As a result, a large vertical space was claimed. The Baltics team then agreed to give the space beneath the Lithuanian (and later Estonian) portions to Taiwan. As a symbol of friendship, the Lithuanian penguin is given Taiwan's famous boba tea to drink.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Bubble_tea"
+    ]
+  },
+  "indep_flag": {
+    "title": "Taiwan Independence Flag",
+    "blurb": "Flag of the Taiwan Independence Movement",
+    "desc": "The Taiwan Independence flag is a flag associated with Taiwanese nationalism and freedom, or the desire to for Taiwanese people to be independent from China. This flag has three vertical bands of green, white and green, and depicts Taiwan and surrounding islands in the center. Taiwanese independence movements have existed since the 1680s, where under Qing rule the phrase 'Every three years an uprising, every five years a rebellion' became a common phrase. Though many observers point out that Taiwan is already an independent and sovereign country, this flag is also commonly used to rally those who are critical of the actions of the Kuomintang (KMT), especially under the era of martial law. The flag also represents movements for greater international recognition for Taiwan and the ending of threats to Taiwan's sovereignity. A common anthem of the Taiwanese independence movement is 'Taiwan the Formosa', particularly the first stanza.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Taiwan_independence_movement",
+      "https://en.wikipedia.org/wiki/Taiwan_the_Formosa"
+    ]
+  },
+  "tw_beer": {
+    "title": "Taiwan Beer",
+    "blurb": "Famous Taiwanese beverage",
+    "desc": "Commonly found in bars and convenience stores alike, Taiwan Beer is one of Taiwan's most famous and recognizable beverages.",
+    "links": [
+      "https://www.twbeer.com.tw/aboutEN"
+    ]
+  },
+  "apple_sidra": {
+    "title": "Apple Sidra",
+    "blurb": "Common drink in Taiwan",
+    "desc": "Taiwanese apple cider. Tasty and cheap, this drink can be bought in convenience stores and vending machines all over Taiwan.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Apple_Sidra"
+    ]
+  },
+  "tatung_rice_cooker": {
+    "title": "Tatung Rice Cooker",
+    "blurb": "Emblematic rice cooker",
+    "desc": "The Taiwanese rice cooker from the brand Tatung is Taiwan's emblematic cooking appliance, known for its durability and introduced in 1960. Even abroad, Taiwanese people will do their best to get their hands on this brand to cook rice.",
+    "links": [
+      "https://taiwantoday.tw/news.php?unit=8,29,32,45&post=12699",
+      "https://www.tatung.com/en/products/index/513"
+    ]
+  },
+  "tsmc_logo": {
+    "title": "TSMC Logo",
+    "blurb": "Taiwanese semiconductor manufacturing company",
+    "desc": "Taiwan Semiconductor Manufacturing Company Limited (TSMC) is one of the most influential global semiconductor manufacturing companies in the world. It is headquartered in Hsinchu, Taiwan, the country's tech center. 92% of the world's most advanced semiconductors are manufactured by it and its Taiwanese counterparts.",
+    "links": [
+      "https://www.tsmc.com/english",
+      "https://en.wikipedia.org/wiki/TSMC"
+    ]
+  }
 }
