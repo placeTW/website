@@ -2,53 +2,53 @@
     "capoo": {
         "title": "貓貓蟲咖波",
         "blurb": "台灣藝術家亞拉所創造的著名角色",
-        "desc": "A cartoon character resembling a chubby blue cat with six legs. He is the namesake and main subject of a webcomic strip on Facebook and Instagram, cartoon clips on YouTube, and stickers on LINE and other social media. He was created by the Taiwanese artist Yara in 2014 and has since become a cultural phenomenon in Taiwan. As a result of Capoo's popularity, he has spawned a wide variety of merchandise and attractions, ranging from clothing and plushies to a permanent merch shop and cafe in Taichung. There is also a Capoo-themed convenience store in Taipei.",
+        "desc": "像貓又像蟲的六隻腳小萌物，看到什麼都想吃，包括自己的好朋友。是由台灣漫畫家亞拉所創造出的漫畫角色",
         "links": [
-            "https://www.instagram.com/bugcat_capoo/?hl=en",
+            "https://www.instagram.com/bugcat_capoo",
             "https://www.youtube.com/@BugCatCapoo",
             "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
-            "https://store.line.me/stickershop/author/24287/en"
+            "https://store.line.me/stickershop/author/24287"
         ]
     },
     "chip": {
         "title": "印刷電路板",
-        "blurb": "嵌有微處理器的印刷電路板",
-        "desc": "A printed circuit board with microprocessors. One of Taiwan's largest and most important industries is the production of semiconductors.",
+        "blurb": "印刷電路板內含微處理器",
+        "desc": " 一個印刷電路板，內含微處理器。臺灣最大且重要的產業之一就是半導體的生產.",
         "links": [
-            "https://en.wikipedia.org/wiki/Printed_circuit_board"
+            "https://zh.wikipedia.org/wiki/%E5%8D%B0%E5%88%B6%E7%94%B5%E8%B7%AF%E6%9D%BF"
         ]
     },
     "taipei_101": {
         "title": "台北 101",
         "blurb": "首都之心的代表性建築物",
-        "desc": "The tallest building in Taiwan and previously the tallest tower in the world. Located in the capital Taipei, it is a popular destination for locals and tourists alike. It hosts high-end stores, restaurants, and an observation tower on top. It is the site of the largest New Year's Eve fireworks in Taiwan and is well-connected in Taipei's financial district.",
+        "desc": "臺灣最高的建築，也曾經是震驚全世界的第一高樓。位於台北市信義計劃區，是當地居民和旅客受歡迎的目的地。他擁有商店，餐廳，以及觀景臺。這裡也是舉辦全台規模最大的煙火秀的地點。",
         "links": [
             "https://www.taipei-101.com.tw/",
             "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
-            "https://en.wikipedia.org/wiki/Taipei_101"
+            "hhttps://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97101"
         ]
     },
     "tw_flag": {
-        "title": "台灣國旗",
-        "blurb": "台灣的國旗",
-        "desc": "Official flag of Taiwan. Also commonly known as the 'Blue Sky, White Sun' flag, it is internationally known as a symbol of Taiwan. The flag is also associated with the government of the Republic of China and its establishing party, the Kuomintang (KMT), and is sometimes a source of domestic controversy due to the latter's history. Despite this, it is generally used by most Taiwanese people abroad as an identifying symbol. The flag can also be found on all domestic national government buildings, embassies abroad, and those who wish to see greater international recognition for Taiwan, especially since Taiwanese teams cannot compete under this flag (or even under the name 'Taiwan') in most international events.",
+        "title": "臺灣國旗",
+        "blurb": "臺灣的國旗",    
+        "desc": " 青天白日滿地紅國旗。是代表臺灣/中華民國的國 旗。由孫中山先生設計,象征自由,平等,博愛 之精神。青天白日滿地紅國旗也與中華民國政府 及其創立的政黨-國民黨(KMT)相關,但由於國民黨的歷史，這面旗幟有時會在國內會發起爭議。儘管如此，在海外的臺灣人仍會使用此國旗。這面旗幟還可以在所有國內的政府建築、國外大使館上找到。因為中共的打壓導致青天白日滿地紅無法在國際賽事被使用，甚至連“台灣、臺灣”等名稱都無法使用。",
         "links": [
             "https://en.mofa.gov.tw/"
         ]
     },
     "formosan_bear": {
-        "title": "台灣黑熊",
-        "blurb": "台灣的代表性標識",
-        "desc": "The Formosan black bear is a bear endemic to Taiwan. As such, they are considered a Taiwanese national symbol. They are famous for their distinctive white V-collars, and they are the largest land animals in Taiwan. Taipei's mascot is a bear named Bravo.",
+        "title": "臺灣黑熊",
+        "blurb": "台灣的國家象徵",
+        "desc": "台灣黑熊是臺灣特有的熊種。因此在臺灣牠們被視為國家象征。牠們有著獨特且好認的V字形胸部，也是臺灣最大的陸地動物。台北的吉祥物是一隻名叫Bravo的熊。",
         "links": [
-            "https://en.wikipedia.org/wiki/Formosan_black_bear",
-            "https://bravo.travel.taipei/en"
+            "https://zh.wikipedia.org/wiki/%E5%8F%B0%E7%81%A3%E9%BB%91%E7%86%8A",
+            "https://bravo.travel.taipei/zh"
         ]
     },
     "boba_tea_bear": {
         "title": "珍珠奶茶",
         "blurb": "大眾化的台灣飲料",
-        "desc": "Boba Tea is a famous drink originating from Taiwan. Since then, it has spread around the world and become a popular drink.",
+        "desc": "珍奶是個來自於臺灣的飲品。自從被創造出來就傳播世界各地，成為了全世界最熱門的飲料之一。",
         "links": [
             "https://en.wikipedia.org/wiki/Bubble_tea"
         ]
@@ -62,15 +62,15 @@
         ]
     },
     "heart_baltics": {
-        "title": "波羅的海友誼之心",
-        "blurb": "有台灣國旗和波羅的海三國國旗的心形",
+        "title": "布列塔尼的友誼愛心",
+        "blurb": "含有臺灣和布列塔尼旗幟的愛心。",
         "desc": "A heart symbolising the alliance and friendship with the Baltics. Hearts on r/place are commonly used to signify strong relationships between neighbouring art communities.",
         "links": []
     },
     "heart_bretons": {
         "title": "布列塔尼友誼之心",
         "blurb": "有台灣國旗和布列塔尼民族旗的心形",
-        "desc": "A heart symbolising the alliance and friendship with the Bretons from Brittany. Hearts on r/place are commonly used to signify strong relationships between neighbouring art communities.",
+        "desc": "一顆象徵與波羅的海地區結盟與友誼的心形符號。在 r/place 上，愛心常被用來代表兩個社群之間的緊密關係。",
         "links": []
     },
     "lt_pengiun_boba": {
