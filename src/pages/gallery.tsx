@@ -23,7 +23,10 @@ const Gallery = () => {
           throw new Error(`Failed to fetch the json ${jsonPath}`);
         }
         const data = await response.json();
-        updateArtPieces(data);
+        const artPiecesList: ArtInfo[] = Object.keys(
+          data
+        ).map((key) => ({ ...data[key], art_id: key }));
+        updateArtPieces(artPiecesList);
       } catch (error) {
         console.error(`Error fetching the json: ${error}`);
         fetchArtPieces("en");

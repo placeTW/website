@@ -1,10 +1,14 @@
 import {
   Box,
+  Card,
+  CardBody,
+  CardFooter,
   Collapse,
   Heading,
   Image,
   Link,
   Stack,
+  Tag,
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -33,73 +37,80 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
   const imageUrl = `/images/${artPiece.art_id}.png`;
 
   return (
-    <Box boxShadow="2xl" overflow="hidden" rounded="md">
-      {/* Top image */}
-      <Box
-        _hover={{ transform: "scale(1.1)" }} // zoom-in effect on hover
-        alignItems="center"
-        cursor="pointer"
-        display="flex"
-        flex="1"
-        justifyContent="center"
-        transition="transform 1s" // zoom-in/out animation transition
-      >
-        <Image
-          alt={artPiece.desc}
-          fallbackSrc="https://via.placeholder.com/200"
-          h="200px"
-          objectFit="cover"
-          onClick={handleImageClick}
-          src={imageUrl}
-        />
-      </Box>
-
-      {/* Bottom */}
-      <Box p={6}>
-        <Stack>
-          {/* Title */}
-          <Text
-            color={"green.500"}
-            textTransform={"uppercase"}
-            fontWeight={800}
-            fontSize={"sm"}
-            letterSpacing={1.1}
+    <>
+      <Card>
+        <CardBody>
+          <Box
+            _hover={{ transform: "scale(1.1)" }} // zoom-in effect on hover
+            alignItems="center"
+            cursor="pointer"
+            display="flex"
+            flex="1"
+            justifyContent="center"
+            transition="transform 1s" // zoom-in/out animation transition
           >
-            {artPiece.title}
-          </Text>
+            <Image
+              alt={artPiece.desc}
+              fallbackSrc="https://via.placeholder.com/200"
+              h="300px"
+              w="300px"
+              objectFit="cover"
+              onClick={handleImageClick}
+              src={imageUrl}
+              borderRadius={8}
+            />
+          </Box>
+          <Box p={4} pb={0}>
+            <Stack>
+              <Heading
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                color={useColorModeValue("gray.700", "white")}
+                fontSize={"2xl"}
+                fontFamily={"body"}
+              >
+                {artPiece.title}
+              </Heading>
+              <Text
+                color={"green.500"}
+                textTransform={"uppercase"}
+                fontWeight={800}
+                fontSize={"sm"}
+                letterSpacing={1.1}
+              >
+                {artPiece.blurb}
+              </Text>
 
-          {/* Blurb */}
-          <Heading
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            color={useColorModeValue("gray.700", "white")}
-            fontSize={"2xl"}
-            fontFamily={"body"}
-          >
-            {artPiece.blurb}
-          </Heading>
+              <Box dropShadow="inner">
+                <Collapse startingHeight={60} in={showFullText}>
+                  <Text color={"gray.500"}>{artPiece.desc}</Text>
+                </Collapse>
+              </Box>
 
-          {/* Desc */}
-          <Collapse startingHeight={60} in={showFullText}>
-            <Text color={"gray.500"}>{artPiece.desc}</Text>
-          </Collapse>
-
-          {/* Show more/less */}
-          <Link onClick={toggleShowText} variant="link" cursor="pointer">
-            <Text fontWeight="semibold">
-              {showFullText ? t("Show less") : t("Show more")}
-            </Text>
-          </Link>
-        </Stack>
-      </Box>
-
-      {/* Image modal */}
+              <Link onClick={toggleShowText} variant="link" cursor="pointer">
+                <Text fontWeight="semibold">
+                  {showFullText ? t("Show less") : t("Show more")}
+                </Text>
+              </Link>
+            </Stack>
+          </Box>
+        </CardBody>
+        <CardFooter pt={0}>
+          <Box>
+            {artPiece.links.map((link) => (
+              <Link key={link} href={link} isExternal colorScheme="blue">
+                <Tag m={1}>{new URL(link).hostname}</Tag>
+              </Link>
+            ))}
+          </Box>
+        </CardFooter>
+      </Card>
       <ImageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         imageUrl={imageUrl}
         altText={artPiece.desc}
       />
-    </Box>
+    </>
   );
 };
 

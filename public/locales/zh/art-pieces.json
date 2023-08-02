@@ -1,6 +1,5 @@
-[
-    {
-        "art_id": "capoo",
+{
+    "capoo": {
         "title": "貓貓蟲咖波",
         "blurb": "台灣藝術家亞拉所創造的著名角色",
         "desc": "A cartoon character resembling a chubby blue cat with six legs. He is the namesake and main subject of a webcomic strip on Facebook and Instagram, cartoon clips on YouTube, and stickers on LINE and other social media. He was created by the Taiwanese artist Yara in 2014 and has since become a cultural phenomenon in Taiwan. As a result of Capoo's popularity, he has spawned a wide variety of merchandise and attractions, ranging from clothing and plushies to a permanent merch shop and cafe in Taichung. There is also a Capoo-themed convenience store in Taipei.",
@@ -11,8 +10,7 @@
             "https://store.line.me/stickershop/author/24287/en"
         ]
     },
-    {
-        "art_id": "chip",
+    "chip": {
         "title": "印刷電路板",
         "blurb": "嵌有微處理器的印刷電路板",
         "desc": "A printed circuit board with microprocessors. One of Taiwan's largest and most important industries is the production of semiconductors.",
@@ -20,8 +18,7 @@
             "https://en.wikipedia.org/wiki/Printed_circuit_board"
         ]
     },
-    {
-        "art_id": "taipei_101",
+    "taipei_101": {
         "title": "台北 101",
         "blurb": "首都之心的代表性建築物",
         "desc": "The tallest building in Taiwan and previously the tallest tower in the world. Located in the capital Taipei, it is a popular destination for locals and tourists alike. It hosts high-end stores, restaurants, and an observation tower on top. It is the site of the largest New Year's Eve fireworks in Taiwan and is well-connected in Taipei's financial district.",
@@ -31,8 +28,7 @@
             "https://en.wikipedia.org/wiki/Taipei_101"
         ]
     },
-    {
-        "art_id": "tw_flag",
+    "tw_flag": {
         "title": "台灣國旗",
         "blurb": "台灣的國旗",
         "desc": "Official flag of Taiwan. Also commonly known as the 'Blue Sky, White Sun' flag, it is internationally known as a symbol of Taiwan. The flag is also associated with the government of the Republic of China and its establishing party, the Kuomintang (KMT), and is sometimes a source of domestic controversy due to the latter's history. Despite this, it is generally used by most Taiwanese people abroad as an identifying symbol. The flag can also be found on all domestic national government buildings, embassies abroad, and those who wish to see greater international recognition for Taiwan, especially since Taiwanese teams cannot compete under this flag (or even under the name 'Taiwan') in most international events.",
@@ -40,8 +36,7 @@
             "https://en.mofa.gov.tw/"
         ]
     },
-    {
-        "art_id": "formosan_bear",
+    "formosan_bear": {
         "title": "台灣黑熊",
         "blurb": "台灣的代表性標識",
         "desc": "The Formosan black bear is a bear endemic to Taiwan. As such, they are considered a Taiwanese national symbol. They are famous for their distinctive white V-collars, and they are the largest land animals in Taiwan. Taipei's mascot is a bear named Bravo.",
@@ -50,8 +45,7 @@
             "https://bravo.travel.taipei/en"
         ]
     },
-    {
-        "art_id": "boba_tea_bear",
+    "boba_tea_bear": {
         "title": "珍珠奶茶",
         "blurb": "大眾化的台灣飲料",
         "desc": "Boba Tea is a famous drink originating from Taiwan. Since then, it has spread around the world and become a popular drink.",
@@ -59,8 +53,7 @@
             "https://en.wikipedia.org/wiki/Bubble_tea"
         ]
     },
-    {
-        "art_id": "tw_magpie",
+    "tw_magpie": {
         "title": "臺灣藍鵲",
         "blurb": "著名且神聖的台灣鳥類",
         "desc": "The Taiwan Blue Magpie is a bird endemic to Taiwan. It is famous for its friendliness with humans, distinctive appearance and relationship with Taiwanese aboriginal tribes, some which hold this bird sacred.",
@@ -68,22 +61,19 @@
             "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
         ]
     },
-    {
-        "art_id": "heart_baltics",
+    "heart_baltics": {
         "title": "波羅的海友誼之心",
         "blurb": "有台灣國旗和波羅的海三國國旗的心形",
         "desc": "A heart symbolising the alliance and friendship with the Baltics. Hearts on r/place are commonly used to signify strong relationships between neighbouring art communities.",
         "links": []
     },
-    {
-        "art_id": "heart_bretons",
+    "heart_bretons": {
         "title": "布列塔尼友誼之心",
         "blurb": "有台灣國旗和布列塔尼民族旗的心形",
         "desc": "A heart symbolising the alliance and friendship with the Bretons from Brittany. Hearts on r/place are commonly used to signify strong relationships between neighbouring art communities.",
         "links": []
     },
-    {
-        "art_id": "lt_pengiun_boba",
+    "lt_pengiun_boba": {
         "title": "Lithuanian Penguin Drinking Boba Tea",
         "blurb": "A refreshing symbol of friendship between the Baltics and Taiwanese communities",
         "desc": "A Lithuanian penguin drinking boba tea above the Taiwanese art. When the canvas expanded vertically below the art, the Taiwan and Baltic teams raced to claim space beneath their original positions by drawing Taipei 101 and the national flags respectively. As a result, a large vertical space was claimed. The Baltics team then agreed to give the space beneath the Lithuanian (and later Estonian) portions to Taiwan. As a symbol of friendship, the Lithuanian penguin is given Taiwan's famous boba tea to drink.",
@@ -91,8 +81,7 @@
             "https://en.wikipedia.org/wiki/Bubble_tea"
         ]
     },
-    {
-        "art_id": "indep_flag",
+    "indep_flag": {
         "title": "台灣旗",
         "blurb": "台灣獨立運動代表旗",
         "desc": "The Taiwan Independence flag is a flag associated with Taiwanese nationalism and freedom, or the desire to for Taiwanese people to be independent from China. This flag has three vertical bands of green, white and green, and depicts Taiwan and surrounding islands in the center. Taiwanese independence movements have existed since the 1680s, where under Qing rule the phrase 'Every three years an uprising, every five years a rebellion' became a common phrase. Though many observers point out that Taiwan is already an independent and sovereign country, this flag is also commonly used to rally those who are critical of the actions of the Kuomintang (KMT), especially under the era of martial law. The flag also represents movements for greater international recognition for Taiwan and the ending of threats to Taiwan's sovereignity. A common anthem of the Taiwanese independence movement is 'Taiwan the Formosa', particularly the first stanza.",
@@ -101,8 +90,7 @@
             "https://en.wikipedia.org/wiki/Taiwan_the_Formosa"
         ]
     },
-    {
-        "art_id": "tw_beer",
+    "tw_beer": {
         "title": "台灣啤酒",
         "blurb": "著名的台灣飲品",
         "desc": "Commonly found in bars and convenience stores alike, Taiwan Beer is one of Taiwan's most famous and recognizable beverages.",
@@ -110,15 +98,13 @@
             "https://www.twbeer.com.tw/aboutEN"
         ]
     },
-    {
-        "art_id": "apple_cider",
+    "apple_cider": {
         "title": "台灣蘋果西打",
         "blurb": "著名的亞州飲品",
         "desc": "Tasty and cheap, this drink can be bought in convenience stores and vending machines all over Taiwan.",
         "links": []
     },
-    {
-        "art_id": "tatung_rice_cooker",
+    "tatung_rice_cooker": {
         "title": "大同電鍋",
         "blurb": "象徵性的電鍋",
         "desc": "The Taiwanese rice cooker from the brand Tatung is Taiwan's emblematic cooking appliance, known for its durability and introduced in 1960. Even abroad, Taiwanese people will do their best to get their hands on this brand to cook rice.",
@@ -127,8 +113,7 @@
             "https://www.tatung.com/en/products/index/513"
         ]
     },
-    {
-        "art_id": "tsmc_logo",
+    "tsmc_logo": {
         "title": "臺積電標誌",
         "blurb": "台灣積體電路公司的標誌",
         "desc": "Taiwan Semiconductor Manufacturing Company Limited (TSMC) is one of the most influential global semiconductor manufacturing companies in the world. It is headquartered in Hsinchu, Taiwan, the country's tech center. 92% of the world's most advanced semiconductors are manufactured by it and its Taiwanese counterparts.",
@@ -137,4 +122,4 @@
             "https://en.wikipedia.org/wiki/TSMC"
         ]
     }
-]
+}
