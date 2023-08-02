@@ -1,27 +1,23 @@
-[
-    {
-        "art_id": "capoo",
+{
+    "capoo": {
         "title": "2023",
-        "blurb": "貓貓蟲咖波",
-        "desc": "像貓又像蟲的六隻腳小萌物，看到什麼都想吃，包括自己的好朋友。是由台灣漫畫家亞拉所創造出的漫畫角色",
+        "blurb": "\u8c93\u8c93\u87f2\u5496\u6ce2",
+        "desc": "\u50cf\u8c93\u53c8\u50cf\u87f2\u7684\u516d\u96bb\u8173\u5c0f\u840c\u7269\uff0c\u770b\u5230\u4ec0\u9ebc\u90fd\u60f3\u5403\uff0c\u5305\u62ec\u81ea\u5df1\u7684\u597d\u670b\u53cb\u3002\u662f\u7531\u53f0\u7063\u6f2b\u756b\u5bb6\u4e9e\u62c9\u6240\u5275\u9020\u51fa\u7684\u6f2b\u756b\u89d2\u8272",
         "links": []
     },
-    {
-        "art_id": "chip",
+    "chip": {
         "title": "Sample Title",
         "blurb": "Blurb",
-        "desc": "短短的",
+        "desc": "\u77ed\u77ed\u7684",
         "links": []
     },
-    {
-        "art_id": "taipei_101",
+    "taipei_101": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "tw_flag",
+    "tw_flag": {
         "title": "Flag of Taiwan",
         "blurb": "National flag of Taiwan",
         "desc": "",
@@ -29,81 +25,71 @@
             "https://en.mofa.gov.tw/"
         ]
     },
-    {
-        "art_id": "formosan_bear",
+    "formosan_bear": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "boba_tea_bear",
+    "boba_tea_bear": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "tw_magpie",
+    "tw_magpie": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "heart_baltics",
+    "heart_baltics": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "heart_bretons",
+    "heart_bretons": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "lt_pengiun_boba",
+    "lt_pengiun_boba": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "indep_flag",
+    "indep_flag": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "tw_beer",
+    "tw_beer": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
+    "apple_sidra": {
         "art_id": "apple_sidra",
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "tatung_rice_cooker",
+    "tatung_rice_cooker": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     },
-    {
-        "art_id": "tsmc_logo",
+    "tsmc_logo": {
         "title": "Sample Title",
         "blurb": "Blurb",
         "desc": "This is a long description of the item. It can include HTML like <b>this</b> or <i>this</i>. For internal links, we can think of a basic markup. Anyway, this is supposed to be very long.",
         "links": []
     }
-]
+}

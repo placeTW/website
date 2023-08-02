@@ -1,5 +1,3 @@
-import { officialLocales, locales, Locale } from "../../i18n";
-import { useEffect, useState } from "react";
 import {
   Input,
   Table,
@@ -12,21 +10,26 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import GithubSubmitButton from "./github-submit-button";
+import { useEffect, useState } from "react";
+import { Locale, locales, officialLocales } from "../../i18n";
 import { geti18nLanguage } from "../../utils";
+import GithubSubmitButton from "./github-submit-button";
+import TranslationObjectEditor from "./translation-object-editor";
+import { Placeholder } from "../../modules/translation-verification";
 
 interface Props {
   filename: string;
   editableLangs?: string[];
+  placeholder?: Placeholder;
 }
 
-const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
+const TranslationFileEditor = ({ filename, editableLangs, placeholder }: Props) => {
   const [translationData, setTranslationData] = useState(
-    new Map<string, Record<string, string>>()
+    new Map<string, Record<string, string | object>>(),
   );
 
   const [translationKeys, setTranslationKeys] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   const [loading, setLoading] = useState(true);
@@ -34,8 +37,8 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
 
   useEffect(() => {
     const fetchTranslations = async (
-      lang: string
-    ): Promise<Record<string, string>> => {
+      lang: string,
+    ): Promise<Record<string, string | object>> => {
       try {
         const jsonPath = `/locales/${lang}/${filename}`;
         const response = await fetch(jsonPath);
@@ -59,15 +62,15 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     };
 
     Promise.all(
-      Object.keys(locales).map((lang) => updateTranslationData(lang))
+      Object.keys(locales).map((lang) => updateTranslationData(lang)),
     ).then(() => {
       setLoading(false);
     });
   }, []);
 
-  const getTranslation = (language: string, key: string): string => {
+  const getTranslation = (language: string, key: string): string | object => {
     const translation = translationData.get(language)?.[key];
-    return translation && translation !== "---" ? translation : "";
+    return translation && translation !== "---" ? translation : placeholder ?? "";
   };
 
   const canEditLanguage = (language: string): boolean => {
@@ -89,7 +92,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     e.returnValue = "";
   };
 
-  const editText = (language: string, key: string, value: string) => {
+  const editText = (language: string, key: string, value: string | object) => {
     const newTranslationData = new Map(translationData);
     const newTranslation = newTranslationData.get(language) ?? {};
     newTranslation[key] = value;
@@ -97,6 +100,37 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
     setTranslationData(newTranslationData);
     setEdited(true);
   };
+
+  const StringEditor = (key: string, language: string) =>
+    (getTranslation(language, key) as string).length < 20 ? (
+      <Input
+        type="text"
+        disabled={!canEditLanguage(language)}
+        variant="outline"
+        minW={275}
+        value={getTranslation(language, key) as string}
+        placeholder={"(Placeholder) " + key}
+        color={getTranslation(language, key) ? "black" : "red"}
+        _placeholder={{ opacity: 0.4, color: "inherit" }}
+        onChange={(event) => {
+          editText(language, key, event.target.value);
+        }}
+      />
+    ) : (
+      <Textarea
+        disabled={!canEditLanguage(language)}
+        variant="outline"
+        minW={275}
+        value={getTranslation(language, key) as string}
+        placeholder={"(Placeholder) " + key}
+        color={getTranslation(language, key) ? "black" : "red"}
+        wrap="soft"
+        _placeholder={{ opacity: 0.4, color: "inherit" }}
+        onChange={(event) => {
+          editText(language, key, event.target.value);
+        }}
+      />
+    );
 
   return (
     <>
@@ -137,7 +171,7 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
                         data={JSON.stringify(
                           translationData.get(language),
                           null,
-                          2
+                          2,
                         )}
                         locale={language}
                       />
@@ -148,38 +182,19 @@ const TranslationFileEditor = ({ filename, editableLangs }: Props) => {
               {Array.from(translationKeys).map((key) => (
                 <Tr key={key}>
                   {Object.entries(locales).map(([language]) => (
-                    <Td key={language}>
-                      {getTranslation(language, key).length < 20 ? (
-                        <Input
-                          type="text"
-                          disabled={!canEditLanguage(language)}
-                          variant="outline"
-                          minW={275}
-                          value={getTranslation(language, key)}
-                          placeholder={"(Placeholder) " + key}
-                          color={
-                            getTranslation(language, key) ? "black" : "red"
-                          }
-                          _placeholder={{ opacity: 0.4, color: "inherit" }}
-                          onChange={(event) => {
-                            editText(language, key, event.target.value);
-                          }}
-                        />
+                    <Td key={language} verticalAlign="top">
+                      {typeof getTranslation(language, key) === "string" ? (
+                        StringEditor(key, language)
                       ) : (
-                        <Textarea
-                          disabled={!canEditLanguage(language)}
-                          variant="outline"
-                          minW={275}
-                          value={getTranslation(language, key)}
-                          placeholder={"(Placeholder) " + key}
-                          color={
-                            getTranslation(language, key) ? "black" : "red"
+                        <TranslationObjectEditor
+                          objectKey={key}
+                          data={
+                            getTranslation(language, key) as Record<
+                              string,
+                              string | string[]
+                            >
                           }
-                          wrap="soft"
-                          _placeholder={{ opacity: 0.4, color: "inherit" }}
-                          onChange={(event) => {
-                            editText(language, key, event.target.value);
-                          }}
+                          editText={(value) => editText(language, key, value)}
                         />
                       )}
                     </Td>
