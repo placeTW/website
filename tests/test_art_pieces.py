@@ -18,3 +18,4 @@ def test_art_en():
     """
     en_json = _load_json(LOCALES_DIR / "en/art-pieces.json")
     assert type(en_json) == dict
+    assert True
