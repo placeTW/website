@@ -1,6 +1,6 @@
 {
   "capoo": {
-    "title": "BugCat Capoo",
+    "title": "",
     "blurb": "",
     "desc": "",
     "links": [
@@ -11,7 +11,7 @@
   },
   "chip": {
     "title": "",
-    "blurb": "",
+    "blurb": "Circuit imprimé avec microprocesseurs.",
     "desc": "",
     "links": []
   },
