@@ -5,7 +5,7 @@ on:
       branches:
         - 'main'
         - 'bot-i18n-commits'
-        - 'website-tests'
+        - 'website_tests'
     pull_request:
         types: [opened, reopened]
             
