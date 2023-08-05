@@ -100,7 +100,10 @@
     "title": "Taiwan Beer",
     "blurb": "Célèbre bière taiwanaise",
     "desc": "",
-    "links": []
+    "links": [
+      "https://www.twbeer.com.tw/aboutEN",
+      "https://fr.wikipedia.org/wiki/Ta%C3%AFwan_Beer"
+    ]
   },
   "apple_sidra": {
     "title": "",
