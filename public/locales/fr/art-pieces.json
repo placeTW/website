@@ -42,7 +42,11 @@
     "title": "Ours noir de Taïwan",
     "blurb": "Emblème de Taïwan",
     "desc": "L'ours noir de Taïwan est un ours endémique de l'île de Taïwan. Ainsi ils sont considérés comme un symbole national taiwanais. Ils sont connus pour leur col en V blanc caractéristique et pour être le plus grand animal terrestre à Taïwan. La mascotte de Taipei est un ours appelé Bravo.",
-    "links": []
+    "links": [
+      "https://www.manimalworld.net/pages/ursides/ours-noir-de-taiwan.html",
+      "https://bravo.travel.taipei/en",
+      "https://en.wikipedia.org/wiki/Formosan_black_bear"
+    ]
   },
   "boba_tea_bear": {
     "title": "",
