@@ -13,67 +13,97 @@
     "title": "Circuit imprimé",
     "blurb": "Circuit imprimé avec microprocesseurs.",
     "desc": "Un circuit imprimé avec des microprocesseurs. La production de semi-conducteurs est l'une des plus grandes et importantes industries de Taïwan.",
-    "links": []
+    "links": [
+      "https://fr.wikipedia.org/wiki/Circuit_imprim%C3%A9",
+      "https://fr.wikipedia.org/wiki/Microprocesseur",
+      "https://fr.wikipedia.org/wiki/Semi-conducteur"
+    ]
   },
   "taipei_101": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Taipei 101",
+    "blurb": "Gratte-ciel iconique au coeur de la capitale.",
+    "desc": "Le plus grand immeuble de Taïwan and anciennement le plus grand du monde. Situé dans la capitale Taipei, c'est une destination populaire pour les habitants et les touristes. Elle héberge des magasins, des restaurants, et une tour d'observation tout en haut. Elle accueille un des plus grand feu d'artifice du nouvel an à Taiwan et elle est connectée au quartier financier de Taipei.",
+    "links": [
+      "https://www.taiwantourisme.com/attractions/visiter/taipei/les-sites-touristiques/",
+      "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
+      "https://fr.wikipedia.org/wiki/Taipei_101"
+    ]
   },
   "tw_flag": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Drapeau de Taïwan",
+    "blurb": "Drapeau national de Taïwan",
+    "desc": "Drapeau officiel de Taïwan. Connu aussi comme le drapeau \"Ciel Bleu, Soleil Blanc\", c'est le drapeau internationalement connu comme symbole de Taïwan. Le drapeau est aussi associé au gouvernement de la République de Chine et son parti fondateur, le Kuomintang (KMT) ; il est parfois source de controverse nationale en en raison de l'Histoire récente. En dépit de cela, il est généralement utilisé par la plupart des Taïwanais à l'étranger comme moyen de  s'identifier. Le drapeau national est également utilisé sur tous les bâtiments gouvernementaux, les ambassades à l'étranger, et par ceux qui souhaitent une plus grande reconnaissance internationale de Taïwan, notamment parce que les équipes taïwanaise ne peuvent pas concourir sous ce drapeau (ni même sous le nom de Taïwan) dans la plupart des évènements internationaux.",
+    "links": [
+      "https://en.mofa.gov.tw/",
+      "https://fr.wikipedia.org/wiki/Drapeau_de_la_r%C3%A9publique_de_Chine"
+    ]
   },
   "formosan_bear": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Ours noir de Taïwan",
+    "blurb": "Emblème de Taïwan",
+    "desc": "L'ours noir de Taïwan est un ours endémique de l'île de Taïwan. Ainsi ils sont considérés comme un symbole national taiwanais. Ils sont connus pour leur col en V blanc caractéristique et pour être le plus grand animal terrestre à Taïwan. La mascotte de Taipei est un ours appelé Bravo.",
+    "links": [
+      "https://www.manimalworld.net/pages/ursides/ours-noir-de-taiwan.html",
+      "https://bravo.travel.taipei/en",
+      "https://en.wikipedia.org/wiki/Formosan_black_bear"
+    ]
   },
   "boba_tea_bear": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Thé aux perles",
+    "blurb": "Boisson taïwanaise populaire",
+    "desc": "Egalement appelé bubble tea ou boba, le thé aux perles est une fameuse boisson originaire de Taïwan. Elle s'est répandue dans le monde pour en devenir une boisson populaire.",
+    "links": [
+      "https://fr.wikipedia.org/wiki/Th%C3%A9_aux_perles"
+    ]
   },
   "tw_magpie": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Pirolle de Taïwan",
+    "blurb": "Célèbre oiseau sacré taiwanais",
+    "desc": "La pirolle de Taïwan est un oiseau endémique de Taïwan. Elle est connue pour être amicale avec les humains, son apparence typique et ses rapports avec les tribus autochtones taiwanaises dont certaines la tiennent pour sacrée.",
+    "links": [
+      "https://fr.wikipedia.org/wiki/Pirolle_de_Ta%C3%AFwan"
+    ]
   },
   "heart_baltics": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Coeur de l'amitié baltique",
+    "blurb": "Coeur contenant les drapeaux de Taïwan et de la Baltique",
+    "desc": "Un coeur symbolisant l'alliance et l'amitié avec les pays Baltes. Sur r/place, les coeurs sont couramment utilisés pour signifier de solides liens entre des communautés artistiques voisines.",
+    "links": [
+      "https://fr.wikipedia.org/wiki/Pays_baltes"
+    ]
   },
   "heart_bretons": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Coeur de l'amitié bretonne",
+    "blurb": "Coeur contenant les drapeaux de Taïwan et de la Bretagne.",
+    "desc": "Un coeur symbolisant l'alliance et l'amitié avec les Bretons.",
+    "links": [
+      "https://fr.wikipedia.org/wiki/Bretagne"
+    ]
   },
   "lt_pengiun_boba": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Manchot lituanien buvant un thé aux perles",
+    "blurb": "Un symbole réactualisé de l'amitié entre les communautés de Taïwan et des Pays Baltes.",
+    "desc": "Un manchot lituanien buvant un thé aux perles au dessus d'une œuvre d'art Taïwanaise. Quand le cadre s'est étendu verticalement en bas de la fresque, les équipes de Taïwan et la Baltique ont fait la course pour revendiquer l'espace sous leur position originelle respectivement en prolongeant la Taipei 101 et en dessinant les drapeaux nationaux. En conséquence, un grand espace vertical a été revendiqué. L'équipe des Baltes a ensuite été d'accord pour donner l'espace sous les portions lituaniennes (et plus tard estonienne aussi) à Taïwan. En signe d'amitié, le manchot lituanien a reçu le célèbre thé aux perles de Taïwan à boire.",
+    "links": [
+      "https://fr.wikipedia.org/wiki/Th%C3%A9_aux_perles"
+    ]
   },
   "indep_flag": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Drapeau de l'indépendance de Taïwan",
+    "blurb": "Drapeau du mouvement indépendantiste taiwanais",
+    "desc": "Le drapeau de l'indépendance de Taiwan est le drapeau associé au nationalisme et la liberté taiwanaise, ou au désir du peuple taiwanais d'être indépendant de la Chine. Ce drapeau possède trois bandes verticales : verte, blanche et verte, avec en son centre la représentation de l'île principale ainsi quelques autres autour.\n\nLe mouvement indépendantiste taïwanais existe depuis les années 1680, lorsque sous la domination Qing le slogan \"Tous les trois ans un soulèvement, tous les ans une rébellion\" devînt banal. Cependant, beaucoup de spécialistes soulignent que Taïwan est déjà un pays indépendant et souverain ; ce drapeau est aussi communément utilisé par ceux qui critiquent les actions du Kuomintang (KMT), particulièrement à l'époque de la loi martiale. Le drapeau représente aussi les mouvements pour une plus grand reconnaissance internationale de Taïwan et la fin des menaces à la souveraineté de Taïwan. Un hymne courant du mouvement pour l'indépendance de Taïwan est \"Taïwan la Formose\", notamment la première strophe.\n\n\"Par la côte ouest du Pacifique, une belle île, notre verdoyante Taïwan.\nSouffra un jour sous une domination étrangère, finalement libre d'être elle-même.\nVoici la base de notre nation : quatre groupes divers dans l'unité,\nviennent offrir tout leurs talents variés, pour le meilleur de tous et un monde en paix.\"\n- Première strophe de Taïwan la Formose",
+    "links": [
+      "https://fr.wikipedia.org/wiki/Ind%C3%A9pendance_de_Ta%C3%AFwan"
+    ]
   },
   "tw_beer": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Taiwan Beer",
+    "blurb": "Célèbre bière taiwanaise",
+    "desc": "Couramment vendue dans les bars et les superettes, la Taiwan Beer est une des boissons des plus célèbres et reconnaissables.",
+    "links": [
+      "https://www.twbeer.com.tw/aboutEN",
+      "https://fr.wikipedia.org/wiki/Ta%C3%AFwan_Beer"
+    ]
   },
   "apple_sidra": {
     "title": "",
