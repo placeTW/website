@@ -22,6 +22,7 @@ def test_art_en():
     assert type(en_json) == dict
     assert "capoo" in en_json
     assert "asdf" not in en_json
+    assert len(en_json.keys()) == 15
     for art_id, art_info in en_json.items():
         assert "title" in art_info
         assert type(art_info["title"]) == str
