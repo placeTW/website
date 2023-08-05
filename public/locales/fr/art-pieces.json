@@ -52,7 +52,9 @@
     "title": "Thé aux perles",
     "blurb": "Boisson taïwanaise populaire",
     "desc": "Egalement appelé bubble tea ou boba, le thé aux perles est une fameuse boisson originaire de Taïwan. Elle s'est répandue dans le monde pour en devenir une boisson populaire.",
-    "links": []
+    "links": [
+      "https://fr.wikipedia.org/wiki/Th%C3%A9_aux_perles"
+    ]
   },
   "tw_magpie": {
     "title": "",
