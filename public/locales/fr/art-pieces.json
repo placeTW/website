@@ -122,6 +122,11 @@
     "title": "Logo de TSMC",
     "blurb": "Entreprise taïwanaise de fabrication de semi-conducteurs",
     "desc": "La Taiwan Semiconductor Manufacturing Company (TSMC) est une des plus influentes fonderies de semi-conducteurs au monde. Son siège est à Hsinchu, noeud technologique de Taïwan. 92% des semi-conducteurs les plus avancés sont fabriqués par la TSMC et ses homologues taiwanais.",
-    "links": []
+    "links": [
+      "https://fr.wikipedia.org/wiki/Taiwan_Semiconductor_Manufacturing_Company",
+      "https://youtu.be/XOXK5rmCilk",
+      "https://fr.wikipedia.org/wiki/Parc_scientifique_de_Hsinchu",
+      "https://www.tsmc.com/english"
+    ]
   }
 }
