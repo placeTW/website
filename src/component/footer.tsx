@@ -10,7 +10,7 @@ const Footer = () => {
         {t("Join our community today!")}
       </Text>
       <Flex alignItems="center" justifyContent="center">
-        <Link href="https://www.reddit.com/placeTW" isExternal>
+        <Link href="https://www.reddit.com/r/placeTW" isExternal>
           <IconButton
             icon={<FaReddit />}
             colorScheme="white"
