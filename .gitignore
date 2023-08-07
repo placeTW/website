@@ -26,5 +26,7 @@ dist-ssr
 # for unrelated auxilliary scripts
 dump.ipynb
 translations/
+__pycache__
+*.py[cod]
 
 .env
