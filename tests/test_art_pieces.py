@@ -1,9 +1,10 @@
 """This file tests if the json files in the locals are properly formatted."""
 
 import json
+from pytest import fixture
 from pathlib import Path
 
-LOCALES_DIR = Path(__file__).parent / "../public/locales"
+LOCALES_DIR = (Path(__file__).parent / "../public/locales").resolve()
 
 
 def _load_json(path):
@@ -35,3 +36,25 @@ def test_art_en():
         assert len(art_info["desc"]) > 0
         assert "links" in art_info
         assert type(art_info["links"]) == list
+
+
+@fixture
+def all_json_art_langs():
+    all_langs = LOCALES_DIR.glob("*/")
+    all_jsons = []
+    for lang in all_langs:
+        lang_json_path = lang / "art-pieces.json"
+        if lang_json_path.is_file():
+            lang_json = _load_json(lang_json_path)
+            all_jsons.append(lang_json)
+    return all_jsons
+
+
+def test_json_general(all_json_art_langs):
+    for art_json in all_json_art_langs:
+        for art_id, art_item in art_json.items():
+            assert type(art_item) is dict
+            assert type(art_item["title"]) is str
+            assert type(art_item["blurb"]) is str
+            assert type(art_item["desc"]) is str
+            assert type(art_item["links"]) is list
