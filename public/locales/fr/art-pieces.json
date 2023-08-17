@@ -2,7 +2,7 @@
   "capoo": {
     "title": "BugCat Capoo",
     "blurb": "Personnage populaire de l'artiste taïwanais Yara.",
-    "desc": "Personnage de dessin animé ressemblant à un chat potelé avec six pattes. Il est le protagoniste éponyme d'un comic strip (petite bande dessinée) sur Facebook et Instagram, de court-métrage sur YouTube, et de stickers sur LINE ainsi que d'autres réseaux sociaux. Il a été créé par l'artiste Yara en 2014 et est devenu un phénomène culturel à Taïwan. En raison de sa popularité, Capoo a engendré une multitude de produits dérivés et d'attractions, allant de vêtements et peluches à un magasin et un café dédiés dans Taichung. Il y a aussi une épicerie sur le thème de Capoo à Taipei.",
+    "desc": "Personnage de dessin animé ressemblant à un chat potelé avec six pattes. Il est le protagoniste éponyme d'un comic strip (petite bande dessinée) sur Facebook et Instagram, de court-métrages sur YouTube, et de stickers sur LINE ainsi que d'autres réseaux sociaux. Il a été créé par l'artiste Yara en 2014 et est devenu un phénomène culturel à Taïwan. En raison de sa popularité, Capoo a engendré une multitude de produits dérivés et d'attractions, allant de vêtements et peluches à un magasin et un café dédiés dans Taichung ; il y a aussi une épicerie sur le thème de Capoo à Taipei.",
     "links": [
       "https://www.instagram.com/bugcat_capoo/?hl=en",
       "https://www.youtube.com/@BugCatCapoo",
@@ -14,6 +14,7 @@
     "blurb": "Circuit imprimé avec microprocesseurs.",
     "desc": "Un circuit imprimé avec des microprocesseurs. La production de semi-conducteurs est l'une des plus grandes et importantes industries de Taïwan.",
     "links": [
+      "https://youtu.be/XOXK5rmCilk",
       "https://fr.wikipedia.org/wiki/Circuit_imprim%C3%A9",
       "https://fr.wikipedia.org/wiki/Microprocesseur",
       "https://fr.wikipedia.org/wiki/Semi-conducteur"
@@ -22,7 +23,7 @@
   "taipei_101": {
     "title": "Taipei 101",
     "blurb": "Gratte-ciel iconique au coeur de la capitale.",
-    "desc": "Le plus grand immeuble de Taïwan and anciennement le plus grand du monde. Situé dans la capitale Taipei, c'est une destination populaire pour les habitants et les touristes. Elle héberge des magasins, des restaurants, et une tour d'observation tout en haut. Elle accueille un des plus grand feu d'artifice du nouvel an à Taiwan et elle est connectée au quartier financier de Taipei.",
+    "desc": "Le plus grand immeuble de Taïwan and anciennement le plus grand du monde. Située dans la capitale Taipei, c'est une destination populaire pour les habitants et les touristes. Elle héberge des magasins, des restaurants, et une tour d'observation tout en haut. Elle accueille un des plus grand feu d'artifice du nouvel an à Taiwan et elle est connectée au quartier financier de Taipei.",
     "links": [
       "https://www.taiwantourisme.com/attractions/visiter/taipei/les-sites-touristiques/",
       "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
@@ -32,7 +33,7 @@
   "tw_flag": {
     "title": "Drapeau de Taïwan",
     "blurb": "Drapeau national de Taïwan",
-    "desc": "Drapeau officiel de Taïwan. Connu aussi comme le drapeau \"Ciel Bleu, Soleil Blanc\", c'est le drapeau internationalement connu comme symbole de Taïwan. Le drapeau est aussi associé au gouvernement de la République de Chine et son parti fondateur, le Kuomintang (KMT) ; il est parfois source de controverse nationale en en raison de l'Histoire récente. En dépit de cela, il est généralement utilisé par la plupart des Taïwanais à l'étranger comme moyen de  s'identifier. Le drapeau national est également utilisé sur tous les bâtiments gouvernementaux, les ambassades à l'étranger, et par ceux qui souhaitent une plus grande reconnaissance internationale de Taïwan, notamment parce que les équipes taïwanaise ne peuvent pas concourir sous ce drapeau (ni même sous le nom de Taïwan) dans la plupart des évènements internationaux.",
+    "desc": "Drapeau officiel de Taïwan. Connu aussi comme le drapeau \"Ciel Bleu, Soleil Blanc\", c'est le drapeau internationalement connu comme symbole de Taïwan. Le drapeau est aussi associé au gouvernement de la République de Chine et son parti fondateur, le Kuomintang (KMT) ; il est parfois source de controverse nationale en raison de l'Histoire récente. En dépit de cela, il est généralement utilisé par la plupart des Taïwanais à l'étranger comme moyen de s'identifier. Le drapeau national est également utilisé sur tous les bâtiments gouvernementaux, les ambassades à l'étranger, et par ceux qui souhaitent une plus grande reconnaissance internationale de Taïwan, notamment parce que les équipes taïwanaises ne peuvent pas concourir sous ce drapeau (ni même sous le nom de Taïwan) dans la plupart des évènements internationaux.",
     "links": [
       "https://en.mofa.gov.tw/",
       "https://fr.wikipedia.org/wiki/Drapeau_de_la_r%C3%A9publique_de_Chine"
@@ -91,7 +92,7 @@
   "indep_flag": {
     "title": "Drapeau de l'indépendance de Taïwan",
     "blurb": "Drapeau du mouvement indépendantiste taiwanais",
-    "desc": "Le drapeau de l'indépendance de Taiwan est le drapeau associé au nationalisme et la liberté taiwanaise, ou au désir du peuple taiwanais d'être indépendant de la Chine. Ce drapeau possède trois bandes verticales : verte, blanche et verte, avec en son centre la représentation de l'île principale ainsi quelques autres autour.\n\nLe mouvement indépendantiste taïwanais existe depuis les années 1680, lorsque sous la domination Qing le slogan \"Tous les trois ans un soulèvement, tous les ans une rébellion\" devînt banal. Cependant, beaucoup de spécialistes soulignent que Taïwan est déjà un pays indépendant et souverain ; ce drapeau est aussi communément utilisé par ceux qui critiquent les actions du Kuomintang (KMT), particulièrement à l'époque de la loi martiale. Le drapeau représente aussi les mouvements pour une plus grand reconnaissance internationale de Taïwan et la fin des menaces à la souveraineté de Taïwan. Un hymne courant du mouvement pour l'indépendance de Taïwan est \"Taïwan la Formose\", notamment la première strophe.\n\n\"Par la côte ouest du Pacifique, une belle île, notre verdoyante Taïwan.\nSouffra un jour sous une domination étrangère, finalement libre d'être elle-même.\nVoici la base de notre nation : quatre groupes divers dans l'unité,\nviennent offrir tout leurs talents variés, pour le meilleur de tous et un monde en paix.\"\n- Première strophe de Taïwan la Formose",
+    "desc": "Le drapeau de l'indépendance de Taiwan est le drapeau associé au nationalisme et la liberté taiwanaise, ou au désir du peuple taiwanais d'être indépendant de la Chine. Ce drapeau possède trois bandes verticales : verte, blanche et verte, avec en son centre la représentation de l'île principale ainsi quelques autres autour.\n\nLe mouvement indépendantiste taïwanais existe depuis les années 1680, lorsque sous la domination Qing le slogan \"Tous les trois ans un soulèvement, tous les cinq ans une rébellion\" devînt banal. Cependant, beaucoup de spécialistes soulignent que Taïwan est déjà un pays indépendant et souverain ; ce drapeau est aussi communément utilisé par ceux qui critiquent les actions du Kuomintang (KMT), particulièrement à l'époque de la loi martiale. Le drapeau représente aussi les mouvements pour une plus grand reconnaissance internationale de Taïwan et la fin des menaces à la souveraineté de Taïwan. Un hymne courant du mouvement pour l'indépendance de Taïwan est \"Taïwan la Formose\", notamment la première strophe.\n\n\"Par la côte ouest du Pacifique, une belle île, notre verdoyante Taïwan.\nSouffra un jour sous une domination étrangère, finalement libre d'être elle-même.\nVoici la base de notre nation : quatre groupes divers dans l'unité,\nviennent offrir tous leurs talents variés, pour le meilleur de tous et un monde en paix.\"\n- Première strophe de Taïwan la Formose",
     "links": [
       "https://fr.wikipedia.org/wiki/Ind%C3%A9pendance_de_Ta%C3%AFwan"
     ]
@@ -99,28 +100,33 @@
   "tw_beer": {
     "title": "Taiwan Beer",
     "blurb": "Célèbre bière taiwanaise",
-    "desc": "Couramment vendue dans les bars et les superettes, la Taiwan Beer est une des boissons des plus célèbres et reconnaissables.",
+    "desc": "Couramment vendue dans les bars et les supérettes, la Taiwan Beer est une des boissons des plus célèbres et reconnaissables.",
     "links": [
       "https://www.twbeer.com.tw/aboutEN",
       "https://fr.wikipedia.org/wiki/Ta%C3%AFwan_Beer"
     ]
   },
   "apple_sidra": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
+    "title": "Apple Sidra",
+    "blurb": "Boisson répandue à Taïwan",
+    "desc": "Soda taiwanais à base de jus de pomme. Savoureuse et bon marché, cette boisson peut être achetée dans des supérettes et des distributeurs automatiques partout à Taïwan.",
     "links": []
   },
   "tatung_rice_cooker": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
+    "title": "Autocuiseur de riz Tatung",
+    "blurb": "Autocuiseur de riz emblématique",
+    "desc": "L'autocuiseur de riz Taïwanais de la marque Tatung (大同電鍋) est l'appareil à cuisiner emblématique de Taïwan, connu pour sa durabilité. Il fût introduit en 1960. Même à l'étranger, les Taiwanais feront de leur mieux pour mettre la main sur un autocuiseur de cette marque.",
     "links": []
   },
   "tsmc_logo": {
-    "title": "",
-    "blurb": "",
-    "desc": "",
-    "links": []
+    "title": "Logo de TSMC",
+    "blurb": "Entreprise taïwanaise de fabrication de semi-conducteurs",
+    "desc": "La Taiwan Semiconductor Manufacturing Company (TSMC) est une des plus influentes fonderies de semi-conducteurs au monde. Son siège est à Hsinchu, noeud technologique de Taïwan. 92% des semi-conducteurs les plus avancés sont fabriqués par la TSMC et ses homologues taiwanais.",
+    "links": [
+      "https://fr.wikipedia.org/wiki/Taiwan_Semiconductor_Manufacturing_Company",
+      "https://youtu.be/XOXK5rmCilk",
+      "https://fr.wikipedia.org/wiki/Parc_scientifique_de_Hsinchu",
+      "https://www.tsmc.com/english"
+    ]
   }
 }
