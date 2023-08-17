@@ -1,0 +1,32 @@
+{
+  "boba_tea_bear": {
+    "title": "Té de burbujas",
+    "blurb": "Una bebida popular taiwanés",
+    "desc": "El té de burbujas es una bebida famosa que se origina en Taiwán. Se ha difundido al mundo y  convertido en una bebida popular.",
+    "links": []
+  },
+  "tw_magpie": {
+    "title": "La urraca azul de Formosa",
+    "blurb": "Un pájaro famoso y sagrado de Taiwán",
+    "desc": "La urraca azul de Formosa es un pájaro indígena de Taiwán. Es famoso por su amistad con los humanos, apariencia distinta, y relación con las tribus aborígenes de Taiwán, algunas de las cuales lo consideran sagrado.",
+    "links": []
+  },
+  "heart_baltics": {
+    "title": "El corazón de amistad con los países bálticos",
+    "blurb": "Un corazón que contiene las banderas de Taiwán y de los países bálticos.",
+    "desc": "Un corazón que simboliza la alianza y amistad con los países bálticos. Los corazones en r/place comúnmente simbolizan relaciones fuertes entre comunidades de arte.",
+    "links": []
+  },
+  "heart_bretons": {
+    "title": "El corazón de amistad con los bretones",
+    "blurb": "Un corazón que contiene los banderas de Taiwán y de Bretaña",
+    "desc": "Un corazón que simboliza la alianza y amistad con los Bretones de Britaña. Los corazones en r/place comúnmente simbolizan relaciones fuertes entre comunidades de arte.",
+    "links": []
+  },
+  "lt_pengiun_boba": {
+    "title": "El pingüino lituano bebiendo té de burbujas",
+    "blurb": "Un símbolo refrescante de la amistad entre los países bálticos y los comunidades taiwaneses",
+    "desc": "Un pingüino lituano bebiendo té de burbujas encima del arte taiwanés. Cuando el lienzo creció, los equipos de Taiwán y de los países bálticos corrieron para establecer espacio debajo de sus lugares originales. Taiwán dibujó Taipei 101, y los países bálticos dibujaron las banderas nacionales, reclamando un espacio grande. Los países bálticos dieron el espacio debajo de la parte lituano (y luego la parte estonio) a Taiwán. Como un símbolo de amistad, el pingüino lituano fue dado el té de burbujas famoso taiwanés para beber.",
+    "links": []
+  }
+}
