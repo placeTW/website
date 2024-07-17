@@ -57,7 +57,7 @@ const AdminPage = () => {
 
   const banUser = async (userId: string) => {
     const { error } = await supabase.auth.admin.updateUserById(userId, {
-      banned_until: new Date(9999, 11, 31).toISOString() // Set a far future date to ban the user
+      user_metadata: { banned_until: new Date(9999, 11, 31).toISOString() } // Set a far future date to ban the user
     });
     if (error) {
       setError('Error banning user');

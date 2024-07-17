@@ -3,14 +3,15 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext", // Use ESNext for ES modules
+    "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "node",
     "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "outDir": "./dist", // Output directory for compiled files
+    "outDir": "./dist",
     "jsx": "react-jsx",
     "strict": true,
     "noUnusedLocals": true,
