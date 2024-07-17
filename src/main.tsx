@@ -8,7 +8,7 @@ import Gallery from "./pages/gallery";
 import Layout from "./component/layout";
 import "./i18n";
 import Translations from "./pages/translations";
-import SetNickname from "./pages/SetNickname";
+import AdminPage from './pages/admin';
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -19,7 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route path="/" element={<HomePage />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/translations" element={<Translations />} />
-            <Route path="/set-nickname" element={<SetNickname />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>

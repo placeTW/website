@@ -6,7 +6,7 @@ const AuthProviderModal = ({ isOpen, onClose, authType }: { isOpen: boolean; onC
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin + '/set-nickname',
+        redirectTo: window.location.origin,
       },
     });
     onClose();
