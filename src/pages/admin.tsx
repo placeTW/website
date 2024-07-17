@@ -1,12 +1,6 @@
-// src/pages/admin.tsx
-
 import { useEffect, useState } from 'react';
 import { Box, Button, Heading, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from '../supabase';
 
 const AdminPage = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -15,45 +9,15 @@ const AdminPage = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError || !sessionData?.session) {
-        setError('Error fetching session');
+      const { data, error } = await supabase.auth.admin.listUsers();
+      if (error) {
+        setError('Error fetching users');
+        console.error('Error fetching users:', error);
         setLoading(false);
         return;
       }
-
-      try {
-        const response = await fetch(`${supabaseUrl}/functions/v1/fetch-users`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionData.session.access_token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Fetched users:', data);
-
-          if (data && Array.isArray(data.users)) {
-            setUsers(data.users);
-          } else {
-            console.error('Unexpected response format:', data);
-            setError('Unexpected response format');
-          }
-          setLoading(false);
-        } else {
-          const errorData = await response.json();
-          console.error('Error fetching users:', errorData);
-          setError(errorData.error);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Fetch error:', error);
-        setError('Fetch error');
-        setLoading(false);
-      }
+      setUsers(data.users);
+      setLoading(false);
     };
 
     fetchUsers();

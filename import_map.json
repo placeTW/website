@@ -1,7 +1,0 @@
-{
-    "imports": {
-      "std/": "https://deno.land/std@0.113.0/",
-      "supabase/": "https://deno.land/x/supabase@1.0.0/"
-    }
- }
-  
