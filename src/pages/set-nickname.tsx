@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../supabase";
+import { Box, Button, FormControl, FormLabel, Input } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Input, FormControl, FormLabel } from "@chakra-ui/react";
+import { supabase } from "../supabase";
 
 const SetNickname = () => {
+  const { t } = useTranslation();
   const [nickname, setNickname] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -31,7 +33,7 @@ const SetNickname = () => {
   return (
     <Box>
       <FormControl>
-        <FormLabel>Enter your nickname</FormLabel>
+        <FormLabel>{t("Enter your nickname")}</FormLabel>
         <Input
           type="text"
           value={nickname}
@@ -39,7 +41,7 @@ const SetNickname = () => {
         />
       </FormControl>
       <Button onClick={handleSetNickname} colorScheme="teal" mt={4}>
-        Set Nickname
+        {t("Set Nickname")}
       </Button>
     </Box>
   );

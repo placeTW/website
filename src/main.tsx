@@ -8,7 +8,7 @@ import Gallery from "./pages/gallery";
 import Layout from "./component/layout";
 import "./i18n";
 import Translations from "./pages/translations";
-import SetNickname from "./pages/SetNickname";
+import SetNickname from "./pages/set-nickname";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

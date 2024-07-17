@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { Box, Flex, Spacer, Heading, Link, Button } from '@chakra-ui/react';
-import LanguageSwitcher from './language-switcher';
-import { Link as RouterLink } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import AuthProviderModal from './AuthProviderModal';
+import { Box, Button, Flex, Heading, Link, Spacer } from "@chakra-ui/react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link as RouterLink } from "react-router-dom";
+import AuthProviderModal from "./auth-provider-modal";
+import LanguageSwitcher from "./language-switcher";
 
 const Navbar = () => {
   const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-  const [authType, setAuthType] = useState<'login' | 'register'>('login');
+  const [authType, setAuthType] = useState<"login" | "register">("login");
 
-  const handleOpenModal = (type: 'login' | 'register') => {
+  const handleOpenModal = (type: "login" | "register") => {
     setAuthType(type);
     setAuthModalOpen(true);
   };
@@ -27,10 +27,10 @@ const Navbar = () => {
 
         <Box>
           <Link as={RouterLink} to="/" color="white" mr={4}>
-            {t('Home')}
+            {t("Home")}
           </Link>
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
-            {t('Gallery')}
+            {t("Gallery")}
           </Link>
         </Box>
 
@@ -39,16 +39,24 @@ const Navbar = () => {
         </Box>
 
         <Box ml={4}>
-          <Button onClick={() => handleOpenModal('register')} colorScheme="blue" mr={2}>
-            {t('Register')}
+          <Button
+            onClick={() => handleOpenModal("register")}
+            colorScheme="blue"
+            mr={2}
+          >
+            {t("Register")}
           </Button>
-          <Button onClick={() => handleOpenModal('login')} colorScheme="blue">
-            {t('Login')}
+          <Button onClick={() => handleOpenModal("login")} colorScheme="blue">
+            {t("Login")}
           </Button>
         </Box>
       </Flex>
 
-      <AuthProviderModal isOpen={isAuthModalOpen} onClose={handleCloseModal} authType={authType} />
+      <AuthProviderModal
+        isOpen={isAuthModalOpen}
+        onClose={handleCloseModal}
+        authType={authType}
+      />
     </Box>
   );
 };
