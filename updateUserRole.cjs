@@ -38,8 +38,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var supabase_js_1 = require("@supabase/supabase-js");
 // Initialize Supabase client with your service role key
-var supabaseUrl = process.env.SUPABASE_URL || 'https://wksiriugfrciqdekhrqy.supabase.co';
-var supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '<censored>';
+var supabaseUrl = process.env.SUPABASE_URL || 'put url here';
+var supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'put service role key here';
 var supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseServiceRoleKey);
 function setAdminRole(userId) {
     return __awaiter(this, void 0, void 0, function () {

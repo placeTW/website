@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+      "lib": ["deno.ns", "deno.unstable"]
+    },
+    "tasks": {
+      "serve": "deno run --allow-net --allow-env supabase/functions/fetch-users/index.ts"
+    }
+  }
+  
