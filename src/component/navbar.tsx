@@ -3,7 +3,7 @@ import { Box, Flex, Spacer, Heading, Link, Button, Text, Input, useDisclosure, M
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
-import AuthProviderModal from './AuthProviderModal';
+import AuthProviderModal from './auth-provider-modal';
 import LanguageSwitcher from './language-switcher';
 
 type UserMetadata = {

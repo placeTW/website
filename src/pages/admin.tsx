@@ -137,6 +137,10 @@ const AdminPage = () => {
       setError('Fetch error');
     }
   };
+
+
+  
+  
   const banUser = async (userId: string) => {
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -150,10 +154,7 @@ const AdminPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionData.session.access_token}`,
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+          'Authorization': `Bearer ${sessionData.session.access_token}`
         },
         body: JSON.stringify({ userId })
       });
@@ -183,6 +184,11 @@ const AdminPage = () => {
     }
   };
   
+
+
+
+
+
 
   const unbanUser = async (userId: string) => {
     try {
