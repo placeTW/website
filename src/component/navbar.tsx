@@ -87,10 +87,10 @@ const Navbar = () => {
 
         <Box>
           <Link as={RouterLink} to="/" color="white" mr={4}>
-            {t('Home')}
+            {t("Home")}
           </Link>
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
-            {t('Gallery')}
+            {t("Gallery")}
           </Link>
           {user && user.user_metadata.role === 'admin' && (
             <Link as={RouterLink} to="/admin" color="white" mr={4}>
