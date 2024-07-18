@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Box, Flex, Spacer, Heading, Link, Button, Text, Input, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
+import {
+  Box, Flex, Spacer, Heading, Link, Button, Text, Input, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter
+} from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
@@ -9,6 +11,7 @@ import LanguageSwitcher from './language-switcher';
 type UserMetadata = {
   username: string;
   role: string;
+  status?: string; // Add the status field if it exists
 };
 
 type UserType = {
@@ -64,14 +67,35 @@ const Navbar = () => {
   };
 
   const handleSaveUsername = async () => {
-    if (user) {
-      const { error } = await supabase.auth.updateUser({
-        data: { username }
-      });
-      if (!error) {
-        setUser({ ...user, user_metadata: { ...user.user_metadata, username } });
-        onClose();
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData?.session?.user) {
+        console.error('Error fetching session:', sessionError);
+        return;
       }
+
+      const userId = sessionData.session.user.id;
+
+      const response = await fetch('https://wksiriugfrciqdekhrqy.supabase.co/functions/v1/update-nickname', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.session.access_token}`
+        },
+        body: JSON.stringify({ userId, nickname: username })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error);
+      }
+
+      if (user) {
+        setUser({ ...user, user_metadata: { ...user.user_metadata, username } });
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error updating username:', error);
     }
   };
 

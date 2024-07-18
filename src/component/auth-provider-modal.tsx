@@ -13,6 +13,8 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
   const [error, setError] = useState<string | null>(null);
 
   const handleAuth = async (provider: Provider) => {
+    console.log('Starting authentication with provider:', provider);
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -25,6 +27,8 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
       setError('Error signing in');
       return;
     }
+
+    console.log('Authentication data:', data);
 
     // Redirect the user to the OAuth URL
     window.location.href = data.url;
@@ -43,6 +47,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
 
       if (session) {
         const user = session.user;
+        console.log('User session found:', user);
         if (user?.user_metadata.role === 'banned') {
           await supabase.auth.signOut();
           setError('Your account has been banned.');

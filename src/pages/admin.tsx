@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Heading, Table, Tbody, Td, Th, Thead, Tr, Text } from '@chakra-ui/react';
 import { supabase } from '../supabase';  // Ensure the path is correct
-import { useNavigate } from 'react-router-dom';
+
 
 // Define the type for user objects
 interface User {
@@ -21,7 +21,6 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -70,28 +69,31 @@ const AdminPage = () => {
 
     const channel = supabase
       .channel('table-db-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'art_tool_users',
-      } as any,  // Cast to any to bypass type error temporarily
-      (payload: Payload) => {
-        console.log('Change received!', payload);
-        if (payload.new && payload.new.user_id) {
-          setLogs((prevLogs) => [
-            ...prevLogs, 
-            `Change received for user ${payload.new.user_id}: ${JSON.stringify(payload.new)}`
-          ]);
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'art_tool_users',
+        } as any,  // Cast to any to bypass type error temporarily
+        (payload: Payload) => {
+          console.log('Change received!', payload);
+          if (payload.new && payload.new.user_id) {
+            setLogs((prevLogs) => [
+              ...prevLogs, 
+              `Change received for user ${payload.new.user_id}: ${JSON.stringify(payload.new)}`
+            ]);
 
-          // Update the specific user in the state
-          setUsers((prevUsers) => {
-            const updatedUsers = prevUsers.map(user => 
-              user.user_id === payload.new.user_id ? { ...user, ...payload.new } : user
-            );
-            return updatedUsers;
-          });
+            // Update the specific user in the state
+            setUsers((prevUsers) => {
+              const updatedUsers = prevUsers.map(user => 
+                user.user_id === payload.new.user_id ? { ...user, ...payload.new } : user
+              );
+              return updatedUsers;
+            });
+          }
         }
-      })
+      )
       .subscribe();
 
     return () => {
