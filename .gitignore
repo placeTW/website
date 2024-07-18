@@ -41,3 +41,4 @@ concat_files.sh
 .devcontainer/
 .devcontainer-internal.json
 .github/dependabot.yml
+.dockerignore
