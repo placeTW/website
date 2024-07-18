@@ -1,5 +1,3 @@
-// src/pages/admin.tsx
-
 import { useEffect, useState } from 'react';
 import { Box, Button, Heading, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import { createClient } from '@supabase/supabase-js';
@@ -62,13 +60,13 @@ const AdminPage = () => {
   const promoteToAdmin = async (userId: string) => {
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  
+
       if (sessionError || !sessionData?.session) {
         setError('Error fetching session');
         setLoading(false);
         return;
       }
-  
+
       const response = await fetch(`${supabaseUrl}/functions/v1/promoteToAdmin`, {
         method: 'POST',
         headers: {
@@ -77,7 +75,7 @@ const AdminPage = () => {
         },
         body: JSON.stringify({ userId })
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log('Promoted user:', data);
@@ -96,16 +94,15 @@ const AdminPage = () => {
       setError('Fetch error');
     }
   };
-  
 
   const demoteToUser = async (userId: string) => {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  
+
     if (sessionError || !sessionData?.session) {
       setError('Error fetching session');
       return;
     }
-  
+
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/demoteToUser`, {
         method: 'POST',
@@ -115,14 +112,14 @@ const AdminPage = () => {
         },
         body: JSON.stringify({ userId })
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log('Demoted user:', data);
-  
+
         if (data && data.user) {
-          setUsers((prevUsers) => 
-            prevUsers.map((user) => 
+          setUsers((prevUsers) =>
+            prevUsers.map((user) =>
               user.id === userId ? { ...user, user_metadata: { ...user.user_metadata, role: 'user' } } : user
             )
           );
@@ -140,17 +137,88 @@ const AdminPage = () => {
       setError('Fetch error');
     }
   };
+  const banUser = async (userId: string) => {
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  
+      if (sessionError || !sessionData?.session) {
+        setError('Error fetching session');
+        return;
+      }
+  
+      const response = await fetch(`${supabaseUrl}/functions/v1/banUser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+        },
+        body: JSON.stringify({ userId })
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Banned user:', data);
+  
+        if (data && data.user) {
+          setUsers((prevUsers) =>
+            prevUsers.map((user) =>
+              user.id === userId ? { ...user, user_metadata: { ...user.user_metadata, role: 'banned' } } : user
+            )
+          );
+        } else {
+          console.error('Unexpected response format:', data);
+          setError('Unexpected response format');
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Error banning user:', errorData);
+        setError(errorData.error);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setError('Fetch error');
+    }
+  };
   
 
-  const banUser = async (userId: string) => {
-    const { error } = await supabase.auth.admin.updateUserById(userId, {
-      user_metadata: { banned_until: new Date(9999, 11, 31).toISOString() } // Set a far future date to ban the user
-    });
-    if (error) {
-      setError('Error banning user');
-      console.error('Error banning user:', error);
-    } else {
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+  const unbanUser = async (userId: string) => {
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !sessionData?.session) {
+        setError('Error fetching session');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/unbanUser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.session.access_token}`
+        },
+        body: JSON.stringify({ userId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Unbanned user:', data);
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === userId ? { ...user, user_metadata: { ...user.user_metadata, role: 'user' } } : user
+          )
+        );
+      } else {
+        const errorData = await response.json();
+        console.error('Error unbanning user:', errorData);
+        setError(errorData.error);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setError('Fetch error');
     }
   };
 
@@ -191,9 +259,15 @@ const AdminPage = () => {
                     Demote to User
                   </Button>
                 )}
-                <Button colorScheme="red" onClick={() => banUser(user.id)}>
-                  Ban User
-                </Button>
+                {user.user_metadata?.role !== 'banned' ? (
+                  <Button colorScheme="red" onClick={() => banUser(user.id)}>
+                    Ban User
+                  </Button>
+                ) : (
+                  <Button colorScheme="green" onClick={() => unbanUser(user.id)}>
+                    Unban User
+                  </Button>
+                )}
               </Td>
             </Tr>
           ))}

@@ -4,7 +4,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
 import AuthProviderModal from './AuthProviderModal';
-import LanguageSwitcher from './language-switcher'; // Ensure this import is correct
+import LanguageSwitcher from './language-switcher';
 
 type UserMetadata = {
   username: string;
@@ -19,7 +19,7 @@ type UserType = {
 const Navbar = () => {
   const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-  const [user, setUser] = useState<UserType | null>(null); // Define the state type
+  const [user, setUser] = useState<UserType | null>(null);
   const [username, setUsername] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
@@ -35,7 +35,6 @@ const Navbar = () => {
         const userData = data.session.user;
         let initialUsername = userData.user_metadata?.username;
         if (!initialUsername) {
-          // Use the username from the auth provider if it's not set
           initialUsername = userData.email?.split('@')[0] || 'Unknown';
         }
         const userMetadata: UserMetadata = {
