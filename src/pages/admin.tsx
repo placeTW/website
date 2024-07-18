@@ -60,20 +60,43 @@ const AdminPage = () => {
   }, []);
 
   const promoteToAdmin = async (userId: string) => {
-    const { error } = await supabase.auth.admin.updateUserById(userId, {
-      user_metadata: { role: 'admin' }
-    });
-    if (error) {
-      setError('Error promoting user');
-      console.error('Error promoting user:', error);
-    } else {
-      setUsers((prevUsers) => 
-        prevUsers.map((user) => 
-          user.id === userId ? { ...user, user_metadata: { ...user.user_metadata, role: 'admin' } } : user
-        )
-      );
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  
+      if (sessionError || !sessionData?.session) {
+        setError('Error fetching session');
+        setLoading(false);
+        return;
+      }
+  
+      const response = await fetch(`${supabaseUrl}/functions/v1/promoteToAdmin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.session.access_token}`
+        },
+        body: JSON.stringify({ userId })
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Promoted user:', data);
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === userId ? { ...user, user_metadata: { ...user.user_metadata, role: 'admin' } } : user
+          )
+        );
+      } else {
+        const errorData = await response.json();
+        console.error('Error promoting user:', errorData);
+        setError(errorData.error);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setError('Fetch error');
     }
   };
+  
 
   const demoteToUser = async (userId: string) => {
     const { error } = await supabase.auth.admin.updateUserById(userId, {
