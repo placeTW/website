@@ -43,7 +43,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
 
       if (session) {
         const user = session.user;
-        if (user.user_metadata.role === 'banned') {
+        if (user?.user_metadata.role === 'banned') {
           await supabase.auth.signOut();
           setError('Your account has been banned.');
         } else {
@@ -53,7 +53,25 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
     };
 
     checkSession();
-  }, []);
+
+    // Subscribe to the 'bans' channel
+    const subscription = supabase
+      .channel('bans')
+      .on('broadcast', { event: 'ban' }, async (payload) => {
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData?.user?.id;
+        if (payload?.payload?.userId === userId) {
+          await supabase.auth.signOut();
+          setError('Your account has been banned.');
+        }
+      })
+      .subscribe();
+
+    // Clean up subscription on unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [isOpen, onClose]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

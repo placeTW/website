@@ -138,9 +138,6 @@ const AdminPage = () => {
     }
   };
 
-
-  
-  
   const banUser = async (userId: string) => {
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -183,23 +180,17 @@ const AdminPage = () => {
       setError('Fetch error');
     }
   };
-  
-
-
-
-
-
 
   const unbanUser = async (userId: string) => {
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-
+  
       if (sessionError || !sessionData?.session) {
         setError('Error fetching session');
         setLoading(false);
         return;
       }
-
+  
       const response = await fetch(`${supabaseUrl}/functions/v1/unbanUser`, {
         method: 'POST',
         headers: {
@@ -208,7 +199,7 @@ const AdminPage = () => {
         },
         body: JSON.stringify({ userId })
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         console.log('Unbanned user:', data);
