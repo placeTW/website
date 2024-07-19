@@ -4,12 +4,11 @@ import Footer from "./footer";
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import GlobalUserStatusListener from './global-user-status-listener';
-import { UserType, AuthUserType } from '../types'; // Ensure this path is correct
+import { UserType } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [authUser, setAuthUser] = useState<AuthUserType | null>(null);
   const [artToolUser, setArtToolUser] = useState<UserType | null>(null);
 
   useEffect(() => {
@@ -20,13 +19,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      const authUser = sessionData?.session?.user as AuthUserType;
+      const authUser = sessionData?.session?.user;
       if (!authUser) {
         console.error('No authenticated user found');
         return;
       }
-
-      setAuthUser(authUser);
 
       // Retry logic to fetch user from the edge function
       const maxRetries = 5;
