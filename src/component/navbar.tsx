@@ -7,52 +7,26 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
 import AuthProviderModal from './auth-provider-modal';
 import LanguageSwitcher from './language-switcher';
+import { UserType } from '../types'; // Ensure this path is correct
 
-type UserMetadata = {
-  username: string;
-  role: string;
-  status?: string; // Add the status field if it exists
-};
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
-type UserType = {
-  id: string;
-  user_metadata: UserMetadata;
-};
+interface NavbarProps {
+  user: UserType | null;
+}
 
-const Navbar = () => {
+const Navbar = ({ user }: NavbarProps) => {
   const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-  const [user, setUser] = useState<UserType | null>(null);
   const [username, setUsername] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error fetching user:', error);
-        return;
-      }
-      if (data?.session?.user) {
-        const userData = data.session.user;
-        let initialUsername = userData.user_metadata?.username;
-        if (!initialUsername) {
-          initialUsername = userData.email?.split('@')[0] || 'Unknown';
-        }
-        const userMetadata: UserMetadata = {
-          username: initialUsername,
-          role: userData.user_metadata?.role || 'user'
-        };
-        setUser({
-          id: userData.id,
-          user_metadata: userMetadata
-        });
-        setUsername(userMetadata.username);
-      }
-    };
-    fetchUser();
-  }, []);
+    if (user) {
+      setUsername(user.handle);
+    }
+  }, [user]);
 
   const handleOpenModal = () => {
     setAuthModalOpen(true);
@@ -62,7 +36,6 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
     navigate('/');
   };
 
@@ -76,13 +49,13 @@ const Navbar = () => {
 
       const userId = sessionData.session.user.id;
 
-      const response = await fetch('https://wksiriugfrciqdekhrqy.supabase.co/functions/v1/update-nickname', {
+      const response = await fetch(`${supabaseUrl}/functions/v1/update-nickname`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionData.session.access_token}`
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
         },
-        body: JSON.stringify({ userId, nickname: username })
+        body: JSON.stringify({ userId, handle: username }),
       });
 
       if (!response.ok) {
@@ -90,9 +63,6 @@ const Navbar = () => {
         throw new Error(errorData.error);
       }
 
-      if (user) {
-        setUser({ ...user, user_metadata: { ...user.user_metadata, username } });
-      }
       onClose();
     } catch (error) {
       console.error('Error updating username:', error);
@@ -115,9 +85,9 @@ const Navbar = () => {
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
             {t("Gallery")}
           </Link>
-          {user && user.user_metadata.role === 'admin' && (
-            <Link as={RouterLink} to="/admin" color="white" mr={4}>
-              {t('Admin')}
+          {user && (user.rank_name === 'Admiral' || user.rank_name === 'Captain') && (
+            <Link as={RouterLink} to="/officers" color="white" mr={4}>
+              {t('Officers')}
             </Link>
           )}
         </Box>
@@ -130,7 +100,7 @@ const Navbar = () => {
           {user ? (
             <Flex alignItems="center">
               <Text color="white" mr={2}>
-                Hi, {user.user_metadata.username}
+                Welcome, {user.rank_name} {user.handle}
               </Text>
               <Button onClick={onOpen} colorScheme="blue" mr={2}>
                 {t('Edit Username')}

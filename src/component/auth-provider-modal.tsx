@@ -3,6 +3,8 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter,
 import { supabase } from '../supabase';
 import { Provider } from '@supabase/supabase-js';
 
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
 interface AuthProviderModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,6 +37,8 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
   };
 
   useEffect(() => {
+    if (!isOpen) return;
+
     // Check session after redirect
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -46,13 +50,31 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
       }
 
       if (session) {
-        const user = session.user;
-        console.log('User session found:', user);
-        if (user?.user_metadata.role === 'banned') {
-          await supabase.auth.signOut();
-          setError('Your account has been banned.');
-        } else {
-          onClose();
+        const userId = session.user.id;
+        try {
+          const response = await fetch(`${supabaseUrl}/functions/v1/fetch-one-user?user_id=${userId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+          }
+
+          const userData = await response.json();
+
+          if (userData.rank === 'Pirate') {
+            await supabase.auth.signOut();
+            setError('Your account has been banned.');
+          } else {
+            onClose();
+          }
+        } catch (fetchError) {
+          console.error('Error fetching user from art_tool_users:', fetchError);
+          setError('Error fetching user from art_tool_users');
         }
       }
     };
