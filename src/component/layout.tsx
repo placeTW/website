@@ -1,8 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Box } from "@chakra-ui/react";
+import { supabase } from '../supabase';
 import Navbar from "./navbar";
 import Footer from "./footer";
-import { useEffect, useState } from 'react';
-import { supabase } from '../supabase';
 import GlobalUserStatusListener from './global-user-status-listener';
 import { UserType } from '../types';
 
@@ -75,7 +75,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Box w="100vw">
-      <Navbar user={artToolUser} />
+      <Navbar user={artToolUser} setUser={setArtToolUser} />
       <Box p={4}>{children}</Box>
       <Footer />
       {artToolUser && <GlobalUserStatusListener user={artToolUser} onUserUpdate={handleUserUpdate} />}

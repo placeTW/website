@@ -13,9 +13,10 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
 interface NavbarProps {
   user: UserType | null;
+  setUser: (user: UserType | null) => void; // Add setUser prop to update user state in parent
 }
 
-const Navbar = ({ user }: NavbarProps) => {
+const Navbar = ({ user, setUser }: NavbarProps) => {
   const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [username, setUsername] = useState('');
@@ -36,6 +37,7 @@ const Navbar = ({ user }: NavbarProps) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setUser(null); // Update user state to null
     navigate('/');
   };
 
@@ -66,6 +68,12 @@ const Navbar = ({ user }: NavbarProps) => {
       onClose();
     } catch (error) {
       console.error('Error updating username:', error);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSaveUsername();
     }
   };
 
@@ -128,6 +136,7 @@ const Navbar = ({ user }: NavbarProps) => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={handleKeyDown} // Handle Enter key press
             />
           </ModalBody>
           <ModalFooter>
