@@ -94,7 +94,7 @@ const Navbar = ({ user, setUser }: NavbarProps) => {
             {t("Gallery")}
           </Link>
           {user && (user.rank_name === 'Admiral' || user.rank_name === 'Captain') && (
-            <Link as={RouterLink} to="/officers" color="white" mr={4}>
+            <Link as={RouterLink} to="/admin" color="white" mr={4}>
               {t('Officers')}
             </Link>
           )}
