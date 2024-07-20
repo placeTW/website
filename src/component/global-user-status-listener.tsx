@@ -52,7 +52,8 @@ const GlobalUserStatusListener = ({ user, onUserUpdate }: GlobalUserStatusListen
 
     console.log(`Setting up real-time listener for user_id: ${user.user_id}`);
 
-    const channel = supabase.channel('table-db-changes')
+    const channel = supabase
+      .channel('table-db-changes')
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
