@@ -11,6 +11,7 @@ interface User {
 }
 
 interface Payload {
+  eventType: string; // Adjust from type to eventType
   new: User;
   old: User;
 }
