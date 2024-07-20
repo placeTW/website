@@ -5,7 +5,7 @@ import { supabase } from '../supabase';  // Ensure the path is correct
 interface User {
   user_id: string;
   email: string | null;
-  handle: string;  // Updated to include handle
+  handle: string;
   rank: string;
   rank_name?: string;
 }
