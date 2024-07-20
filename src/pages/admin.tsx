@@ -5,7 +5,7 @@ import { supabase } from '../supabase';  // Ensure the path is correct
 interface User {
   user_id: string;
   email: string | null;
-  nickname: string;
+  handle: string;  // Updated to include handle
   rank: string;
   rank_name?: string;
 }
@@ -207,7 +207,7 @@ const AdminPage = () => {
       <Thead>
         <Tr>
           <Th>Email</Th>
-          <Th>Nickname</Th>
+          <Th>Username</Th>
           <Th>Rank</Th>
         </Tr>
       </Thead>
@@ -215,7 +215,7 @@ const AdminPage = () => {
         {users.map((user) => (
           <Tr key={user.user_id}>
             <Td>{user.email}</Td>
-            <Td>{user.nickname}</Td>
+            <Td>{user.handle}</Td>  // Updated to display the handle
             <Td>
               <Select
                 value={user.rank}
