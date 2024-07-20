@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Text, Select } from '@chakra-ui/react';
+import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Select } from '@chakra-ui/react';
 import { supabase } from '../supabase';  // Ensure the path is correct
 
 interface User {
@@ -119,7 +119,8 @@ const AdminPage = () => {
           const data = await response.json();
           console.log("Users data:", data);
           if (Array.isArray(data)) {
-            setUsers(data);
+            const sortedData = sortUsers(data);
+            setUsers(sortedData);
             await fetchUserRank(sessionData.session.user.id, sessionData);
             await fetchRankNames(sessionData);
           } else {
@@ -145,7 +146,7 @@ const AdminPage = () => {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'art_tool_users' },
-        (payload: Payload) => {
+        async (payload: Payload) => {
           console.log("Real-time update received:", payload);
           if (payload.new && payload.new.user_id) {
             setLogs((prevLogs) => [
@@ -157,8 +158,14 @@ const AdminPage = () => {
               const updatedUsers = prevUsers.map((user) =>
                 user.user_id === payload.new.user_id ? { ...user, ...payload.new } : user
               );
-              return updatedUsers;
+              return sortUsers(updatedUsers); // Sort after updating the users
             });
+
+            // If the logged-in user's rank has changed, update moderatableRanks
+            const { data: sessionData } = await supabase.auth.getSession();
+            if (payload.new.user_id === sessionData.session.user.id) {
+              await fetchUserRank(sessionData.session.user.id, sessionData);
+            }
           }
         }
       )
@@ -168,6 +175,15 @@ const AdminPage = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const sortUsers = (users: User[]): User[] => {
+    return users.sort((a, b) => {
+      if (a.rank === b.rank) {
+        return (a.email || '').localeCompare(b.email || '');
+      }
+      return a.rank.localeCompare(b.rank);
+    });
+  };
 
   const updateUserRank = async (userId: string, rank: string) => {
     console.log(`Updating user rank for userId: ${userId} to rank: ${rank}`);
@@ -195,6 +211,11 @@ const AdminPage = () => {
         `Updated user ${userId} to ${rank}: ${JSON.stringify(responseData)}`,
       ]);
       console.log("User rank updated successfully");
+
+      // If the logged-in user's rank has changed, update moderatableRanks
+      if (userId === sessionData.session.user.id) {
+        await fetchUserRank(userId, sessionData);
+      }
     } else {
       const errorData = await response.json();
       setError(errorData.error);
@@ -215,7 +236,7 @@ const AdminPage = () => {
         {users.map((user) => (
           <Tr key={user.user_id}>
             <Td>{user.email}</Td>
-            <Td>{user.handle}</Td>  // Updated to display the handle
+            <Td>{user.handle}</Td>
             <Td>
               <Select
                 value={user.rank}
@@ -225,7 +246,7 @@ const AdminPage = () => {
                   <option
                     key={rankId}
                     value={rankId}
-                    disabled={!moderatableRanks.includes(rankId)}
+                    disabled={!moderatableRanks.includes(rankId) && rankId !== user.rank}
                   >
                     {rankName}
                   </option>
@@ -252,7 +273,7 @@ const AdminPage = () => {
           Logs
         </Heading>
         {logs.map((log, index) => (
-          <Text key={index}>{log}</Text>
+          <p key={index}>{log}</p>
         ))}
       </Box>
     </Box>
