@@ -58,42 +58,6 @@ const AdminPage = () => {
       }
     };
 
-    const fetchUserRank = async (userId: string, sessionData: any) => {
-      console.log(`Fetching user rank for userId: ${userId}`);
-      const { data: userData, error: userError } = await supabase
-        .from('art_tool_users')
-        .select('rank')
-        .eq('user_id', userId)
-        .single();
-      console.log("User rank data:", userData);
-
-      if (userError) {
-        setError(userError.message);
-        return;
-      }
-
-      const { rank } = userData;
-
-      console.log("Fetching moderatable ranks...");
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-can-moderate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionData.session.access_token}`,
-        },
-        body: JSON.stringify({ rank_id: rank }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setModeratableRanks(data.can_moderate);
-        console.log("Moderatable Ranks:", data.can_moderate);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error);
-      }
-    };
-
     const fetchUsers = async () => {
       console.log("Fetching session data...");
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -121,7 +85,7 @@ const AdminPage = () => {
           if (Array.isArray(data)) {
             const sortedData = sortUsers(data);
             setUsers(sortedData);
-            await fetchUserRank(sessionData.session.user.id, sessionData);
+            await fetchUserDetailsAndModeratableRanks(sessionData.session.user.id, sessionData);
             await fetchRankNames(sessionData);
           } else {
             setError('Unexpected response format');
@@ -164,7 +128,7 @@ const AdminPage = () => {
             // If the logged-in user's rank has changed, update moderatableRanks
             const { data: sessionData } = await supabase.auth.getSession();
             if (payload.new.user_id === sessionData.session.user.id) {
-              await fetchUserRank(sessionData.session.user.id, sessionData);
+              await fetchUserDetailsAndModeratableRanks(sessionData.session.user.id, sessionData);
             }
           }
         }
@@ -175,6 +139,49 @@ const AdminPage = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const fetchUserDetailsAndModeratableRanks = async (userId: string, sessionData: any) => {
+    try {
+      console.log(`Fetching user details for userId: ${userId}`);
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-one-user?user_id=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        const { rank } = userData;
+
+        console.log("Fetching moderatable ranks...");
+        const ranksResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-can-moderate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionData.session.access_token}`,
+          },
+          body: JSON.stringify({ rank_id: rank }),
+        });
+
+        if (ranksResponse.ok) {
+          const data = await ranksResponse.json();
+          setModeratableRanks(data.can_moderate);
+          console.log("Moderatable Ranks:", data.can_moderate);
+        } else {
+          const errorData = await ranksResponse.json();
+          setError(errorData.error);
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error);
+      }
+    } catch (error) {
+      console.error("Fetch user details error:", error);
+      setError('Fetch user details error');
+    }
+  };
 
   const sortUsers = (users: User[]): User[] => {
     return users.sort((a, b) => {
@@ -214,7 +221,7 @@ const AdminPage = () => {
 
       // If the logged-in user's rank has changed, update moderatableRanks
       if (userId === sessionData.session.user.id) {
-        await fetchUserRank(userId, sessionData);
+        await fetchUserDetailsAndModeratableRanks(userId, sessionData);
       }
     } else {
       const errorData = await response.json();
