@@ -1,19 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Heading, Table, Tbody, Td, Th, Thead, Tr, Text } from '@chakra-ui/react';
+import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Text, Select } from '@chakra-ui/react';
 import { supabase } from '../supabase';  // Ensure the path is correct
 
-
-// Define the type for user objects
 interface User {
   user_id: string;
   email: string | null;
   nickname: string;
-  status: string;
+  rank: string;
+  rank_name?: string;
 }
 
-// Define the type for the real-time payload
 interface Payload {
   new: User;
+  old: User;
 }
 
 const AdminPage = () => {
@@ -21,10 +20,83 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
+  const [moderatableRanks, setModeratableRanks] = useState<string[]>([]);
+  const [rankNames, setRankNames] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
+    const fetchRankNames = async (sessionData: any) => {
+      console.log("Fetching rank names...");
+      try {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-rank-name`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionData.session.access_token}`,
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Rank names data:", data);
+
+          const rankNamesMap: { [key: string]: string } = {};
+          data.forEach((rank: { rank_id: string; rank_name: string }) => {
+            rankNamesMap[rank.rank_id] = rank.rank_name;
+          });
+
+          setRankNames(rankNamesMap);
+          console.log("Rank Names:", rankNamesMap);
+        } else {
+          const errorData = await response.json();
+          setError(errorData.error);
+          console.log("Error fetching rank names:", errorData.error);
+        }
+      } catch (error) {
+        console.error("Fetch rank names error:", error);
+        setError('Fetch rank names error');
+      }
+    };
+
+    const fetchUserRank = async (userId: string, sessionData: any) => {
+      console.log(`Fetching user rank for userId: ${userId}`);
+      const { data: userData, error: userError } = await supabase
+        .from('art_tool_users')
+        .select('rank')
+        .eq('user_id', userId)
+        .single();
+      console.log("User rank data:", userData);
+
+      if (userError) {
+        setError(userError.message);
+        return;
+      }
+
+      const { rank } = userData;
+
+      console.log("Fetching moderatable ranks...");
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-can-moderate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
+        },
+        body: JSON.stringify({ rank_id: rank }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setModeratableRanks(data.can_moderate);
+        console.log("Moderatable Ranks:", data.can_moderate);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error);
+      }
+    };
+
     const fetchUsers = async () => {
+      console.log("Fetching session data...");
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log("Session data:", sessionData);
 
       if (sessionError || !sessionData?.session) {
         setError('Error fetching session');
@@ -33,33 +105,33 @@ const AdminPage = () => {
       }
 
       try {
+        console.log("Fetching users...");
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-users`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionData.session.access_token}`
-          }
+            'Authorization': `Bearer ${sessionData.session.access_token}`,
+          },
         });
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Fetched users:', data);
-
-          if (Array.isArray(data)) {  // Check if data is an array
+          console.log("Users data:", data);
+          if (Array.isArray(data)) {
             setUsers(data);
+            await fetchUserRank(sessionData.session.user.id, sessionData);
+            await fetchRankNames(sessionData);
           } else {
-            console.error('Unexpected response format:', data);
             setError('Unexpected response format');
           }
           setLoading(false);
         } else {
           const errorData = await response.json();
-          console.error('Error fetching users:', errorData);
           setError(errorData.error);
           setLoading(false);
         }
       } catch (error) {
-        console.error('Fetch error:', error);
+        console.log("Fetch error:", error);
         setError('Fetch error');
         setLoading(false);
       }
@@ -71,22 +143,17 @@ const AdminPage = () => {
       .channel('table-db-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'art_tool_users',
-        } as any,  // Cast to any to bypass type error temporarily
+        { event: 'UPDATE', schema: 'public', table: 'art_tool_users' },
         (payload: Payload) => {
-          console.log('Change received!', payload);
+          console.log("Real-time update received:", payload);
           if (payload.new && payload.new.user_id) {
             setLogs((prevLogs) => [
-              ...prevLogs, 
-              `Change received for user ${payload.new.user_id}: ${JSON.stringify(payload.new)}`
+              ...prevLogs,
+              `Change received for user ${payload.new.user_id}: ${JSON.stringify(payload.new)}`,
             ]);
 
-            // Update the specific user in the state
             setUsers((prevUsers) => {
-              const updatedUsers = prevUsers.map(user => 
+              const updatedUsers = prevUsers.map((user) =>
                 user.user_id === payload.new.user_id ? { ...user, ...payload.new } : user
               );
               return updatedUsers;
@@ -101,102 +168,77 @@ const AdminPage = () => {
     };
   }, []);
 
-  const updateUserStatus = async (userId: string, status: string) => {
-    try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const updateUserRank = async (userId: string, rank: string) => {
+    console.log(`Updating user rank for userId: ${userId} to rank: ${rank}`);
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    console.log("Session data:", sessionData);
 
-      if (sessionError || !sessionData?.session) {
-        setError('Error fetching session');
-        return;
-      }
+    if (sessionError || !sessionData?.session) {
+      setError('Error fetching session');
+      return;
+    }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/updateUserStatus`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionData.session.access_token}`
-        },
-        body: JSON.stringify({ userId, status })
-      });
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/updateUserStatus`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionData.session.access_token}`,
+      },
+      body: JSON.stringify({ userId, rank }),
+    });
 
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log(`Updated user ${userId} to ${status}:`, responseData);
-        setLogs((prevLogs) => [
-          ...prevLogs, 
-          `Updated user ${userId} to ${status}: ${JSON.stringify(responseData)}`
-        ]);
-
-        // Manually update the user in the state without refetching
-        setUsers((prevUsers) => {
-          const updatedUsers = prevUsers.map(user =>
-            user.user_id === userId ? { ...user, status } : user
-          );
-          return updatedUsers;
-        });
-      } else {
-        const errorData = await response.json();
-        console.error(`Error updating user to ${status}:`, errorData);
-        setError(errorData.error);
-      }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      setError('Fetch error');
+    if (response.ok) {
+      const responseData = await response.json();
+      setLogs((prevLogs) => [
+        ...prevLogs,
+        `Updated user ${userId} to ${rank}: ${JSON.stringify(responseData)}`,
+      ]);
+      console.log("User rank updated successfully");
+    } else {
+      const errorData = await response.json();
+      setError(errorData.error);
+      console.log("Error updating user rank:", errorData);
     }
   };
 
-  const renderTable = () => {
-    return (
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            <Th>Email</Th>
-            <Th>Nickname</Th>
-            <Th>Status</Th>
-            <Th>Actions</Th>
+  const renderTable = () => (
+    <Table variant="simple">
+      <Thead>
+        <Tr>
+          <Th>Email</Th>
+          <Th>Nickname</Th>
+          <Th>Rank</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {users.map((user) => (
+          <Tr key={user.user_id}>
+            <Td>{user.email}</Td>
+            <Td>{user.nickname}</Td>
+            <Td>
+              <Select
+                value={user.rank}
+                onChange={(e) => updateUserRank(user.user_id, e.target.value)}
+              >
+                {Object.entries(rankNames).map(([rankId, rankName]) => (
+                  <option
+                    key={rankId}
+                    value={rankId}
+                    disabled={!moderatableRanks.includes(rankId)}
+                  >
+                    {rankName}
+                  </option>
+                ))}
+              </Select>
+            </Td>
           </Tr>
-        </Thead>
-        <Tbody>
-          {users.map((user) => (
-            <Tr key={user.user_id}>
-              <Td>{user.email}</Td>
-              <Td>{user.nickname}</Td>
-              <Td>{user.status}</Td>
-              <Td>
-                {user.status !== 'admin' && (
-                  <Button colorScheme="blue" onClick={() => updateUserStatus(user.user_id, 'admin')} mr={2}>
-                    Promote to Admin
-                  </Button>
-                )}
-                {user.status === 'admin' && (
-                  <Button colorScheme="yellow" onClick={() => updateUserStatus(user.user_id, 'user')} mr={2}>
-                    Demote to User
-                  </Button>
-                )}
-                {user.status !== 'banned' ? (
-                  <Button colorScheme="red" onClick={() => updateUserStatus(user.user_id, 'banned')}>
-                    Ban User
-                  </Button>
-                ) : (
-                  <Button colorScheme="green" onClick={() => updateUserStatus(user.user_id, 'user')}>
-                    Unban User
-                  </Button>
-                )}
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    );
-  };
+        ))}
+      </Tbody>
+    </Table>
+  );
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <Box p={4}>
