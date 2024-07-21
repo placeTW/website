@@ -30,7 +30,6 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
       try {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData?.session) {
-          console.error('Error fetching session:', sessionError);
           return;
         }
 
@@ -68,7 +67,6 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
       try {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData?.session) {
-          console.error('Error fetching session:', sessionError);
           return;
         }
 
