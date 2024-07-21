@@ -118,7 +118,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
         updatedUser.rank_name = rankNames[updatedUser.rank] || updatedUser.rank_name;
 
         setUsers((prevUsers) => {
-          const newUsers = prevUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user));
+          const newUsers = prevUsers.map((user: UserType) => (user.user_id === updatedUser.user_id ? updatedUser : user));
           if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
             return newUsers;
           }
@@ -141,7 +141,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
 
   const updateUser = (updatedUser: UserType) => {
     setUsers((prevUsers) => {
-      const newUsers = prevUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user));
+      const newUsers = prevUsers.map((user: UserType) => (user.user_id === updatedUser.user_id ? updatedUser : user));
       if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
         return newUsers;
       }

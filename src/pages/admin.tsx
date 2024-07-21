@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Select } from '@chakra-ui/react';
 import { supabase } from '../supabase';
 import { useUserContext } from '../component/global-user-status-listener';
+import { UserType } from '../types';  // Ensure this import is present
 
 const AdminPage = () => {
   const { users, currentUser, rankNames, updateUser } = useUserContext();
