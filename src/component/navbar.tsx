@@ -11,7 +11,7 @@ import { useUserContext } from './global-user-status-listener';
 
 const Navbar = () => {
   const { currentUser, logoutUser } = useUserContext();
-  const { t } = useTranslation();
+  const { t } = useTranslation();  // Initialize the useTranslation hook
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [username, setUsername] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -39,7 +39,7 @@ const Navbar = () => {
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData?.session?.user) {
-        console.error('Error fetching session:', sessionError);
+        console.error(t('Error fetching session'), sessionError);
         return;
       }
 
@@ -61,7 +61,7 @@ const Navbar = () => {
 
       onClose();
     } catch (error) {
-      console.error('Error updating username:', error);
+      console.error(t('Error updating username'), error);
     }
   };
 
@@ -82,10 +82,10 @@ const Navbar = () => {
 
         <Box>
           <Link as={RouterLink} to="/" color="white" mr={4}>
-            {t("Home")}
+            {t('Home')}
           </Link>
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
-            {t("Gallery")}
+            {t('Gallery')}
           </Link>
           {currentUser && (currentUser.rank_name === 'Admiral' || currentUser.rank_name === 'Captain') && (
             <Link as={RouterLink} to="/admin" color="white" mr={4}>
@@ -102,7 +102,7 @@ const Navbar = () => {
           {currentUser ? (
             <Flex alignItems="center">
               <Text color="white" mr={2}>
-                Welcome, {currentUser.rank_name} {currentUser.handle}
+                {t('Welcome')}, {currentUser.rank_name} {currentUser.handle}
               </Text>
               <Button onClick={onOpen} colorScheme="blue" mr={2}>
                 {t('Edit Username')}
@@ -124,7 +124,7 @@ const Navbar = () => {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Edit Username</ModalHeader>
+          <ModalHeader>{t('Edit Username')}</ModalHeader>
           <ModalBody>
             <Input
               type="text"
@@ -135,7 +135,7 @@ const Navbar = () => {
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" onClick={handleSaveUsername}>
-              Save
+              {t('Save')}
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Stack } from '@chakra-ui/react';
 import { supabase } from '../supabase';
 import { Provider } from '@supabase/supabase-js';
+import { useTranslation } from 'react-i18next';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
@@ -12,10 +13,11 @@ interface AuthProviderModalProps {
 }
 
 const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, authType }) => {
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
 
   const handleAuth = async (provider: Provider) => {
-    console.log('Starting authentication with provider:', provider);
+    console.log(t('Starting authentication with provider:'), provider);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -25,12 +27,12 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
     });
 
     if (error) {
-      console.error('Error signing in:', error);
-      setError('Error signing in');
+      console.error(t('Error signing in:'), error);
+      setError(t('Error signing in'));
       return;
     }
 
-    console.log('Authentication data:', data);
+    console.log(t('Authentication data:'), data);
 
     // Redirect the user to the OAuth URL
     window.location.href = data.url;
@@ -44,8 +46,8 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error) {
-        console.error('Error fetching session:', error);
-        setError('Error fetching session');
+        console.error(t('Error fetching session:'), error);
+        setError(t('Error fetching session'));
         return;
       }
 
@@ -61,20 +63,20 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
           });
 
           if (!response.ok) {
-            throw new Error('Failed to fetch user data');
+            throw new Error(t('Failed to fetch user data'));
           }
 
           const userData = await response.json();
 
           if (userData.rank === 'Pirate') {
             await supabase.auth.signOut();
-            setError('Your account has been banned.');
+            setError(t('Your account has been banned.'));
           } else {
             onClose();
           }
         } catch (fetchError) {
-          console.error('Error fetching user from art_tool_users:', fetchError);
-          setError('Error fetching user from art_tool_users');
+          console.error(t('Error fetching user from art_tool_users:'), fetchError);
+          setError(t('Error fetching user from art_tool_users'));
         }
       }
     };
@@ -89,7 +91,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
         const userId = userData?.user?.id;
         if (payload?.payload?.userId === userId) {
           await supabase.auth.signOut();
-          setError('Your account has been banned.');
+          setError(t('Your account has been banned.'));
         }
       })
       .subscribe();
@@ -98,26 +100,26 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, t]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{authType === 'register' ? 'Choose Registration Provider' : 'Choose Login Provider'}</ModalHeader>
+        <ModalHeader>{authType === 'register' ? t('Choose Registration Provider') : t('Choose Login Provider')}</ModalHeader>
         <ModalBody>
           <Stack spacing={4}>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <Button onClick={() => handleAuth('google')} colorScheme="blue">
-              {authType === 'register' ? 'Register with Google' : 'Login with Google'}
+              {authType === 'register' ? t('Register with Google') : t('Login with Google')}
             </Button>
             <Button onClick={() => handleAuth('discord')} colorScheme="blue">
-              {authType === 'register' ? 'Register with Discord' : 'Login with Discord'}
+              {authType === 'register' ? t('Register with Discord') : t('Login with Discord')}
             </Button>
           </Stack>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose}>{t('Close')}</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

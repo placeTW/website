@@ -3,8 +3,10 @@ import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Select } from '@chakra-u
 import { supabase } from '../supabase';
 import { useUserContext } from '../component/global-user-status-listener';
 import { UserType } from '../types';  // Ensure this import is present
+import { useTranslation } from 'react-i18next';  // Import the useTranslation hook
 
 const AdminPage = () => {
+  const { t } = useTranslation();  // Initialize the useTranslation hook
   const { users, currentUser, rankNames, updateUser } = useUserContext();
   const [moderatableRanks, setModeratableRanks] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,7 @@ const AdminPage = () => {
   const updateUserRank = async (userId: string, rank: string) => {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !sessionData?.session) {
-      setError('Error fetching session');
+      setError(t('Error fetching session'));
       return;
     }
 
@@ -83,9 +85,9 @@ const AdminPage = () => {
     <Table variant="simple">
       <Thead>
         <Tr>
-          <Th>Email</Th>
-          <Th>Username</Th>
-          <Th>Rank</Th>
+          <Th>{t('Email')}</Th>
+          <Th>{t('Username')}</Th>
+          <Th>{t('Rank')}</Th>
         </Tr>
       </Thead>
       <Tbody>
@@ -118,7 +120,7 @@ const AdminPage = () => {
   return (
     <Box p={4}>
       <Heading as="h2" size="lg" mb={4}>
-        Admin Page
+        {t('Admin Page')}
       </Heading>
       {error && <Box mb={4} color="red.500">{error}</Box>}
       {renderTable()}

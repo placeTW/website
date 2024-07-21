@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { UserType } from '../types';
+import { useTranslation } from 'react-i18next';
 
 interface UserContextProps {
   users: UserType[];
@@ -21,6 +22,7 @@ const UserContext = createContext<UserContextProps>({
 export const useUserContext = () => useContext(UserContext);
 
 const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) => {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<UserType[]>([]);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [rankNames, setRankNames] = useState<{ [key: string]: string }>({});
@@ -56,10 +58,10 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
           });
         } else {
           const errorData = await response.json();
-          console.error('Error fetching rank names:', errorData.error);
+          console.error(t('Error fetching rank names:'), errorData.error);
         }
       } catch (error) {
-        console.error('Error fetching rank names:', error);
+        console.error(t('Error fetching rank names:'), error);
       }
     };
 
@@ -101,10 +103,10 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
           });
         } else {
           const errorData = await response.json();
-          console.error('Error fetching users:', errorData.error);
+          console.error(t('Error fetching users:'), errorData.error);
         }
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error(t('Error fetching users:'), error);
       }
     };
 
@@ -137,7 +139,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [rankNames, currentUser?.user_id]);
+  }, [rankNames, currentUser?.user_id, t]);
 
   const updateUser = (updatedUser: UserType) => {
     setUsers((prevUsers) => {
