@@ -7,6 +7,7 @@ interface UserContextProps {
   currentUser: UserType | null;
   rankNames: { [key: string]: string };
   updateUser: (updatedUser: UserType) => void;
+  logoutUser: () => void;
 }
 
 const UserContext = createContext<UserContextProps>({
@@ -14,6 +15,7 @@ const UserContext = createContext<UserContextProps>({
   currentUser: null,
   rankNames: {},
   updateUser: () => {},
+  logoutUser: () => {},
 });
 
 export const useUserContext = () => useContext(UserContext);
@@ -47,7 +49,12 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
             rankNamesMap[rank.rank_id] = rank.rank_name;
           });
 
-          setRankNames(rankNamesMap);
+          setRankNames((prevRankNames) => {
+            if (JSON.stringify(prevRankNames) !== JSON.stringify(rankNamesMap)) {
+              return rankNamesMap;
+            }
+            return prevRankNames;
+          });
         } else {
           const errorData = await response.json();
           console.error('Error fetching rank names:', errorData.error);
@@ -79,11 +86,21 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
             ...user,
             rank_name: rankNames[user.rank] || user.rank,
           }));
-          setUsers(updatedUsers);
 
-          // Set the current user
+          setUsers((prevUsers) => {
+            if (JSON.stringify(prevUsers) !== JSON.stringify(updatedUsers)) {
+              return updatedUsers;
+            }
+            return prevUsers;
+          });
+
           const currentUserData = updatedUsers.find((user) => user.user_id === sessionData.session.user.id);
-          setCurrentUser(currentUserData || null);
+          setCurrentUser((prevCurrentUser) => {
+            if (JSON.stringify(prevCurrentUser) !== JSON.stringify(currentUserData)) {
+              return currentUserData || null;
+            }
+            return prevCurrentUser;
+          });
         } else {
           const errorData = await response.json();
           console.error('Error fetching users:', errorData.error);
@@ -102,13 +119,20 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
         const updatedUser = payload.new as UserType;
         updatedUser.rank_name = rankNames[updatedUser.rank] || updatedUser.rank_name;
 
-        setUsers((prevUsers) =>
-          prevUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user))
-        );
+        setUsers((prevUsers) => {
+          const newUsers = prevUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user));
+          if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
+            return newUsers;
+          }
+          return prevUsers;
+        });
 
-        if (updatedUser.user_id === currentUser?.user_id) {
-          setCurrentUser(updatedUser);
-        }
+        setCurrentUser((prevCurrentUser) => {
+          if (prevCurrentUser?.user_id === updatedUser.user_id) {
+            return updatedUser;
+          }
+          return prevCurrentUser;
+        });
       })
       .subscribe();
 
@@ -118,16 +142,28 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
   }, [rankNames, currentUser?.user_id]);
 
   const updateUser = (updatedUser: UserType) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user))
-    );
-    if (updatedUser.user_id === currentUser?.user_id) {
-      setCurrentUser(updatedUser);
-    }
+    setUsers((prevUsers) => {
+      const newUsers = prevUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user));
+      if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
+        return newUsers;
+      }
+      return prevUsers;
+    });
+
+    setCurrentUser((prevCurrentUser) => {
+      if (prevCurrentUser?.user_id === updatedUser.user_id) {
+        return updatedUser;
+      }
+      return prevCurrentUser;
+    });
+  };
+
+  const logoutUser = () => {
+    setCurrentUser(null);
   };
 
   return (
-    <UserContext.Provider value={{ users, currentUser, rankNames, updateUser }}>
+    <UserContext.Provider value={{ users, currentUser, rankNames, updateUser, logoutUser }}>
       {children}
     </UserContext.Provider>
   );

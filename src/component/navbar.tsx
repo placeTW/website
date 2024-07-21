@@ -10,7 +10,7 @@ import LanguageSwitcher from './language-switcher';
 import { useUserContext } from './global-user-status-listener';
 
 const Navbar = () => {
-  const { currentUser } = useUserContext();
+  const { currentUser, logoutUser } = useUserContext();
   const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [username, setUsername] = useState('');
@@ -31,6 +31,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    logoutUser(); // Update context to reflect the logged-out state
     navigate('/');
   };
 
