@@ -7,16 +7,10 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
 import AuthProviderModal from './auth-provider-modal';
 import LanguageSwitcher from './language-switcher';
-import { UserType } from '../types'; // Ensure this path is correct
+import { useUserContext } from './global-user-status-listener';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-
-interface NavbarProps {
-  user: UserType | null;
-  setUser: (user: UserType | null) => void; // Add setUser prop to update user state in parent
-}
-
-const Navbar = ({ user, setUser }: NavbarProps) => {
+const Navbar = () => {
+  const { currentUser } = useUserContext();
   const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [username, setUsername] = useState('');
@@ -24,10 +18,10 @@ const Navbar = ({ user, setUser }: NavbarProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      setUsername(user.handle);
+    if (currentUser) {
+      setUsername(currentUser.handle);
     }
-  }, [user]);
+  }, [currentUser]);
 
   const handleOpenModal = () => {
     setAuthModalOpen(true);
@@ -37,7 +31,6 @@ const Navbar = ({ user, setUser }: NavbarProps) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUser(null); // Update user state to null
     navigate('/');
   };
 
@@ -51,7 +44,7 @@ const Navbar = ({ user, setUser }: NavbarProps) => {
 
       const userId = sessionData.session.user.id;
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/update-nickname`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-nickname`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +86,7 @@ const Navbar = ({ user, setUser }: NavbarProps) => {
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
             {t("Gallery")}
           </Link>
-          {user && (user.rank_name === 'Admiral' || user.rank_name === 'Captain') && (
+          {currentUser && (currentUser.rank_name === 'Admiral' || currentUser.rank_name === 'Captain') && (
             <Link as={RouterLink} to="/admin" color="white" mr={4}>
               {t('Officers')}
             </Link>
@@ -105,10 +98,10 @@ const Navbar = ({ user, setUser }: NavbarProps) => {
         </Box>
 
         <Box ml={4}>
-          {user ? (
+          {currentUser ? (
             <Flex alignItems="center">
               <Text color="white" mr={2}>
-                Welcome, {user.rank_name} {user.handle}
+                Welcome, {currentUser.rank_name} {currentUser.handle}
               </Text>
               <Button onClick={onOpen} colorScheme="blue" mr={2}>
                 {t('Edit Username')}

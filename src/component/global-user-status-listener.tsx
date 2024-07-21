@@ -1,13 +1,26 @@
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { UserType } from '../types';
 
-interface GlobalUserStatusListenerProps {
-  user: UserType;
-  onUserUpdate: (updatedUser: UserType) => void;
+interface UserContextProps {
+  users: UserType[];
+  currentUser: UserType | null;
+  rankNames: { [key: string]: string };
+  updateUser: (updatedUser: UserType) => void;
 }
 
-const GlobalUserStatusListener = ({ user, onUserUpdate }: GlobalUserStatusListenerProps) => {
+const UserContext = createContext<UserContextProps>({
+  users: [],
+  currentUser: null,
+  rankNames: {},
+  updateUser: () => {},
+});
+
+export const useUserContext = () => useContext(UserContext);
+
+const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) => {
+  const [users, setUsers] = useState<UserType[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [rankNames, setRankNames] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
@@ -44,41 +57,80 @@ const GlobalUserStatusListener = ({ user, onUserUpdate }: GlobalUserStatusListen
       }
     };
 
+    const fetchUsers = async () => {
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData?.session) {
+          console.error('Error fetching session:', sessionError);
+          return;
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionData.session.access_token}`,
+          },
+        });
+
+        if (response.ok) {
+          const usersData = await response.json();
+          const updatedUsers = usersData.map((user: UserType) => ({
+            ...user,
+            rank_name: rankNames[user.rank] || user.rank,
+          }));
+          setUsers(updatedUsers);
+
+          // Set the current user
+          const currentUserData = updatedUsers.find((user) => user.user_id === sessionData.session.user.id);
+          setCurrentUser(currentUserData || null);
+        } else {
+          const errorData = await response.json();
+          console.error('Error fetching users:', errorData.error);
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
     fetchRankNames();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-
-    console.log(`Setting up real-time listener for user_id: ${user.user_id}`);
+    fetchUsers();
 
     const channel = supabase
       .channel('table-db-changes')
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'art_tool_users',
-        filter: `user_id=eq.${user.user_id}`,
-      }, async (payload) => {
-        console.log('Real-time update received:', payload);
-
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'art_tool_users' }, async (payload) => {
         const updatedUser = payload.new as UserType;
         updatedUser.rank_name = rankNames[updatedUser.rank] || updatedUser.rank_name;
 
-        console.log('Updated user data:', updatedUser);
-        onUserUpdate(updatedUser);
+        setUsers((prevUsers) =>
+          prevUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user))
+        );
+
+        if (updatedUser.user_id === currentUser?.user_id) {
+          setCurrentUser(updatedUser);
+        }
       })
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('Removing real-time listener for user_id:', user.user_id);
       supabase.removeChannel(channel);
     };
-  }, [user, rankNames, onUserUpdate]);
+  }, [rankNames, currentUser?.user_id]);
 
-  return null;
+  const updateUser = (updatedUser: UserType) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => (user.user_id === updatedUser.user_id ? updatedUser : user))
+    );
+    if (updatedUser.user_id === currentUser?.user_id) {
+      setCurrentUser(updatedUser);
+    }
+  };
+
+  return (
+    <UserContext.Provider value={{ users, currentUser, rankNames, updateUser }}>
+      {children}
+    </UserContext.Provider>
+  );
 };
 
 export default GlobalUserStatusListener;
