@@ -92,7 +92,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
             return prevUsers;
           });
 
-          const currentUserData = updatedUsers.find((user) => user.user_id === sessionData.session.user.id);
+          const currentUserData = updatedUsers.find((user: UserType) => user.user_id === sessionData.session.user.id);
           setCurrentUser((prevCurrentUser) => {
             if (JSON.stringify(prevCurrentUser) !== JSON.stringify(currentUserData)) {
               return currentUserData || null;
