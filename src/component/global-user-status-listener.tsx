@@ -95,8 +95,10 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
           });
 
           const currentUserData = updatedUsers.find((user: UserType) => user.user_id === sessionData.session.user.id);
+          console.log('Current user data:', currentUserData);
           setCurrentUser((prevCurrentUser) => {
             if (JSON.stringify(prevCurrentUser) !== JSON.stringify(currentUserData)) {
+              console.log('Setting current user:', currentUserData);
               return currentUserData || null;
             }
             return prevCurrentUser;
@@ -113,26 +115,37 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
     fetchRankNames();
     fetchUsers();
 
+    const handleUserUpdate = async (updatedUser: UserType) => {
+      console.log('Handling user update:', updatedUser);
+      if (updatedUser.rank === 'F') { // Pirate rank_id is 'F'
+        console.log('User is banned, signing out...');
+        await supabase.auth.signOut();
+        alert(t('Your account has been banned.'));
+        setCurrentUser(null);
+      }
+
+      setUsers((prevUsers) => {
+        const newUsers = prevUsers.map((user: UserType) => (user.user_id === updatedUser.user_id ? updatedUser : user));
+        if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
+          return newUsers;
+        }
+        return prevUsers;
+      });
+
+      setCurrentUser((prevCurrentUser) => {
+        if (prevCurrentUser?.user_id === updatedUser.user_id) {
+          return updatedUser.rank === 'F' ? null : updatedUser;
+        }
+        return prevCurrentUser;
+      });
+    };
+
     const channel = supabase
       .channel('table-db-changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'art_tool_users' }, async (payload) => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'art_tool_users' }, (payload) => {
         const updatedUser = payload.new as UserType;
         updatedUser.rank_name = rankNames[updatedUser.rank] || updatedUser.rank_name;
-
-        setUsers((prevUsers) => {
-          const newUsers = prevUsers.map((user: UserType) => (user.user_id === updatedUser.user_id ? updatedUser : user));
-          if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
-            return newUsers;
-          }
-          return prevUsers;
-        });
-
-        setCurrentUser((prevCurrentUser) => {
-          if (prevCurrentUser?.user_id === updatedUser.user_id) {
-            return updatedUser;
-          }
-          return prevCurrentUser;
-        });
+        handleUserUpdate(updatedUser);
       })
       .subscribe();
 
@@ -142,6 +155,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
   }, [rankNames, currentUser?.user_id, t]);
 
   const updateUser = (updatedUser: UserType) => {
+    console.log('Updating user:', updatedUser);
     setUsers((prevUsers) => {
       const newUsers = prevUsers.map((user: UserType) => (user.user_id === updatedUser.user_id ? updatedUser : user));
       if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
@@ -159,8 +173,19 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
   };
 
   const logoutUser = () => {
+    console.log('Logging out user...');
     setCurrentUser(null);
   };
+
+  useEffect(() => {
+    if (currentUser && currentUser.rank === 'F') {
+      console.log('Detected banned user after sign-in, logging out...');
+      supabase.auth.signOut().then(() => {
+        alert(t('Your account has been banned.'));
+        setCurrentUser(null);
+      });
+    }
+  }, [currentUser, t]);
 
   return (
     <UserContext.Provider value={{ users, currentUser, rankNames, updateUser, logoutUser }}>

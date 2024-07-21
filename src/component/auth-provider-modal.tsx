@@ -67,11 +67,14 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
           }
 
           const userData = await response.json();
+          console.log('Fetched user data:', userData);
 
-          if (userData.rank === 'Pirate') {
+          if (userData.rank === 'F') {
+            console.log('User is banned, signing out...');
             await supabase.auth.signOut();
             setError(t('Your account has been banned.'));
           } else {
+            console.log('User is not banned, closing modal...');
             onClose();
           }
         } catch (fetchError) {
@@ -90,6 +93,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
         const { data: userData } = await supabase.auth.getUser();
         const userId = userData?.user?.id;
         if (payload?.payload?.userId === userId) {
+          console.log('User has been banned, signing out...');
           await supabase.auth.signOut();
           setError(t('Your account has been banned.'));
         }
