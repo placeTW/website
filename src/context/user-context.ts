@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { UserContextProps } from "../types";
+import { UserContextProps } from "../types/users";
 
 
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Select } from '@chakra-ui/react';
 import { functionsFetchCanModerate, functionsUpdateUserStatus } from '../api/supabase';
-import { UserType } from '../types';  // Ensure this import is present
+import { UserType } from '../types/users';  // Ensure this import is present
 import { useTranslation } from 'react-i18next';  // Import the useTranslation hook
 import { useUserContext } from '../context/user-context';
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase, functionsGetSessionInfo, functionsGetRankName, functionsFetchUsers as supabaseFetchUsers } from '../api/supabase';
-import { UserType } from '../types';
+import { UserType } from '../types/users';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../context/user-context';
 
