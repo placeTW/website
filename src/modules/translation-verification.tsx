@@ -94,7 +94,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
         Logged in as {(session?.user?.identities ?? [])[0].id}
       </h1>
       <Button onClick={() => authSignOut()} className="button block full-width">
-        {t("Log out")}
+        {t("Logout")}
       </Button>
       {verified && !loading && translationFilenames && (
         <Tabs>
