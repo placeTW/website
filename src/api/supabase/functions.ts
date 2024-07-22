@@ -1,7 +1,7 @@
-import { getSupabaseSession, SUPABASE_FUNCTIONS_URL } from ".";
+import { authGetSession, SUPABASE_FUNCTIONS_URL } from ".";
 
-export const getSessionInfo = async () => {
-  const { data: sessionData, error: sessionError } = await getSupabaseSession();
+export const functionsGetSessionInfo = async () => {
+  const { data: sessionData, error: sessionError } = await authGetSession();
   if (sessionError || !sessionData?.session?.user) {
     throw new Error('Error fetching session' + sessionError?.message);
   }
@@ -9,8 +9,8 @@ export const getSessionInfo = async () => {
   return [sessionData.session.user.id, sessionData.session.access_token];
 }
 
-export const updateNickname = async (handle: string) => {
-  const [userId, access_token] = await getSessionInfo();
+export const functionsUpdateNickname = async (handle: string) => {
+  const [userId, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/update-nickname`, {
     method: 'POST',
@@ -29,8 +29,8 @@ export const updateNickname = async (handle: string) => {
   return response.json();
 }
 
-export const fetchOneUser = async () => {
-  const [userId, access_token] = await getSessionInfo();
+export const functionsFetchOneUser = async () => {
+  const [userId, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-one-user?user_id=${userId}`, {
     method: 'GET',
@@ -48,8 +48,8 @@ export const fetchOneUser = async () => {
   return response.json();
 }
 
-export const getRankName = async () => {
-  const [, access_token] = await getSessionInfo();
+export const functionsGetRankName = async () => {
+  const [, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/get-rank-name`, {
     method: 'GET',
@@ -67,8 +67,8 @@ export const getRankName = async () => {
   return response.json();
 }
 
-export const fetchUsers = async () => {
-  const [, access_token] = await getSessionInfo();
+export const functionsFetchUsers = async () => {
+  const [, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-users`, {
     method: 'POST',
@@ -86,8 +86,8 @@ export const fetchUsers = async () => {
   return response.json();
 }
 
-export const fetchCanModerate = async (rank_id: string) => {
-  const [, access_token] = await getSessionInfo();
+export const functionsFetchCanModerate = async (rank_id: string) => {
+  const [, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-can-moderate`, {
     method: 'POST',
@@ -107,8 +107,8 @@ export const fetchCanModerate = async (rank_id: string) => {
   return response.json();
 }
 
-export const updateUserStatus = async (userId: string, rank: string) => {
-  const [, access_token] = await getSessionInfo();
+export const functionsUpdateUserStatus = async (userId: string, rank: string) => {
+  const [, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/updateUserStatus`, {
     method: 'POST',

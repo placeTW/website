@@ -11,7 +11,7 @@ import {
 import { Provider } from "@supabase/supabase-js";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { fetchOneUser, supabaseSignInWithOAuth, getSupabaseSession, supabaseSignOut, supabase } from "../api/supabase";
+import { functionsFetchOneUser, authSignInWithOAuth, authGetSession, authSignOut, supabase } from "../api/supabase";
 
 interface AuthProviderModalProps {
   isOpen: boolean;
@@ -30,7 +30,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
   const handleAuth = async (provider: Provider) => {
     console.log(t("Starting authentication with provider:"), provider);
 
-    const { data, error } = await supabaseSignInWithOAuth(
+    const { data, error } = await authSignInWithOAuth(
       provider,
       window.location.href,
     );
@@ -55,7 +55,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
       const {
         data: { session },
         error,
-      } = await getSupabaseSession();
+      } = await authGetSession();
 
       if (error) {
         console.error(t("Error fetching session:"), error);
@@ -65,12 +65,12 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
 
       if (session) {
         try {
-          const userData = await fetchOneUser();
+          const userData = await functionsFetchOneUser();
           console.log("Fetched user data:", userData);
 
           if (userData.rank === "F") {
             console.log("User is banned, signing out...");
-            await supabaseSignOut();
+            await authSignOut();
             setError(t("Your account has been banned."));
           } else {
             console.log("User is not banned, closing modal...");

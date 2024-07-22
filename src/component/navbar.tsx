@@ -4,7 +4,7 @@ import {
 } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase, updateNickname } from '../api/supabase';
+import { supabase, functionsUpdateNickname } from '../api/supabase';
 import AuthProviderModal from './auth-provider-modal';
 import LanguageSwitcher from './language-switcher';
 import { useUserContext } from '../context/user-context';
@@ -41,7 +41,7 @@ const Navbar = () => {
         return;
       }
 
-      await updateNickname(username);
+      await functionsUpdateNickname(username);
 
       onClose();
     } catch (error) {

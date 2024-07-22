@@ -1,5 +1,5 @@
 import { Session } from "@supabase/supabase-js";
-import { supabaseSignOut } from "../api/supabase";
+import { authSignOut } from "../api/supabase";
 import { useEffect, useState } from "react";
 import TranslationFileEditor from "../component/translation/translation-file-editor";
 import {
@@ -94,7 +94,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
         Logged in as {(session?.user?.identities ?? [])[0].id}
       </h1>
       <Button
-        onClick={() => supabaseSignOut()}
+        onClick={() => authSignOut()}
         className="button block full-width"
       >
         {t("Log out")}

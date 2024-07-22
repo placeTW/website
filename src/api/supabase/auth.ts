@@ -1,11 +1,11 @@
 import { Provider } from "@supabase/supabase-js";
 import { supabase } from ".";
 
-export const getSupabaseSession = async () => {
+export const authGetSession = async () => {
   return supabase.auth.getSession();
 }
 
-export const supabaseSignInWithOAuth = async (provider: Provider, redirect: string) => {
+export const authSignInWithOAuth = async (provider: Provider, redirect: string) => {
   return supabase.auth.signInWithOAuth({
     provider: provider,
     options: {
@@ -14,6 +14,6 @@ export const supabaseSignInWithOAuth = async (provider: Provider, redirect: stri
   });
 }
 
-export const supabaseSignOut = async () => {
+export const authSignOut = async () => {
   return supabase.auth.signOut();
 }

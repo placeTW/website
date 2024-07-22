@@ -1,7 +1,7 @@
 import { Button } from "@chakra-ui/react";
 import { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { supabaseSignInWithOAuth } from "../api/supabase";
+import { authSignInWithOAuth } from "../api/supabase";
 
 const TranslationAuth = () => {
   const { t } = useTranslation();
@@ -9,7 +9,7 @@ const TranslationAuth = () => {
   const handleLogin = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    await supabaseSignInWithOAuth(
+    await authSignInWithOAuth(
       "discord",
       window.location.origin + "/translations",
     )

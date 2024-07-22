@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Select } from '@chakra-ui/react';
-import { fetchCanModerate, updateUserStatus } from '../api/supabase';
+import { functionsFetchCanModerate, functionsUpdateUserStatus } from '../api/supabase';
 import { UserType } from '../types';  // Ensure this import is present
 import { useTranslation } from 'react-i18next';  // Import the useTranslation hook
 import { useUserContext } from '../context/user-context';
@@ -16,7 +16,7 @@ const AdminPage = () => {
       if (!currentUser) return;
 
       try {
-        const data = await fetchCanModerate(currentUser.rank);
+        const data = await functionsFetchCanModerate(currentUser.rank);
         setModeratableRanks(data.can_moderate);
       } catch (error) {
         console.error('Fetch user details error:', error);
@@ -29,7 +29,7 @@ const AdminPage = () => {
 
   const updateUserRank = async (userId: string, rank: string) => {
     try {
-      const responseData = await updateUserStatus(userId, rank); // Update the user status
+      const responseData = await functionsUpdateUserStatus(userId, rank); // Update the user status
       updateUser(responseData); // Update the context with the new user data
     }
     catch (error) {

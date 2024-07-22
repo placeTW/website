@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase, getSessionInfo, getRankName, fetchUsers as supabaseFetchUsers } from '../api/supabase';
+import { supabase, functionsGetSessionInfo, functionsGetRankName, functionsFetchUsers as supabaseFetchUsers } from '../api/supabase';
 import { UserType } from '../types';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../context/user-context';
@@ -13,7 +13,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
   useEffect(() => {
     const fetchRankNames = async () => {
       try {
-        const rankData = await getRankName();
+        const rankData = await functionsGetRankName();
 
         const rankNamesMap: { [key: string]: string } = {};
         rankData.forEach((rank: { rank_id: string; rank_name: string }) => {
@@ -46,7 +46,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
           return prevUsers;
         });
 
-        const [currentUserId, ] = await getSessionInfo();
+        const [currentUserId, ] = await functionsGetSessionInfo();
 
         const currentUserData = updatedUsers.find((user: UserType) => user.user_id === currentUserId);
         console.log('Current user data:', currentUserData);
