@@ -1,19 +1,33 @@
-import { useState, useEffect } from 'react';
 import {
-  Box, Flex, Spacer, Heading, Link, Button, Text, Input, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter
-} from '@chakra-ui/react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { functionsUpdateNickname, authSignOut } from '../api/supabase';
-import AuthProviderModal from './auth-provider-modal';
-import LanguageSwitcher from './language-switcher';
-import { useUserContext } from '../context/user-context';
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Input,
+  Link,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Spacer,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { authSignOut, functionsUpdateNickname } from "../api/supabase";
+import { useUserContext } from "../context/user-context";
+import AuthProviderModal from "./auth-provider-modal";
+import LanguageSwitcher from "./language-switcher";
 
 const Navbar = () => {
   const { currentUser, logoutUser } = useUserContext();
-  const { t } = useTranslation();  // Initialize the useTranslation hook
+  const { t } = useTranslation(); // Initialize the useTranslation hook
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
 
@@ -32,7 +46,7 @@ const Navbar = () => {
   const handleLogout = async () => {
     await authSignOut();
     logoutUser(); // Update context to reflect the logged-out state
-    navigate('/');
+    navigate("/");
   };
 
   const handleSaveUsername = async () => {
@@ -45,12 +59,12 @@ const Navbar = () => {
 
       onClose();
     } catch (error) {
-      console.error(t('Error updating username'), error);
+      console.error(t("Error updating username"), error);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSaveUsername();
     }
   };
@@ -66,16 +80,17 @@ const Navbar = () => {
 
         <Box>
           <Link as={RouterLink} to="/" color="white" mr={4}>
-            {t('Home')}
+            {t("Home")}
           </Link>
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
-            {t('Gallery')}
+            {t("Gallery")}
           </Link>
-          {currentUser && (currentUser.rank === 'A' || currentUser.rank === 'B') && (
-            <Link as={RouterLink} to="/admin" color="white" mr={4}>
-              {t('Officers')}
-            </Link>
-          )}
+          {currentUser &&
+            (currentUser.rank === "A" || currentUser.rank === "B") && (
+              <Link as={RouterLink} to="/admin" color="white" mr={4}>
+                {t("Officers")}
+              </Link>
+            )}
         </Box>
 
         <Box>
@@ -86,29 +101,33 @@ const Navbar = () => {
           {currentUser ? (
             <Flex alignItems="center">
               <Text color="white" mr={2}>
-                {t('Welcome')}, {currentUser.rank_name} {currentUser.handle}
+                {t("Welcome")}, {currentUser.rank_name} {currentUser.handle}
               </Text>
               <Button onClick={onOpen} colorScheme="blue" mr={2}>
-                {t('Edit Username')}
+                {t("Edit Username")}
               </Button>
               <Button onClick={handleLogout} colorScheme="blue">
-                {t('Logout')}
+                {t("Logout")}
               </Button>
             </Flex>
           ) : (
             <Button onClick={handleOpenModal} colorScheme="blue">
-              {t('Login')}
+              {t("Login")}
             </Button>
           )}
         </Box>
       </Flex>
 
-      <AuthProviderModal isOpen={isAuthModalOpen} onClose={handleCloseModal} authType="login" />
+      <AuthProviderModal
+        isOpen={isAuthModalOpen}
+        onClose={handleCloseModal}
+        authType="login"
+      />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{t('Edit Username')}</ModalHeader>
+          <ModalHeader>{t("Edit Username")}</ModalHeader>
           <ModalBody>
             <Input
               type="text"
@@ -119,7 +138,7 @@ const Navbar = () => {
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" onClick={handleSaveUsername}>
-              {t('Save')}
+              {t("Save")}
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -11,7 +11,14 @@ import {
 import { Provider } from "@supabase/supabase-js";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { functionsFetchOneUser, authSignInWithOAuth, authGetSession, authSignOut, supabase, authGetUser } from "../api/supabase";
+import {
+  authGetSession,
+  authGetUser,
+  authSignInWithOAuth,
+  authSignOut,
+  functionsFetchOneUser,
+  supabase,
+} from "../api/supabase";
 
 interface AuthProviderModalProps {
   isOpen: boolean;

@@ -3,20 +3,20 @@ import { authGetSession, SUPABASE_FUNCTIONS_URL } from ".";
 export const functionsGetSessionInfo = async () => {
   const { data: sessionData, error: sessionError } = await authGetSession();
   if (sessionError || !sessionData?.session?.user) {
-    throw new Error('Error fetching session' + sessionError?.message);
+    throw new Error("Error fetching session" + sessionError?.message);
   }
 
   return [sessionData.session.user.id, sessionData.session.access_token];
-}
+};
 
 export const functionsUpdateNickname = async (handle: string) => {
   const [userId, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/update-nickname`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${access_token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
     },
     body: JSON.stringify({ userId, handle }),
   });
@@ -27,18 +27,21 @@ export const functionsUpdateNickname = async (handle: string) => {
   }
 
   return response.json();
-}
+};
 
 export const functionsFetchOneUser = async () => {
   const [userId, access_token] = await functionsGetSessionInfo();
 
-  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-one-user?user_id=${userId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${access_token}`,
+  const response = await fetch(
+    `${SUPABASE_FUNCTIONS_URL}/fetch-one-user?user_id=${userId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -46,16 +49,16 @@ export const functionsFetchOneUser = async () => {
   }
 
   return response.json();
-}
+};
 
 export const functionsGetRankName = async () => {
   const [, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/get-rank-name`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${access_token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
     },
   });
 
@@ -65,16 +68,16 @@ export const functionsGetRankName = async () => {
   }
 
   return response.json();
-}
+};
 
 export const functionsFetchUsers = async () => {
   const [, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-users`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${access_token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
     },
   });
 
@@ -84,16 +87,16 @@ export const functionsFetchUsers = async () => {
   }
 
   return response.json();
-}
+};
 
 export const functionsFetchCanModerate = async (rank_id: string) => {
   const [, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-can-moderate`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${access_token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
     },
     body: JSON.stringify({ rank_id }),
   });
@@ -105,16 +108,19 @@ export const functionsFetchCanModerate = async (rank_id: string) => {
   }
 
   return response.json();
-}
+};
 
-export const functionsUpdateUserStatus = async (userId: string, rank: string) => {
+export const functionsUpdateUserStatus = async (
+  userId: string,
+  rank: string,
+) => {
   const [, access_token] = await functionsGetSessionInfo();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/updateUserStatus`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${access_token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
     },
     body: JSON.stringify({ userId, rank }),
   });
@@ -126,4 +132,4 @@ export const functionsUpdateUserStatus = async (userId: string, rank: string) =>
   }
 
   return response.json();
-}
+};

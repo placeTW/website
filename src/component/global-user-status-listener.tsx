@@ -1,10 +1,20 @@
-import { useEffect, useState } from 'react';
-import { supabase, functionsGetSessionInfo, functionsGetRankName, functionsFetchUsers as supabaseFetchUsers, authSignOut } from '../api/supabase';
-import { UserType } from '../types/users';
-import { useTranslation } from 'react-i18next';
-import { UserContext } from '../context/user-context';
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  authSignOut,
+  functionsGetRankName,
+  functionsGetSessionInfo,
+  supabase,
+  functionsFetchUsers as supabaseFetchUsers,
+} from "../api/supabase";
+import { UserContext } from "../context/user-context";
+import { UserType } from "../types/users";
 
-const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) => {
+const GlobalUserStatusListener = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const { t } = useTranslation();
   const [users, setUsers] = useState<UserType[]>([]);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
@@ -27,7 +37,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
           return prevRankNames;
         });
       } catch (error) {
-        console.error(t('Error fetching rank names:'), error);
+        console.error(t("Error fetching rank names:"), error);
       }
     };
 
@@ -46,19 +56,23 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
           return prevUsers;
         });
 
-        const [currentUserId, ] = await functionsGetSessionInfo();
+        const [currentUserId] = await functionsGetSessionInfo();
 
-        const currentUserData = updatedUsers.find((user: UserType) => user.user_id === currentUserId);
-        console.log('Current user data:', currentUserData);
+        const currentUserData = updatedUsers.find(
+          (user: UserType) => user.user_id === currentUserId,
+        );
+        console.log("Current user data:", currentUserData);
         setCurrentUser((prevCurrentUser) => {
-          if (JSON.stringify(prevCurrentUser) !== JSON.stringify(currentUserData)) {
-            console.log('Setting current user:', currentUserData);
+          if (
+            JSON.stringify(prevCurrentUser) !== JSON.stringify(currentUserData)
+          ) {
+            console.log("Setting current user:", currentUserData);
             return currentUserData || null;
           }
           return prevCurrentUser;
         });
       } catch (error) {
-        console.error(t('Error fetching users:'), error);
+        console.error(t("Error fetching users:"), error);
       }
     };
 
@@ -66,16 +80,19 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
     fetchUsers();
 
     const handleUserUpdate = async (updatedUser: UserType) => {
-      console.log('Handling user update:', updatedUser);
-      if (updatedUser.rank === 'F') { // Pirate rank_id is 'F'
-        console.log('User is banned, signing out...');
+      console.log("Handling user update:", updatedUser);
+      if (updatedUser.rank === "F") {
+        // Pirate rank_id is 'F'
+        console.log("User is banned, signing out...");
         await authSignOut();
-        alert(t('Your account has been banned.'));
+        alert(t("Your account has been banned."));
         setCurrentUser(null);
       }
 
       setUsers((prevUsers) => {
-        const newUsers = prevUsers.map((user: UserType) => (user.user_id === updatedUser.user_id ? updatedUser : user));
+        const newUsers = prevUsers.map((user: UserType) =>
+          user.user_id === updatedUser.user_id ? updatedUser : user,
+        );
         if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
           return newUsers;
         }
@@ -84,19 +101,24 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
 
       setCurrentUser((prevCurrentUser) => {
         if (prevCurrentUser?.user_id === updatedUser.user_id) {
-          return updatedUser.rank === 'F' ? null : updatedUser;
+          return updatedUser.rank === "F" ? null : updatedUser;
         }
         return prevCurrentUser;
       });
     };
 
     const channel = supabase
-      .channel('table-db-changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'art_tool_users' }, (payload) => {
-        const updatedUser = payload.new as UserType;
-        updatedUser.rank_name = rankNames[updatedUser.rank] || updatedUser.rank_name;
-        handleUserUpdate(updatedUser);
-      })
+      .channel("table-db-changes")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "art_tool_users" },
+        (payload) => {
+          const updatedUser = payload.new as UserType;
+          updatedUser.rank_name =
+            rankNames[updatedUser.rank] || updatedUser.rank_name;
+          handleUserUpdate(updatedUser);
+        },
+      )
       .subscribe();
 
     return () => {
@@ -105,9 +127,11 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
   }, [rankNames, currentUser?.user_id, t]);
 
   const updateUser = (updatedUser: UserType) => {
-    console.log('Updating user:', updatedUser);
+    console.log("Updating user:", updatedUser);
     setUsers((prevUsers) => {
-      const newUsers = prevUsers.map((user: UserType) => (user.user_id === updatedUser.user_id ? updatedUser : user));
+      const newUsers = prevUsers.map((user: UserType) =>
+        user.user_id === updatedUser.user_id ? updatedUser : user,
+      );
       if (JSON.stringify(prevUsers) !== JSON.stringify(newUsers)) {
         return newUsers;
       }
@@ -123,22 +147,24 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
   };
 
   const logoutUser = () => {
-    console.log('Logging out user...');
+    console.log("Logging out user...");
     setCurrentUser(null);
   };
 
   useEffect(() => {
-    if (currentUser && currentUser.rank === 'F') {
-      console.log('Detected banned user after sign-in, logging out...');
+    if (currentUser && currentUser.rank === "F") {
+      console.log("Detected banned user after sign-in, logging out...");
       authSignOut().then(() => {
-        alert(t('Your account has been banned.'));
+        alert(t("Your account has been banned."));
         setCurrentUser(null);
       });
     }
   }, [currentUser, t]);
 
   return (
-    <UserContext.Provider value={{ users, currentUser, rankNames, updateUser, logoutUser }}>
+    <UserContext.Provider
+      value={{ users, currentUser, rankNames, updateUser, logoutUser }}
+    >
       {children}
     </UserContext.Provider>
   );
