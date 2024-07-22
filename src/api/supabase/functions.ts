@@ -1,15 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-const SUPABASE_FUNCTIONS_URL = `${supabaseUrl}/functions/v1`
-
+import { getSupabaseSession, SUPABASE_FUNCTIONS_URL } from ".";
 
 export const getSessionInfo = async () => {
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const { data: sessionData, error: sessionError } = await getSupabaseSession();
   if (sessionError || !sessionData?.session?.user) {
     throw new Error('Error fetching session' + sessionError?.message);
   }
