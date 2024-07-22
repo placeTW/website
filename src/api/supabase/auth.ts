@@ -1,4 +1,4 @@
-import { Provider } from "@supabase/supabase-js";
+import { Provider, Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { supabase } from ".";
 
 export const authGetSession = async () => {
@@ -16,4 +16,8 @@ export const authSignInWithOAuth = async (provider: Provider, redirect: string) 
 
 export const authSignOut = async () => {
   return supabase.auth.signOut();
+}
+
+export const authOnAuthStateChange = (callback: (event: AuthChangeEvent, session: Session | null) => void | Promise<void>) => {
+  return supabase.auth.onAuthStateChange(callback);
 }
