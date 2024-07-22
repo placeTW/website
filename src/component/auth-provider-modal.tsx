@@ -11,7 +11,7 @@ import {
 import { Provider } from "@supabase/supabase-js";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { functionsFetchOneUser, authSignInWithOAuth, authGetSession, authSignOut, supabase } from "../api/supabase";
+import { functionsFetchOneUser, authSignInWithOAuth, authGetSession, authSignOut, supabase, authGetUser } from "../api/supabase";
 
 interface AuthProviderModalProps {
   isOpen: boolean;
@@ -92,11 +92,11 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
     const subscription = supabase
       .channel("bans")
       .on("broadcast", { event: "ban" }, async (payload) => {
-        const { data: userData } = await supabase.auth.getUser();
+        const { data: userData } = await authGetUser();
         const userId = userData?.user?.id;
         if (payload?.payload?.userId === userId) {
           console.log("User has been banned, signing out...");
-          await supabase.auth.signOut();
+          await authSignOut();
           setError(t("Your account has been banned."));
         }
       })

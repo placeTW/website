@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase, functionsGetSessionInfo, functionsGetRankName, functionsFetchUsers as supabaseFetchUsers } from '../api/supabase';
+import { supabase, functionsGetSessionInfo, functionsGetRankName, functionsFetchUsers as supabaseFetchUsers, authSignOut } from '../api/supabase';
 import { UserType } from '../types/users';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../context/user-context';
@@ -69,7 +69,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
       console.log('Handling user update:', updatedUser);
       if (updatedUser.rank === 'F') { // Pirate rank_id is 'F'
         console.log('User is banned, signing out...');
-        await supabase.auth.signOut();
+        await authSignOut();
         alert(t('Your account has been banned.'));
         setCurrentUser(null);
       }
@@ -130,7 +130,7 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
   useEffect(() => {
     if (currentUser && currentUser.rank === 'F') {
       console.log('Detected banned user after sign-in, logging out...');
-      supabase.auth.signOut().then(() => {
+      authSignOut().then(() => {
         alert(t('Your account has been banned.'));
         setCurrentUser(null);
       });

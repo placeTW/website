@@ -5,6 +5,10 @@ export const authGetSession = async () => {
   return supabase.auth.getSession();
 }
 
+export const authGetUser = () => {
+  return supabase.auth.getUser();
+}
+
 export const authSignInWithOAuth = async (provider: Provider, redirect: string) => {
   return supabase.auth.signInWithOAuth({
     provider: provider,
