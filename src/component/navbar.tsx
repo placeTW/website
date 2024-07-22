@@ -4,10 +4,10 @@ import {
 } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../supabase';
+import { supabase, updateNickname } from '../api/supabase';
 import AuthProviderModal from './auth-provider-modal';
 import LanguageSwitcher from './language-switcher';
-import { useUserContext } from './global-user-status-listener';
+import { useUserContext } from '../context/user-context';
 
 const Navbar = () => {
   const { currentUser, logoutUser } = useUserContext();
@@ -37,27 +37,11 @@ const Navbar = () => {
 
   const handleSaveUsername = async () => {
     try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData?.session?.user) {
-        console.error(t('Error fetching session'), sessionError);
+      if (!currentUser) {
         return;
       }
 
-      const userId = sessionData.session.user.id;
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-nickname`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionData.session.access_token}`,
-        },
-        body: JSON.stringify({ userId, handle: username }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error);
-      }
+      await updateNickname(username);
 
       onClose();
     } catch (error) {
@@ -87,7 +71,7 @@ const Navbar = () => {
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
             {t('Gallery')}
           </Link>
-          {currentUser && (currentUser.rank_name === 'Admiral' || currentUser.rank_name === 'Captain') && (
+          {currentUser && (currentUser.rank === 'A' || currentUser.rank === 'B') && (
             <Link as={RouterLink} to="/admin" color="white" mr={4}>
               {t('Officers')}
             </Link>

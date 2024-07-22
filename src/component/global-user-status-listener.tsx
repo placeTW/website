@@ -1,25 +1,8 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../supabase';
+import { useEffect, useState } from 'react';
+import { supabase, getSessionInfo, getRankName, fetchUsers as supabaseFetchUsers } from '../api/supabase';
 import { UserType } from '../types';
 import { useTranslation } from 'react-i18next';
-
-interface UserContextProps {
-  users: UserType[];
-  currentUser: UserType | null;
-  rankNames: { [key: string]: string };
-  updateUser: (updatedUser: UserType) => void;
-  logoutUser: () => void;
-}
-
-const UserContext = createContext<UserContextProps>({
-  users: [],
-  currentUser: null,
-  rankNames: {},
-  updateUser: () => {},
-  logoutUser: () => {},
-});
-
-export const useUserContext = () => useContext(UserContext);
+import { UserContext } from '../context/user-context';
 
 const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslation();
@@ -30,36 +13,19 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
   useEffect(() => {
     const fetchRankNames = async () => {
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !sessionData?.session) {
-          return;
-        }
+        const rankData = await getRankName();
 
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-rank-name`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionData.session.access_token}`,
-          },
+        const rankNamesMap: { [key: string]: string } = {};
+        rankData.forEach((rank: { rank_id: string; rank_name: string }) => {
+          rankNamesMap[rank.rank_id] = rank.rank_name;
         });
 
-        if (response.ok) {
-          const rankData = await response.json();
-          const rankNamesMap: { [key: string]: string } = {};
-          rankData.forEach((rank: { rank_id: string; rank_name: string }) => {
-            rankNamesMap[rank.rank_id] = rank.rank_name;
-          });
-
-          setRankNames((prevRankNames) => {
-            if (JSON.stringify(prevRankNames) !== JSON.stringify(rankNamesMap)) {
-              return rankNamesMap;
-            }
-            return prevRankNames;
-          });
-        } else {
-          const errorData = await response.json();
-          console.error(t('Error fetching rank names:'), errorData.error);
-        }
+        setRankNames((prevRankNames) => {
+          if (JSON.stringify(prevRankNames) !== JSON.stringify(rankNamesMap)) {
+            return rankNamesMap;
+          }
+          return prevRankNames;
+        });
       } catch (error) {
         console.error(t('Error fetching rank names:'), error);
       }
@@ -67,46 +33,30 @@ const GlobalUserStatusListener = ({ children }: { children: React.ReactNode }) =
 
     const fetchUsers = async () => {
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !sessionData?.session) {
-          return;
-        }
+        const usersData = await supabaseFetchUsers();
+        const updatedUsers = usersData.map((user: UserType) => ({
+          ...user,
+          rank_name: rankNames[user.rank] || user.rank,
+        }));
 
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-users`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionData.session.access_token}`,
-          },
+        setUsers((prevUsers) => {
+          if (JSON.stringify(prevUsers) !== JSON.stringify(updatedUsers)) {
+            return updatedUsers;
+          }
+          return prevUsers;
         });
 
-        if (response.ok) {
-          const usersData = await response.json();
-          const updatedUsers = usersData.map((user: UserType) => ({
-            ...user,
-            rank_name: rankNames[user.rank] || user.rank,
-          }));
+        const [currentUserId, ] = await getSessionInfo();
 
-          setUsers((prevUsers) => {
-            if (JSON.stringify(prevUsers) !== JSON.stringify(updatedUsers)) {
-              return updatedUsers;
-            }
-            return prevUsers;
-          });
-
-          const currentUserData = updatedUsers.find((user: UserType) => user.user_id === sessionData.session.user.id);
-          console.log('Current user data:', currentUserData);
-          setCurrentUser((prevCurrentUser) => {
-            if (JSON.stringify(prevCurrentUser) !== JSON.stringify(currentUserData)) {
-              console.log('Setting current user:', currentUserData);
-              return currentUserData || null;
-            }
-            return prevCurrentUser;
-          });
-        } else {
-          const errorData = await response.json();
-          console.error(t('Error fetching users:'), errorData.error);
-        }
+        const currentUserData = updatedUsers.find((user: UserType) => user.user_id === currentUserId);
+        console.log('Current user data:', currentUserData);
+        setCurrentUser((prevCurrentUser) => {
+          if (JSON.stringify(prevCurrentUser) !== JSON.stringify(currentUserData)) {
+            console.log('Setting current user:', currentUserData);
+            return currentUserData || null;
+          }
+          return prevCurrentUser;
+        });
       } catch (error) {
         console.error(t('Error fetching users:'), error);
       }

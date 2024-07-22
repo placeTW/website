@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Stack } from '@chakra-ui/react';
-import { supabase } from '../supabase';
+import { fetchOneUser, supabase } from '../api/supabase';
 import { Provider } from '@supabase/supabase-js';
 import { useTranslation } from 'react-i18next';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
 interface AuthProviderModalProps {
   isOpen: boolean;
@@ -52,21 +51,8 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({ isOpen, onClose, 
       }
 
       if (session) {
-        const userId = session.user.id;
         try {
-          const response = await fetch(`${supabaseUrl}/functions/v1/fetch-one-user?user_id=${userId}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(t('Failed to fetch user data'));
-          }
-
-          const userData = await response.json();
+          const userData = await fetchOneUser();
           console.log('Fetched user data:', userData);
 
           if (userData.rank === 'F') {

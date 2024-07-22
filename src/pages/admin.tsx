@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Select } from '@chakra-ui/react';
-import { supabase } from '../supabase';
-import { useUserContext } from '../component/global-user-status-listener';
+import { fetchCanModerate, updateUserStatus } from '../api/supabase';
 import { UserType } from '../types';  // Ensure this import is present
 import { useTranslation } from 'react-i18next';  // Import the useTranslation hook
+import { useUserContext } from '../context/user-context';
 
 const AdminPage = () => {
   const { t } = useTranslation();  // Initialize the useTranslation hook
@@ -16,28 +16,8 @@ const AdminPage = () => {
       if (!currentUser) return;
 
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !sessionData?.session) {
-          console.error('Error fetching session:', sessionError);
-          return;
-        }
-
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-can-moderate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionData.session.access_token}`,
-          },
-          body: JSON.stringify({ rank_id: currentUser.rank }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setModeratableRanks(data.can_moderate);
-        } else {
-          const errorData = await response.json();
-          setError(errorData.error);
-        }
+        const data = await fetchCanModerate(currentUser.rank);
+        setModeratableRanks(data.can_moderate);
       } catch (error) {
         console.error('Fetch user details error:', error);
         setError('Fetch user details error');
@@ -48,27 +28,13 @@ const AdminPage = () => {
   }, [currentUser]);
 
   const updateUserRank = async (userId: string, rank: string) => {
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !sessionData?.session) {
-      setError(t('Error fetching session'));
-      return;
-    }
-
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/updateUserStatus`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.session.access_token}`,
-      },
-      body: JSON.stringify({ userId, rank }),
-    });
-
-    if (response.ok) {
-      const responseData = await response.json();
+    try {
+      const responseData = await updateUserStatus(userId, rank); // Update the user status
       updateUser(responseData); // Update the context with the new user data
-    } else {
-      const errorData = await response.json();
-      setError(errorData.error);
+    }
+    catch (error) {
+      console.error('Update user status error:', error);
+      setError('Update user status error');
     }
   };
 

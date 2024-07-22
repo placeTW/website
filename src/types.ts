@@ -15,3 +15,11 @@ export type UserType = {
   rank: string;
   rank_name?: string;
 };
+
+export interface UserContextProps {
+  users: UserType[];
+  currentUser: UserType | null;
+  rankNames: { [key: string]: string };
+  updateUser: (updatedUser: UserType) => void;
+  logoutUser: () => void;
+}
