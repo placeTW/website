@@ -3,7 +3,7 @@ import { authGetSession, SUPABASE_FUNCTIONS_URL } from ".";
 export const functionsGetSessionInfo = async () => {
   const { data: sessionData, error: sessionError } = await authGetSession();
   if (sessionError || !sessionData?.session?.user) {
-    throw new Error("Error fetching session" + sessionError?.message);
+    throw new Error("Error fetching session: " + sessionError?.message);
   }
 
   return [sessionData.session.user.id, sessionData.session.access_token];
@@ -46,17 +46,12 @@ export const functionsFetchOneUser = async () => {
   );
 
   if (!response.ok) {
-    if (response.status === 404) {
-      // If user is not found, return null to indicate it doesn't exist
-      return null;
-    }
     const errorData = await response.json();
     throw new Error(errorData.error);
   }
 
   return response.json();
 };
-
 
 export const functionsGetRankName = async () => {
   const [, access_token] = await functionsGetSessionInfo();

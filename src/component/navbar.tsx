@@ -37,6 +37,7 @@ const Navbar = () => {
   const [username, setUsername] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
+  const [userInserted, setUserInserted] = useState(false); // Add state variable
 
   useEffect(() => {
     const checkSession = async () => {
@@ -64,7 +65,7 @@ const Navbar = () => {
           }
         } catch (fetchError) {
           console.error(
-            t("Error fetching user from art_tool_users, attempting to insert user:"),
+            t("User not found in art_tool_users, attempting to insert user:"),
             fetchError,
           );
 
@@ -75,10 +76,11 @@ const Navbar = () => {
               session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
             );
             console.log("User inserted successfully.");
+            setUserInserted(true); // Update state variable
             setAuthModalOpen(false);
           } catch (insertError) {
             console.error(t("Error inserting new user into art_tool_users:"), insertError);
-            alert(t("Error inserting new user into art_tool_users"));
+            // Removed the alert here
           }
         }
       } else {
@@ -88,7 +90,7 @@ const Navbar = () => {
     };
 
     checkSession();
-  }, []);
+  }, [userInserted]); // Add dependency to trigger re-render
 
   useEffect(() => {
     if (currentUser) {

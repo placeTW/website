@@ -13,7 +13,6 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   authGetSession,
-  authGetUser,
   authSignInWithOAuth,
   authSignOut,
   functionsFetchOneUser,
@@ -85,22 +84,18 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
           }
         } catch (fetchError) {
           console.error(
-            t("Error fetching user from art_tool_users, attempting to insert user:"),
+            t("User not found in art_tool_users, attempting to insert user:"),
             fetchError,
           );
 
-          // Check if the user already exists before attempting to insert
           try {
-            const existingUser = await functionsFetchOneUser();
-            if (!existingUser) {
-              await insertNewUser(
-                session.user.id,
-                session.user.email,
-                session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
-              );
-              console.log("User inserted successfully.");
-              onClose();
-            }
+            await insertNewUser(
+              session.user.id,
+              session.user.email,
+              session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
+            );
+            console.log("User inserted successfully.");
+            onClose();
           } catch (insertError) {
             console.error(t("Error inserting new user into art_tool_users:"), insertError);
             setError(t("Error inserting new user into art_tool_users"));
