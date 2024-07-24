@@ -90,9 +90,9 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
 
           try {
             await insertNewUser(
-              session.user.id,
-              session.user.email,
-              session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
+              session.user?.id || "",
+              session.user?.email || "",
+              session.user?.user_metadata?.name || session.user?.user_metadata?.full_name || ""
             );
             console.log("User inserted successfully.");
             onClose();
@@ -114,8 +114,8 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
     const subscription = supabase
       .channel("bans")
       .on("broadcast", { event: "ban" }, async (payload) => {
-        const { data: userData } = await authGetSession();
-        const userId = userData?.user?.id;
+        const { data: { session } } = await authGetSession();
+        const userId = session?.user?.id;
         if (payload?.payload?.userId === userId) {
           console.log("User has been banned, signing out...");
           await authSignOut();

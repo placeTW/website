@@ -70,9 +70,9 @@ const Navbar = () => {
 
           try {
             await insertNewUser(
-              session.user.id,
-              session.user.email,
-              session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
+              session.user?.id || "",
+              session.user?.email || "",
+              session.user?.user_metadata?.name || session.user?.user_metadata?.full_name || ''
             );
             console.log("User inserted successfully.");
             setUserInserted(true); // Update state variable
