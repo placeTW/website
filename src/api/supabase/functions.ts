@@ -32,6 +32,8 @@ export const functionsUpdateNickname = async (handle: string) => {
 export const functionsFetchOneUser = async () => {
   const [userId, access_token] = await functionsGetSessionInfo();
 
+  console.log("Fetching one user with userId", userId);
+
   const response = await fetch(
     `${SUPABASE_FUNCTIONS_URL}/fetch-one-user?user_id=${userId}`,
     {
@@ -132,4 +134,29 @@ export const functionsUpdateUserStatus = async (
   }
 
   return response.json();
+};
+
+export const insertNewUser = async (user_id: string, email: string, handle: string) => {
+  const [, access_token] = await functionsGetSessionInfo();
+  console.log("Inserting new user with", { user_id, email, handle });
+
+  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/insert-new-user`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
+    },
+    body: JSON.stringify({ user_id, email, handle }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("Error inserting new user", errorData);
+    throw new Error(errorData.error);
+  }
+
+  const data = await response.json();
+  console.log("User inserted successfully", data);
+
+  return data;
 };

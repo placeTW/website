@@ -18,7 +18,14 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { authSignOut, functionsUpdateNickname } from "../api/supabase";
+import {
+  authSignOut,
+  functionsUpdateNickname,
+  insertNewUser,
+  authGetSession,
+  authGetUser,
+  functionsFetchOneUser,
+} from "../api/supabase";
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import LanguageSwitcher from "./language-switcher";
@@ -30,6 +37,58 @@ const Navbar = () => {
   const [username, setUsername] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      console.log("Checking session...");
+      const { data: { session }, error } = await authGetSession();
+
+      if (error) {
+        console.error(t("Error fetching session:"), error);
+        return;
+      }
+
+      if (session) {
+        console.log("Session found...");
+        try {
+          const userData = await functionsFetchOneUser();
+          console.log("Fetched user data:", userData);
+
+          if (userData.rank === "F") {
+            console.log("User is banned, signing out...");
+            await authSignOut();
+            alert(t("Your account has been banned."));
+          } else {
+            console.log("User is not banned, closing auth modal...");
+            setAuthModalOpen(false);
+          }
+        } catch (fetchError) {
+          console.error(
+            t("Error fetching user from art_tool_users, attempting to insert user:"),
+            fetchError,
+          );
+
+          try {
+            await insertNewUser(
+              session.user.id,
+              session.user.email,
+              session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
+            );
+            console.log("User inserted successfully.");
+            setAuthModalOpen(false);
+          } catch (insertError) {
+            console.error(t("Error inserting new user into art_tool_users:"), insertError);
+            alert(t("Error inserting new user into art_tool_users"));
+          }
+        }
+      } else {
+        console.log("No active session found, opening auth modal...");
+        setAuthModalOpen(true);
+      }
+    };
+
+    checkSession();
+  }, []);
 
   useEffect(() => {
     if (currentUser) {

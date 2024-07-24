@@ -17,6 +17,7 @@ import {
   authSignInWithOAuth,
   authSignOut,
   functionsFetchOneUser,
+  insertNewUser,
   supabase,
 } from "../api/supabase";
 
@@ -55,10 +56,8 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
   };
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    // Check session after redirect
     const checkSession = async () => {
+      console.log("Checking session...");
       const {
         data: { session },
         error,
@@ -71,6 +70,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
       }
 
       if (session) {
+        console.log("Session found...");
         try {
           const userData = await functionsFetchOneUser();
           console.log("Fetched user data:", userData);
@@ -85,15 +85,31 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
           }
         } catch (fetchError) {
           console.error(
-            t("Error fetching user from art_tool_users:"),
+            t("Error fetching user from art_tool_users, attempting to insert user:"),
             fetchError,
           );
-          setError(t("Error fetching user from art_tool_users"));
+
+          try {
+            await insertNewUser(
+              session.user.id,
+              session.user.email,
+              session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
+            );
+            console.log("User inserted successfully.");
+            onClose();
+          } catch (insertError) {
+            console.error(t("Error inserting new user into art_tool_users:"), insertError);
+            setError(t("Error inserting new user into art_tool_users"));
+          }
         }
+      } else {
+        console.log("No active session found, opening auth modal...");
       }
     };
 
-    checkSession();
+    if (isOpen) {
+      checkSession();
+    }
 
     // Subscribe to the 'bans' channel
     const subscription = supabase
