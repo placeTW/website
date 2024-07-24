@@ -24,10 +24,10 @@ const TranslationAuth = () => {
   return (
     <div className="row flex flex-center">
       <div className="col-6 form-widget">
-        <h1 className="header">{t("Log in with Discord")}</h1>
+        <h1 className="header">{t("Login with Discord")}</h1>
 
         <Button onClick={handleLogin} className="button block full-width">
-          {t("Log in")}
+          {t("Login")}
         </Button>
       </div>
     </div>

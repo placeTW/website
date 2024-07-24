@@ -51,7 +51,7 @@ const AdminPage = () => {
     <Table variant="simple">
       <Thead>
         <Tr>
-          <Th>{t('Email')}</Th>
+          <Th>{t('User ID')}</Th>
           <Th>{t('Username')}</Th>
           <Th>{t('Rank')}</Th>
         </Tr>
@@ -59,7 +59,7 @@ const AdminPage = () => {
       <Tbody>
         {sortUsers(users).map((user) => (
           <Tr key={user.user_id}>
-            <Td>{user.email}</Td>
+            <Td>{user.user_id}</Td>
             <Td>{user.handle}</Td>
             <Td>
               <Select
