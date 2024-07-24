@@ -23,7 +23,6 @@ import {
   functionsUpdateNickname,
   insertNewUser,
   authGetSession,
-  authGetUser,
   functionsFetchOneUser,
 } from "../api/supabase";
 import { useUserContext } from "../context/user-context";

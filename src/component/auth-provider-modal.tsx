@@ -114,7 +114,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
     const subscription = supabase
       .channel("bans")
       .on("broadcast", { event: "ban" }, async (payload) => {
-        const { data: userData } = await authGetUser();
+        const { data: userData } = await authGetSession();
         const userId = userData?.user?.id;
         if (payload?.payload?.userId === userId) {
           console.log("User has been banned, signing out...");
