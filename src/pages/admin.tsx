@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Box, Heading, Table, Tbody, Td, Th, Thead, Tr, Select } from '@chakra-ui/react';
 import { functionsFetchCanModerate, functionsUpdateUserStatus } from '../api/supabase';
-import { UserType } from '../types/users';  // Ensure this import is present
-import { useTranslation } from 'react-i18next';  // Import the useTranslation hook
+import { UserType } from '../types/users';
+import { useTranslation } from 'react-i18next';
 import { useUserContext } from '../context/user-context';
 
 const AdminPage = () => {
-  const { t } = useTranslation();  // Initialize the useTranslation hook
+  const { t } = useTranslation();
   const { users, currentUser, rankNames, updateUser } = useUserContext();
   const [moderatableRanks, setModeratableRanks] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +31,7 @@ const AdminPage = () => {
     try {
       const responseData = await functionsUpdateUserStatus(userId, rank); // Update the user status
       updateUser(responseData); // Update the context with the new user data
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Update user status error:', error);
       setError('Update user status error');
     }
@@ -65,12 +64,19 @@ const AdminPage = () => {
               <Select
                 value={user.rank}
                 onChange={(e) => updateUserRank(user.user_id, e.target.value)}
+                isDisabled={
+                  !moderatableRanks.includes(user.rank) || 
+                  user.rank === currentUser?.rank
+                }
               >
                 {Object.entries(rankNames).map(([rankId, rankName]) => (
                   <option
                     key={rankId}
                     value={rankId}
-                    disabled={!moderatableRanks.includes(rankId) && rankId !== user.rank}
+                    disabled={
+                      !moderatableRanks.includes(rankId) && 
+                      rankId !== user.rank
+                    }
                   >
                     {rankName}
                   </option>
