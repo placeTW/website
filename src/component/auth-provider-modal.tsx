@@ -89,14 +89,18 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
             fetchError,
           );
 
+          // Check if the user already exists before attempting to insert
           try {
-            await insertNewUser(
-              session.user.id,
-              session.user.email,
-              session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
-            );
-            console.log("User inserted successfully.");
-            onClose();
+            const existingUser = await functionsFetchOneUser();
+            if (!existingUser) {
+              await insertNewUser(
+                session.user.id,
+                session.user.email,
+                session.user.user_metadata?.name || session.user.user_metadata?.full_name || ''
+              );
+              console.log("User inserted successfully.");
+              onClose();
+            }
           } catch (insertError) {
             console.error(t("Error inserting new user into art_tool_users:"), insertError);
             setError(t("Error inserting new user into art_tool_users"));

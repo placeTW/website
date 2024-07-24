@@ -46,12 +46,17 @@ export const functionsFetchOneUser = async () => {
   );
 
   if (!response.ok) {
+    if (response.status === 404) {
+      // If user is not found, return null to indicate it doesn't exist
+      return null;
+    }
     const errorData = await response.json();
     throw new Error(errorData.error);
   }
 
   return response.json();
 };
+
 
 export const functionsGetRankName = async () => {
   const [, access_token] = await functionsGetSessionInfo();
