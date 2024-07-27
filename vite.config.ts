@@ -14,7 +14,6 @@ export default defineConfig({
   },
   publicDir: 'public',
   server: {
-    // Ensure HMR is enabled
     hmr: true,
   },
 });

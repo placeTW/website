@@ -1,18 +1,16 @@
 import { Box } from "@chakra-ui/react";
-import Navbar from "./navbar";
 import Footer from "./footer";
+import GlobalUserStatusListener from "./global-user-status-listener";
+import Navbar from "./navbar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <Box w="100vw">
-      {/* Navbar */}
-      <Navbar />
-
-      {/* Rest of the content */}
-      <Box p={4}>{children}</Box>
-
-      {/* Footer */}
-      <Footer />
+      <GlobalUserStatusListener>
+        <Navbar />
+        <Box p={4}>{children}</Box>
+        <Footer />
+      </GlobalUserStatusListener>
     </Box>
   );
 };

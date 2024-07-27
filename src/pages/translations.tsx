@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../supabase";
+import { authGetSession, authOnAuthStateChange } from "../api/supabase";
 import { Session } from "@supabase/supabase-js";
 import TranslationAuth from "../modules/translation-auth";
 import TranslationVerification from "../modules/translation-verification";
@@ -8,11 +8,11 @@ const Translations = () => {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    authGetSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    authOnAuthStateChange((_event, session) => {
       setSession(session);
     });
   }, []);
