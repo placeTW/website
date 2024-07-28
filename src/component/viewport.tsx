@@ -6,16 +6,21 @@ import { supabase } from '../api/supabase';
 
 const Viewport = () => {
   const [pixels, setPixels] = useState([]);
+  const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
   const stageRef = useRef(null);
-  const layerRef = useRef(null);
   const gridSize = 10; // Size of each grid cell in pixels
+  const coordinatesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchPixels = async () => {
-      const { data, error } = await supabase.from('art_tools_pixels').select('*');
+      const { data, error } = await supabase
+        .from('art_tools_pixels')
+        .select('*')
+        .eq('canvas', 'main'); // Filter for 'main' canvas
       if (error) {
         console.error('Error fetching pixel data:', error);
       } else {
+        console.log('Fetched pixels:', data);
         setPixels(data);
       }
     };
@@ -25,7 +30,31 @@ const Viewport = () => {
     const pixelSubscription = supabase
       .channel('art_tools_pixels')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tools_pixels' }, (payload) => {
-        fetchPixels();
+        console.log('Payload received:', payload);
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          console.log('Insert or Update event:', payload.new);
+          if (payload.new.canvas === 'main') {
+            setPixels((prevPixels) => [
+              ...prevPixels.filter(
+                (pixel) => !(pixel.x === payload.new.x && pixel.y === payload.new.y)
+              ),
+              payload.new,
+            ]);
+          } else {
+            setPixels((prevPixels) =>
+              prevPixels.filter(
+                (pixel) => !(pixel.x === payload.new.x && pixel.y === payload.new.y)
+              )
+            );
+          }
+        } else if (payload.eventType === 'DELETE') {
+          console.log('Delete event:', payload.old);
+          setPixels((prevPixels) =>
+            prevPixels.filter(
+              (pixel) => !(pixel.x === payload.old.x && pixel.y === payload.old.y)
+            )
+          );
+        }
       })
       .subscribe();
 
@@ -83,8 +112,26 @@ const Viewport = () => {
     return lines;
   };
 
+  const handleMouseEnter = (x, y) => {
+    setHoveredPixel({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredPixel(null);
+  };
+
+  useEffect(() => {
+    if (hoveredPixel && coordinatesRef.current && stageRef.current) {
+      const stage = stageRef.current;
+      const scale = stage.scaleX();
+      const position = stage.position();
+      coordinatesRef.current.style.left = `${hoveredPixel.x * gridSize * scale + position.x}px`;
+      coordinatesRef.current.style.top = `${hoveredPixel.y * gridSize * scale + position.y - 20}px`;
+    }
+  }, [hoveredPixel]);
+
   return (
-    <div style={{ height: '100vh', width: '100vw' }}>
+    <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
@@ -92,8 +139,8 @@ const Viewport = () => {
         ref={stageRef}
         onWheel={handleWheel}
       >
-        <Layer ref={layerRef}>
-          {drawGrid(window.innerWidth, window.innerHeight)}
+        <Layer>{drawGrid(window.innerWidth, window.innerHeight)}</Layer>
+        <Layer ref={stageRef}>
           {pixels.map((pixel) => (
             <Rect
               key={`${pixel.x}-${pixel.y}`}
@@ -101,13 +148,29 @@ const Viewport = () => {
               y={pixel.y * gridSize}
               width={gridSize}
               height={gridSize}
-              fill={pixel.color}
-              stroke="black"
-              strokeWidth={0.5}
+              fill={pixel.color} // Use the color from the table
+              strokeWidth={0} // Remove the black stroke
+              onMouseEnter={() => handleMouseEnter(pixel.x, pixel.y)}
+              onMouseLeave={handleMouseLeave}
             />
           ))}
         </Layer>
       </Stage>
+      {hoveredPixel && (
+        <div
+          ref={coordinatesRef}
+          style={{
+            position: 'absolute',
+            backgroundColor: 'white',
+            padding: '2px 4px',
+            border: '1px solid black',
+            borderRadius: '3px',
+            pointerEvents: 'none',
+          }}
+        >
+          {hoveredPixel.x}, {hoveredPixel.y}
+        </div>
+      )}
     </div>
   );
 };
