@@ -5,24 +5,28 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./component/layout";
 import "./i18n";
 import "./index.scss";
-import HomePage from "./pages";
 import AdminPage from "./pages/admin";
 import Gallery from "./pages/gallery";
 import Translations from "./pages/translations";
+import BriefingRoom from "./pages/briefing-room"; // Import BriefingRoom
+import { AlertProvider } from "./context/alert-context"; // Import AlertProvider
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChakraProvider>
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/translations" element={<Translations />} />
-            <Route path="/admin" element={<AdminPage />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
+      <AlertProvider>
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<BriefingRoom />} /> {/* Load BriefingRoom by default */}
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/translations" element={<Translations />} />
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/briefing-room" element={<BriefingRoom />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </AlertProvider>
     </ChakraProvider>
   </React.StrictMode>,
 );

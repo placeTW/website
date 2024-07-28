@@ -139,8 +139,8 @@ const Navbar = () => {
         <Spacer />
 
         <Box>
-          <Link as={RouterLink} to="/" color="white" mr={4}>
-            {t("Home")}
+          <Link as={RouterLink} to="/briefing-room" color="white" mr={4}>
+            {t("Briefing Room")}
           </Link>
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
             {t("Gallery")}
