@@ -1,5 +1,3 @@
-// src/context/alert-context.tsx
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../api/supabase';
 
@@ -10,15 +8,15 @@ interface AlertContextType {
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
 
-export const AlertProvider: React.FC = ({ children }) => {
+export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [alertLevel, setAlertLevelState] = useState<number>(1);
 
   useEffect(() => {
     const fetchAlertLevel = async () => {
       const { data, error } = await supabase
-        .from('art_tool_alert_state')
-        .select('Level')
-        .eq('Active', true)
+        .from('alert_level')
+        .select('level')
+        .eq('id', 1)
         .single();
 
       if (error) {
@@ -27,7 +25,7 @@ export const AlertProvider: React.FC = ({ children }) => {
       }
 
       if (data) {
-        setAlertLevelState(data.Level);
+        setAlertLevelState(data.level);
       }
     };
 
@@ -36,22 +34,12 @@ export const AlertProvider: React.FC = ({ children }) => {
 
   const setAlertLevel = async (level: number) => {
     const { error } = await supabase
-      .from('art_tool_alert_state')
-      .update({ Active: false })
-      .eq('Active', true);
+      .from('alert_level')
+      .update({ level })
+      .eq('id', 1);
 
     if (error) {
-      console.error('Error deactivating current alert level:', error);
-      return;
-    }
-
-    const { error: updateError } = await supabase
-      .from('art_tool_alert_state')
-      .update({ Active: true })
-      .eq('Level', level);
-
-    if (updateError) {
-      console.error('Error activating new alert level:', updateError);
+      console.error('Error updating alert level:', error);
       return;
     }
 

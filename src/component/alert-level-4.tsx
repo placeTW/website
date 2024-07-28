@@ -1,5 +1,5 @@
 // src/component/alert-level-4.tsx
-import React from 'react';
+
 
 const AlertLevel4 = () => {
   return (

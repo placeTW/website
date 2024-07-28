@@ -1,6 +1,6 @@
 // src/component/alert-level-2.tsx
 
-import React from 'react';
+
 import Viewport from './viewport';
 
 const AlertLevel2 = () => {

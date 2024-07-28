@@ -1,13 +1,19 @@
-// src/component/viewport.tsx
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Rect, Line } from 'react-konva';
 import { supabase } from '../api/supabase';
 
-const Viewport = () => {
-  const [pixels, setPixels] = useState([]);
+interface Pixel {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  canvas: string;
+}
+
+const Viewport: React.FC = () => {
+  const [pixels, setPixels] = useState<Pixel[]>([]);
   const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
-  const stageRef = useRef(null);
+  const stageRef = useRef<Konva.Stage | null>(null);
   const gridSize = 10; // Size of each grid cell in pixels
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const checkerPatternRef = useRef<HTMLCanvasElement | null>(null);
@@ -22,7 +28,7 @@ const Viewport = () => {
         console.error('Error fetching pixel data:', error);
       } else {
         console.log('Fetched pixels:', data);
-        setPixels(data);
+        setPixels(data as Pixel[]);
       }
     };
 
@@ -64,9 +70,10 @@ const Viewport = () => {
     };
   }, []);
 
-  const handleWheel = (e) => {
+  const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const stage = stageRef.current;
+    if (!stage) return;
     const oldScale = stage.scaleX();
 
     const pointer = stage.getPointerPosition();
@@ -88,7 +95,7 @@ const Viewport = () => {
     stage.batchDraw();
   };
 
-  const drawGrid = (width, height) => {
+  const drawGrid = (width: number, height: number) => {
     const lines = [];
     for (let i = 0; i < width / gridSize; i++) {
       lines.push(
@@ -120,19 +127,22 @@ const Viewport = () => {
     canvas.height = size * 2;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = '#eee';
-    ctx.fillRect(0, 0, size, size);
-    ctx.fillRect(size, size, size, size);
+    if (ctx) {
+      ctx.fillStyle = '#eee';
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillRect(size, size, size, size);
 
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(size, 0, size, size);
-    ctx.fillRect(0, size, size, size);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(size, 0, size, size);
+      ctx.fillRect(0, size, size, size);
+    }
 
     return canvas;
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
     const stage = stageRef.current;
+    if (!stage) return;
     const pointer = stage.getPointerPosition();
     const scale = stage.scaleX();
     const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
@@ -170,7 +180,7 @@ const Viewport = () => {
             y={0}
             width={window.innerWidth}
             height={window.innerHeight}
-            fillPatternImage={checkerPatternRef.current}
+            fillPatternImage={checkerPatternRef.current as HTMLImageElement}
             fillPatternScale={{ x: 0.5, y: 0.5 }}
           />
           {drawGrid(window.innerWidth, window.innerHeight)}
