@@ -1,13 +1,14 @@
 // src/component/viewport.tsx
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Stage, Layer, Rect, Transformer } from 'react-konva';
+import { Stage, Layer, Rect, Line } from 'react-konva';
 import { supabase } from '../api/supabase';
 
 const Viewport = () => {
   const [pixels, setPixels] = useState([]);
   const stageRef = useRef(null);
   const layerRef = useRef(null);
+  const gridSize = 10; // Size of each grid cell in pixels
 
   useEffect(() => {
     const fetchPixels = async () => {
@@ -57,6 +58,31 @@ const Viewport = () => {
     stage.batchDraw();
   };
 
+  const drawGrid = (width, height) => {
+    const lines = [];
+    for (let i = 0; i < width / gridSize; i++) {
+      lines.push(
+        <Line
+          key={`v-${i}`}
+          points={[i * gridSize, 0, i * gridSize, height]}
+          stroke="#ddd"
+          strokeWidth={0.5}
+        />
+      );
+    }
+    for (let j = 0; j < height / gridSize; j++) {
+      lines.push(
+        <Line
+          key={`h-${j}`}
+          points={[0, j * gridSize, width, j * gridSize]}
+          stroke="#ddd"
+          strokeWidth={0.5}
+        />
+      );
+    }
+    return lines;
+  };
+
   return (
     <div style={{ height: '100vh', width: '100vw' }}>
       <Stage
@@ -67,13 +93,14 @@ const Viewport = () => {
         onWheel={handleWheel}
       >
         <Layer ref={layerRef}>
+          {drawGrid(window.innerWidth, window.innerHeight)}
           {pixels.map((pixel) => (
             <Rect
               key={`${pixel.x}-${pixel.y}`}
-              x={pixel.x * 10}
-              y={pixel.y * 10}
-              width={10}
-              height={10}
+              x={pixel.x * gridSize}
+              y={pixel.y * gridSize}
+              width={gridSize}
+              height={gridSize}
               fill={pixel.color}
               stroke="black"
               strokeWidth={0.5}
