@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Rect, Line } from 'react-konva';
-import Konva from 'konva'; // Import Konva for types
 import { supabase } from '../api/supabase';
 
 interface Pixel {
@@ -46,7 +45,7 @@ const Viewport: React.FC = () => {
               ...prevPixels.filter(
                 (pixel) => !(pixel.x === payload.new.x && pixel.y === payload.new.y)
               ),
-              payload.new,
+              payload.new as Pixel,
             ]);
           } else {
             setPixels((prevPixels) =>
@@ -142,7 +141,7 @@ const Viewport: React.FC = () => {
     return canvas;
   };
 
-  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleMouseMove = () => {
     const stage = stageRef.current;
     if (!stage) return;
     const pointer = stage.getPointerPosition();
