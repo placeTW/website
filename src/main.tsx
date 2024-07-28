@@ -10,6 +10,8 @@ import Gallery from "./pages/gallery";
 import Translations from "./pages/translations";
 import BriefingRoom from "./pages/briefing-room"; // Import BriefingRoom
 import { AlertProvider } from "./context/alert-context"; // Import AlertProvider
+import DesignOffice from './pages/design-office';
+
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -23,6 +25,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <Route path="/translations" element={<Translations />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/briefing-room" element={<BriefingRoom />} />
+              <Route path="/design-office" element={<DesignOffice />} />
             </Routes>
           </Layout>
         </BrowserRouter>

@@ -142,6 +142,9 @@ const Navbar = () => {
           <Link as={RouterLink} to="/briefing-room" color="white" mr={4}>
             {t("Briefing Room")}
           </Link>
+          <Link as={RouterLink} to="/design-office" color="white" mr={4}>
+            {t("Design Office")}
+          </Link>
           <Link as={RouterLink} to="/gallery" color="white" mr={4}>
             {t("Gallery")}
           </Link>
