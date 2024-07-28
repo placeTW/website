@@ -167,56 +167,77 @@ const Viewport: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
-      <Stage
-        width={window.innerWidth}
-        height={window.innerHeight}
-        draggable
-        ref={stageRef}
-        onWheel={handleWheel}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+    <div
+      style={{
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        boxSizing: 'border-box',
+        padding: '20px'
+      }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          border: '1px solid black',
+          overflow: 'hidden',
+          width: '90vw',
+          height: '90vh',
+          boxSizing: 'border-box'
+        }}
       >
-        <Layer>
-          <Rect
-            x={0}
-            y={0}
-            width={window.innerWidth}
-            height={window.innerHeight}
-            fillPatternImage={checkerPatternRef.current as unknown as HTMLImageElement}
-            fillPatternScale={{ x: 0.5, y: 0.5 }}
-          />
-          {drawGrid(window.innerWidth, window.innerHeight)}
-        </Layer>
-        <Layer>
-          {pixels.map((pixel) => (
-            <Rect
-              key={`${pixel.x}-${pixel.y}`}
-              x={pixel.x * gridSize}
-              y={pixel.y * gridSize}
-              width={gridSize}
-              height={gridSize}
-              fill={pixel.color} // Use the color from the table
-              strokeWidth={0} // Remove the black stroke
-            />
-          ))}
-        </Layer>
-      </Stage>
-      {hoveredPixel && (
-        <div
-          ref={coordinatesRef}
-          style={{
-            position: 'absolute',
-            backgroundColor: 'white',
-            padding: '2px 4px',
-            border: '1px solid black',
-            borderRadius: '3px',
-            pointerEvents: 'none',
-          }}
+        <Stage
+          width={window.innerWidth * 0.9}
+          height={window.innerHeight * 0.9}
+          draggable
+          ref={stageRef}
+          onWheel={handleWheel}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         >
-          {hoveredPixel.x}, {hoveredPixel.y}
-        </div>
-      )}
+          <Layer>
+            <Rect
+              x={0}
+              y={0}
+              width={window.innerWidth * 0.9}
+              height={window.innerHeight * 0.9}
+              fillPatternImage={checkerPatternRef.current as unknown as HTMLImageElement}
+              fillPatternScale={{ x: 0.5, y: 0.5 }}
+            />
+            {drawGrid(window.innerWidth * 0.9, window.innerHeight * 0.9)}
+          </Layer>
+          <Layer>
+            {pixels.map((pixel) => (
+              <Rect
+                key={`${pixel.x}-${pixel.y}`}
+                x={pixel.x * gridSize}
+                y={pixel.y * gridSize}
+                width={gridSize}
+                height={gridSize}
+                fill={pixel.color} // Use the color from the table
+                strokeWidth={0} // Remove the black stroke
+              />
+            ))}
+          </Layer>
+        </Stage>
+        {hoveredPixel && (
+          <div
+            ref={coordinatesRef}
+            style={{
+              position: 'absolute',
+              backgroundColor: 'white',
+              padding: '2px 4px',
+              border: '1px solid black',
+              borderRadius: '3px',
+              pointerEvents: 'none',
+            }}
+          >
+            {hoveredPixel.x}, {hoveredPixel.y}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
