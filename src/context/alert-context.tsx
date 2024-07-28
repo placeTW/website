@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { supabase } from '../api/supabase';
 
 interface AlertContextType {
@@ -8,7 +8,11 @@ interface AlertContextType {
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
 
-export const AlertProvider: React.FC = ({ children }) => {
+interface AlertProviderProps {
+  children: ReactNode;
+}
+
+export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [alertLevel, setAlertLevelState] = useState<number>(1);
 
   useEffect(() => {

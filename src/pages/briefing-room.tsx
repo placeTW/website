@@ -30,7 +30,7 @@ const BriefingRoom: React.FC = () => {
 
     const alertSubscription = supabase
       .channel('art_tool_alert_state')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_alert_state' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_alert_state' }, () => {
         fetchAlertLevels();
       })
       .subscribe();

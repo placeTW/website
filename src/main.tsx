@@ -1,17 +1,17 @@
-import React from 'react';
-import { ChakraProvider } from '@chakra-ui/react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Layout from './component/layout';
-import './i18n';
-import './index.scss';
-import AdminPage from './pages/admin';
-import Gallery from './pages/gallery';
-import Translations from './pages/translations';
-import BriefingRoom from './pages/briefing-room'; // Import BriefingRoom
-import { AlertProvider } from './context/alert-context'; // Import AlertProvider
+import { ChakraProvider } from "@chakra-ui/react";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Layout from "./component/layout";
+import "./i18n";
+import "./index.scss";
+import AdminPage from "./pages/admin";
+import Gallery from "./pages/gallery";
+import Translations from "./pages/translations";
+import BriefingRoom from "./pages/briefing-room"; // Import BriefingRoom
+import { AlertProvider } from "./context/alert-context"; // Import AlertProvider
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChakraProvider>
       <AlertProvider>
@@ -28,5 +28,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </BrowserRouter>
       </AlertProvider>
     </ChakraProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
