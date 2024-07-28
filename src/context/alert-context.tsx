@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../api/supabase';
 
 interface AlertContextType {
@@ -8,15 +8,15 @@ interface AlertContextType {
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
 
-export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AlertProvider: React.FC = ({ children }) => {
   const [alertLevel, setAlertLevelState] = useState<number>(1);
 
   useEffect(() => {
     const fetchAlertLevel = async () => {
       const { data, error } = await supabase
-        .from('alert_level')
-        .select('level')
-        .eq('id', 1)
+        .from('art_tool_alert_state')
+        .select('*')
+        .eq('Level', 1)
         .single();
 
       if (error) {
@@ -25,7 +25,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       if (data) {
-        setAlertLevelState(data.level);
+        setAlertLevelState(data.Level);
       }
     };
 
@@ -34,8 +34,8 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const setAlertLevel = async (level: number) => {
     const { error } = await supabase
-      .from('alert_level')
-      .update({ level })
+      .from('art_tool_alert_state')
+      .update({ Level: level })
       .eq('id', 1);
 
     if (error) {
