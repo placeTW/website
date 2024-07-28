@@ -10,11 +10,12 @@ const Viewport = () => {
   const stageRef = useRef(null);
   const gridSize = 10; // Size of each grid cell in pixels
   const coordinatesRef = useRef<HTMLDivElement>(null);
+  const checkerPatternRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const fetchPixels = async () => {
       const { data, error } = await supabase
-        .from('art_tools_pixels')
+        .from('art_tool_pixels')
         .select('*')
         .eq('canvas', 'main'); // Filter for 'main' canvas
       if (error) {
@@ -28,8 +29,8 @@ const Viewport = () => {
     fetchPixels();
 
     const pixelSubscription = supabase
-      .channel('art_tools_pixels')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tools_pixels' }, (payload) => {
+      .channel('art_tool_pixels')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_pixels' }, (payload) => {
         console.log('Payload received:', payload);
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
           console.log('Insert or Update event:', payload.new);
@@ -112,8 +113,36 @@ const Viewport = () => {
     return lines;
   };
 
-  const handleMouseEnter = (x, y) => {
+  const createCheckerboardPattern = () => {
+    const size = gridSize;
+    const canvas = document.createElement('canvas');
+    canvas.width = size * 2;
+    canvas.height = size * 2;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#eee';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(size, size, size, size);
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(size, 0, size, size);
+    ctx.fillRect(0, size, size, size);
+
+    return canvas;
+  };
+
+  const handleMouseMove = (e) => {
+    const stage = stageRef.current;
+    const pointer = stage.getPointerPosition();
+    const scale = stage.scaleX();
+    const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
+    const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
     setHoveredPixel({ x, y });
+
+    if (coordinatesRef.current) {
+      coordinatesRef.current.style.left = `${pointer.x + 10}px`;
+      coordinatesRef.current.style.top = `${pointer.y + 10}px`;
+    }
   };
 
   const handleMouseLeave = () => {
@@ -121,14 +150,8 @@ const Viewport = () => {
   };
 
   useEffect(() => {
-    if (hoveredPixel && coordinatesRef.current && stageRef.current) {
-      const stage = stageRef.current;
-      const scale = stage.scaleX();
-      const position = stage.position();
-      coordinatesRef.current.style.left = `${hoveredPixel.x * gridSize * scale + position.x}px`;
-      coordinatesRef.current.style.top = `${hoveredPixel.y * gridSize * scale + position.y - 20}px`;
-    }
-  }, [hoveredPixel]);
+    checkerPatternRef.current = createCheckerboardPattern();
+  }, []);
 
   return (
     <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
@@ -138,8 +161,20 @@ const Viewport = () => {
         draggable
         ref={stageRef}
         onWheel={handleWheel}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
-        <Layer>{drawGrid(window.innerWidth, window.innerHeight)}</Layer>
+        <Layer>
+          <Rect
+            x={0}
+            y={0}
+            width={window.innerWidth}
+            height={window.innerHeight}
+            fillPatternImage={checkerPatternRef.current}
+            fillPatternScale={{ x: 0.5, y: 0.5 }}
+          />
+          {drawGrid(window.innerWidth, window.innerHeight)}
+        </Layer>
         <Layer ref={stageRef}>
           {pixels.map((pixel) => (
             <Rect
@@ -150,8 +185,6 @@ const Viewport = () => {
               height={gridSize}
               fill={pixel.color} // Use the color from the table
               strokeWidth={0} // Remove the black stroke
-              onMouseEnter={() => handleMouseEnter(pixel.x, pixel.y)}
-              onMouseLeave={handleMouseLeave}
             />
           ))}
         </Layer>
