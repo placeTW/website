@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Rect, Line } from 'react-konva';
+import Konva from 'konva'; // Import Konva for types
 import { supabase } from '../api/supabase';
 
 interface Pixel {
@@ -70,7 +71,7 @@ const Viewport: React.FC = () => {
     };
   }, []);
 
-  const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
+  const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
@@ -140,7 +141,7 @@ const Viewport: React.FC = () => {
     return canvas;
   };
 
-  const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
+  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     const stage = stageRef.current;
     if (!stage) return;
     const pointer = stage.getPointerPosition();
@@ -180,7 +181,7 @@ const Viewport: React.FC = () => {
             y={0}
             width={window.innerWidth}
             height={window.innerHeight}
-            fillPatternImage={checkerPatternRef.current as HTMLImageElement}
+            fillPatternImage={checkerPatternRef.current as unknown as HTMLImageElement}
             fillPatternScale={{ x: 0.5, y: 0.5 }}
           />
           {drawGrid(window.innerWidth, window.innerHeight)}
