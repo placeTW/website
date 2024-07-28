@@ -18,20 +18,20 @@ const BriefingRoom: React.FC = () => {
     const fetchAlertLevels = async () => {
       const { data, error } = await supabase.from('art_tool_alert_state').select('*');
       if (error) console.error(error);
-      else setAlertLevels(data);
+      else setAlertLevels(data as AlertLevel[]);
     };
 
     fetchAlertLevels();
 
     const alertSubscription = supabase
-      .from('art_tool_alert_state')
-      .on('*', (payload) => {
+      .channel('art_tool_alert_state')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_alert_state' }, (payload) => {
         fetchAlertLevels();
       })
       .subscribe();
 
     return () => {
-      supabase.removeSubscription(alertSubscription);
+      supabase.removeChannel(alertSubscription);
     };
   }, []);
 

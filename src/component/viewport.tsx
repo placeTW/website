@@ -78,6 +78,7 @@ const Viewport: React.FC = () => {
     const oldScale = stage.scaleX();
 
     const pointer = stage.getPointerPosition();
+    if (!pointer) return;
 
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
@@ -145,6 +146,7 @@ const Viewport: React.FC = () => {
     const stage = stageRef.current;
     if (!stage) return;
     const pointer = stage.getPointerPosition();
+    if (!pointer) return;
     const scale = stage.scaleX();
     const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
     const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
@@ -186,7 +188,7 @@ const Viewport: React.FC = () => {
           />
           {drawGrid(window.innerWidth, window.innerHeight)}
         </Layer>
-        <Layer ref={stageRef}>
+        <Layer>
           {pixels.map((pixel) => (
             <Rect
               key={`${pixel.x}-${pixel.y}`}
