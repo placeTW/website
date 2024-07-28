@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Stage, Layer, Rect, Line } from 'react-konva';
+import { Stage, Layer, Rect, Line, KonvaEventObject } from 'react-konva';
+import Konva from 'konva';
 import { supabase } from '../api/supabase';
 
 interface Pixel {
@@ -70,7 +71,7 @@ const Viewport: React.FC = () => {
     };
   }, []);
 
-  const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
+  const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
