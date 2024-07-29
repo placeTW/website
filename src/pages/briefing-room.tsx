@@ -6,7 +6,7 @@ import { alertLevels, validAlertLevels } from "../definitions/alert-level";
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
-  const { alertLevel } = useAlertContext();
+  const { alertLevel, alertMessage } = useAlertContext();
 
   return (
     <div>
@@ -18,6 +18,7 @@ const BriefingRoom: React.FC = () => {
           {!!alertLevels.get(alertLevel)?.subheading && (
             <p>{t(alertLevels.get(alertLevel)?.subheading ?? "")}</p>
           )}
+          {!!alertMessage && <p>{alertMessage}</p>}
           {alertLevels.get(alertLevel)?.showViewport && <Viewport />}
         </div>
       ) : (

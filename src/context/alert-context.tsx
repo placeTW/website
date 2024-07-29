@@ -4,6 +4,7 @@ import { supabase } from '../api/supabase';
 interface AlertContextType {
   alertLevel: number | null;
   setAlertLevel: (level: number) => void;
+  alertMessage: string | null;
 }
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
@@ -14,6 +15,7 @@ interface AlertProviderProps {
 
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [alertLevel, setAlertLevelState] = useState<number | null>(1);
+  const [alertMessage, setAlertMessageState] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAlertLevel = async () => {
@@ -30,6 +32,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
 
       if (data) {
         setAlertLevelState(data.state);
+        setAlertMessageState(data.message);
       }
     };
 
@@ -62,7 +65,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   };
 
   return (
-    <AlertContext.Provider value={{ alertLevel, setAlertLevel }}>
+    <AlertContext.Provider value={{ alertLevel, setAlertLevel, alertMessage }}>
       {children}
     </AlertContext.Provider>
   );
