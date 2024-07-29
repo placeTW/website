@@ -15,11 +15,15 @@ const BriefingRoom: React.FC = () => {
       ) : validAlertLevels.includes(alertLevel) ? (
         <div>
           <h3>{t(alertLevels.get(alertLevel)?.heading ?? "")}</h3>
-          <p>{t(alertLevels.get(alertLevel)?.subheading ?? "")}</p>
+          {!!alertLevels.get(alertLevel)?.subheading && (
+            <p>{t(alertLevels.get(alertLevel)?.subheading ?? "")}</p>
+          )}
           {alertLevels.get(alertLevel)?.showViewport && <Viewport />}
         </div>
       ) : (
-        <p>{t("Invalid alert level:")} {alertLevel}</p>
+        <p>
+          {t("Invalid alert level:")} {alertLevel}
+        </p>
       )}
     </div>
   );
