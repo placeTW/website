@@ -2,7 +2,7 @@ import { createContext, useState, useContext, useEffect, ReactNode } from 'react
 import { supabase } from '../api/supabase';
 
 interface AlertContextType {
-  alertLevel: number;
+  alertLevel: number | null;
   setAlertLevel: (level: number) => void;
 }
 
@@ -13,14 +13,14 @@ interface AlertProviderProps {
 }
 
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
-  const [alertLevel, setAlertLevelState] = useState<number>(1);
+  const [alertLevel, setAlertLevelState] = useState<number | null>(1);
 
   useEffect(() => {
     const fetchAlertLevel = async () => {
       const { data, error } = await supabase
         .from('art_tool_alert_state')
         .select('*')
-        .eq('Level', 1)
+        .eq('id', 1)
         .single();
 
       if (error) {
@@ -29,17 +29,28 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       }
 
       if (data) {
-        setAlertLevelState(data.Level);
+        setAlertLevelState(data.state);
       }
     };
 
     fetchAlertLevel();
+
+    const alertSubscription = supabase
+      .channel('art_tool_alert_state')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_alert_state' }, () => {
+        fetchAlertLevel();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(alertSubscription);
+    };
   }, []);
 
   const setAlertLevel = async (level: number) => {
     const { error } = await supabase
       .from('art_tool_alert_state')
-      .update({ Level: level })
+      .update({ state: level })
       .eq('id', 1);
 
     if (error) {
