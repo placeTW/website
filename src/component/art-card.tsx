@@ -58,6 +58,8 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
               position="absolute"
               top="5px"
               left="5px"
+              background="white"
+              color="blue.500"
             />
             <Image
               alt={artPiece.layer_name}
