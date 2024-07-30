@@ -10,8 +10,8 @@ import {
     Input,
   } from "@chakra-ui/react";
   import { FC, useState } from "react";
-  import { createLayer } from "../api/supabase/database";
-  import { useUserContext } from "../context/user-context";
+  import { createLayer } from "../../api/supabase/database";
+  import { useUserContext } from "../../context/user-context";
   
   interface CreateCardModalProps {
     isOpen: boolean;

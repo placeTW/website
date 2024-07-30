@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Rect, Line } from 'react-konva';
 import Konva from 'konva';
-import { supabase } from '../api/supabase';
+import { supabase } from '../../api/supabase';
 
 interface Pixel {
   id: number;

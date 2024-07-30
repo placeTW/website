@@ -1,9 +1,9 @@
 import { Box, Flex, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
-import AdvancedViewport from "../component/advanced-viewport";
+import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import ArtCardsGrid from "../component/art_tool/design-cards-grid";
-import CreateLayerButton from "../component/create-layer-button";
+import CreateLayerButton from "../component/art_tool/create-layer-button";
 import { ArtInfo } from "../types/art";
 
 const DesignOffice: React.FC = () => {
