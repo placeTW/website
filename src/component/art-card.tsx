@@ -4,13 +4,17 @@ import {
   CardBody,
   CardFooter,
   Heading,
+  IconButton,
   Image,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import { FC, useState, useEffect } from "react";
 import { ArtInfo } from "../types/art";
+import { useUserContext } from "../context/user-context";
 import ImageModal from "./image-modal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash, faHeart, faEdit, faTrash, faCloudUploadAlt, faCodeMerge } from "@fortawesome/free-solid-svg-icons";
 
 interface ArtCardProps {
   artPiece: ArtInfo;
@@ -18,6 +22,9 @@ interface ArtCardProps {
 
 const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [edited, setEdited] = useState(false); // Assuming you have a way to track if a layer has been edited
+  const [visible, setVisible] = useState(false);
+  const { currentUser } = useUserContext();
 
   useEffect(() => {
     console.log("ArtPiece props:", artPiece);
@@ -27,18 +34,38 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
     setIsModalOpen(true);
   };
 
+  const toggleVisibility = () => {
+    setVisible(!visible);
+  };
+
+  const isAdmiralOrCaptain = currentUser && (currentUser.rank === "A" || currentUser.rank === "B");
+  const isCreator = currentUser && currentUser.user_id === artPiece.created_by_user_id;
+  const isLoggedIn = currentUser && currentUser.rank !== "F"; // Assuming "F" is the rank for pirates
+
   return (
     <>
       <Card>
-        <CardBody>
+        <CardBody position="relative">
+          <IconButton
+            icon={<FontAwesomeIcon icon={visible ? faEye : faEyeSlash} />}
+            aria-label="Toggle Visibility"
+            variant="solid"
+            colorScheme="blue"
+            color="blue.500" // Blue color for the icon
+            backgroundColor="white"
+            borderRadius="50%"
+            _hover={{ color: "white", backgroundColor: "blue.500" }} // Change on hover
+            position="absolute"
+            top={2}
+            left={2}
+            onClick={toggleVisibility}
+          />
           <Box
-            _hover={{ transform: "scale(1.1)" }}
             alignItems="center"
             cursor="pointer"
             display="flex"
             flex="1"
             justifyContent="center"
-            transition="transform 1s"
           >
             <Image
               alt={artPiece.layer_name}
@@ -69,10 +96,51 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
           </Box>
         </CardBody>
         <CardFooter pt={0}>
-          <Box>
-            <Text fontWeight="semibold">
-              {artPiece.likes_count} Likes
-            </Text>
+          <Box display="flex" alignItems="center">
+            {isAdmiralOrCaptain && (
+              <IconButton
+                icon={<FontAwesomeIcon icon={faCodeMerge} />}
+                aria-label="Merge"
+                variant="ghost"
+                colorScheme="blue"
+              />
+            )}
+            {isCreator && (
+              <IconButton
+                icon={<FontAwesomeIcon icon={faEdit} />}
+                aria-label="Edit"
+                variant="ghost"
+                colorScheme="blue"
+                onClick={() => setEdited(true)} // Placeholder for edit action
+              />
+            )}
+            {isCreator && edited && (
+              <IconButton
+                icon={<FontAwesomeIcon icon={faCloudUploadAlt} />}
+                aria-label="Upload"
+                variant="ghost"
+                colorScheme="blue"
+              />
+            )}
+            {(isCreator || isAdmiralOrCaptain) && (
+              <IconButton
+                icon={<FontAwesomeIcon icon={faTrash} />}
+                aria-label="Delete"
+                variant="ghost"
+                colorScheme="red"
+              />
+            )}
+            {isLoggedIn && (
+              <Box display="flex" alignItems="center">
+                <IconButton
+                  icon={<FontAwesomeIcon icon={faHeart} />}
+                  aria-label="Like"
+                  variant="ghost"
+                  colorScheme="blue"
+                />
+                <Text>{artPiece.likes_count}</Text>
+              </Box>
+            )}
           </Box>
         </CardFooter>
       </Card>
