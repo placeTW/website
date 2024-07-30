@@ -25,7 +25,7 @@ const Gallery = () => {
         const data = await response.json();
         const artPiecesList: ArtInfo[] = Object.keys(
           data
-        ).map((key) => ({ ...data[key], art_id: key }));
+        ).map((key) => ({ ...data[key], id: key }));
         updateArtPieces(artPiecesList);
       } catch (error) {
         console.error(`Error fetching the json: ${error}`);

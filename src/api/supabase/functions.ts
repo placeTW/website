@@ -1,4 +1,5 @@
 import { authGetSession, SUPABASE_FUNCTIONS_URL } from ".";
+import { supabase } from "./index";
 
 export const functionsGetSessionInfo = async () => {
   const { data: sessionData, error: sessionError } = await authGetSession();

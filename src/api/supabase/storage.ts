@@ -2,7 +2,7 @@ import { supabase } from './index';
 
 export const uploadThumbnail = async (file: File): Promise<string | null> => {
   const fileName = `${Date.now()}-${file.name}`;
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from('thumbnails')
     .upload(fileName, file);
 
@@ -11,7 +11,7 @@ export const uploadThumbnail = async (file: File): Promise<string | null> => {
     return null;
   }
 
-  const { publicURL } = supabase.storage.from('thumbnails').getPublicUrl(fileName);
+  const { publicUrl } = supabase.storage.from('thumbnails').getPublicUrl(fileName);
 
-  return publicURL;
+  return publicUrl;
 };

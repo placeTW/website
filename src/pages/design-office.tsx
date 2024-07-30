@@ -18,12 +18,14 @@ const DesignOffice: React.FC = () => {
       console.error('Error fetching art pieces:', error);
     } else {
       const formattedData = data.map((item: any) => ({
-        art_id: item.id.toString(),
-        title: item.layer_name,
-        blurb: item.created_by_user_id,
-        desc: '',
-        links: [],
-        thumbnail: item.layer_thumbnail
+        id: item.id.toString(),
+        layer_name: item.layer_name,
+        created_by_user_id: item.created_by_user_id,
+        handle: "",
+        rank: "",
+        rank_name: "",
+        likes_count: item.likes_count,
+        layer_thumbnail: item.layer_thumbnail
       }));
       setArtPieces(formattedData);
     }
@@ -45,7 +47,7 @@ const DesignOffice: React.FC = () => {
         <AdvancedViewport />
       </Box>
       <Box flex="1" overflowY="auto">
-        <ArtCardsGrid artPieces={artPieces} refreshData={fetchArtPieces} />
+        <ArtCardsGrid artPieces={artPieces} />
       </Box>
     </Flex>
   );

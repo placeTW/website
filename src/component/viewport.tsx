@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Stage, Layer, Rect, Line, Text as KonvaText } from 'react-konva';
+import { Stage, Layer, Rect, Line } from 'react-konva';
 import Konva from 'konva';
 import { supabase } from '../api/supabase';
 
