@@ -1,10 +1,12 @@
-// src/component/advanced-viewport.tsx
-
-import React from "react";
-import Viewport from "./viewport";
+import React from 'react';
+import Viewport from './viewport';
 
 const AdvancedViewport: React.FC = () => {
-  return <Viewport />;
+  return (
+    <div style={{ width: '100%', height: 'calc(100vh - 80px)' }}>
+      <Viewport />
+    </div>
+  );
 };
 
 export default AdvancedViewport;
