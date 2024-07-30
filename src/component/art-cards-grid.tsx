@@ -1,9 +1,7 @@
 import { Box, SimpleGrid } from "@chakra-ui/react";
 import { ArtInfo } from "../types/art";
 import ArtCard from "./art-card";
-import { FC, useEffect, useState } from "react";
-import { supabase } from "../api/supabase";
-import { useUserContext } from "../context/user-context";
+import { FC } from "react";
 
 interface ArtCardsGridProps {
   artPieces: ArtInfo[];
