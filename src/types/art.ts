@@ -5,6 +5,6 @@ export interface ArtInfo {
   created_by_user_id: string;
   handle: string;
   rank: string;
-  rank_name: string;  // Add this property
+  rank_name: string;  // Ensure this property is included
   likes_count: number;
 }

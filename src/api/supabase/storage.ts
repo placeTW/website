@@ -11,7 +11,7 @@ export const uploadThumbnail = async (file: File): Promise<string | null> => {
     return null;
   }
 
-  const { publicUrl } = supabase.storage.from('thumbnails').getPublicUrl(fileName);
+  const { data } = supabase.storage.from('thumbnails').getPublicUrl(fileName);
 
-  return publicUrl;
+  return data?.publicUrl || null;
 };

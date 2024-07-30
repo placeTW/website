@@ -4,10 +4,12 @@ import AdvancedViewport from '../component/advanced-viewport';
 import ArtCardsGrid from '../component/art-cards-grid';
 import { supabase } from '../api/supabase';
 import { ArtInfo } from '../types/art';
+import { useUserContext } from '../context/user-context';
 
 const DesignOffice: React.FC = () => {
   const [artPieces, setArtPieces] = useState<ArtInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const { users, rankNames } = useUserContext();
 
   const fetchArtPieces = async () => {
     const { data, error } = await supabase
@@ -17,17 +19,16 @@ const DesignOffice: React.FC = () => {
     if (error) {
       console.error('Error fetching art pieces:', error);
     } else {
-      const formattedData = data.map((item: any) => ({
-        id: item.id.toString(),
-        layer_name: item.layer_name,
-        created_by_user_id: item.created_by_user_id,
-        handle: "",
-        rank: "",
-        rank_name: "",
-        likes_count: item.likes_count,
-        layer_thumbnail: item.layer_thumbnail
-      }));
-      setArtPieces(formattedData);
+      const artPiecesWithUserInfo = data.map((artPiece: ArtInfo) => {
+        const user = users.find((u) => u.user_id === artPiece.created_by_user_id);
+        return {
+          ...artPiece,
+          handle: user ? user.handle : "Unknown",
+          rank: user ? user.rank : "Unknown",
+          rank_name: user ? rankNames[user.rank] : "Unknown",
+        };
+      });
+      setArtPieces(artPiecesWithUserInfo);
     }
 
     setLoading(false);
@@ -35,7 +36,7 @@ const DesignOffice: React.FC = () => {
 
   useEffect(() => {
     fetchArtPieces();
-  }, []);
+  }, [users, rankNames]);
 
   if (loading) {
     return <Spinner size="xl" />;
