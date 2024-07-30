@@ -1,24 +1,51 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Box, Flex, Spinner } from '@chakra-ui/react';
 import AdvancedViewport from '../component/advanced-viewport';
-import { Box, Flex } from '@chakra-ui/react';
 import ArtCardsGrid from '../component/art-cards-grid';
+import { supabase } from '../api/supabase';
 import { ArtInfo } from '../types/art';
 
-// Dummy data for the art pieces
-const artPieces: ArtInfo[] = [
-  { art_id: '1', title: 'Art Piece 1', blurb: 'Blurb 1', desc: 'Description 1', links: [] },
-  { art_id: '2', title: 'Art Piece 2', blurb: 'Blurb 2', desc: 'Description 2', links: [] },
-  // Add more art pieces as needed
-];
-
 const DesignOffice: React.FC = () => {
+  const [artPieces, setArtPieces] = useState<ArtInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchArtPieces = async () => {
+    const { data, error } = await supabase
+      .from('art_tool_layers')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching art pieces:', error);
+    } else {
+      const formattedData = data.map((item: any) => ({
+        art_id: item.id.toString(),
+        title: item.layer_name,
+        blurb: item.created_by_user_id,
+        desc: '',
+        links: [],
+        thumbnail: item.layer_thumbnail
+      }));
+      setArtPieces(formattedData);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchArtPieces();
+  }, []);
+
+  if (loading) {
+    return <Spinner size="xl" />;
+  }
+
   return (
     <Flex height="100vh" width="100vw" direction="row">
       <Box flex="3" borderRight="1px solid #ccc">
         <AdvancedViewport />
       </Box>
       <Box flex="1" overflowY="auto">
-        <ArtCardsGrid artPieces={artPieces} />
+        <ArtCardsGrid artPieces={artPieces} refreshData={fetchArtPieces} />
       </Box>
     </Flex>
   );

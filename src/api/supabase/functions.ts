@@ -160,3 +160,27 @@ export const insertNewUser = async (user_id: string, email: string, handle: stri
 
   return data;
 };
+
+
+export const fetchLayersWithUserDetails = async () => {
+  const { data, error } = await supabase
+    .from('art_tool_layers')
+    .select(`
+      id,
+      created_at,
+      layer_name,
+      layer_thumbnail,
+      likes_count,
+      created_by_user_id,
+      art_tool_users (
+        handle,
+        rank
+      )
+    `)
+    .leftJoin('art_tool_users', 'art_tool_layers.created_by_user_id', 'art_tool_users.user_id');
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+};
