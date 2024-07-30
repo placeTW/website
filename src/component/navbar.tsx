@@ -1,30 +1,8 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Input,
-  Link,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Spacer,
-  Text,
-  useDisclosure,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Spacer, Text, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import {
-  authSignOut,
-  functionsUpdateNickname,
-  insertNewUser,
-  authGetSession,
-  functionsFetchOneUser,
-} from "../api/supabase";
+import { authSignOut, functionsUpdateNickname, insertNewUser, authGetSession, functionsFetchOneUser } from "../api/supabase";
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import LanguageSwitcher from "./language-switcher";
@@ -130,7 +108,7 @@ const Navbar = () => {
   };
 
   return (
-    <Box bg="blue.500" px={4} py={2}>
+    <Box bg="blue.500" px={4} py={2} position="fixed" top={0} left={0} width="100%" zIndex={1000}>
       <Flex alignItems="center" maxW="xxl">
         <Heading as="h1" size="lg" color="white">
           PlaceTW

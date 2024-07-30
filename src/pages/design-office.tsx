@@ -69,13 +69,15 @@ const DesignOffice: React.FC = () => {
   }
 
   return (
-    <Flex height="100vh" width="100vw" direction="row">
+    <Flex height="calc(100vh - 80px)" width="100vw" direction="row">
       <Box flex="3" borderRight="1px solid #ccc">
         <AdvancedViewport />
       </Box>
       <Box flex="1" overflowY="auto" position="relative">
-        <CreateLayerButton />
         <ArtCardsGrid artPieces={artPieces} />
+      </Box>
+      <Box position="fixed" bottom="80px" right="20px" zIndex="1000">
+        <CreateLayerButton />
       </Box>
     </Flex>
   );

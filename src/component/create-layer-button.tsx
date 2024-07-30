@@ -1,10 +1,9 @@
 import { Box, IconButton } from "@chakra-ui/react";
+import { AddIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import CreateCardModal from "./create-card-modal";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
-const CreateLayerButton: React.FC = () => {
+const CreateLayerButton = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -17,14 +16,15 @@ const CreateLayerButton: React.FC = () => {
 
   return (
     <>
-      <Box position="fixed" bottom="20px" right="20px">
+      <Box position="fixed" bottom="100px" right="30px" zIndex={1000}>
         <IconButton
-          aria-label="Create New Layer"
-          icon={<FontAwesomeIcon icon={faPlus} />}
-          isRound
+          icon={<AddIcon />}
+          aria-label="Create new layer"
           size="lg"
-          colorScheme="teal"
+          colorScheme="blue"
           onClick={handleOpenModal}
+          boxShadow="lg"
+          borderRadius="full"
         />
       </Box>
       <CreateCardModal isOpen={isModalOpen} onClose={handleCloseModal} />

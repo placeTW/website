@@ -5,10 +5,10 @@ import Navbar from "./navbar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <Box w="100vw">
+    <Box w="100vw" pt="60px" pb="40px">
       <GlobalUserStatusListener>
         <Navbar />
-        <Box p={4}>{children}</Box>
+        <Box p={4} height="calc(100vh - 120px)" overflowY="auto">{children}</Box>
         <Footer />
       </GlobalUserStatusListener>
     </Box>
