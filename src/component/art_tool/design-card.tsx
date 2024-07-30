@@ -10,9 +10,9 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { FC, useState, useEffect } from "react";
-import { ArtInfo } from "../types/art";
-import ImageModal from "./image-modal";
-import { useUserContext } from "../context/user-context";
+import { ArtInfo } from "../../types/art";
+import ImageModal from "../image-modal";
+import { useUserContext } from "../../context/user-context";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart, faTrash, faPen, faCodeMerge, faEye, faEyeSlash, faCloudUpload } from "@fortawesome/free-solid-svg-icons";
 

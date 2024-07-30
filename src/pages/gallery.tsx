@@ -1,7 +1,7 @@
 import { Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import ArtCardsGrid from "../component/gallery/art-cards-grid";
+import ArtCardsGrid from "../component/gallery/gallery-art-cards-grid";
 import { GalleryArtInfo } from "../types/gallery";
 
 const Gallery = () => {
