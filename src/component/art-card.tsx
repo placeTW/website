@@ -18,12 +18,10 @@ import { faHeart, faTrash, faPen, faCodeMerge, faEye, faEyeSlash, faCloudUpload 
 
 interface ArtCardProps {
   artPiece: ArtInfo;
-  userId: string;
-  userHandle: string;
 }
 
-const ArtCard: FC<ArtCardProps> = ({ artPiece, userId, userHandle }) => {
-  const { currentUser, rankNames, users } = useUserContext();
+const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
+  const { currentUser } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -42,9 +40,6 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece, userId, userHandle }) => {
   const isAdminOrCreator = currentUser && (currentUser.rank === "A" || currentUser.rank === "B" || currentUser.user_id === artPiece.created_by_user_id);
   const isCreator = currentUser && currentUser.user_id === artPiece.created_by_user_id;
   const canMerge = currentUser && (currentUser.rank === "A" || currentUser.rank === "B");
-
-  const user = users.find((u) => u.user_id === userId);
-  const rankName = user ? rankNames[user.rank] : "Unknown";
 
   return (
     <>
@@ -84,7 +79,7 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece, userId, userHandle }) => {
                 fontSize={"sm"}
                 letterSpacing={1.1}
               >
-                {rankName} {userHandle}
+                {artPiece.rank_name} {artPiece.handle}
               </Text>
               <Heading fontSize={"2xl"} fontFamily={"body"}>
                 {artPiece.layer_name}
