@@ -1,55 +1,31 @@
-import React, { useEffect, useState } from "react";
-import { supabase } from "../api/supabase";
-import AlertLevel1 from "../component/alert-level-1";
-import AlertLevel2 from "../component/alert-level-2";
-import AlertLevel3 from "../component/alert-level-3";
-import AlertLevel4 from "../component/alert-level-4";
-
-interface AlertLevel {
-  Level: number;
-  Name: string;
-  Active: boolean;
-}
+import React from "react";
+import { useTranslation } from "react-i18next";
+import Viewport from "../component/viewport";
+import { useAlertContext } from "../context/alert-context";
+import { alertLevels, validAlertLevels } from "../definitions/alert-level";
 
 const BriefingRoom: React.FC = () => {
-  const [alertLevels, setAlertLevels] = useState<AlertLevel[]>([]);
-
-  useEffect(() => {
-    const fetchAlertLevels = async () => {
-      const { data, error } = await supabase
-        .from('art_tool_alert_state')
-        .select('*');
-      if (error) {
-        console.error('Error fetching alert levels:', error);
-      } else {
-        setAlertLevels(data as AlertLevel[]);
-      }
-    };
-
-    fetchAlertLevels();
-
-    const alertSubscription = supabase
-      .channel('art_tool_alert_state')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_alert_state' }, () => {
-        fetchAlertLevels();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(alertSubscription);
-    };
-  }, []);
+  const { t } = useTranslation();
+  const { alertLevel, alertMessage } = useAlertContext();
 
   return (
     <div>
-      {alertLevels.filter(level => level.Active).map(level => (
-        <div key={level.Level}>
-          {level.Level === 1 && <AlertLevel1 />}
-          {level.Level === 2 && <AlertLevel2 />}
-          {level.Level === 3 && <AlertLevel3 />}
-          {level.Level === 4 && <AlertLevel4 />}
+      {alertLevel === null ? (
+        <p>{t("Loading...")}</p>
+      ) : validAlertLevels.includes(alertLevel) ? (
+        <div>
+          <h3>{t(alertLevels.get(alertLevel)?.heading ?? "")}</h3>
+          {!!alertLevels.get(alertLevel)?.subheading && (
+            <p>{t(alertLevels.get(alertLevel)?.subheading ?? "")}</p>
+          )}
+          {!!alertMessage && <p>{alertMessage}</p>}
+          {alertLevels.get(alertLevel)?.showViewport && <Viewport />}
         </div>
-      ))}
+      ) : (
+        <p>
+          {t("Invalid alert level:")} {alertLevel}
+        </p>
+      )}
     </div>
   );
 };
