@@ -52,10 +52,8 @@ const DesignOffice: React.FC = () => {
 
     const subscription = supabase
       .channel('art_tool_layers')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_layers' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          fetchArtPieces();  // refetch data on insert
-        }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_layers' }, () => {
+        fetchArtPieces();  // refetch data on insert
       })
       .subscribe();
 
@@ -76,7 +74,7 @@ const DesignOffice: React.FC = () => {
       <Box flex="1" overflowY="auto" position="relative">
         <ArtCardsGrid artPieces={artPieces} />
       </Box>
-      <Box position="fixed" bottom="80px" right="20px" zIndex="1000">
+      <Box position="fixed" bottom="100px" right="30px" zIndex="1000">
         <CreateLayerButton />
       </Box>
     </Flex>
