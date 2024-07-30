@@ -1,77 +1,57 @@
 import {
-    Button,
-    FormControl,
-    FormLabel,
-    Input,
     Modal,
-    ModalBody,
-    ModalCloseButton,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
     ModalOverlay,
-    useToast,
+    ModalContent,
+    ModalHeader,
+    ModalCloseButton,
+    ModalBody,
+    ModalFooter,
+    Button,
+    Input,
   } from "@chakra-ui/react";
-  import { useState } from "react";
+  import { FC, useState } from "react";
+  import { createLayer } from "../api/supabase/layers";
+  import { useUserContext } from "../context/user-context";
   
   interface CreateCardModalProps {
     isOpen: boolean;
     onClose: () => void;
   }
   
-  const CreateCardModal: React.FC<CreateCardModalProps> = ({ isOpen, onClose }) => {
-    const [cardName, setCardName] = useState("");
-    const toast = useToast();
+  const CreateCardModal: FC<CreateCardModalProps> = ({ isOpen, onClose }) => {
+    const [layerName, setLayerName] = useState("");
+    const { currentUser } = useUserContext();
   
-    const handleCreate = () => {
-      if (cardName.trim() === "") {
-        toast({
-          title: "Error",
-          description: "Card name cannot be empty.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
+    const handleCreateLayer = async () => {
+      if (currentUser) {
+        try {
+          await createLayer(layerName, currentUser.user_id);
+          onClose();
+        } catch (error) {
+          console.error("Error creating layer:", error);
+        }
       }
-  
-      // Call the function to create a new card with cardName
-      // Example: createNewCard(cardName);
-  
-      onClose();
-      setCardName(""); // Reset card name
-  
-      toast({
-        title: "Success",
-        description: `Card "${cardName}" created successfully.`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
     };
   
     return (
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Create New Layer</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <FormControl>
-              <FormLabel>Card Name</FormLabel>
-              <Input
-                placeholder="Enter card name"
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-              />
-            </FormControl>
+            <Input
+              placeholder="Layer Name"
+              value={layerName}
+              onChange={(e) => setLayerName(e.target.value)}
+            />
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" onClick={onClose} mr={3}>
-              Cancel
-            </Button>
-            <Button colorScheme="blue" onClick={handleCreate}>
+            <Button colorScheme="blue" mr={3} onClick={handleCreateLayer}>
               Create
+            </Button>
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
             </Button>
           </ModalFooter>
         </ModalContent>

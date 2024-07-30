@@ -1,36 +1,34 @@
 import { Box, IconButton } from "@chakra-ui/react";
-import { AddIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import CreateCardModal from "./create-card-modal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
-interface CreateLayerButtonProps {
-  onClick: () => void;
-}
+const CreateLayerButton: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-const CreateLayerButton: React.FC<CreateLayerButtonProps> = ({ onClick }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   return (
-    <Box
-      position="fixed"
-      bottom="24px"
-      right="24px"
-      zIndex="1000"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <IconButton
-        aria-label="Create new layer"
-        icon={<AddIcon />}
-        size="lg"
-        colorScheme="blue"
-        borderRadius="50%"
-        boxShadow="lg"
-        onClick={onClick}
-        transform={isHovered ? "scale(1.1)" : "scale(1.0)"}
-        transition="transform 0.2s"
-      />
-    </Box>
+    <>
+      <Box position="fixed" bottom="20px" right="20px">
+        <IconButton
+          aria-label="Create New Layer"
+          icon={<FontAwesomeIcon icon={faPlus} />}
+          isRound
+          size="lg"
+          colorScheme="teal"
+          onClick={handleOpenModal}
+        />
+      </Box>
+      <CreateCardModal isOpen={isModalOpen} onClose={handleCloseModal} />
+    </>
   );
 };
 
