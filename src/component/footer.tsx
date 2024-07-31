@@ -1,11 +1,15 @@
-import { Box, Flex, Link, IconButton, Text } from "@chakra-ui/react";
-import { FaGithub, FaReddit, FaDiscord } from "react-icons/fa";
+import { Box, Flex, IconButton, Link, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { FaDiscord, FaGithub, FaReddit } from "react-icons/fa";
 
 const Footer = () => {
   const { t } = useTranslation();
   return (
-    <Box bg="blue.500" px={4} py={2} position="fixed" bottom={0} left={0} width="100%" zIndex={1000}>
+    <Box
+      bg="blue.500"
+      px={4}
+      py={2}
+    >
       <Text textAlign="center" color="white" mt={2} fontWeight="bold">
         {t("Join our community today!")}
       </Text>

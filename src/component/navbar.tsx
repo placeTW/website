@@ -108,7 +108,7 @@ const Navbar = () => {
   };
 
   return (
-    <Box bg="blue.500" px={4} py={2} position="fixed" top={0} left={0} width="100%" zIndex={1000}>
+    <Box bg="blue.500" px={4} py={2}>
       <Flex alignItems="center" maxW="xxl">
         <Heading as="h1" size="lg" color="white">
           PlaceTW
