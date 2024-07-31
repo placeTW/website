@@ -1,7 +1,7 @@
 import { AddIcon } from "@chakra-ui/icons";
 import { Box, Button } from "@chakra-ui/react";
 import { useState } from "react";
-import CreateCardModal from "./create-card-modal";
+import CreateDesignModal from "./create-design-modal";
 
 const CreateDesignButton = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,7 +29,7 @@ const CreateDesignButton = () => {
           New Design
         </Button>
       </Box>
-      <CreateCardModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      <CreateDesignModal isOpen={isModalOpen} onClose={handleCloseModal} />
     </>
   );
 };

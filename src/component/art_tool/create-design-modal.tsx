@@ -13,12 +13,12 @@ import {
   import { databaseCreateLayer } from "../../api/supabase/database";
   import { useUserContext } from "../../context/user-context";
   
-  interface CreateCardModalProps {
+  interface CreateDesignModalProps {
     isOpen: boolean;
     onClose: () => void;
   }
   
-  const CreateCardModal: FC<CreateCardModalProps> = ({ isOpen, onClose }) => {
+  const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, onClose }) => {
     const [designName, setDesignName] = useState("");
     const { currentUser } = useUserContext();
   
@@ -28,7 +28,7 @@ import {
           await databaseCreateLayer(designName, currentUser.user_id);
           onClose();
         } catch (error) {
-          console.error("Error creating layer:", error);
+          console.error("Error creating design:", error);
         }
       }
     };
@@ -59,5 +59,5 @@ import {
     );
   };
   
-  export default CreateCardModal;
+  export default CreateDesignModal;
   

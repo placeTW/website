@@ -11,12 +11,20 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { FaTrash, FaEye, FaEyeSlash, FaPen, FaCloudArrowUp, FaCodeMerge, FaHeart } from "react-icons/fa6";
 import { FC, useEffect, useState } from "react";
+import {
+  FaCloudArrowUp,
+  FaCodeMerge,
+  FaEye,
+  FaEyeSlash,
+  FaHeart,
+  FaPen,
+  FaTrash,
+} from "react-icons/fa6";
+import { databaseDeleteLayerAndPixels } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
 import ImageModal from "../image-modal";
-import { databaseDeleteLayerAndPixels } from "../../api/supabase/database";
 
 interface DesignCardProps {
   design: DesignInfo;
@@ -31,7 +39,7 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
   const toast = useToast();
 
   useEffect(() => {
-    console.log("ArtPiece props:", design);
+    console.log("Design props:", design);
   }, [design]);
 
   const handleImageClick = () => {
@@ -136,9 +144,7 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
           gap={2}
         >
           <Box display="flex" flexDirection="row" alignItems="center">
-            <Button leftIcon={<FaHeart />}>
-              {design.likes_count}
-            </Button>
+            <Button leftIcon={<FaHeart />}>{design.likes_count}</Button>
           </Box>
           <Box display="flex" gap={2}>
             {isAdminOrCreator && (
@@ -148,23 +154,12 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
                 onClick={handleDelete}
               />
             )}
+            {isCreator && <IconButton icon={<FaPen />} aria-label="Edit" />}
             {isCreator && (
-              <IconButton
-                icon={<FaPen />}
-                aria-label="Edit"
-              />
-            )}
-            {isCreator && (
-              <IconButton
-                icon={<FaCloudArrowUp />}
-                aria-label="Upload"
-              />
+              <IconButton icon={<FaCloudArrowUp />} aria-label="Upload" />
             )}
             {canMerge && (
-              <IconButton
-                icon={<FaCodeMerge />}
-                aria-label="Merge"
-              />
+              <IconButton icon={<FaCodeMerge />} aria-label="Merge" />
             )}
           </Box>
         </CardFooter>
