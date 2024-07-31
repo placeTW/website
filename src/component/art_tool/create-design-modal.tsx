@@ -10,7 +10,7 @@ import {
     Input,
   } from "@chakra-ui/react";
   import { FC, useState } from "react";
-  import { databaseCreateLayer } from "../../api/supabase/database";
+  import { databaseCreateDesign } from "../../api/supabase/database";
   import { useUserContext } from "../../context/user-context";
   
   interface CreateDesignModalProps {
@@ -25,7 +25,7 @@ import {
     const handleCreateDesign = async () => {
       if (currentUser) {
         try {
-          await databaseCreateLayer(designName, currentUser.user_id);
+          await databaseCreateDesign(designName, currentUser.user_id);
           onClose();
         } catch (error) {
           console.error("Error creating design:", error);

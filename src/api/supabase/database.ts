@@ -1,12 +1,12 @@
 import { supabase } from "./index";
 
 // Layers-related functions
-export const databaseCreateLayer = async (
+export const databaseCreateDesign = async (
   layerName: string,
   userId: string,
 ) => {
   const { data, error } = await supabase
-    .from("art_tool_layers")
+    .from("art_tool_designs")
     .insert([
       { layer_name: layerName, created_by_user_id: userId },
     ]);
@@ -20,7 +20,7 @@ export const databaseCreateLayer = async (
 };
 
 export const databaseFetchLayersWithUserDetails = async () => {
-  const { data, error } = await supabase.from("art_tool_layers").select(`
+  const { data, error } = await supabase.from("art_tool_designs").select(`
     id,
     created_at,
     layer_name,
@@ -85,7 +85,7 @@ export const databaseDeleteLayerAndPixels = async (layerName: string) => {
     .eq("canvas", layerName);
 
   const deleteLayer = supabase
-    .from("art_tool_layers")
+    .from("art_tool_designs")
     .delete()
     .eq("layer_name", layerName);
 

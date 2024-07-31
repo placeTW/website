@@ -36,10 +36,10 @@ const DesignOffice: React.FC = () => {
     fetchLayersWithUserDetails();
 
     const subscription = supabase
-      .channel("art_tool_layers")
+      .channel("art_tool_designs")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_layers" },
+        { event: "*", schema: "public", table: "art_tool_designs" },
         () => {
           fetchLayersWithUserDetails(); // refetch data on insert
         }
