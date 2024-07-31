@@ -10,16 +10,15 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import {
-  faCloudUpload,
-  faCodeMerge,
-  faEye,
-  faEyeSlash,
-  faHeart,
-  faPen,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { 
+  FaCodeMerge,
+  FaCloudArrowUp,
+  FaEye,
+  FaEyeSlash,
+  FaHeart,
+  FaPen,
+  FaTrash,
+ } from "react-icons/fa6";
 import { FC, useEffect, useState } from "react";
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
@@ -72,7 +71,7 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
             alignItems="center"
           >
             <IconButton
-              icon={<FontAwesomeIcon icon={isVisible ? faEye : faEyeSlash} />}
+              icon={isVisible ? <FaEye /> : <FaEyeSlash />}
               aria-label="Toggle Visibility"
               onClick={handleToggleVisibility}
               position="absolute"
@@ -120,32 +119,32 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
           gap={2}
         >
           <Box display="flex" flexDirection="row" alignItems="center">
-            <Button leftIcon={<FontAwesomeIcon icon={faHeart} />}>
+            <Button leftIcon={<FaHeart />}>
               {design.likes_count}
             </Button>
           </Box>
           <Box display="flex" gap={2}>
             {isAdminOrCreator && (
               <IconButton
-                icon={<FontAwesomeIcon icon={faTrash} />}
+                icon={<FaTrash />}
                 aria-label="Delete"
               />
             )}
             {isCreator && (
               <IconButton
-                icon={<FontAwesomeIcon icon={faPen} />}
+                icon={<FaPen />}
                 aria-label="Edit"
               />
             )}
             {isCreator && (
               <IconButton
-                icon={<FontAwesomeIcon icon={faCloudUpload} />}
+                icon={<FaCloudArrowUp />}
                 aria-label="Upload"
               />
             )}
             {canMerge && (
               <IconButton
-                icon={<FontAwesomeIcon icon={faCodeMerge} />}
+                icon={<FaCodeMerge />}
                 aria-label="Merge"
               />
             )}
