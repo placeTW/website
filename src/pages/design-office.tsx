@@ -71,20 +71,15 @@ const DesignOffice: React.FC = () => {
   }
 
   return (
-    <Flex height="calc(100vh - 80px)" direction="row">
+    <Flex height="calc(100vh - 80px)" position="relative" direction="row">
       <Box flex="1">
         <AdvancedViewport />
       </Box>
-      <Box
-        w="350px"
-        overflowY="auto"
-        position="relative"
-        borderLeft="1px solid #ccc"
-      >
+      <Box w="350px" overflowY="auto" borderLeft="1px solid #ccc">
         <DesignCardsGrid designs={artPieces} />
-        <Box position="absolute" bottom="100px" right="30px" zIndex="1000">
-          <CreateDesignButton />
-        </Box>
+      </Box>
+      <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
+        <CreateDesignButton />
       </Box>
     </Flex>
   );

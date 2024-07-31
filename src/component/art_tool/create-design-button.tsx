@@ -16,7 +16,7 @@ const CreateDesignButton = () => {
 
   return (
     <>
-      <Box position="fixed" bottom="100px" right="30px" zIndex={1000}>
+      <Box>
         <IconButton
           icon={<AddIcon />}
           aria-label="Create new layer"
