@@ -85,14 +85,13 @@ const Viewport: React.FC = () => {
   // find the parent container's w and h and then manually set those !
   useEffect(() => {
     if (!divRef.current) return;
-    const resizeObserver = new ResizeObserver(() => {
-      // Do what you want to do when the size of the element changes
-      if (divRef.current?.offsetHeight && divRef.current?.offsetWidth) {
+    const resizeObserver = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
         setDimensions({
-          width: divRef.current.offsetWidth,
-          height: divRef.current.offsetHeight,
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
         });
-      }
+      });
     });
     resizeObserver.observe(divRef.current);
     return () => resizeObserver.disconnect(); // clean up
@@ -225,7 +224,7 @@ const Viewport: React.FC = () => {
             }
             fillPatternScale={{ x: 0.5, y: 0.5 }}
           />
-          {drawGrid(window.innerWidth * 0.75, window.innerHeight * 0.85)}
+          {drawGrid(dimensions.width, dimensions.height)}
         </Layer>
         <Layer>
           {pixels.map((pixel) => (
