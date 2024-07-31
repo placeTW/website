@@ -52,10 +52,10 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
 
   const handleDelete = async () => {
     try {
-      await databaseDeleteLayerAndPixels(design.layer_name);
+      await databaseDeleteLayerAndPixels(design.design_name);
       toast({
         title: "Design deleted.",
-        description: `${design.layer_name} has been removed successfully.`,
+        description: `${design.design_name} has been removed successfully.`,
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -76,9 +76,9 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
     currentUser &&
     (currentUser.rank === "A" ||
       currentUser.rank === "B" ||
-      currentUser.user_id === design.created_by_user_id);
+      currentUser.user_id === design.created_by);
   const isCreator =
-    currentUser && currentUser.user_id === design.created_by_user_id;
+    currentUser && currentUser.user_id === design.created_by;
   const canMerge =
     currentUser && (currentUser.rank === "A" || currentUser.rank === "B");
 
@@ -104,14 +104,14 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
               left="5px"
             />
             <Image
-              alt={design.layer_name}
+              alt={design.design_name}
               fallbackSrc="https://via.placeholder.com/150"
               h="300px"
               w="300px"
               objectFit="cover"
               onClick={handleImageClick}
               src={
-                design.layer_thumbnail ||
+                design.design_thumbnail ||
                 "https://via.placeholder.com/300?text=No+Image"
               }
               borderRadius={8}
@@ -129,7 +129,7 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
                 {rankName} {userHandle}
               </Text>
               <Heading fontSize={"2xl"} fontFamily={"body"}>
-                {design.layer_name}
+                {design.design_name}
               </Heading>
             </Stack>
           </Box>
@@ -144,7 +144,9 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
           gap={2}
         >
           <Box display="flex" flexDirection="row" alignItems="center">
-            <Button leftIcon={<FaHeart />}>{design.likes_count}</Button>
+            <Button leftIcon={<FaHeart />}>
+              {design.liked_by.length}
+            </Button>
           </Box>
           <Box display="flex" gap={2}>
             {isAdminOrCreator && (
@@ -168,10 +170,10 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         imageUrl={
-          design.layer_thumbnail ||
+          design.design_thumbnail ||
           "https://via.placeholder.com/300?text=No+Image"
         }
-        altText={design.layer_name}
+        altText={design.design_name}
       />
     </>
   );

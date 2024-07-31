@@ -1,7 +1,7 @@
 import { Box, Flex, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase"; // Ensure supabase is imported
-import { databaseFetchLayersWithUserDetails } from "../api/supabase/database";
+import { databaseFetchDesignsWithUserDetails } from "../api/supabase/database";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
@@ -13,16 +13,16 @@ const DesignOffice: React.FC = () => {
 
   const fetchLayersWithUserDetails = async () => {
     try {
-      const data = await databaseFetchLayersWithUserDetails();
+      const data = await databaseFetchDesignsWithUserDetails();
       const formattedData = data.map((item: any) => ({
         id: item.id.toString(),
-        layer_name: item.layer_name,
-        created_by_user_id: item.created_by_user_id,
+        design_name: item.design_name,
+        created_by: item.created_by,
         handle: item.art_tool_users.handle || "",
         rank: item.art_tool_users.rank || "",
         rank_name: item.art_tool_users.rank_name || "", // Add rank_name here
-        likes_count: item.likes_count,
-        layer_thumbnail: item.layer_thumbnail,
+        liked_by: item.liked_by,
+        design_thumbnail: item.design_thumbnail,
       }));
       setDesigns(formattedData);
     } catch (error) {
@@ -62,6 +62,7 @@ const DesignOffice: React.FC = () => {
       </Box>
       <Box w="350px" overflowY="auto">
         <DesignCardsList designs={designs} />
+        <Box h="100px" />
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
         <CreateDesignButton />

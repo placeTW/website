@@ -22,8 +22,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs }) => {
         <Box key={design.id}>
           <DesignCard
             design={design}
-            userId={design.created_by_user_id}
-            userHandle={getUserHandle(design.created_by_user_id)}
+            userId={design.created_by}
+            userHandle={getUserHandle(design.created_by)}
           />
         </Box>
       ))}

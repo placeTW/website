@@ -8,7 +8,7 @@ export const databaseCreateDesign = async (
   const { data, error } = await supabase
     .from("art_tool_designs")
     .insert([
-      { layer_name: layerName, created_by_user_id: userId },
+      { design_name: layerName, created_by: userId },
     ]);
 
   if (error) {
@@ -19,15 +19,15 @@ export const databaseCreateDesign = async (
   return data;
 };
 
-export const databaseFetchLayersWithUserDetails = async () => {
+export const databaseFetchDesignsWithUserDetails = async () => {
   const { data, error } = await supabase.from("art_tool_designs").select(`
     id,
     created_at,
-    layer_name,
-    layer_thumbnail,
-    liked_by_user_ids,
-    created_by_user_id,
-    art_tool_users:created_by_user_id (
+    design_name,
+    design_thumbnail,
+    liked_by,
+    created_by,
+    art_tool_users:created_by (
       handle,
       rank
     )
@@ -87,7 +87,7 @@ export const databaseDeleteLayerAndPixels = async (layerName: string) => {
   const deleteLayer = supabase
     .from("art_tool_designs")
     .delete()
-    .eq("layer_name", layerName);
+    .eq("design_name", layerName);
 
   const [pixelsError, layerError] = await Promise.all([deletePixels, deleteLayer]);
 
