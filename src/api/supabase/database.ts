@@ -1,4 +1,5 @@
 import { supabase } from "./index";
+
 // Layers-related functions
 export const databaseCreateLayer = async (
   layerName: string,
@@ -20,17 +21,17 @@ export const databaseCreateLayer = async (
 
 export const databaseFetchLayersWithUserDetails = async () => {
   const { data, error } = await supabase.from("art_tool_layers").select(`
-      id,
-      created_at,
-      layer_name,
-      layer_thumbnail,
-      likes_count,
-      created_by_user_id,
-      art_tool_users:art_tool_users (
-        handle,
-        rank
-      )
-    `);
+    id,
+    created_at,
+    layer_name,
+    layer_thumbnail,
+    liked_by_user_ids,
+    created_by_user_id,
+    art_tool_users:created_by_user_id (
+      handle,
+      rank
+    )
+  `);
 
   if (error) {
     throw new Error(error.message);

@@ -4,11 +4,11 @@ import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
 import DesignCard from "./design-card";
 
-interface DesignCardsGridProps {
+interface DesignCardsListProps {
   designs: DesignInfo[];
 }
 
-const DesignCardsGrid: FC<DesignCardsGridProps> = ({ designs }) => {
+const DesignCardsList: FC<DesignCardsListProps> = ({ designs }) => {
   const { users } = useUserContext();
 
   const getUserHandle = (userId: string) => {
@@ -31,4 +31,4 @@ const DesignCardsGrid: FC<DesignCardsGridProps> = ({ designs }) => {
   );
 };
 
-export default DesignCardsGrid;
+export default DesignCardsList;
