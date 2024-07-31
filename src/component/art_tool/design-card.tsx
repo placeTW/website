@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Card,
   CardBody,
   CardFooter,
@@ -119,11 +120,9 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
           gap={2}
         >
           <Box display="flex" flexDirection="row" alignItems="center">
-            <IconButton
-              icon={<FontAwesomeIcon icon={faHeart} />}
-              aria-label="Like"
-            />
-            <Text ml={2}>{design.likes_count} Likes</Text>
+            <Button leftIcon={<FontAwesomeIcon icon={faHeart} />}>
+              {design.likes_count}
+            </Button>
           </Box>
           <Box display="flex" gap={2}>
             {isAdminOrCreator && (
