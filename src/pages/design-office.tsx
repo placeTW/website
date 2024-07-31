@@ -57,10 +57,10 @@ const DesignOffice: React.FC = () => {
 
   return (
     <Flex height="calc(100vh - 80px)" position="relative" direction="row">
-      <Box flex="1">
+      <Box flex="1"  border="1px solid #ccc">
         <AdvancedViewport />
       </Box>
-      <Box w="350px" overflowY="auto" borderLeft="1px solid #ccc">
+      <Box w="350px" overflowY="auto">
         <DesignCardsList designs={designs} />
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
