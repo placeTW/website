@@ -109,34 +109,39 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
             </Stack>
           </Box>
         </CardBody>
-        <CardFooter pt={0}>
-          <Box display="flex" alignItems="center">
+        <CardFooter
+          pt={0}
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="space-between"
+          flexWrap="wrap"
+          gap={2}
+        >
+          <Box display="flex" flexDirection="row" alignItems="center">
             <IconButton
               icon={<FontAwesomeIcon icon={faHeart} />}
               aria-label="Like"
             />
             <Text ml={2}>{design.likes_count} Likes</Text>
           </Box>
-          <Box ml="auto">
+          <Box display="flex" gap={2}>
             {isAdminOrCreator && (
               <IconButton
                 icon={<FontAwesomeIcon icon={faTrash} />}
                 aria-label="Delete"
-                mr={2}
               />
             )}
             {isCreator && (
               <IconButton
                 icon={<FontAwesomeIcon icon={faPen} />}
                 aria-label="Edit"
-                mr={2}
               />
             )}
             {isCreator && (
               <IconButton
                 icon={<FontAwesomeIcon icon={faCloudUpload} />}
                 aria-label="Upload"
-                mr={2}
               />
             )}
             {canMerge && (
