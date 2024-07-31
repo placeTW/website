@@ -7,7 +7,7 @@ import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import { DesignInfo } from "../types/art-tool";
 
 const DesignOffice: React.FC = () => {
-  const [artPieces, setArtPieces] = useState<DesignInfo[]>([]);
+  const [designs, setDesigns] = useState<DesignInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchArtPieces = async () => {
@@ -40,7 +40,7 @@ const DesignOffice: React.FC = () => {
             layer_thumbnail: item.layer_thumbnail,
           };
         });
-        setArtPieces(formattedData);
+        setDesigns(formattedData);
       }
     }
 
@@ -76,7 +76,7 @@ const DesignOffice: React.FC = () => {
         <AdvancedViewport />
       </Box>
       <Box w="350px" overflowY="auto" borderLeft="1px solid #ccc">
-        <DesignCardsGrid designs={artPieces} />
+        <DesignCardsGrid designs={designs} />
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
         <CreateDesignButton />
