@@ -20,6 +20,7 @@ const DesignOffice: React.FC = () => {
         created_by_user_id: item.created_by_user_id,
         handle: item.art_tool_users.handle || "",
         rank: item.art_tool_users.rank || "",
+        rank_name: item.art_tool_users.rank_name || "", // Add rank_name here
         likes_count: item.likes_count,
         layer_thumbnail: item.layer_thumbnail,
       }));
