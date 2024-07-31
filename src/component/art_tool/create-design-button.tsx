@@ -1,6 +1,6 @@
-import { AddIcon } from "@chakra-ui/icons";
 import { Box, Button } from "@chakra-ui/react";
 import { useState } from "react";
+import { FaPlus } from "react-icons/fa6";
 import CreateDesignModal from "./create-design-modal";
 
 const CreateDesignButton = () => {
@@ -18,7 +18,7 @@ const CreateDesignButton = () => {
     <>
       <Box>
         <Button
-          leftIcon={<AddIcon />}
+          leftIcon={<FaPlus />}
           aria-label="Create new design"
           size="lg"
           colorScheme="blue"
