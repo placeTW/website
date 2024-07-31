@@ -2,12 +2,12 @@ import { Box, Flex, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
-import ArtCardsGrid from "../component/art_tool/design-cards-grid";
+import DesignCardsGrid from "../component/art_tool/design-cards-grid";
 import CreateLayerButton from "../component/art_tool/create-layer-button";
-import { ArtInfo } from "../types/art";
+import { DesignInfo } from "../types/art-tool";
 
 const DesignOffice: React.FC = () => {
-  const [artPieces, setArtPieces] = useState<ArtInfo[]>([]);
+  const [artPieces, setArtPieces] = useState<DesignInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchArtPieces = async () => {
@@ -76,7 +76,7 @@ const DesignOffice: React.FC = () => {
         <AdvancedViewport />
       </Box>
       <Box flex="1" overflowY="auto" position="relative">
-        <ArtCardsGrid artPieces={artPieces} />
+        <DesignCardsGrid designs={artPieces} />
       </Box>
       <Box position="fixed" bottom="100px" right="30px" zIndex="1000">
         <CreateLayerButton />

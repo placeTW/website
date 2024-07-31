@@ -1,14 +1,14 @@
 import { Box, SimpleGrid } from "@chakra-ui/react";
-import { ArtInfo } from "../../types/art";
-import ArtCard from "./design-card";
 import { FC } from "react";
 import { useUserContext } from "../../context/user-context";
+import { DesignInfo } from "../../types/art-tool";
+import DesignCard from "./design-card";
 
-interface ArtCardsGridProps {
-  artPieces: ArtInfo[];
+interface DesignCardsGridProps {
+  designs: DesignInfo[];
 }
 
-const ArtCardsGrid: FC<ArtCardsGridProps> = ({ artPieces }) => {
+const DesignCardsGrid: FC<DesignCardsGridProps> = ({ designs }) => {
   const { users } = useUserContext();
 
   const getUserHandle = (userId: string) => {
@@ -18,12 +18,12 @@ const ArtCardsGrid: FC<ArtCardsGridProps> = ({ artPieces }) => {
 
   return (
     <SimpleGrid minChildWidth="300px" spacing="40px" m={2}>
-      {artPieces.map((artPiece) => (
-        <Box key={artPiece.id}>
-          <ArtCard
-            artPiece={artPiece}
-            userId={artPiece.created_by_user_id}
-            userHandle={getUserHandle(artPiece.created_by_user_id)}
+      {designs.map((design) => (
+        <Box key={design.id}>
+          <DesignCard
+            design={design}
+            userId={design.created_by_user_id}
+            userHandle={getUserHandle(design.created_by_user_id)}
           />
         </Box>
       ))}
@@ -31,4 +31,4 @@ const ArtCardsGrid: FC<ArtCardsGridProps> = ({ artPieces }) => {
   );
 };
 
-export default ArtCardsGrid;
+export default DesignCardsGrid;

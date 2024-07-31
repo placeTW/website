@@ -4,32 +4,40 @@ import {
   CardBody,
   CardFooter,
   Heading,
+  IconButton,
   Image,
   Stack,
   Text,
-  IconButton,
 } from "@chakra-ui/react";
-import { FC, useState, useEffect } from "react";
-import { ArtInfo } from "../../types/art";
-import ImageModal from "../image-modal";
-import { useUserContext } from "../../context/user-context";
+import {
+  faCloudUpload,
+  faCodeMerge,
+  faEye,
+  faEyeSlash,
+  faHeart,
+  faPen,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart, faTrash, faPen, faCodeMerge, faEye, faEyeSlash, faCloudUpload } from "@fortawesome/free-solid-svg-icons";
+import { FC, useEffect, useState } from "react";
+import { useUserContext } from "../../context/user-context";
+import { DesignInfo } from "../../types/art-tool";
+import ImageModal from "../image-modal";
 
-interface ArtCardProps {
-  artPiece: ArtInfo;
+interface DesignCardProps {
+  design: DesignInfo;
   userId: string;
   userHandle: string;
 }
 
-const ArtCard: FC<ArtCardProps> = ({ artPiece, userId, userHandle }) => {
+const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    console.log("ArtPiece props:", artPiece);
-  }, [artPiece]);
+    console.log("ArtPiece props:", design);
+  }, [design]);
 
   const handleImageClick = () => {
     setIsModalOpen(true);
@@ -39,9 +47,15 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece, userId, userHandle }) => {
     setIsVisible(!isVisible);
   };
 
-  const isAdminOrCreator = currentUser && (currentUser.rank === "A" || currentUser.rank === "B" || currentUser.user_id === artPiece.created_by_user_id);
-  const isCreator = currentUser && currentUser.user_id === artPiece.created_by_user_id;
-  const canMerge = currentUser && (currentUser.rank === "A" || currentUser.rank === "B");
+  const isAdminOrCreator =
+    currentUser &&
+    (currentUser.rank === "A" ||
+      currentUser.rank === "B" ||
+      currentUser.user_id === design.created_by_user_id);
+  const isCreator =
+    currentUser && currentUser.user_id === design.created_by_user_id;
+  const canMerge =
+    currentUser && (currentUser.rank === "A" || currentUser.rank === "B");
 
   const user = users.find((u) => u.user_id === userId);
   const rankName = user ? rankNames[user.rank] : "Unknown";
@@ -65,13 +79,16 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece, userId, userHandle }) => {
               left="5px"
             />
             <Image
-              alt={artPiece.layer_name}
+              alt={design.layer_name}
               fallbackSrc="https://via.placeholder.com/150"
               h="300px"
               w="300px"
               objectFit="cover"
               onClick={handleImageClick}
-              src={artPiece.layer_thumbnail || 'https://via.placeholder.com/300?text=No+Image'}
+              src={
+                design.layer_thumbnail ||
+                "https://via.placeholder.com/300?text=No+Image"
+              }
               borderRadius={8}
             />
           </Box>
@@ -87,28 +104,46 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece, userId, userHandle }) => {
                 {rankName} {userHandle}
               </Text>
               <Heading fontSize={"2xl"} fontFamily={"body"}>
-                {artPiece.layer_name}
+                {design.layer_name}
               </Heading>
             </Stack>
           </Box>
         </CardBody>
         <CardFooter pt={0}>
           <Box display="flex" alignItems="center">
-            <IconButton icon={<FontAwesomeIcon icon={faHeart} />} aria-label="Like" />
-            <Text ml={2}>{artPiece.likes_count} Likes</Text>
+            <IconButton
+              icon={<FontAwesomeIcon icon={faHeart} />}
+              aria-label="Like"
+            />
+            <Text ml={2}>{design.likes_count} Likes</Text>
           </Box>
           <Box ml="auto">
             {isAdminOrCreator && (
-              <IconButton icon={<FontAwesomeIcon icon={faTrash} />} aria-label="Delete" mr={2} />
+              <IconButton
+                icon={<FontAwesomeIcon icon={faTrash} />}
+                aria-label="Delete"
+                mr={2}
+              />
             )}
             {isCreator && (
-              <IconButton icon={<FontAwesomeIcon icon={faPen} />} aria-label="Edit" mr={2} />
+              <IconButton
+                icon={<FontAwesomeIcon icon={faPen} />}
+                aria-label="Edit"
+                mr={2}
+              />
             )}
             {isCreator && (
-              <IconButton icon={<FontAwesomeIcon icon={faCloudUpload} />} aria-label="Upload" mr={2} />
+              <IconButton
+                icon={<FontAwesomeIcon icon={faCloudUpload} />}
+                aria-label="Upload"
+                mr={2}
+              />
             )}
             {canMerge && (
-              <IconButton icon={<FontAwesomeIcon icon={faCodeMerge} />} aria-label="Merge" />
+              <IconButton
+                icon={<FontAwesomeIcon icon={faCodeMerge} />}
+                aria-label="Merge"
+              />
             )}
           </Box>
         </CardFooter>
@@ -116,11 +151,14 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece, userId, userHandle }) => {
       <ImageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        imageUrl={artPiece.layer_thumbnail || 'https://via.placeholder.com/300?text=No+Image'}
-        altText={artPiece.layer_name}
+        imageUrl={
+          design.layer_thumbnail ||
+          "https://via.placeholder.com/300?text=No+Image"
+        }
+        altText={design.layer_name}
       />
     </>
   );
 };
 
-export default ArtCard;
+export default DesignCard;

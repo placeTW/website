@@ -1,4 +1,4 @@
-export interface ArtInfo {
+export interface DesignInfo {
   id: string;
   layer_name: string;
   layer_thumbnail: string;
