@@ -1,5 +1,4 @@
 import { authGetSession, SUPABASE_FUNCTIONS_URL } from ".";
-import { supabase } from "./index";
 
 export const functionsGetSessionInfo = async () => {
   const { data: sessionData, error: sessionError } = await authGetSession();
@@ -137,7 +136,11 @@ export const functionsUpdateUserStatus = async (
   return response.json();
 };
 
-export const insertNewUser = async (user_id: string, email: string, handle: string) => {
+export const insertNewUser = async (
+  user_id: string,
+  email: string,
+  handle: string,
+) => {
   const [, access_token] = await functionsGetSessionInfo();
   console.log("Inserting new user with", { user_id, email, handle });
 
@@ -159,28 +162,5 @@ export const insertNewUser = async (user_id: string, email: string, handle: stri
   const data = await response.json();
   console.log("User inserted successfully", data);
 
-  return data;
-};
-
-
-export const fetchLayersWithUserDetails = async () => {
-  const { data, error } = await supabase
-    .from('art_tool_layers')
-    .select(`
-      id,
-      created_at,
-      layer_name,
-      layer_thumbnail,
-      likes_count,
-      created_by_user_id,
-      art_tool_users:art_tool_users (
-        handle,
-        rank
-      )
-    `);
-
-  if (error) {
-    throw new Error(error.message);
-  }
   return data;
 };

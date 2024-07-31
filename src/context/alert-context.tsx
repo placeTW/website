@@ -1,5 +1,15 @@
-import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { supabase } from '../api/supabase';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import {
+  databaseFetchAlertLevel,
+  databaseUpdateAlertLevel,
+  supabase,
+} from "../api/supabase";
 
 interface AlertContextType {
   alertLevel: number | null;
@@ -19,17 +29,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const fetchAlertLevel = async () => {
-      const { data, error } = await supabase
-        .from('art_tool_alert_state')
-        .select('*')
-        .eq('id', 1)
-        .single();
-
-      if (error) {
-        console.error('Error fetching alert level:', error);
-        return;
-      }
-
+      const data = await databaseFetchAlertLevel();
       if (data) {
         setAlertLevelState(data.state);
         setAlertMessageState(data.message);
@@ -39,10 +39,14 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     fetchAlertLevel();
 
     const alertSubscription = supabase
-      .channel('art_tool_alert_state')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_alert_state' }, () => {
-        fetchAlertLevel();
-      })
+      .channel("art_tool_alert_state")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "art_tool_alert_state" },
+        () => {
+          fetchAlertLevel();
+        },
+      )
       .subscribe();
 
     return () => {
@@ -51,17 +55,12 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   }, []);
 
   const setAlertLevel = async (level: number) => {
-    const { error } = await supabase
-      .from('art_tool_alert_state')
-      .update({ state: level })
-      .eq('id', 1);
-
-    if (error) {
-      console.error('Error updating alert level:', error);
-      return;
+    try {
+      await databaseUpdateAlertLevel(level);
+      setAlertLevelState(level);
+    } catch (error) {
+      console.error("Error updating alert level:", error);
     }
-
-    setAlertLevelState(level);
   };
 
   return (
@@ -74,7 +73,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
 export const useAlertContext = () => {
   const context = useContext(AlertContext);
   if (!context) {
-    throw new Error('useAlertContext must be used within an AlertProvider');
+    throw new Error("useAlertContext must be used within an AlertProvider");
   }
   return context;
 };

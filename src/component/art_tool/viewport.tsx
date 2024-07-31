@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Stage, Layer, Rect, Line } from 'react-konva';
-import Konva from 'konva';
-import { supabase } from '../../api/supabase';
+import Konva from "konva";
+import React, { useEffect, useRef, useState } from "react";
+import { Layer, Line, Rect, Stage } from "react-konva";
+import { databaseFetchPixels, supabase } from "../../api/supabase";
 
 interface Pixel {
   id: number;
@@ -13,7 +13,10 @@ interface Pixel {
 
 const Viewport: React.FC = () => {
   const [pixels, setPixels] = useState<Pixel[]>([]);
-  const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredPixel, setHoveredPixel] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const stageRef = useRef<Konva.Stage | null>(null);
   const gridSize = 10; // Size of each grid cell in pixels
   const coordinatesRef = useRef<HTMLDivElement>(null);
@@ -21,49 +24,51 @@ const Viewport: React.FC = () => {
 
   useEffect(() => {
     const fetchPixels = async () => {
-      const { data, error } = await supabase
-        .from('art_tool_pixels')
-        .select('*')
-        .eq('canvas', 'main'); // Filter for 'main' canvas
-      if (error) {
-        console.error('Error fetching pixel data:', error);
-      } else {
-        console.log('Fetched pixels:', data);
-        setPixels(data as Pixel[]);
-      }
+      const data = await databaseFetchPixels("main");
+      setPixels(data as Pixel[]);
     };
 
     fetchPixels();
 
     const pixelSubscription = supabase
-      .channel('art_tool_pixels')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_pixels' }, (payload) => {
-        console.log('Payload received:', payload);
-        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          console.log('Insert or Update event:', payload.new);
-          if (payload.new.canvas === 'main') {
-            setPixels((prevPixels) => [
-              ...prevPixels.filter(
-                (pixel) => !(pixel.x === payload.new.x && pixel.y === payload.new.y)
-              ),
-              payload.new as Pixel,
-            ]);
-          } else {
+      .channel("art_tool_pixels")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "art_tool_pixels" },
+        (payload) => {
+          console.log("Payload received:", payload);
+          if (
+            payload.eventType === "INSERT" ||
+            payload.eventType === "UPDATE"
+          ) {
+            console.log("Insert or Update event:", payload.new);
+            if (payload.new.canvas === "main") {
+              setPixels((prevPixels) => [
+                ...prevPixels.filter(
+                  (pixel) =>
+                    !(pixel.x === payload.new.x && pixel.y === payload.new.y),
+                ),
+                payload.new as Pixel,
+              ]);
+            } else {
+              setPixels((prevPixels) =>
+                prevPixels.filter(
+                  (pixel) =>
+                    !(pixel.x === payload.new.x && pixel.y === payload.new.y),
+                ),
+              );
+            }
+          } else if (payload.eventType === "DELETE") {
+            console.log("Delete event:", payload.old);
             setPixels((prevPixels) =>
               prevPixels.filter(
-                (pixel) => !(pixel.x === payload.new.x && pixel.y === payload.new.y)
-              )
+                (pixel) =>
+                  !(pixel.x === payload.old.x && pixel.y === payload.old.y),
+              ),
             );
           }
-        } else if (payload.eventType === 'DELETE') {
-          console.log('Delete event:', payload.old);
-          setPixels((prevPixels) =>
-            prevPixels.filter(
-              (pixel) => !(pixel.x === payload.old.x && pixel.y === payload.old.y)
-            )
-          );
-        }
-      })
+        },
+      )
       .subscribe();
 
     return () => {
@@ -106,7 +111,7 @@ const Viewport: React.FC = () => {
           points={[i * gridSize, 0, i * gridSize, height]}
           stroke="#ddd"
           strokeWidth={0.5}
-        />
+        />,
       );
     }
     for (let j = 0; j < height / gridSize; j++) {
@@ -116,7 +121,7 @@ const Viewport: React.FC = () => {
           points={[0, j * gridSize, width, j * gridSize]}
           stroke="#ddd"
           strokeWidth={0.5}
-        />
+        />,
       );
     }
     return lines;
@@ -124,17 +129,17 @@ const Viewport: React.FC = () => {
 
   const createCheckerboardPattern = () => {
     const size = gridSize;
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = size * 2;
     canvas.height = size * 2;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
 
     if (ctx) {
-      ctx.fillStyle = '#eee';
+      ctx.fillStyle = "#eee";
       ctx.fillRect(0, 0, size, size);
       ctx.fillRect(size, size, size, size);
 
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = "#fff";
       ctx.fillRect(size, 0, size, size);
       ctx.fillRect(0, size, size, size);
     }
@@ -167,7 +172,14 @@ const Viewport: React.FC = () => {
   }, []);
 
   return (
-    <div className="viewport-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div
+      className="viewport-container"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       <Stage
         width={window.innerWidth * 0.75} // Adjust width to fit within the flexbox container
         height={window.innerHeight * 0.85} // Adjust height to fit within the flexbox container
@@ -183,7 +195,9 @@ const Viewport: React.FC = () => {
             y={0}
             width={window.innerWidth * 0.75} // Adjust width to fit within the flexbox container
             height={window.innerHeight * 0.85} // Adjust height to fit within the flexbox container
-            fillPatternImage={checkerPatternRef.current as unknown as HTMLImageElement}
+            fillPatternImage={
+              checkerPatternRef.current as unknown as HTMLImageElement
+            }
             fillPatternScale={{ x: 0.5, y: 0.5 }}
           />
           {drawGrid(window.innerWidth * 0.75, window.innerHeight * 0.85)}
@@ -206,12 +220,12 @@ const Viewport: React.FC = () => {
         <div
           ref={coordinatesRef}
           style={{
-            position: 'absolute',
-            backgroundColor: 'white',
-            padding: '2px 4px',
-            border: '1px solid black',
-            borderRadius: '3px',
-            pointerEvents: 'none',
+            position: "absolute",
+            backgroundColor: "white",
+            padding: "2px 4px",
+            border: "1px solid black",
+            borderRadius: "3px",
+            pointerEvents: "none",
           }}
         >
           {hoveredPixel.x}, {hoveredPixel.y}

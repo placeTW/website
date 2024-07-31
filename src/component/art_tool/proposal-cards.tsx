@@ -1,25 +1,33 @@
-import React from 'react';
-import { Box, Text, VStack, HStack, Button, Image, Heading } from '@chakra-ui/react';
-import { FaEye, FaTrash, FaEdit, FaShareAlt } from 'react-icons/fa';
+import {
+  Box,
+  Button,
+  Heading,
+  HStack,
+  Image,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import React from "react";
+import { FaEdit, FaEye, FaShareAlt, FaTrash } from "react-icons/fa";
 
 const proposals = [
   {
-    name: 'New Proposal Name',
-    imgSrc: '/path/to/placeholder.png',
-    createdBy: '',
-    rank: '',
+    name: "New Proposal Name",
+    imgSrc: "/path/to/placeholder.png",
+    createdBy: "",
+    rank: "",
   },
   {
-    name: 'Taiwan Flag Small',
-    imgSrc: '/path/to/taiwan_flag_small.png',
-    createdBy: 'Admiral HT',
-    rank: 'Admiral',
+    name: "Taiwan Flag Small",
+    imgSrc: "/path/to/taiwan_flag_small.png",
+    createdBy: "Admiral HT",
+    rank: "Admiral",
   },
   {
-    name: 'Cake',
-    imgSrc: '/path/to/cake.png',
-    createdBy: 'Admiral HT',
-    rank: 'Admiral',
+    name: "Cake",
+    imgSrc: "/path/to/cake.png",
+    createdBy: "Admiral HT",
+    rank: "Admiral",
   },
 ];
 
@@ -37,7 +45,12 @@ const ProposalCards: React.FC = () => {
           bg="white"
         >
           <HStack spacing={4} align="center">
-            <Image src={proposal.imgSrc} boxSize="50px" objectFit="cover" alt={proposal.name} />
+            <Image
+              src={proposal.imgSrc}
+              boxSize="50px"
+              objectFit="cover"
+              alt={proposal.name}
+            />
             <Box flex="1">
               <Heading size="md">{proposal.name}</Heading>
               {proposal.createdBy && (
