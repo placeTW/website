@@ -8,7 +8,7 @@ export const databaseCreateLayer = async (
   const { data, error } = await supabase
     .from("art_tool_layers")
     .insert([
-      { layer_name: layerName, created_by_user_id: userId, likes_count: 0 },
+      { layer_name: layerName, created_by_user_id: userId },
     ]);
 
   if (error) {
