@@ -21,6 +21,11 @@ const Viewport: React.FC = () => {
   const gridSize = 10; // Size of each grid cell in pixels
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const checkerPatternRef = useRef<HTMLCanvasElement | null>(null);
+  const divRef = useRef(null);
+  const [dimensions, setDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
 
   useEffect(() => {
     const fetchPixels = async () => {
@@ -74,6 +79,17 @@ const Viewport: React.FC = () => {
     return () => {
       supabase.removeChannel(pixelSubscription);
     };
+  }, []);
+
+  // We cant set the h & w on Stage to 100% it only takes px values so we have to
+  // find the parent container's w and h and then manually set those !
+  useEffect(() => {
+    if (divRef.current?.offsetHeight && divRef.current?.offsetWidth) {
+      setDimensions({
+        width: divRef.current.offsetWidth,
+        height: divRef.current.offsetHeight,
+      });
+    }
   }, []);
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -178,11 +194,14 @@ const Viewport: React.FC = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        width: "100%",
+        height: "calc(100vh - 80px)",
       }}
+      ref={divRef}
     >
       <Stage
-        width={window.innerWidth * 0.75} // Adjust width to fit within the flexbox container
-        height={window.innerHeight * 0.85} // Adjust height to fit within the flexbox container
+        width={dimensions.width}
+        height={dimensions.height}
         draggable
         ref={stageRef}
         onWheel={handleWheel}
@@ -193,8 +212,8 @@ const Viewport: React.FC = () => {
           <Rect
             x={0}
             y={0}
-            width={window.innerWidth * 0.75} // Adjust width to fit within the flexbox container
-            height={window.innerHeight * 0.85} // Adjust height to fit within the flexbox container
+            width={dimensions.width}
+            height={dimensions.height}
             fillPatternImage={
               checkerPatternRef.current as unknown as HTMLImageElement
             }
