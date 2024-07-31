@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import DesignCardsGrid from "../component/art_tool/design-cards-grid";
-import CreateLayerButton from "../component/art_tool/create-layer-button";
+import CreateDesignButton from "../component/art_tool/create-design-button";
 import { DesignInfo } from "../types/art-tool";
 
 const DesignOffice: React.FC = () => {
@@ -79,7 +79,7 @@ const DesignOffice: React.FC = () => {
         <DesignCardsGrid designs={artPieces} />
       </Box>
       <Box position="fixed" bottom="100px" right="30px" zIndex="1000">
-        <CreateLayerButton />
+        <CreateDesignButton />
       </Box>
     </Flex>
   );

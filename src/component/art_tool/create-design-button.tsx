@@ -3,7 +3,7 @@ import { Box, IconButton } from "@chakra-ui/react";
 import { useState } from "react";
 import CreateCardModal from "./create-card-modal";
 
-const CreateLayerButton = () => {
+const CreateDesignButton = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -32,4 +32,4 @@ const CreateLayerButton = () => {
   );
 };
 
-export default CreateLayerButton;
+export default CreateDesignButton;

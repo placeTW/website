@@ -19,13 +19,13 @@ import {
   }
   
   const CreateCardModal: FC<CreateCardModalProps> = ({ isOpen, onClose }) => {
-    const [layerName, setLayerName] = useState("");
+    const [designName, setDesignName] = useState("");
     const { currentUser } = useUserContext();
   
-    const handleCreateLayer = async () => {
+    const handleCreateDesign = async () => {
       if (currentUser) {
         try {
-          await databaseCreateLayer(layerName, currentUser.user_id);
+          await databaseCreateLayer(designName, currentUser.user_id);
           onClose();
         } catch (error) {
           console.error("Error creating layer:", error);
@@ -37,17 +37,17 @@ import {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Create New Layer</ModalHeader>
+          <ModalHeader>Create New Design</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Input
-              placeholder="Layer Name"
-              value={layerName}
-              onChange={(e) => setLayerName(e.target.value)}
+              placeholder="Design Name"
+              value={designName}
+              onChange={(e) => setDesignName(e.target.value)}
             />
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleCreateLayer}>
+            <Button colorScheme="blue" mr={3} onClick={handleCreateDesign}>
               Create
             </Button>
             <Button variant="ghost" onClick={onClose}>
