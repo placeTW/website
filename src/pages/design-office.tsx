@@ -2,8 +2,8 @@ import { Box, Flex, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
-import DesignCardsGrid from "../component/art_tool/design-cards-grid";
 import CreateDesignButton from "../component/art_tool/create-design-button";
+import DesignCardsGrid from "../component/art_tool/design-cards-list";
 import { DesignInfo } from "../types/art-tool";
 
 const DesignOffice: React.FC = () => {
@@ -71,15 +71,20 @@ const DesignOffice: React.FC = () => {
   }
 
   return (
-    <Flex height="calc(100vh - 80px)" width="100vw" direction="row">
-      <Box flex="3" borderRight="1px solid #ccc">
+    <Flex height="calc(100vh - 80px)" direction="row">
+      <Box flex="1">
         <AdvancedViewport />
       </Box>
-      <Box flex="1" overflowY="auto" position="relative">
+      <Box
+        w="350px"
+        overflowY="auto"
+        position="relative"
+        borderLeft="1px solid #ccc"
+      >
         <DesignCardsGrid designs={artPieces} />
-      </Box>
-      <Box position="fixed" bottom="100px" right="30px" zIndex="1000">
-        <CreateDesignButton />
+        <Box position="absolute" bottom="100px" right="30px" zIndex="1000">
+          <CreateDesignButton />
+        </Box>
       </Box>
     </Flex>
   );

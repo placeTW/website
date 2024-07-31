@@ -17,7 +17,7 @@ const DesignCardsGrid: FC<DesignCardsGridProps> = ({ designs }) => {
   };
 
   return (
-    <SimpleGrid minChildWidth="300px" spacing="40px" m={2}>
+    <SimpleGrid minChildWidth="300px" spacing="20px" m={4}>
       {designs.map((design) => (
         <Box key={design.id}>
           <DesignCard
