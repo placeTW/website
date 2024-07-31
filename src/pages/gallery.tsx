@@ -26,7 +26,7 @@ const Gallery = () => {
         const artPiecesList: GalleryArtInfo[] = Object.keys(data).map(
           (key) => ({
             ...data[key],
-            id: key,
+            art_id: key,
           }),
         );
         updateArtPieces(artPiecesList);
