@@ -10,3 +10,5 @@ export const SUPABASE_FUNCTIONS_URL = `${supabaseUrl}/functions/v1`;
 // Export from the other supabase files
 export * from "./auth";
 export * from "./database";
+export * from "./functions";
+export * from "./storage";
