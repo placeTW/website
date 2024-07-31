@@ -9,20 +9,14 @@ import {
   Image,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
-import { 
-  FaCodeMerge,
-  FaCloudArrowUp,
-  FaEye,
-  FaEyeSlash,
-  FaHeart,
-  FaPen,
-  FaTrash,
- } from "react-icons/fa6";
+import { FaTrash, FaEye, FaEyeSlash, FaPen, FaCloudArrowUp, FaCodeMerge, FaHeart } from "react-icons/fa6";
 import { FC, useEffect, useState } from "react";
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
 import ImageModal from "../image-modal";
+import { databaseDeleteLayerAndPixels } from "../../api/supabase/database";
 
 interface DesignCardProps {
   design: DesignInfo;
@@ -34,6 +28,7 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     console.log("ArtPiece props:", design);
@@ -45,6 +40,28 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
 
   const handleToggleVisibility = () => {
     setIsVisible(!isVisible);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await databaseDeleteLayerAndPixels(design.layer_name);
+      toast({
+        title: "Design deleted.",
+        description: `${design.layer_name} has been removed successfully.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting the design.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      console.error("Error deleting design:", error);
+    }
   };
 
   const isAdminOrCreator =
@@ -128,6 +145,7 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
               <IconButton
                 icon={<FaTrash />}
                 aria-label="Delete"
+                onClick={handleDelete}
               />
             )}
             {isCreator && (

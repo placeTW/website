@@ -76,3 +76,29 @@ export const databaseUpdateAlertLevel = async (level: number) => {
     throw new Error(error.message);
   }
 };
+
+export const databaseDeleteLayerAndPixels = async (layerName: string) => {
+  const deletePixels = supabase
+    .from("art_tool_pixels")
+    .delete()
+    .eq("canvas", layerName);
+
+  const deleteLayer = supabase
+    .from("art_tool_layers")
+    .delete()
+    .eq("layer_name", layerName);
+
+  const [pixelsError, layerError] = await Promise.all([deletePixels, deleteLayer]);
+
+  if (pixelsError.error) {
+    console.error("Error deleting pixels:", pixelsError.error);
+    throw new Error(pixelsError.error.message);
+  }
+
+  if (layerError.error) {
+    console.error("Error deleting layer:", layerError.error);
+    throw new Error(layerError.error.message);
+  }
+
+  return true;
+};
