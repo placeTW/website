@@ -1,16 +1,11 @@
+// src/component/art_tool/advanced-viewport.tsx
+
 import React, { useEffect, useState, useRef } from "react";
 import { Box, Grid } from "@chakra-ui/react";
 import Viewport from "./viewport";
 import { supabase } from "../../api/supabase";
 import { databaseFetchPixels } from "../../api/supabase/database";
-
-interface Pixel {
-  id?: number;
-  x: number;
-  y: number;
-  color: string;
-  canvas: string;
-}
+import { Pixel } from "../../types/art-tool"; // Import shared Pixel type
 
 interface AdvancedViewportProps {
   isEditing: boolean;
@@ -18,7 +13,6 @@ interface AdvancedViewportProps {
   visibleLayers: string[];
   onUpdatePixels: (pixels: Pixel[]) => void;
   designName: string;
-  onExitEditMode: () => void; // Prop to notify when exiting edit mode
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -27,7 +21,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   visibleLayers,
   onUpdatePixels,
   designName,
-  onExitEditMode,
 }) => {
   const [colors, setColors] = useState<{ Color: string; color_sort: number | null }[]>([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
@@ -103,7 +96,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     const pixelSubscription = supabase
       .channel("realtime-art_tool_pixels")
       .on("postgres_changes", { event: "*", schema: "public", table: "art_tool_pixels" }, (payload) => {
-        const updatedPixel: Pixel = payload.new;
+        const { x, y, color, canvas } = payload.new as Pixel;
+        const updatedPixel: Pixel = { x, y, color, canvas };
 
         setPixels((prevPixels) => {
           const pixelMap = new Map<string, Pixel>();

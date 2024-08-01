@@ -1,14 +1,9 @@
+// src/component/art_tool/viewport.tsx
+
 import Konva from "konva";
 import React, { useEffect, useRef, useState } from "react";
-import { Layer, Line, Rect, Stage } from "react-konva";
-
-interface Pixel {
-  id: number;
-  x: number;
-  y: number;
-  color: string;
-  canvas: string;
-}
+import { Pixel } from "../../types/art-tool"; // Import shared Pixel type
+import { Layer, Line, Rect, Stage } from "react-konva"; // Import Line from react-konva
 
 interface ViewportProps {
   designId: string | null;
@@ -73,7 +68,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     // Adjust stage position to maintain mouse position
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: mousePointTo.y * newScale,
+      y: pointer.y * newScale,
     };
     
     // Smooth the position transition

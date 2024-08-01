@@ -13,7 +13,7 @@ const DesignOffice: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<string[]>([]);
-  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]); // Store edited pixels
+  const [editedPixels, setEditedPixels] = useState<Omit<Pixel, "id">[]>([]); // Store edited pixels
   const toast = useToast();
 
   const fetchLayersWithUserDetails = async () => {
@@ -47,12 +47,10 @@ const DesignOffice: React.FC = () => {
     setVisibleLayers(newVisibleLayers);
   };
 
-  const handleUpdatePixels = (pixels: Pixel[]) => {
+  const handleUpdatePixels = (pixels: Omit<Pixel, "id">[]) => {
     if (pixels && pixels.length > 0) {
       console.log("Updating editedPixels with:", pixels);
-      // Remove `id` from the pixels
-      const sanitizedPixels = pixels.map(({ id, ...rest }) => rest);
-      setEditedPixels(sanitizedPixels);
+      setEditedPixels(pixels);
     } else {
       console.warn("handleUpdatePixels received undefined or empty pixels array.");
       setEditedPixels([]); // Ensure state is reset if the array is empty or undefined

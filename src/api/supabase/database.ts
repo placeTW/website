@@ -223,7 +223,7 @@ export const saveEditedPixels = async (canvas: string, pixels: Omit<Pixel, "id">
     // Step 5: Upsert (insert or update) the merged pixels
     const { error: upsertError } = await supabase
       .from("art_tool_pixels")
-      .upsert(mergedPixels, { onConflict: ["x", "y", "canvas"] });
+      .upsert(mergedPixels, { onConflict: "x,y,canvas" }); // Fixing the onConflict type error
 
     if (upsertError) {
       console.error("Error upserting pixels:", upsertError);
@@ -236,7 +236,3 @@ export const saveEditedPixels = async (canvas: string, pixels: Omit<Pixel, "id">
     throw error;
   }
 };
-
-
-
-

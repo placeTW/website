@@ -9,9 +9,9 @@ export interface DesignInfo {
   liked_by: string[];
 }
 
-// Define and export the Pixel interface
+// src/types/art-tool.ts
 export interface Pixel {
-  id: number;
+  id?: number;
   x: number;
   y: number;
   color: string;
