@@ -5,7 +5,7 @@ import { supabase } from "../../api/supabase";
 import { databaseFetchPixels } from "../../api/supabase/database";
 
 interface Pixel {
-  id: number;
+  id?: number;
   x: number;
   y: number;
   color: string;
@@ -16,8 +16,8 @@ interface AdvancedViewportProps {
   isEditing: boolean;
   editDesignId: string | null;
   visibleLayers: string[];
-  onUpdatePixels: (pixels: Pixel[]) => void; // Callback for updating pixels
-  designName: string; // Pass the design name to ensure correct canvas
+  onUpdatePixels: (pixels: Pixel[]) => void;
+  designName: string;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -25,13 +25,12 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   editDesignId,
   visibleLayers,
   onUpdatePixels,
-  designName, // Destructure designName
+  designName,
 }) => {
-  const [colors, setColors] = useState<{ Color: string, color_sort: number | null }[]>([]);
+  const [colors, setColors] = useState<{ Color: string; color_sort: number | null }[]>([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
-  const [filteredPixels, setFilteredPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]); // Temporary storage for edited pixels
+  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const previousVisibleLayers = useRef<string[]>([]);
 
   // Fetch colors on mount
@@ -52,20 +51,20 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
     // Subscribe to color changes in real-time
     const colorSubscription = supabase
-      .channel('realtime-art_tool_colors')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_colors' }, (payload) => {
-        console.log('Change received!', payload);
+      .channel("realtime-art_tool_colors")
+      .on("postgres_changes", { event: "*", schema: "public", table: "art_tool_colors" }, (payload) => {
+        console.log("Change received!", payload);
 
-        if (payload.eventType === 'INSERT') {
-          setColors((prevColors) => [...prevColors, payload.new as { Color: string; color_sort: number | null; }].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)));
-        } else if (payload.eventType === 'DELETE') {
+        if (payload.eventType === "INSERT") {
+          setColors((prevColors) => [...prevColors, payload.new as { Color: string; color_sort: number | null }].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)));
+        } else if (payload.eventType === "DELETE") {
           setColors((prevColors) =>
             prevColors.filter((color) => color.Color !== payload.old.Color)
           );
-        } else if (payload.eventType === 'UPDATE') {
+        } else if (payload.eventType === "UPDATE") {
           setColors((prevColors) =>
             prevColors.map((color) =>
-              color.Color === payload.old.Color ? payload.new as { Color: string; color_sort: number | null; } : color
+              color.Color === payload.old.Color ? payload.new as { Color: string; color_sort: number | null } : color
             ).sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0))
           );
         }
@@ -79,8 +78,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Fetch pixels based on visible layers
   useEffect(() => {
-    const layersToFetch = ["main", ...visibleLayers.filter(layer => layer !== "main")];
+    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
 
+    // Only fetch pixels if the visible layers change
     if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
       previousVisibleLayers.current = layersToFetch;
 
@@ -91,7 +91,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         }
 
         const allVisiblePixels = await Promise.all(
-          layersToFetch.map(layer => databaseFetchPixels(layer))
+          layersToFetch.map((layer) => databaseFetchPixels(layer))
         );
         setPixels(allVisiblePixels.flat());
       };
@@ -100,47 +100,53 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
   }, [visibleLayers]);
 
-  // Filter and merge pixels from different layers
+  // Merge pixels from different layers with edited pixels
   useEffect(() => {
     const pixelMap = new Map<string, Pixel>();
 
-    for (let i = pixels.length - 1; i >= 0; i--) {
+    // Add existing pixels to the map first
+    for (let i = 0; i < pixels.length; i++) {
       const pixel = pixels[i];
       const key = `${pixel.x}-${pixel.y}`;
-      
-      if (!pixelMap.has(key)) {
-        pixelMap.set(key, pixel);
-      }
+      pixelMap.set(key, pixel);
     }
 
-    setFilteredPixels(Array.from(pixelMap.values()));
-  }, [pixels]);
+    // Overwrite with any edited pixels
+    for (let i = 0; i < editedPixels.length; i++) {
+      const pixel = editedPixels[i];
+      const key = `${pixel.x}-${pixel.y}`;
+      pixelMap.set(key, pixel);
+    }
 
-  // Handle color selection
+    const mergedPixels = Array.from(pixelMap.values());
+
+    // Ensure this state update only happens if pixels have actually changed
+    if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
+      setPixels(mergedPixels);
+    }
+  }, [pixels, editedPixels]);
+
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
   };
 
-  // Handle pixel painting
   const handlePixelPaint = (x: number, y: number) => {
     if (!isEditing || !selectedColor) return;
 
-    const newPixel: Pixel = { id: Date.now(), x, y, color: selectedColor, canvas: designName };
+    const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
     const updatedPixels = [...editedPixels, newPixel];
 
     setEditedPixels(updatedPixels);
-    setFilteredPixels(prev => [...prev, newPixel]);
-
-    onUpdatePixels(updatedPixels); // Pass edited pixels to parent component immediately
+    onUpdatePixels(updatedPixels);
   };
 
   return (
     <Box position="relative" height="100%">
       <Viewport
         designId={editDesignId}
-        pixels={filteredPixels}
+        pixels={pixels}
         isEditing={isEditing}
-        onPixelPaint={handlePixelPaint} // Handle pixel painting
+        onPixelPaint={handlePixelPaint}
       />
 
       {isEditing && (
