@@ -127,22 +127,21 @@ const DesignOffice: React.FC = () => {
   return (
     <Flex height="calc(100vh - 80px)" position="relative" direction="row">
       <Box flex="1" border="1px solid #ccc">
-        {currentDesign && (
-          <AdvancedViewport 
-            isEditing={isEditing} 
-            editDesignId={editDesignId} 
-            visibleLayers={visibleLayers}
-            onUpdatePixels={handleUpdatePixels} // Pass the handler function
-            designName={currentDesign.design_name} // Pass the correct design name
-          />
-        )}
+        {/* Always render AdvancedViewport even when not editing */}
+        <AdvancedViewport 
+          isEditing={isEditing} 
+          editDesignId={editDesignId} 
+          visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]} // Ensure "main" layer is always included
+          onUpdatePixels={handleUpdatePixels} 
+          designName={currentDesign ? currentDesign.design_name : "main"} // Default to "main" if not editing
+        />
       </Box>
       <Box w="350px" overflowY="auto">
         <DesignCardsList 
           designs={designs} 
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
-          onSubmitEdit={handleSubmitEdit} // Pass the submit function
+          onSubmitEdit={handleSubmitEdit} 
         />
         <Box h="100px" />
       </Box>
