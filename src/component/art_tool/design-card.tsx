@@ -22,6 +22,7 @@ import {
   FaHeart,
   FaPen,
   FaTrash,
+  FaSquareXmark,
 } from "react-icons/fa6";
 import {
   databaseDeleteLayerAndPixels,
@@ -36,9 +37,19 @@ interface DesignCardProps {
   design: DesignInfo;
   userId: string;
   userHandle: string;
+  isEditing: boolean;
+  onEdit: (designId: string) => boolean;
+  onCancelEdit: () => void;
 }
 
-const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
+const DesignCard: FC<DesignCardProps> = ({
+  design,
+  userId,
+  userHandle,
+  isEditing,
+  onEdit,
+  onCancelEdit,
+}) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -104,6 +115,16 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
     }
   };
 
+  const handleEditToggle = () => {
+    if (isEditing) {
+      onCancelEdit(); // Cancel edit mode
+    } else {
+      if (onEdit(design.id)) {
+        // Enter edit mode only if allowed
+      }
+    }
+  };
+
   const isAdminOrCreator =
     currentUser &&
     (currentUser.rank === "A" ||
@@ -119,7 +140,7 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
 
   return (
     <>
-      <Card>
+      <Card bg={isEditing ? "blue.100" : "white"}>
         <CardBody>
           <Box
             position="relative"
@@ -191,9 +212,25 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
                 onClick={handleDelete}
               />
             )}
-            {isCreator && <IconButton icon={<FaPen />} aria-label="Edit" />}
-            {isCreator && (
-              <IconButton icon={<FaCloudArrowUp />} aria-label="Upload" />
+            {isCreator && !isEditing && (
+              <IconButton
+                icon={<FaPen />}
+                aria-label="Edit"
+                onClick={handleEditToggle}
+              />
+            )}
+            {isEditing && (
+              <>
+                <IconButton
+                  icon={<FaSquareXmark />}
+                  aria-label="Cancel"
+                  onClick={handleEditToggle}
+                />
+                <IconButton
+                  icon={<FaCloudArrowUp />}
+                  aria-label="Submit"
+                />
+              </>
             )}
             {canMerge && (
               <IconButton icon={<FaCodeMerge />} aria-label="Merge" />
