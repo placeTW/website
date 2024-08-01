@@ -11,6 +11,9 @@ interface DesignCardsListProps {
 const DesignCardsList: FC<DesignCardsListProps> = ({ designs }) => {
   const { users } = useUserContext();
 
+  // Sort designs by number of likes
+  const sortedDesigns = [...designs].sort((a, b) => b.liked_by.length - a.liked_by.length);
+
   const getUserHandle = (userId: string) => {
     const user = users.find((u) => u.user_id === userId);
     return user ? user.handle : "Unknown";
@@ -18,7 +21,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs }) => {
 
   return (
     <SimpleGrid minChildWidth="300px" spacing="20px" m={4}>
-      {designs.map((design) => (
+      {sortedDesigns.map((design) => (
         <Box key={design.id}>
           <DesignCard
             design={design}
