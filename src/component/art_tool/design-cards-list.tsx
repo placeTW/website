@@ -1,5 +1,5 @@
 import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useRef } from "react";
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
 import DesignCard from "./design-card";
@@ -15,6 +15,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange,
   const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<string | null>(null);
   const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>({});
   const toast = useToast();
+  const isFirstRender = useRef(true);
+  const previousVisibleLayers = useRef<string[]>([]); // Track the previous visible layers
 
   const getUserHandle = (userId: string) => {
     const user = users.find((u) => u.user_id === userId);
@@ -47,18 +49,26 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange,
   const handleToggleVisibility = (designName: string, isVisible: boolean) => {
     setVisibilityMap(prev => {
       const updated = { ...prev, [designName]: isVisible };
-
-      // Convert updated visibility map to an array of visible layers
-      const newVisibleLayers = Object.keys(updated).filter(layer => updated[layer]);
-
-      // Only trigger visibility change if there is an actual change
-      if (JSON.stringify(newVisibleLayers) !== JSON.stringify(Object.keys(prev).filter(layer => prev[layer]))) {
-        onVisibilityChange(newVisibleLayers);
-      }
-
       return updated;
     });
   };
+
+  // Use `useEffect` to handle the `onVisibilityChange` callback
+  useEffect(() => {
+    // Skip the first render to prevent the initial empty state from triggering visibility change
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const newVisibleLayers = Object.keys(visibilityMap).filter(layer => visibilityMap[layer]);
+
+    // Only trigger visibility change if there is an actual change
+    if (JSON.stringify(newVisibleLayers) !== JSON.stringify(previousVisibleLayers.current)) {
+      previousVisibleLayers.current = newVisibleLayers;
+      onVisibilityChange(newVisibleLayers);
+    }
+  }, [visibilityMap, onVisibilityChange]);
 
   return (
     <SimpleGrid minChildWidth="300px" spacing="20px" m={4}>
