@@ -1,5 +1,3 @@
-// ./src/component/art_tool/design-cards-list.tsx
-
 import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
 import { FC, useState } from "react";
 import { useUserContext } from "../../context/user-context";
@@ -8,7 +6,7 @@ import DesignCard from "./design-card";
 
 interface DesignCardsListProps {
   designs: DesignInfo[];
-  onEditStateChange: (isEditing: boolean, designId: string | null) => void; // Pass edit state change function
+  onEditStateChange: (isEditing: boolean, designId: string | null) => void;
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange }) => {
@@ -21,7 +19,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange 
     return user ? user.handle : "Unknown";
   };
 
-  const handleEdit = (designId: string) => {
+  const handleEdit = (designId: string): boolean => {
     if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
       toast({
         title: "Edit in Progress",
@@ -30,16 +28,18 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange 
         duration: 3000,
         isClosable: true,
       });
-      return;
+      return false;
     }
 
     setCurrentlyEditingCardId(designId);
-    onEditStateChange(true, designId); // Notify parent of edit state change
+    onEditStateChange(true, designId);
+    return true;
   };
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = (): boolean => {
     setCurrentlyEditingCardId(null);
-    onEditStateChange(false, null); // Notify parent of edit state change
+    onEditStateChange(false, null);
+    return true;
   };
 
   return (

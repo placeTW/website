@@ -11,7 +11,11 @@ interface Pixel {
   canvas: string;
 }
 
-const Viewport: React.FC = () => {
+interface ViewportProps {
+  designId: string | null; // Added prop to match the expected designId
+}
+
+const Viewport: React.FC<ViewportProps> = ({ designId }) => {
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [hoveredPixel, setHoveredPixel] = useState<{
     x: number;
