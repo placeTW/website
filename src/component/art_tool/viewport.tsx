@@ -73,14 +73,13 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     // Adjust stage position to maintain mouse position
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
+      y: mousePointTo.y * newScale,
     };
     
     // Smooth the position transition
     stage.position(newPos);
     stage.batchDraw();
 };
-
 
   const drawGrid = (width: number, height: number) => {
     const lines = [];

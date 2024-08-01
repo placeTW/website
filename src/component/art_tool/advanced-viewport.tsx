@@ -132,22 +132,53 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Merge pixels from different layers with edited pixels
   useEffect(() => {
-    const pixelMap = new Map<string, Pixel>();
+    if (isEditing) {
+      const pixelMap = new Map<string, Pixel>();
 
-    // Add existing pixels to the map first
-    pixels.forEach((pixel) => {
-      pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
-    });
+      // Add existing pixels to the map first
+      pixels.forEach((pixel) => {
+        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+      });
 
-    // Overwrite with any edited pixels
-    editedPixels.forEach((pixel) => {
-      pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
-    });
+      // Overwrite with any edited pixels
+      editedPixels.forEach((pixel) => {
+        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+      });
 
-    const mergedPixels = Array.from(pixelMap.values());
+      const mergedPixels = Array.from(pixelMap.values());
 
-    setPixels(mergedPixels);
-  }, [pixels, editedPixels]);
+      if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
+        setPixels(mergedPixels);
+      }
+    }
+  }, [pixels, editedPixels, isEditing]);
+
+  // Function to regenerate pixels array from scratch
+  const regeneratePixels = async () => {
+    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
+
+    if (layersToFetch.length === 0) {
+      setPixels([]); // No layers, so empty pixels array
+      return;
+    }
+
+    const allVisiblePixels = await Promise.all(
+      layersToFetch.map((layer) => databaseFetchPixels(layer))
+    );
+
+    // Update pixels state with freshly fetched data
+    setPixels(allVisiblePixels.flat());
+  };
+
+  // Clear edited pixels on submission or exit from edit mode
+  useEffect(() => {
+    if (!isEditing) {
+      console.log("Exiting edit mode, clearing editedPixels:", editedPixels); // Log before clearing
+      setEditedPixels([]); // Clear the edited pixels array when exiting edit mode
+
+      regeneratePixels(); // Regenerate pixels from scratch
+    }
+  }, [isEditing]);
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
@@ -162,25 +193,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     setEditedPixels(updatedPixels);
     onUpdatePixels(updatedPixels);
   };
-
-  // Clear edited pixels on submission or exit from edit mode
-  useEffect(() => {
-    if (!isEditing) {
-      console.log("Exiting edit mode, clearing editedPixels:", editedPixels); // Log before clearing
-      setEditedPixels([]); // Clear the edited pixels array when exiting edit mode
-
-      // Trigger a refetch to update the pixels state with the latest data from the database
-      const refetchPixels = async () => {
-        const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
-        const allVisiblePixels = await Promise.all(
-          layersToFetch.map((layer) => databaseFetchPixels(layer))
-        );
-        setPixels(allVisiblePixels.flat());
-      };
-
-      refetchPixels();
-    }
-  }, [isEditing, visibleLayers]);
 
   return (
     <Box position="relative" height="100%">
