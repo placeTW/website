@@ -1,7 +1,6 @@
 import Konva from "konva";
 import React, { useEffect, useRef, useState } from "react";
 import { Layer, Line, Rect, Stage } from "react-konva";
-import { databaseFetchPixels, supabase } from "../../api/supabase";
 
 interface Pixel {
   id: number;
@@ -12,11 +11,11 @@ interface Pixel {
 }
 
 interface ViewportProps {
-  designId: string | null; // designId is now required and used
+  designId: string | null;
+  pixels: Pixel[];
 }
 
-const Viewport: React.FC<ViewportProps> = ({ designId }) => {
-  const [pixels, setPixels] = useState<Pixel[]>([]);
+const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
   const [hoveredPixel, setHoveredPixel] = useState<{
     x: number;
     y: number;
@@ -32,63 +31,8 @@ const Viewport: React.FC<ViewportProps> = ({ designId }) => {
   });
 
   useEffect(() => {
-    const fetchPixels = async () => {
-      const canvasId = designId || "main"; // Use designId or default to "main"
-      const data = await databaseFetchPixels(canvasId);
-      setPixels(data as Pixel[]);
-    };
-
-    fetchPixels();
-
-    const pixelSubscription = supabase
-      .channel("art_tool_pixels")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_pixels" },
-        (payload) => {
-          console.log("Payload received:", payload);
-          if (
-            payload.eventType === "INSERT" ||
-            payload.eventType === "UPDATE"
-          ) {
-            console.log("Insert or Update event:", payload.new);
-            if (payload.new.canvas === (designId || "main")) {
-              setPixels((prevPixels) => [
-                ...prevPixels.filter(
-                  (pixel) =>
-                    !(pixel.x === payload.new.x && pixel.y === payload.new.y),
-                ),
-                payload.new as Pixel,
-              ]);
-            } else {
-              setPixels((prevPixels) =>
-                prevPixels.filter(
-                  (pixel) =>
-                    !(pixel.x === payload.new.x && pixel.y === payload.new.y),
-                ),
-              );
-            }
-          } else if (payload.eventType === "DELETE") {
-            console.log("Delete event:", payload.old);
-            setPixels((prevPixels) =>
-              prevPixels.filter(
-                (pixel) =>
-                  !(pixel.x === payload.old.x && pixel.y === payload.old.y),
-              ),
-            );
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(pixelSubscription);
-    };
-  }, [designId]); // Trigger useEffect when designId changes
-
-  // We cant set the h & w on Stage to 100% it only takes px values so we have to
-  // find the parent container's w and h and then manually set those !
-  useEffect(() => {
+    // We can't set the h & w on Stage to 100% it only takes px values so we have to
+    // find the parent container's w and h and then manually set those !
     if (!divRef.current) return;
     const resizeObserver = new ResizeObserver((entries) => {
       entries.forEach((entry) => {

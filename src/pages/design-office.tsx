@@ -1,5 +1,3 @@
-// ./src/pages/design-office.tsx
-
 import { Box, Flex, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
@@ -14,6 +12,7 @@ const DesignOffice: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<string | null>(null);
+  const [visibleLayers, setVisibleLayers] = useState<string[]>([]);
 
   const fetchLayersWithUserDetails = async () => {
     try {
@@ -41,7 +40,20 @@ const DesignOffice: React.FC = () => {
     setEditDesignId(designId);
   };
 
+  const handleVisibilityChange = (newVisibleLayers: string[]) => {
+    console.log("Visibility changed:", newVisibleLayers); // Add logging
+    setVisibleLayers(newVisibleLayers);
+  };
+
   useEffect(() => {
+    console.log("DesignOffice rendered with state:", {
+      designs,
+      loading,
+      isEditing,
+      editDesignId,
+      visibleLayers,
+    });
+    
     fetchLayersWithUserDetails();
 
     const subscription = supabase
@@ -67,10 +79,18 @@ const DesignOffice: React.FC = () => {
   return (
     <Flex height="calc(100vh - 80px)" position="relative" direction="row">
       <Box flex="1" border="1px solid #ccc">
-        <AdvancedViewport isEditing={isEditing} editDesignId={editDesignId} /> {/* Pass edit state and design ID */}
+        <AdvancedViewport 
+          isEditing={isEditing} 
+          editDesignId={editDesignId} 
+          visibleLayers={visibleLayers}
+        />
       </Box>
       <Box w="350px" overflowY="auto">
-        <DesignCardsList designs={designs} onEditStateChange={handleEditStateChange} />
+        <DesignCardsList 
+          designs={designs} 
+          onEditStateChange={handleEditStateChange}
+          onVisibilityChange={handleVisibilityChange}
+        />
         <Box h="100px" />
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">

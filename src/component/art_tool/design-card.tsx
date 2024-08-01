@@ -1,5 +1,3 @@
-// ./src/component/art_tool/design-card.tsx
-
 import {
   Box,
   Button,
@@ -40,6 +38,8 @@ interface DesignCardProps {
   isEditing: boolean;
   onEdit: (designId: string) => boolean;
   onCancelEdit: () => void;
+  onToggleVisibility: (designName: string, isVisible: boolean) => void;
+  isVisible: boolean;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -49,10 +49,11 @@ const DesignCard: FC<DesignCardProps> = ({
   isEditing,
   onEdit,
   onCancelEdit,
+  onToggleVisibility,
+  isVisible,
 }) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const [isLiked, setIsLiked] = useState(
     currentUser ? design.liked_by.includes(currentUser.user_id) : false
   );
@@ -67,7 +68,8 @@ const DesignCard: FC<DesignCardProps> = ({
   };
 
   const handleToggleVisibility = () => {
-    setIsVisible(!isVisible);
+    const newVisibility = !isVisible;
+    onToggleVisibility(design.design_name, newVisibility);
   };
 
   const handleLike = async () => {

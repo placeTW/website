@@ -1,5 +1,5 @@
 import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
 import DesignCard from "./design-card";
@@ -7,11 +7,13 @@ import DesignCard from "./design-card";
 interface DesignCardsListProps {
   designs: DesignInfo[];
   onEditStateChange: (isEditing: boolean, designId: string | null) => void;
+  onVisibilityChange: (visibleLayers: string[]) => void;
 }
 
-const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange }) => {
+const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange, onVisibilityChange }) => {
   const { users } = useUserContext();
   const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<string | null>(null);
+  const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>({});
   const toast = useToast();
 
   const getUserHandle = (userId: string) => {
@@ -42,6 +44,22 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange 
     return true;
   };
 
+  const handleToggleVisibility = (designName: string, isVisible: boolean) => {
+    setVisibilityMap(prev => {
+      const updated = { ...prev, [designName]: isVisible };
+
+      // Convert updated visibility map to an array of visible layers
+      const newVisibleLayers = Object.keys(updated).filter(layer => updated[layer]);
+
+      // Only trigger visibility change if there is an actual change
+      if (JSON.stringify(newVisibleLayers) !== JSON.stringify(Object.keys(prev).filter(layer => prev[layer]))) {
+        onVisibilityChange(newVisibleLayers);
+      }
+
+      return updated;
+    });
+  };
+
   return (
     <SimpleGrid minChildWidth="300px" spacing="20px" m={4}>
       {designs.map((design) => (
@@ -53,6 +71,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange 
             isEditing={currentlyEditingCardId === design.id}
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
+            onToggleVisibility={handleToggleVisibility}
+            isVisible={visibilityMap[design.design_name] ?? false}
           />
         </Box>
       ))}

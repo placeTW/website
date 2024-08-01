@@ -1,16 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Box, Grid } from "@chakra-ui/react";
 import Viewport from "./viewport";
 import { supabase } from "../../api/supabase";
+import { databaseFetchPixels } from "../../api/supabase/database"; // Ensure this import is here
 
 interface AdvancedViewportProps {
   isEditing: boolean;
   editDesignId: string | null;
+  visibleLayers: string[]; // New prop for visible layers
 }
 
-const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesignId }) => {
+// Utility function for deep comparison of arrays
+const arraysEqual = (a: any[], b: any[]) => {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length !== b.length) return false;
+
+  for (let i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+};
+
+const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesignId, visibleLayers }) => {
   const [colors, setColors] = useState<{ Color: string, color_sort: number | null }[]>([]);
+  const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const previousVisibleLayers = useRef<string[]>([]); // to keep track of previous visible layers
 
   useEffect(() => {
     // Fetch initial colors from Supabase and order them by color_sort
@@ -56,6 +72,28 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
     };
   }, []);
 
+  useEffect(() => {
+    // Check if the visible layers have actually changed
+    if (arraysEqual(previousVisibleLayers.current, visibleLayers)) {
+      return;
+    }
+    previousVisibleLayers.current = visibleLayers;
+
+    const fetchPixels = async () => {
+      if (visibleLayers.length === 0) {
+        setPixels([]); // Clear pixels if no layers are visible
+        return;
+      }
+
+      const allVisiblePixels = await Promise.all(
+        visibleLayers.map(layer => databaseFetchPixels(layer))
+      );
+      setPixels(allVisiblePixels.flat());
+    };
+
+    fetchPixels();
+  }, [visibleLayers]);
+
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
     // Do something with the selected color (e.g., update design)
@@ -63,8 +101,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
 
   return (
     <Box position="relative" height="100%">
-      {/* Keep the existing Viewport */}
-      <Viewport designId={editDesignId} />
+      <Viewport designId={editDesignId} pixels={pixels} /> {/* Pass pixels directly */}
 
       {/* Conditionally render the color palette */}
       {isEditing && (
