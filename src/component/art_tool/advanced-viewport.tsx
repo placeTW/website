@@ -22,6 +22,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
   const [colors, setColors] = useState<{ Color: string, color_sort: number | null }[]>([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [filteredPixels, setFilteredPixels] = useState<Pixel[]>([]);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null); // Declare selectedColor state
   const previousVisibleLayers = useRef<string[]>([]);
 
   useEffect(() => {
@@ -104,7 +105,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
   }, [pixels]);
 
   const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
+    setSelectedColor(color); // Update selectedColor state
   };
 
   return (

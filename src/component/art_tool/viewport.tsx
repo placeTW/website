@@ -11,28 +11,19 @@ interface Pixel {
 }
 
 interface ViewportProps {
-  designId: string | null;
   pixels: Pixel[];
 }
 
-const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
-  const [hoveredPixel, setHoveredPixel] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+const Viewport: React.FC<ViewportProps> = ({ pixels }) => {
+  const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
   const stageRef = useRef<Konva.Stage | null>(null);
   const gridSize = 10; // Size of each grid cell in pixels
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const checkerPatternRef = useRef<HTMLCanvasElement | null>(null);
   const divRef = useRef(null);
-  const [dimensions, setDimensions] = useState({
-    width: 0,
-    height: 0,
-  });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    // We can't set the h & w on Stage to 100% it only takes px values so we have to
-    // find the parent container's w and h and then manually set those !
     if (!divRef.current) return;
     const resizeObserver = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
@@ -168,9 +159,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
             y={0}
             width={dimensions.width}
             height={dimensions.height}
-            fillPatternImage={
-              checkerPatternRef.current as unknown as HTMLImageElement
-            }
+            fillPatternImage={checkerPatternRef.current as unknown as HTMLImageElement}
             fillPatternScale={{ x: 0.5, y: 0.5 }}
           />
           {drawGrid(dimensions.width, dimensions.height)}
@@ -178,7 +167,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
         <Layer>
           {pixels.map((pixel) => (
             <Rect
-              key={`${pixel.x}-${pixel.y}`}
+              key={`${pixel.x}-${pixel.y}-${pixel.canvas}`} // Ensure unique keys by including canvas name
               x={pixel.x * gridSize}
               y={pixel.y * gridSize}
               width={gridSize}
