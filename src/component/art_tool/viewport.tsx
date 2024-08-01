@@ -11,7 +11,11 @@ interface Pixel {
   canvas: string;
 }
 
-const Viewport: React.FC = () => { // Removed the unused designId prop
+interface ViewportProps {
+  designId: string | null; // designId is now required and used
+}
+
+const Viewport: React.FC<ViewportProps> = ({ designId }) => {
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [hoveredPixel, setHoveredPixel] = useState<{
     x: number;
@@ -29,7 +33,8 @@ const Viewport: React.FC = () => { // Removed the unused designId prop
 
   useEffect(() => {
     const fetchPixels = async () => {
-      const data = await databaseFetchPixels("main");
+      const canvasId = designId || "main"; // Use designId or default to "main"
+      const data = await databaseFetchPixels(canvasId);
       setPixels(data as Pixel[]);
     };
 
@@ -47,7 +52,7 @@ const Viewport: React.FC = () => { // Removed the unused designId prop
             payload.eventType === "UPDATE"
           ) {
             console.log("Insert or Update event:", payload.new);
-            if (payload.new.canvas === "main") {
+            if (payload.new.canvas === (designId || "main")) {
               setPixels((prevPixels) => [
                 ...prevPixels.filter(
                   (pixel) =>
@@ -79,7 +84,7 @@ const Viewport: React.FC = () => { // Removed the unused designId prop
     return () => {
       supabase.removeChannel(pixelSubscription);
     };
-  }, []);
+  }, [designId]); // Trigger useEffect when designId changes
 
   // We cant set the h & w on Stage to 100% it only takes px values so we have to
   // find the parent container's w and h and then manually set those !
@@ -117,7 +122,7 @@ const Viewport: React.FC = () => { // Removed the unused designId prop
 
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: mousePointTo.y * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
     };
     stage.position(newPos);
     stage.batchDraw();

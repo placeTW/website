@@ -20,7 +20,7 @@ const BriefingRoom: React.FC = () => {
           )}
           {!!alertMessage && <p>{alertMessage}</p>}
           {alertLevels.get(alertLevel)?.showViewport && (
-            <Viewport designId={null} />
+            <Viewport designId="someDesignId" />
           )}
         </div>
       ) : (
