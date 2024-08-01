@@ -2,34 +2,29 @@ import React, { useEffect, useState, useRef } from "react";
 import { Box, Grid } from "@chakra-ui/react";
 import Viewport from "./viewport";
 import { supabase } from "../../api/supabase";
-import { databaseFetchPixels } from "../../api/supabase/database"; // Ensure this import is here
+import { databaseFetchPixels } from "../../api/supabase/database";
+
+interface Pixel {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  canvas: string;
+}
 
 interface AdvancedViewportProps {
   isEditing: boolean;
   editDesignId: string | null;
-  visibleLayers: string[]; // New prop for visible layers
+  visibleLayers: string[];
 }
-
-// Utility function for deep comparison of arrays
-const arraysEqual = (a: any[], b: any[]) => {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (a.length !== b.length) return false;
-
-  for (let i = 0; i < a.length; ++i) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-};
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesignId, visibleLayers }) => {
   const [colors, setColors] = useState<{ Color: string, color_sort: number | null }[]>([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const previousVisibleLayers = useRef<string[]>([]); // to keep track of previous visible layers
+  const [filteredPixels, setFilteredPixels] = useState<Pixel[]>([]);
+  const previousVisibleLayers = useRef<string[]>([]);
 
   useEffect(() => {
-    // Fetch initial colors from Supabase and order them by color_sort
     const fetchColors = async () => {
       const { data, error } = await supabase
         .from("art_tool_colors")
@@ -44,7 +39,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
 
     fetchColors();
 
-    // Set up real-time subscription for color changes
     const colorSubscription = supabase
       .channel('realtime-art_tool_colors')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_colors' }, (payload) => {
@@ -66,44 +60,54 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
       })
       .subscribe();
 
-    // Clean up the subscription when the component unmounts
     return () => {
       supabase.removeChannel(colorSubscription);
     };
   }, []);
 
   useEffect(() => {
-    // Check if the visible layers have actually changed
-    if (arraysEqual(previousVisibleLayers.current, visibleLayers)) {
-      return;
+    if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(visibleLayers)) {
+      previousVisibleLayers.current = visibleLayers;
+
+      const fetchPixels = async () => {
+        if (visibleLayers.length === 0) {
+          setPixels([]); // Clear pixels if no layers are visible
+          return;
+        }
+
+        const allVisiblePixels = await Promise.all(
+          visibleLayers.map(layer => databaseFetchPixels(layer))
+        );
+        setPixels(allVisiblePixels.flat());
+      };
+
+      fetchPixels();
     }
-    previousVisibleLayers.current = visibleLayers;
-
-    const fetchPixels = async () => {
-      if (visibleLayers.length === 0) {
-        setPixels([]); // Clear pixels if no layers are visible
-        return;
-      }
-
-      const allVisiblePixels = await Promise.all(
-        visibleLayers.map(layer => databaseFetchPixels(layer))
-      );
-      setPixels(allVisiblePixels.flat());
-    };
-
-    fetchPixels();
   }, [visibleLayers]);
+
+  useEffect(() => {
+    const pixelMap = new Map<string, Pixel>();
+
+    for (let i = pixels.length - 1; i >= 0; i--) {
+      const pixel = pixels[i];
+      const key = `${pixel.x}-${pixel.y}`;
+      
+      if (!pixelMap.has(key)) {
+        pixelMap.set(key, pixel);
+      }
+    }
+
+    setFilteredPixels(Array.from(pixelMap.values()));
+  }, [pixels]);
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
-    // Do something with the selected color (e.g., update design)
   };
 
   return (
     <Box position="relative" height="100%">
-      <Viewport designId={editDesignId} pixels={pixels} /> {/* Pass pixels directly */}
+      <Viewport designId={editDesignId} pixels={filteredPixels} /> {/* Pass filtered pixels directly */}
 
-      {/* Conditionally render the color palette */}
       {isEditing && (
         <Box position="absolute" bottom="10px" left="50%" transform="translateX(-50%)" zIndex="100">
           <Grid templateColumns={`repeat(${colors.length}, 1fr)`} gap={2}>

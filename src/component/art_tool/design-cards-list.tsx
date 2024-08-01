@@ -16,7 +16,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange,
   const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>({});
   const toast = useToast();
   const isFirstRender = useRef(true);
-  const previousVisibleLayers = useRef<string[]>([]); // Track the previous visible layers
+  const previousVisibleLayers = useRef<string[]>([]);
 
   const getUserHandle = (userId: string) => {
     const user = users.find((u) => u.user_id === userId);
@@ -48,14 +48,20 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange,
 
   const handleToggleVisibility = (designName: string, isVisible: boolean) => {
     setVisibilityMap(prev => {
-      const updated = { ...prev, [designName]: isVisible };
+      const updated = { ...prev };
+
+      if (isVisible) {
+        delete updated[designName];
+        updated[designName] = true;
+      } else {
+        delete updated[designName];
+      }
+
       return updated;
     });
   };
 
-  // Use `useEffect` to handle the `onVisibilityChange` callback
   useEffect(() => {
-    // Skip the first render to prevent the initial empty state from triggering visibility change
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
@@ -63,7 +69,6 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange,
 
     const newVisibleLayers = Object.keys(visibilityMap).filter(layer => visibilityMap[layer]);
 
-    // Only trigger visibility change if there is an actual change
     if (JSON.stringify(newVisibleLayers) !== JSON.stringify(previousVisibleLayers.current)) {
       previousVisibleLayers.current = newVisibleLayers;
       onVisibilityChange(newVisibleLayers);
