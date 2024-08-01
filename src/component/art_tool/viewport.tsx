@@ -13,8 +13,8 @@ interface Pixel {
 interface ViewportProps {
   designId: string | null;
   pixels: Pixel[];
-  isEditing: boolean;
-  onPixelPaint: (x: number, y: number) => void; // Callback for pixel painting
+  isEditing?: boolean; // Made optional or remove if not used in regular viewport
+  onPixelPaint?: (x: number, y: number) => void; // Made optional or remove if not used in regular viewport
 }
 
 const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixelPaint }) => {
@@ -53,27 +53,34 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
-    const oldScale = stage.scaleX();
 
+    const oldScale = stage.scaleX();
     const pointer = stage.getPointerPosition();
     if (!pointer) return;
 
+    // Determine the scale direction (in or out)
+    const scaleBy = 1.1;
+    const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+    // Compute new position based on scaling
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
 
-    const newScale = e.evt.deltaY > 0 ? oldScale * 1.1 : oldScale / 1.1;
-
     stage.scale({ x: newScale, y: newScale });
 
+    // Adjust stage position to maintain mouse position
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
     };
+    
+    // Smooth the position transition
     stage.position(newPos);
     stage.batchDraw();
-  };
+};
+
 
   const drawGrid = (width: number, height: number) => {
     const lines = [];
@@ -141,7 +148,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
   };
 
   const handleClick = () => {
-    if (isEditing && hoveredPixel) {
+    if (isEditing && hoveredPixel && onPixelPaint) {
       onPixelPaint(hoveredPixel.x, hoveredPixel.y);
     }
   };
@@ -170,7 +177,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
         onWheel={handleWheel}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        onClick={handleClick} // Handle click for pixel painting
+        onClick={handleClick} // Handle click for pixel painting if in editing mode
       >
         <Layer>
           <Rect

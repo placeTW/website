@@ -49,7 +49,7 @@ const DesignOffice: React.FC = () => {
 
   const handleUpdatePixels = (pixels: Pixel[]) => {
     if (pixels && pixels.length > 0) {
-      console.log("Updating editedPixels with:", pixels); // Log the pixels being received
+      console.log("Updating editedPixels with:", pixels);
       setEditedPixels(pixels);
     } else {
       console.warn("handleUpdatePixels received undefined or empty pixels array.");
@@ -78,7 +78,7 @@ const DesignOffice: React.FC = () => {
       } else {
         console.warn("No pixels to save or pixels array is undefined.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving edited pixels:", error);
       toast({
         title: "Error",
@@ -97,7 +97,7 @@ const DesignOffice: React.FC = () => {
       isEditing,
       editDesignId,
       visibleLayers,
-      editedPixels, // Log current editedPixels state
+      editedPixels,
     });
     
     fetchLayersWithUserDetails();

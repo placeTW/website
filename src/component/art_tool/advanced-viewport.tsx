@@ -125,7 +125,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const handlePixelPaint = (x: number, y: number) => {
     if (!isEditing || !selectedColor) return;
 
-    const newPixel: Pixel = { id: Date.now(), x, y, color: selectedColor, canvas: designName }; // Use designName
+    const newPixel: Pixel = { id: Date.now(), x, y, color: selectedColor, canvas: designName };
     const updatedPixels = [...editedPixels, newPixel];
 
     setEditedPixels(updatedPixels);
