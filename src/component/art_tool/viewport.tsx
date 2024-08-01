@@ -13,12 +13,14 @@ interface Pixel {
 interface ViewportProps {
   designId: string | null;
   pixels: Pixel[];
+  isEditing: boolean;
+  onPixelPaint: (x: number, y: number) => void; // Callback for pixel painting
 }
 
-const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
+const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixelPaint }) => {
   const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
   const stageRef = useRef<Konva.Stage | null>(null);
-  const gridSize = 10; // Size of each grid cell in pixels
+  const gridSize = 10;
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const checkerPatternRef = useRef<HTMLCanvasElement | null>(null);
   const divRef = useRef(null);
@@ -28,8 +30,6 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
   });
 
   useEffect(() => {
-    // We can't set the h & w on Stage to 100% it only takes px values so we have to
-    // find the parent container's w and h and then manually set those!
     if (!divRef.current) return;
     const resizeObserver = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
@@ -40,11 +40,9 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
       });
     });
     resizeObserver.observe(divRef.current);
-    return () => resizeObserver.disconnect(); // clean up
+    return () => resizeObserver.disconnect();
   }, []);
 
-  // Dummy use of designId to satisfy TypeScript
-  // This ensures that designId is recognized as used in the component
   useEffect(() => {
     if (designId) {
       console.log(`Currently editing design with ID: ${designId}`);
@@ -142,6 +140,12 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
     setHoveredPixel(null);
   };
 
+  const handleClick = () => {
+    if (isEditing && hoveredPixel) {
+      onPixelPaint(hoveredPixel.x, hoveredPixel.y);
+    }
+  };
+
   useEffect(() => {
     checkerPatternRef.current = createCheckerboardPattern();
   }, []);
@@ -166,6 +170,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
         onWheel={handleWheel}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick} // Handle click for pixel painting
       >
         <Layer>
           <Rect
@@ -183,7 +188,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels }) => {
         <Layer>
           {pixels.map((pixel) => (
             <Rect
-              key={`${pixel.x}-${pixel.y}-${pixel.canvas}`} // Ensure a unique key for each pixel
+              key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
               x={pixel.x * gridSize}
               y={pixel.y * gridSize}
               width={gridSize}

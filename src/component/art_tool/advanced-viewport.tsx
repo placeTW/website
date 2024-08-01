@@ -16,15 +16,25 @@ interface AdvancedViewportProps {
   isEditing: boolean;
   editDesignId: string | null;
   visibleLayers: string[];
+  onUpdatePixels: (pixels: Pixel[]) => void; // Callback for updating pixels
+  designName: string; // Pass the design name to ensure correct canvas
 }
 
-const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesignId, visibleLayers }) => {
+const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
+  isEditing,
+  editDesignId,
+  visibleLayers,
+  onUpdatePixels,
+  designName, // Destructure designName
+}) => {
   const [colors, setColors] = useState<{ Color: string, color_sort: number | null }[]>([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [filteredPixels, setFilteredPixels] = useState<Pixel[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null); // Declare selectedColor state
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]); // Temporary storage for edited pixels
   const previousVisibleLayers = useRef<string[]>([]);
 
+  // Fetch colors on mount
   useEffect(() => {
     const fetchColors = async () => {
       const { data, error } = await supabase
@@ -40,6 +50,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
 
     fetchColors();
 
+    // Subscribe to color changes in real-time
     const colorSubscription = supabase
       .channel('realtime-art_tool_colors')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_colors' }, (payload) => {
@@ -66,8 +77,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
     };
   }, []);
 
+  // Fetch pixels based on visible layers
   useEffect(() => {
-    // Always include the "main" layer as the base layer
     const layersToFetch = ["main", ...visibleLayers.filter(layer => layer !== "main")];
 
     if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
@@ -75,7 +86,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
 
       const fetchPixels = async () => {
         if (layersToFetch.length === 0) {
-          setPixels([]); // Clear pixels if no layers are visible
+          setPixels([]);
           return;
         }
 
@@ -89,6 +100,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
     }
   }, [visibleLayers]);
 
+  // Filter and merge pixels from different layers
   useEffect(() => {
     const pixelMap = new Map<string, Pixel>();
 
@@ -104,13 +116,32 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
     setFilteredPixels(Array.from(pixelMap.values()));
   }, [pixels]);
 
+  // Handle color selection
   const handleColorSelect = (color: string) => {
-    setSelectedColor(color); // Update selectedColor state
+    setSelectedColor(color);
+  };
+
+  // Handle pixel painting
+  const handlePixelPaint = (x: number, y: number) => {
+    if (!isEditing || !selectedColor) return;
+
+    const newPixel: Pixel = { id: Date.now(), x, y, color: selectedColor, canvas: designName }; // Use designName
+    const updatedPixels = [...editedPixels, newPixel];
+
+    setEditedPixels(updatedPixels);
+    setFilteredPixels(prev => [...prev, newPixel]);
+
+    onUpdatePixels(updatedPixels); // Pass edited pixels to parent component immediately
   };
 
   return (
     <Box position="relative" height="100%">
-      <Viewport designId={editDesignId} pixels={filteredPixels} /> {/* Pass filtered pixels directly */}
+      <Viewport
+        designId={editDesignId}
+        pixels={filteredPixels}
+        isEditing={isEditing}
+        onPixelPaint={handlePixelPaint} // Handle pixel painting
+      />
 
       {isEditing && (
         <Box position="absolute" bottom="10px" left="50%" transform="translateX(-50%)" zIndex="100">

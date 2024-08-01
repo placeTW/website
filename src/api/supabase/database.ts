@@ -1,6 +1,12 @@
-// ./src/api/supabase/database.ts
-
 import { supabase } from "./index";
+
+interface Pixel {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  canvas: string;
+}
 
 // Layers-related functions
 export const databaseCreateDesign = async (
@@ -106,10 +112,8 @@ export const databaseDeleteLayerAndPixels = async (layerName: string) => {
   return true;
 };
 
-
 // Function for liking a design
 export const likeDesign = async (designId: string, userId: string) => {
-  // Fetch the current liked_by array
   const { data, error: fetchError } = await supabase
     .from("art_tool_designs")
     .select("liked_by")
@@ -121,12 +125,10 @@ export const likeDesign = async (designId: string, userId: string) => {
     throw new Error(fetchError.message);
   }
 
-  // Append the userId if it's not already in the array
   const updatedLikedBy = data.liked_by.includes(userId)
     ? data.liked_by
     : [...data.liked_by, userId];
 
-  // Update the liked_by array
   const { error: updateError } = await supabase
     .from("art_tool_designs")
     .update({ liked_by: updatedLikedBy })
@@ -142,7 +144,6 @@ export const likeDesign = async (designId: string, userId: string) => {
 
 // Function for unliking a design
 export const unlikeDesign = async (designId: string, userId: string) => {
-  // Fetch the current liked_by array
   const { data, error: fetchError } = await supabase
     .from("art_tool_designs")
     .select("liked_by")
@@ -154,10 +155,8 @@ export const unlikeDesign = async (designId: string, userId: string) => {
     throw new Error(fetchError.message);
   }
 
-  // Remove the userId if it's in the array
   const updatedLikedBy = data.liked_by.filter((id: string) => id !== userId);
 
-  // Update the liked_by array
   const { error: updateError } = await supabase
     .from("art_tool_designs")
     .update({ liked_by: updatedLikedBy })
@@ -182,4 +181,50 @@ export const databaseFetchColors = async () => {
   }
 
   return data.map((color) => color.color_code);
+};
+
+// Function to save edited pixels to the database
+export const saveEditedPixels = async (canvas: string, pixels: Pixel[]) => {
+  try {
+    if (!pixels || pixels.length === 0) {
+      console.error("No pixels to save or pixels array is undefined.");
+      throw new Error("No pixels to save or pixels array is undefined.");
+    }
+
+    // First, delete existing pixels for the design
+    const { error: deleteError } = await supabase
+      .from("art_tool_pixels")
+      .delete()
+      .eq("canvas", canvas);
+
+    if (deleteError) {
+      console.error("Error deleting existing pixels:", deleteError);
+      throw new Error(deleteError.message);
+    }
+
+    // Prepare the new pixel data
+    const preparedPixels = pixels.map((pixel) => ({
+      x: pixel.x,
+      y: pixel.y,
+      color: pixel.color,
+      canvas: canvas, // Ensure the correct canvas name is associated
+    }));
+
+    console.log("Prepared Pixels:", preparedPixels); // Log to verify the data structure
+
+    // Insert new pixels
+    const { error: insertError } = await supabase
+      .from("art_tool_pixels")
+      .insert(preparedPixels);
+
+    if (insertError) {
+      console.error("Error inserting new pixels:", insertError);
+      throw new Error(insertError.message);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error saving edited pixels:", error);
+    throw error;
+  }
 };

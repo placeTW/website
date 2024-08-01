@@ -40,6 +40,7 @@ interface DesignCardProps {
   onCancelEdit: () => void;
   onToggleVisibility: (designName: string, isVisible: boolean) => void;
   isVisible: boolean;
+  onSubmitEdit: () => void;  // New prop to handle submit
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -51,6 +52,7 @@ const DesignCard: FC<DesignCardProps> = ({
   onCancelEdit,
   onToggleVisibility,
   isVisible,
+  onSubmitEdit,  // Destructure new prop
 }) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -231,6 +233,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 <IconButton
                   icon={<FaCloudArrowUp />}
                   aria-label="Submit"
+                  onClick={onSubmitEdit} // Call onSubmitEdit prop
                 />
               </>
             )}

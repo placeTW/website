@@ -8,9 +8,15 @@ interface DesignCardsListProps {
   designs: DesignInfo[];
   onEditStateChange: (isEditing: boolean, designId: string | null) => void;
   onVisibilityChange: (visibleLayers: string[]) => void;
+  onSubmitEdit: () => void;  // New prop to handle submit from DesignOffice
 }
 
-const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange, onVisibilityChange }) => {
+const DesignCardsList: FC<DesignCardsListProps> = ({
+  designs,
+  onEditStateChange,
+  onVisibilityChange,
+  onSubmitEdit, // Destructure the new prop
+}) => {
   const { users } = useUserContext();
   const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<string | null>(null);
   const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>({});
@@ -51,7 +57,6 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange,
       const updated = { ...prev };
 
       if (isVisible) {
-        delete updated[designName];
         updated[designName] = true;
       } else {
         delete updated[designName];
@@ -91,6 +96,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange,
             onCancelEdit={handleCancelEdit}
             onToggleVisibility={handleToggleVisibility}
             isVisible={visibilityMap[design.design_name] ?? false}
+            onSubmitEdit={onSubmitEdit} // Pass down the onSubmitEdit function
           />
         </Box>
       ))}

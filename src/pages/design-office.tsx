@@ -1,11 +1,11 @@
-import { Box, Flex, Spinner } from "@chakra-ui/react";
+import { Box, Flex, Spinner, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
-import { databaseFetchDesignsWithUserDetails } from "../api/supabase/database";
+import { databaseFetchDesignsWithUserDetails, saveEditedPixels } from "../api/supabase/database";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
-import { DesignInfo } from "../types/art-tool";
+import { DesignInfo, Pixel } from "../types/art-tool";
 
 const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<DesignInfo[]>([]);
@@ -13,6 +13,8 @@ const DesignOffice: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<string[]>([]);
+  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]); // Store edited pixels
+  const toast = useToast();
 
   const fetchLayersWithUserDetails = async () => {
     try {
@@ -41,8 +43,51 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleVisibilityChange = (newVisibleLayers: string[]) => {
-    console.log("Visibility changed:", newVisibleLayers); // Add logging
+    console.log("Visibility changed:", newVisibleLayers);
     setVisibleLayers(newVisibleLayers);
+  };
+
+  const handleUpdatePixels = (pixels: Pixel[]) => {
+    if (pixels && pixels.length > 0) {
+      console.log("Updating editedPixels with:", pixels); // Log the pixels being received
+      setEditedPixels(pixels);
+    } else {
+      console.warn("handleUpdatePixels received undefined or empty pixels array.");
+      setEditedPixels([]); // Ensure state is reset if the array is empty or undefined
+    }
+  };
+
+  // Function to handle the submission of edited pixels
+  const handleSubmitEdit = async () => {
+    if (!editDesignId) return;
+
+    const currentDesign = designs.find((d) => d.id === editDesignId);
+    if (!currentDesign) return;
+
+    try {
+      if (editedPixels.length > 0) {
+        await saveEditedPixels(currentDesign.design_name, editedPixels); // Ensure correct design name
+        toast({
+          title: "Changes Saved",
+          description: `${currentDesign.design_name} has been updated successfully.`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        setIsEditing(false); // Exit edit mode after submission
+      } else {
+        console.warn("No pixels to save or pixels array is undefined.");
+      }
+    } catch (error) {
+      console.error("Error saving edited pixels:", error);
+      toast({
+        title: "Error",
+        description: `Failed to save changes: ${error.message}`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   useEffect(() => {
@@ -52,6 +97,7 @@ const DesignOffice: React.FC = () => {
       isEditing,
       editDesignId,
       visibleLayers,
+      editedPixels, // Log current editedPixels state
     });
     
     fetchLayersWithUserDetails();
@@ -70,26 +116,33 @@ const DesignOffice: React.FC = () => {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, []);
+  }, [editedPixels]); // Add editedPixels to dependency array to observe changes
 
   if (loading) {
     return <Spinner size="xl" />;
   }
 
+  const currentDesign = designs.find((d) => d.id === editDesignId);
+
   return (
     <Flex height="calc(100vh - 80px)" position="relative" direction="row">
       <Box flex="1" border="1px solid #ccc">
-        <AdvancedViewport 
-          isEditing={isEditing} 
-          editDesignId={editDesignId} 
-          visibleLayers={visibleLayers}
-        />
+        {currentDesign && (
+          <AdvancedViewport 
+            isEditing={isEditing} 
+            editDesignId={editDesignId} 
+            visibleLayers={visibleLayers}
+            onUpdatePixels={handleUpdatePixels} // Pass the handler function
+            designName={currentDesign.design_name} // Pass the correct design name
+          />
+        )}
       </Box>
       <Box w="350px" overflowY="auto">
         <DesignCardsList 
           designs={designs} 
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
+          onSubmitEdit={handleSubmitEdit} // Pass the submit function
         />
         <Box h="100px" />
       </Box>
