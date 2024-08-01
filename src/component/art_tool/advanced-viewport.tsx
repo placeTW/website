@@ -35,7 +35,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
         console.log('Change received!', payload);
 
         if (payload.eventType === 'INSERT') {
-          setColors((prevColors) => [...prevColors, payload.new].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)));
+          setColors((prevColors) => [...prevColors, payload.new as { Color: string; color_sort: number | null; }].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)));
         } else if (payload.eventType === 'DELETE') {
           setColors((prevColors) =>
             prevColors.filter((color) => color.Color !== payload.old.Color)
@@ -43,7 +43,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
         } else if (payload.eventType === 'UPDATE') {
           setColors((prevColors) =>
             prevColors.map((color) =>
-              color.Color === payload.old.Color ? payload.new : color
+              color.Color === payload.old.Color ? payload.new as { Color: string; color_sort: number | null; } : color
             ).sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0))
           );
         }
