@@ -1,3 +1,5 @@
+// ./src/api/supabase/database.ts
+
 import { supabase } from "./index";
 
 // Layers-related functions
@@ -99,6 +101,71 @@ export const databaseDeleteLayerAndPixels = async (layerName: string) => {
   if (layerError.error) {
     console.error("Error deleting layer:", layerError.error);
     throw new Error(layerError.error.message);
+  }
+
+  return true;
+};
+
+
+// Function for liking a design
+export const likeDesign = async (designId: string, userId: string) => {
+  // Fetch the current liked_by array
+  const { data, error: fetchError } = await supabase
+    .from("art_tool_designs")
+    .select("liked_by")
+    .eq("id", designId)
+    .single();
+
+  if (fetchError) {
+    console.error("Error fetching liked_by array:", fetchError);
+    throw new Error(fetchError.message);
+  }
+
+  // Append the userId if it's not already in the array
+  const updatedLikedBy = data.liked_by.includes(userId)
+    ? data.liked_by
+    : [...data.liked_by, userId];
+
+  // Update the liked_by array
+  const { error: updateError } = await supabase
+    .from("art_tool_designs")
+    .update({ liked_by: updatedLikedBy })
+    .eq("id", designId);
+
+  if (updateError) {
+    console.error("Error liking design:", updateError);
+    throw new Error(updateError.message);
+  }
+
+  return true;
+};
+
+// Function for unliking a design
+export const unlikeDesign = async (designId: string, userId: string) => {
+  // Fetch the current liked_by array
+  const { data, error: fetchError } = await supabase
+    .from("art_tool_designs")
+    .select("liked_by")
+    .eq("id", designId)
+    .single();
+
+  if (fetchError) {
+    console.error("Error fetching liked_by array:", fetchError);
+    throw new Error(fetchError.message);
+  }
+
+  // Remove the userId if it's in the array
+  const updatedLikedBy = data.liked_by.filter((id: string) => id !== userId);
+
+  // Update the liked_by array
+  const { error: updateError } = await supabase
+    .from("art_tool_designs")
+    .update({ liked_by: updatedLikedBy })
+    .eq("id", designId);
+
+  if (updateError) {
+    console.error("Error unliking design:", updateError);
+    throw new Error(updateError.message);
   }
 
   return true;

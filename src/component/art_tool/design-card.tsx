@@ -1,3 +1,5 @@
+// ./src/component/art_tool/design-card.tsx
+
 import {
   Box,
   Button,
@@ -21,7 +23,11 @@ import {
   FaPen,
   FaTrash,
 } from "react-icons/fa6";
-import { databaseDeleteLayerAndPixels } from "../../api/supabase/database";
+import {
+  databaseDeleteLayerAndPixels,
+  likeDesign,
+  unlikeDesign,
+} from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
 import ImageModal from "../image-modal";
@@ -36,11 +42,14 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isLiked, setIsLiked] = useState(
+    currentUser ? design.liked_by.includes(currentUser.user_id) : false
+  );
   const toast = useToast();
 
   useEffect(() => {
-    console.log("Design props:", design);
-  }, [design]);
+    setIsLiked(currentUser ? design.liked_by.includes(currentUser.user_id) : false);
+  }, [design.liked_by, currentUser]);
 
   const handleImageClick = () => {
     setIsModalOpen(true);
@@ -48,6 +57,29 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
 
   const handleToggleVisibility = () => {
     setIsVisible(!isVisible);
+  };
+
+  const handleLike = async () => {
+    if (!currentUser) return;
+
+    try {
+      if (isLiked) {
+        await unlikeDesign(design.id, currentUser.user_id);
+        setIsLiked(false);
+      } else {
+        await likeDesign(design.id, currentUser.user_id);
+        setIsLiked(true);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while updating your like.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      console.error("Error liking/unliking design:", error);
+    }
   };
 
   const handleDelete = async () => {
@@ -144,7 +176,10 @@ const DesignCard: FC<DesignCardProps> = ({ design, userId, userHandle }) => {
           gap={2}
         >
           <Box display="flex" flexDirection="row" alignItems="center">
-            <Button leftIcon={<FaHeart />}>
+            <Button
+              leftIcon={<FaHeart color={isLiked ? "red" : "gray"} />}
+              onClick={handleLike}
+            >
               {design.liked_by.length}
             </Button>
           </Box>
