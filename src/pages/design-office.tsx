@@ -1,6 +1,8 @@
+// ./src/pages/design-office.tsx
+
 import { Box, Flex, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { supabase } from "../api/supabase"; // Ensure supabase is imported
+import { supabase } from "../api/supabase";
 import { databaseFetchDesignsWithUserDetails } from "../api/supabase/database";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
@@ -10,6 +12,8 @@ import { DesignInfo } from "../types/art-tool";
 const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<DesignInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDesignId, setEditDesignId] = useState<string | null>(null);
 
   const fetchLayersWithUserDetails = async () => {
     try {
@@ -20,7 +24,7 @@ const DesignOffice: React.FC = () => {
         created_by: item.created_by,
         handle: item.art_tool_users.handle || "",
         rank: item.art_tool_users.rank || "",
-        rank_name: item.art_tool_users.rank_name || "", // Add rank_name here
+        rank_name: item.art_tool_users.rank_name || "",
         liked_by: item.liked_by,
         design_thumbnail: item.design_thumbnail,
       }));
@@ -32,6 +36,11 @@ const DesignOffice: React.FC = () => {
     }
   };
 
+  const handleEditStateChange = (isEditing: boolean, designId: string | null) => {
+    setIsEditing(isEditing);
+    setEditDesignId(designId);
+  };
+
   useEffect(() => {
     fetchLayersWithUserDetails();
 
@@ -41,7 +50,7 @@ const DesignOffice: React.FC = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "art_tool_designs" },
         () => {
-          fetchLayersWithUserDetails(); // refetch data on insert
+          fetchLayersWithUserDetails();
         }
       )
       .subscribe();
@@ -57,11 +66,11 @@ const DesignOffice: React.FC = () => {
 
   return (
     <Flex height="calc(100vh - 80px)" position="relative" direction="row">
-      <Box flex="1"  border="1px solid #ccc">
-        <AdvancedViewport />
+      <Box flex="1" border="1px solid #ccc">
+        <AdvancedViewport isEditing={isEditing} editDesignId={editDesignId} /> {/* Pass edit state and design ID */}
       </Box>
       <Box w="350px" overflowY="auto">
-        <DesignCardsList designs={designs} />
+        <DesignCardsList designs={designs} onEditStateChange={handleEditStateChange} />
         <Box h="100px" />
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">

@@ -170,3 +170,16 @@ export const unlikeDesign = async (designId: string, userId: string) => {
 
   return true;
 };
+
+export const databaseFetchColors = async () => {
+  const { data, error } = await supabase
+    .from("art_tools_colours")
+    .select("color_code");
+
+  if (error) {
+    console.error("Error fetching colors:", error);
+    return [];
+  }
+
+  return data.map((color) => color.color_code);
+};

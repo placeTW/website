@@ -8,15 +8,13 @@ import DesignCard from "./design-card";
 
 interface DesignCardsListProps {
   designs: DesignInfo[];
+  onEditStateChange: (isEditing: boolean, designId: string | null) => void; // Pass edit state change function
 }
 
-const DesignCardsList: FC<DesignCardsListProps> = ({ designs }) => {
+const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange }) => {
   const { users } = useUserContext();
-  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<string | null>(null); // Track the currently editing card
+  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<string | null>(null);
   const toast = useToast();
-
-  // Sort designs by number of likes
-  const sortedDesigns = [...designs].sort((a, b) => b.liked_by.length - a.liked_by.length);
 
   const getUserHandle = (userId: string) => {
     const user = users.find((u) => u.user_id === userId);
@@ -32,20 +30,21 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs }) => {
         duration: 3000,
         isClosable: true,
       });
-      return false; // Prevent entering edit mode for another card
+      return;
     }
 
-    setCurrentlyEditingCardId(designId); // Set the card being edited
-    return true;
+    setCurrentlyEditingCardId(designId);
+    onEditStateChange(true, designId); // Notify parent of edit state change
   };
 
   const handleCancelEdit = () => {
-    setCurrentlyEditingCardId(null); // Reset the editing card ID
+    setCurrentlyEditingCardId(null);
+    onEditStateChange(false, null); // Notify parent of edit state change
   };
 
   return (
     <SimpleGrid minChildWidth="300px" spacing="20px" m={4}>
-      {sortedDesigns.map((design) => (
+      {designs.map((design) => (
         <Box key={design.id}>
           <DesignCard
             design={design}
