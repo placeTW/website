@@ -5,16 +5,24 @@ import { useAlertContext } from "../context/alert-context";
 import { alertLevels, validAlertLevels } from "../definitions/alert-level";
 import { databaseFetchPixels } from "../api/supabase/database";
 
+interface Pixel { // Define the Pixel type here
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  canvas: string;
+}
+
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { alertLevel, alertMessage } = useAlertContext();
-  const [pixels, setPixels] = useState([]); // State to hold pixel data
+  const [pixels, setPixels] = useState<Pixel[]>([]); // Set the correct type for pixels
 
   useEffect(() => {
     const fetchPixels = async () => {
       const designId = "someDesignId"; // Replace this with the actual designId logic
       const fetchedPixels = await databaseFetchPixels(designId);
-      setPixels(fetchedPixels);
+      setPixels(fetchedPixels || []); // Use an empty array if fetchedPixels is undefined
     };
 
     fetchPixels();
