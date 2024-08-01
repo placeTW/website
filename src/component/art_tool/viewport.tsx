@@ -57,24 +57,24 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     const scaleBy = 1.1;
     const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
-    // Compute new position based on scaling
+    // Compute the position of the pointer relative to the stage
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
 
+    // Apply the new scale
     stage.scale({ x: newScale, y: newScale });
 
-    // Adjust stage position to maintain mouse position
+    // Calculate the new position of the stage to keep the pointer in the same place
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y * newScale,
+      y: pointer.y - mousePointTo.y * newScale, // Adjusted this line
     };
-    
-    // Smooth the position transition
+
     stage.position(newPos);
     stage.batchDraw();
-};
+  };
 
   const drawGrid = (width: number, height: number) => {
     const lines = [];
