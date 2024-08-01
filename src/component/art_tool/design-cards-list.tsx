@@ -75,9 +75,12 @@ const DesignCardsList: FC<DesignCardsListProps> = ({ designs, onEditStateChange,
     }
   }, [visibilityMap, onVisibilityChange]);
 
+  // Sort designs by the number of likes in descending order
+  const sortedDesigns = [...designs].sort((a, b) => b.liked_by.length - a.liked_by.length);
+
   return (
     <SimpleGrid minChildWidth="300px" spacing="20px" m={4}>
-      {designs.map((design) => (
+      {sortedDesigns.map((design) => (
         <Box key={design.id}>
           <DesignCard
             design={design}
