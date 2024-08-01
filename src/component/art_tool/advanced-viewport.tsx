@@ -80,7 +80,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   useEffect(() => {
     const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
 
-    // Only fetch pixels if the visible layers change
     if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
       previousVisibleLayers.current = layersToFetch;
 
@@ -100,27 +99,54 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
   }, [visibleLayers]);
 
+  // Real-time subscription to pixel changes
+  useEffect(() => {
+    const pixelSubscription = supabase
+      .channel("realtime-art_tool_pixels")
+      .on("postgres_changes", { event: "*", schema: "public", table: "art_tool_pixels" }, (payload) => {
+        const updatedPixel: Pixel = payload.new;
+
+        setPixels((prevPixels) => {
+          const pixelMap = new Map<string, Pixel>();
+
+          // Add existing pixels to the map first
+          prevPixels.forEach((pixel) => {
+            pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+          });
+
+          // Handle the event based on its type
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            pixelMap.set(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`, updatedPixel);
+          } else if (payload.eventType === "DELETE") {
+            pixelMap.delete(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`);
+          }
+
+          return Array.from(pixelMap.values());
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(pixelSubscription);
+    };
+  }, []);
+
   // Merge pixels from different layers with edited pixels
   useEffect(() => {
     const pixelMap = new Map<string, Pixel>();
 
     // Add existing pixels to the map first
-    for (let i = 0; i < pixels.length; i++) {
-      const pixel = pixels[i];
-      const key = `${pixel.x}-${pixel.y}`;
-      pixelMap.set(key, pixel);
-    }
+    pixels.forEach((pixel) => {
+      pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+    });
 
     // Overwrite with any edited pixels
-    for (let i = 0; i < editedPixels.length; i++) {
-      const pixel = editedPixels[i];
-      const key = `${pixel.x}-${pixel.y}`;
-      pixelMap.set(key, pixel);
-    }
+    editedPixels.forEach((pixel) => {
+      pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+    });
 
     const mergedPixels = Array.from(pixelMap.values());
 
-    // Ensure this state update only happens if pixels have actually changed
     if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
       setPixels(mergedPixels);
     }
