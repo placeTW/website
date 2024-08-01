@@ -50,7 +50,9 @@ const DesignOffice: React.FC = () => {
   const handleUpdatePixels = (pixels: Pixel[]) => {
     if (pixels && pixels.length > 0) {
       console.log("Updating editedPixels with:", pixels);
-      setEditedPixels(pixels);
+      // Remove `id` from the pixels
+      const sanitizedPixels = pixels.map(({ id, ...rest }) => rest);
+      setEditedPixels(sanitizedPixels);
     } else {
       console.warn("handleUpdatePixels received undefined or empty pixels array.");
       setEditedPixels([]); // Ensure state is reset if the array is empty or undefined

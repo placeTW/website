@@ -183,43 +183,51 @@ export const databaseFetchColors = async () => {
   return data.map((color) => color.color_code);
 };
 
-// Function to save edited pixels to the database
-export const saveEditedPixels = async (canvas: string, pixels: Pixel[]) => {
+export const saveEditedPixels = async (canvas: string, pixels: Omit<Pixel, "id">[]) => {
   try {
     if (!pixels || pixels.length === 0) {
       console.error("No pixels to save or pixels array is undefined.");
       throw new Error("No pixels to save or pixels array is undefined.");
     }
 
-    // First, delete existing pixels for the design
-    const { error: deleteError } = await supabase
+    // Step 1: Fetch existing pixels for the design
+    const { data: existingPixels, error: fetchError } = await supabase
       .from("art_tool_pixels")
-      .delete()
+      .select("*")
       .eq("canvas", canvas);
 
-    if (deleteError) {
-      console.error("Error deleting existing pixels:", deleteError);
-      throw new Error(deleteError.message);
+    if (fetchError) {
+      console.error("Error fetching existing pixels:", fetchError);
+      throw new Error(fetchError.message);
     }
 
-    // Prepare the new pixel data
-    const preparedPixels = pixels.map((pixel) => ({
-      x: pixel.x,
-      y: pixel.y,
-      color: pixel.color,
-      canvas: canvas, // Ensure the correct canvas name is associated
-    }));
+    // Step 2: Create a map of the existing pixels by their coordinates, omitting the 'id'
+    const existingPixelMap = new Map<string, Omit<Pixel, "id">>(
+      (existingPixels || []).map(pixel => [
+        `${pixel.x}-${pixel.y}`, 
+        { x: pixel.x, y: pixel.y, color: pixel.color, canvas: pixel.canvas } // Ensure 'id' is not included
+      ])
+    );
 
-    console.log("Prepared Pixels:", preparedPixels); // Log to verify the data structure
+    // Step 3: Merge the new pixels into the existing map (overwriting any pixels at the same coordinates)
+    pixels.forEach(pixel => {
+      existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
+    });
 
-    // Insert new pixels
-    const { error: insertError } = await supabase
+    // Step 4: Prepare the merged set of pixels for insertion, ensuring the id is omitted
+    const mergedPixels = Array.from(existingPixelMap.values());
+
+    // Log the merged pixels to ensure 'id' is not included
+    console.log("Merged Pixels:", mergedPixels);
+
+    // Step 5: Upsert (insert or update) the merged pixels
+    const { error: upsertError } = await supabase
       .from("art_tool_pixels")
-      .insert(preparedPixels);
+      .upsert(mergedPixels, { onConflict: ["x", "y", "canvas"] });
 
-    if (insertError) {
-      console.error("Error inserting new pixels:", insertError);
-      throw new Error(insertError.message);
+    if (upsertError) {
+      console.error("Error upserting pixels:", upsertError);
+      throw new Error(upsertError.message);
     }
 
     return true;
@@ -228,3 +236,7 @@ export const saveEditedPixels = async (canvas: string, pixels: Pixel[]) => {
     throw error;
   }
 };
+
+
+
+
