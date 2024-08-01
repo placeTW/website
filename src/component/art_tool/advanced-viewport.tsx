@@ -66,17 +66,20 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({ isEditing, editDesi
   }, []);
 
   useEffect(() => {
-    if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(visibleLayers)) {
-      previousVisibleLayers.current = visibleLayers;
+    // Always include the "main" layer as the base layer
+    const layersToFetch = ["main", ...visibleLayers.filter(layer => layer !== "main")];
+
+    if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
+      previousVisibleLayers.current = layersToFetch;
 
       const fetchPixels = async () => {
-        if (visibleLayers.length === 0) {
+        if (layersToFetch.length === 0) {
           setPixels([]); // Clear pixels if no layers are visible
           return;
         }
 
         const allVisiblePixels = await Promise.all(
-          visibleLayers.map(layer => databaseFetchPixels(layer))
+          layersToFetch.map(layer => databaseFetchPixels(layer))
         );
         setPixels(allVisiblePixels.flat());
       };
