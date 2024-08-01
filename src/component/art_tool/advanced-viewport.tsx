@@ -18,6 +18,7 @@ interface AdvancedViewportProps {
   visibleLayers: string[];
   onUpdatePixels: (pixels: Pixel[]) => void;
   designName: string;
+  onExitEditMode: () => void; // Prop to notify when exiting edit mode
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -26,6 +27,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   visibleLayers,
   onUpdatePixels,
   designName,
+  onExitEditMode,
 }) => {
   const [colors, setColors] = useState<{ Color: string; color_sort: number | null }[]>([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
@@ -49,12 +51,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
     fetchColors();
 
-    // Subscribe to color changes in real-time
     const colorSubscription = supabase
       .channel("realtime-art_tool_colors")
       .on("postgres_changes", { event: "*", schema: "public", table: "art_tool_colors" }, (payload) => {
-        console.log("Change received!", payload);
-
         if (payload.eventType === "INSERT") {
           setColors((prevColors) => [...prevColors, payload.new as { Color: string; color_sort: number | null }].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)));
         } else if (payload.eventType === "DELETE") {
@@ -147,9 +146,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
     const mergedPixels = Array.from(pixelMap.values());
 
-    if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
-      setPixels(mergedPixels);
-    }
+    setPixels(mergedPixels);
   }, [pixels, editedPixels]);
 
   const handleColorSelect = (color: string) => {
@@ -165,6 +162,25 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     setEditedPixels(updatedPixels);
     onUpdatePixels(updatedPixels);
   };
+
+  // Clear edited pixels on submission or exit from edit mode
+  useEffect(() => {
+    if (!isEditing) {
+      console.log("Exiting edit mode, clearing editedPixels:", editedPixels); // Log before clearing
+      setEditedPixels([]); // Clear the edited pixels array when exiting edit mode
+
+      // Trigger a refetch to update the pixels state with the latest data from the database
+      const refetchPixels = async () => {
+        const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
+        const allVisiblePixels = await Promise.all(
+          layersToFetch.map((layer) => databaseFetchPixels(layer))
+        );
+        setPixels(allVisiblePixels.flat());
+      };
+
+      refetchPixels();
+    }
+  }, [isEditing, visibleLayers]);
 
   return (
     <Box position="relative" height="100%">
