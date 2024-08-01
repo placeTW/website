@@ -11,11 +11,7 @@ interface Pixel {
   canvas: string;
 }
 
-interface ViewportProps {
-  designId: string | null; // Added prop to match the expected designId
-}
-
-const Viewport: React.FC<ViewportProps> = ({ designId }) => {
+const Viewport: React.FC = () => { // Removed the unused designId prop
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [hoveredPixel, setHoveredPixel] = useState<{
     x: number;
@@ -121,7 +117,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId }) => {
 
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
+      y: mousePointTo.y * newScale,
     };
     stage.position(newPos);
     stage.batchDraw();
