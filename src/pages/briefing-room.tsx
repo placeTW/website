@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Viewport from "../component/art_tool/viewport";
 import { useAlertContext } from "../context/alert-context";
 import { alertLevels, validAlertLevels } from "../definitions/alert-level";
+import { databaseFetchPixels } from "../api/supabase/database";
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { alertLevel, alertMessage } = useAlertContext();
+  const [pixels, setPixels] = useState([]); // State to hold pixel data
+
+  useEffect(() => {
+    const fetchPixels = async () => {
+      const designId = "someDesignId"; // Replace this with the actual designId logic
+      const fetchedPixels = await databaseFetchPixels(designId);
+      setPixels(fetchedPixels);
+    };
+
+    fetchPixels();
+  }, []);
 
   return (
     <div>
@@ -20,7 +32,7 @@ const BriefingRoom: React.FC = () => {
           )}
           {!!alertMessage && <p>{alertMessage}</p>}
           {alertLevels.get(alertLevel)?.showViewport && (
-            <Viewport designId="someDesignId" />
+            <Viewport designId="someDesignId" pixels={pixels} />
           )}
         </div>
       ) : (
