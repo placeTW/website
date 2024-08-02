@@ -172,14 +172,24 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const handlePixelPaint = (x: number, y: number) => {
     if (!isEditing || !selectedColor) return;
 
-    const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
-
     if (selectedColor === "ClearOnDesign") {
-      // Remove the pixel at this position for ClearOnDesign
-      setEditedPixels((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
+      // Remove the pixel at this position for ClearOnDesign from the viewport
+      setPixels((prevPixels) => {
+        const updatedPixels = prevPixels.filter((p) => !(p.x === x && p.y === y));
+        console.log("Pixels array after removal:", updatedPixels);
+        return updatedPixels;
+      });
+      // Add it to editedPixels to be tracked
+      const removedPixel: Pixel = { x, y, color: "ClearOnDesign", canvas: designName };
+      const updatedEditedPixels = [...editedPixels, removedPixel];
+      setEditedPixels(updatedEditedPixels);
+      console.log("Edited Pixels:", updatedEditedPixels);
+      onUpdatePixels(updatedEditedPixels);
     } else {
+      const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
       const updatedPixels = [...editedPixels, newPixel];
       setEditedPixels(updatedPixels);
+      console.log("Edited Pixels:", updatedPixels);
       onUpdatePixels(updatedPixels);
     }
   };

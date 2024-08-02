@@ -85,7 +85,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
 
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
+      y: pointer.y * newScale - mousePointTo.y * newScale,
     };
 
     stage.position(newPos);
@@ -117,9 +117,9 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     return lines;
   };
 
-  const renderPixelColor = (color: string): string | HTMLImageElement => {
+  const renderPixelColor = (color: string): string | HTMLImageElement | null => {
     if (color === 'ClearOnDesign') {
-      return clearOnDesignPattern;
+      return null; // Return null for cleared pixels to render the background
     } else if (color === 'ClearOnMain') {
       return clearOnMainPattern;
     }
@@ -180,32 +180,29 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
             y={0}
             width={dimensions.width}
             height={dimensions.height}
-            fillPatternImage={
-              clearOnDesignPattern // General checkerboard pattern under the main canvas
-            }
+            fillPatternImage={clearOnDesignPattern} // General checkerboard pattern under the main canvas
             fillPatternScale={{ x: 0.5, y: 0.5 }}
           />
           {drawGrid(dimensions.width, dimensions.height)}
         </Layer>
         <Layer>
-          {pixels.map((pixel) => (
-            <Rect
-              key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
-              x={pixel.x * gridSize}
-              y={pixel.y * gridSize}
-              width={gridSize}
-              height={gridSize}
-              fill={
-                typeof renderPixelColor(pixel.color) === 'string' ? 
-                renderPixelColor(pixel.color) as string : undefined
-              }
-              fillPatternImage={
-                typeof renderPixelColor(pixel.color) === 'object' ?
-                renderPixelColor(pixel.color) as HTMLImageElement : undefined
-              }
-              strokeWidth={0}
-            />
-          ))}
+          {pixels.map((pixel) => {
+            const pixelColor = renderPixelColor(pixel.color);
+
+            // Only render the pixel if the color is not null
+            return pixelColor ? (
+              <Rect
+                key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
+                x={pixel.x * gridSize}
+                y={pixel.y * gridSize}
+                width={gridSize}
+                height={gridSize}
+                fill={typeof pixelColor === 'string' ? pixelColor : undefined}
+                fillPatternImage={typeof pixelColor === 'object' ? pixelColor : undefined}
+                strokeWidth={0}
+              />
+            ) : null;
+          })}
         </Layer>
       </Stage>
       {hoveredPixel && (
