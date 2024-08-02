@@ -90,17 +90,24 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
+      console.log("Before submitting, editedPixels state:", editedPixels);
+
       // Step 1: Fetch existing pixels for the design
       const existingPixels = await databaseFetchPixels(currentDesign.design_name);
 
-      // Ensure existingPixels is an array
-      let allPixels = [...(existingPixels || []), ...editedPixels];
+      // Step 2: Filter out pixels marked as "ClearOnDesign"
+      const filteredPixels = editedPixels.reduce<Omit<Pixel, "id">[]>((acc, pixel) => {
+        if (pixel.color === "ClearOnDesign") {
+          return acc.filter(p => !(p.x === pixel.x && p.y === pixel.y));
+        }
+        acc.push(pixel);
+        return acc;
+      }, existingPixels || []);
 
-      // Step 2: Process special colors
-      const filteredPixels = allPixels.filter((pixel) => pixel.color !== "ClearOnDesign");
+      console.log("Filtered Pixels before saving:", filteredPixels);
 
       // Step 3: Save filtered pixels to the database
-      await saveEditedPixels(currentDesign.design_name, filteredPixels.map(({ x, y, color, canvas }) => ({ x, y, color, canvas }))); // Exclude `id`
+      await saveEditedPixels(currentDesign.design_name, filteredPixels);
 
       // Step 4: Generate a thumbnail of the current design with filtered pixels
       const thumbnailBlob = await createThumbnail(filteredPixels);

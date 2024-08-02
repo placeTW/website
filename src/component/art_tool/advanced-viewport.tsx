@@ -127,7 +127,11 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
       // Overwrite with any edited pixels
       editedPixels.forEach((pixel) => {
-        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+        if (pixel.color !== "ClearOnDesign") {
+          pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+        } else {
+          pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.canvas}`);
+        }
       });
 
       const mergedPixels = Array.from(pixelMap.values());
@@ -174,17 +178,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
     if (selectedColor === "ClearOnDesign") {
       // Remove the pixel at this position for ClearOnDesign from the viewport
-      setPixels((prevPixels) => {
-        const updatedPixels = prevPixels.filter((p) => !(p.x === x && p.y === y));
-        console.log("Pixels array after removal:", updatedPixels);
-        return updatedPixels;
-      });
+      setPixels((prevPixels) => prevPixels.filter((p) => !(p.x === x && p.y === y)));
       // Add it to editedPixels to be tracked
       const removedPixel: Pixel = { x, y, color: "ClearOnDesign", canvas: designName };
-      const updatedEditedPixels = [...editedPixels, removedPixel];
-      setEditedPixels(updatedEditedPixels);
-      console.log("Edited Pixels:", updatedEditedPixels);
-      onUpdatePixels(updatedEditedPixels);
+      const updatedPixels = [...editedPixels, removedPixel];
+      setEditedPixels(updatedPixels);
+      console.log("Edited Pixels:", updatedPixels);
+      onUpdatePixels(updatedPixels);
     } else {
       const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
       const updatedPixels = [...editedPixels, newPixel];
