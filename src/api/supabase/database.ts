@@ -15,9 +15,7 @@ export const databaseCreateDesign = async (
 ) => {
   const { data, error } = await supabase
     .from("art_tool_designs")
-    .insert([
-      { design_name: layerName, created_by: userId },
-    ]);
+    .insert([{ design_name: layerName, created_by: userId }]);
 
   if (error) {
     console.error("Error creating layer:", error);
@@ -97,7 +95,10 @@ export const databaseDeleteLayerAndPixels = async (layerName: string) => {
     .delete()
     .eq("design_name", layerName);
 
-  const [pixelsError, layerError] = await Promise.all([deletePixels, deleteLayer]);
+  const [pixelsError, layerError] = await Promise.all([
+    deletePixels,
+    deleteLayer,
+  ]);
 
   if (pixelsError.error) {
     console.error("Error deleting pixels:", pixelsError.error);
@@ -172,18 +173,22 @@ export const unlikeDesign = async (designId: string, userId: string) => {
 
 export const databaseFetchColors = async () => {
   const { data, error } = await supabase
-    .from("art_tools_colours")
-    .select("color_code");
+    .from("art_tool_colors")
+    .select("Color, color_sort")
+    .order("color_sort", { ascending: true });
 
   if (error) {
     console.error("Error fetching colors:", error);
     return [];
   }
 
-  return data.map((color) => color.color_code);
+  return data;
 };
 
-export const saveEditedPixels = async (canvas: string, pixels: Omit<Pixel, "id">[]) => {
+export const saveEditedPixels = async (
+  canvas: string,
+  pixels: Omit<Pixel, "id">[],
+) => {
   try {
     if (!pixels || pixels.length === 0) {
       console.error("No pixels to save or pixels array is undefined.");
@@ -203,14 +208,14 @@ export const saveEditedPixels = async (canvas: string, pixels: Omit<Pixel, "id">
 
     // Step 2: Create a map of the existing pixels by their coordinates, omitting the 'id'
     const existingPixelMap = new Map<string, Omit<Pixel, "id">>(
-      (existingPixels || []).map(pixel => [
-        `${pixel.x}-${pixel.y}`, 
-        { x: pixel.x, y: pixel.y, color: pixel.color, canvas: pixel.canvas } // Ensure 'id' is not included
-      ])
+      (existingPixels || []).map((pixel) => [
+        `${pixel.x}-${pixel.y}`,
+        { x: pixel.x, y: pixel.y, color: pixel.color, canvas: pixel.canvas }, // Ensure 'id' is not included
+      ]),
     );
 
     // Step 3: Merge the new pixels into the existing map (overwriting any pixels at the same coordinates)
-    pixels.forEach(pixel => {
+    pixels.forEach((pixel) => {
       existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
     });
 

@@ -1,11 +1,14 @@
 // src/component/art_tool/advanced-viewport.tsx
 
-import React, { useEffect, useState, useRef } from "react";
 import { Box, Grid } from "@chakra-ui/react";
-import Viewport from "./viewport";
+import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../api/supabase";
-import { databaseFetchPixels } from "../../api/supabase/database";
+import {
+  databaseFetchColors,
+  databaseFetchPixels,
+} from "../../api/supabase/database";
 import { Pixel } from "../../types/art-tool"; // Import shared Pixel type
+import Viewport from "./viewport";
 
 interface AdvancedViewportProps {
   isEditing: boolean;
@@ -22,7 +25,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   onUpdatePixels,
   designName,
 }) => {
-  const [colors, setColors] = useState<{ Color: string; color_sort: number | null }[]>([]);
+  const [colors, setColors] = useState<
+    { Color: string; color_sort: number | null }[]
+  >([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
@@ -31,36 +36,44 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   // Fetch colors on mount
   useEffect(() => {
     const fetchColors = async () => {
-      const { data, error } = await supabase
-        .from("art_tool_colors")
-        .select("Color, color_sort")
-        .order("color_sort", { ascending: true });
-      if (error) {
-        console.error("Error fetching colors:", error);
-      } else {
-        setColors(data);
-      }
+      setColors(await databaseFetchColors());
     };
 
     fetchColors();
 
     const colorSubscription = supabase
       .channel("realtime-art_tool_colors")
-      .on("postgres_changes", { event: "*", schema: "public", table: "art_tool_colors" }, (payload) => {
-        if (payload.eventType === "INSERT") {
-          setColors((prevColors) => [...prevColors, payload.new as { Color: string; color_sort: number | null }].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)));
-        } else if (payload.eventType === "DELETE") {
-          setColors((prevColors) =>
-            prevColors.filter((color) => color.Color !== payload.old.Color)
-          );
-        } else if (payload.eventType === "UPDATE") {
-          setColors((prevColors) =>
-            prevColors.map((color) =>
-              color.Color === payload.old.Color ? payload.new as { Color: string; color_sort: number | null } : color
-            ).sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0))
-          );
-        }
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "art_tool_colors" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setColors((prevColors) =>
+              [
+                ...prevColors,
+                payload.new as { Color: string; color_sort: number | null },
+              ].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)),
+            );
+          } else if (payload.eventType === "DELETE") {
+            setColors((prevColors) =>
+              prevColors.filter((color) => color.Color !== payload.old.Color),
+            );
+          } else if (payload.eventType === "UPDATE") {
+            setColors((prevColors) =>
+              prevColors
+                .map((color) =>
+                  color.Color === payload.old.Color
+                    ? (payload.new as {
+                        Color: string;
+                        color_sort: number | null;
+                      })
+                    : color,
+                )
+                .sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)),
+            );
+          }
+        },
+      )
       .subscribe();
 
     return () => {
@@ -70,9 +83,15 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Fetch pixels based on visible layers
   useEffect(() => {
-    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
+    const layersToFetch = [
+      "main",
+      ...visibleLayers.filter((layer) => layer !== "main"),
+    ];
 
-    if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
+    if (
+      JSON.stringify(previousVisibleLayers.current) !==
+      JSON.stringify(layersToFetch)
+    ) {
       previousVisibleLayers.current = layersToFetch;
 
       const fetchPixels = async () => {
@@ -82,7 +101,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         }
 
         const allVisiblePixels = await Promise.all(
-          layersToFetch.map((layer) => databaseFetchPixels(layer))
+          layersToFetch.map((layer) => databaseFetchPixels(layer)),
         );
         setPixels(allVisiblePixels.flat());
       };
@@ -95,28 +114,40 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   useEffect(() => {
     const pixelSubscription = supabase
       .channel("realtime-art_tool_pixels")
-      .on("postgres_changes", { event: "*", schema: "public", table: "art_tool_pixels" }, (payload) => {
-        const { x, y, color, canvas } = payload.new as Pixel;
-        const updatedPixel: Pixel = { x, y, color, canvas };
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "art_tool_pixels" },
+        (payload) => {
+          const { x, y, color, canvas } = payload.new as Pixel;
+          const updatedPixel: Pixel = { x, y, color, canvas };
 
-        setPixels((prevPixels) => {
-          const pixelMap = new Map<string, Pixel>();
+          setPixels((prevPixels) => {
+            const pixelMap = new Map<string, Pixel>();
 
-          // Add existing pixels to the map first
-          prevPixels.forEach((pixel) => {
-            pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+            // Add existing pixels to the map first
+            prevPixels.forEach((pixel) => {
+              pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+            });
+
+            // Handle the event based on its type
+            if (
+              payload.eventType === "INSERT" ||
+              payload.eventType === "UPDATE"
+            ) {
+              pixelMap.set(
+                `${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`,
+                updatedPixel,
+              );
+            } else if (payload.eventType === "DELETE") {
+              pixelMap.delete(
+                `${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`,
+              );
+            }
+
+            return Array.from(pixelMap.values());
           });
-
-          // Handle the event based on its type
-          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-            pixelMap.set(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`, updatedPixel);
-          } else if (payload.eventType === "DELETE") {
-            pixelMap.delete(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`);
-          }
-
-          return Array.from(pixelMap.values());
-        });
-      })
+        },
+      )
       .subscribe();
 
     return () => {
@@ -149,7 +180,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Function to regenerate pixels array from scratch
   const regeneratePixels = async () => {
-    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
+    const layersToFetch = [
+      "main",
+      ...visibleLayers.filter((layer) => layer !== "main"),
+    ];
 
     if (layersToFetch.length === 0) {
       setPixels([]); // No layers, so empty pixels array
@@ -157,7 +191,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
 
     const allVisiblePixels = await Promise.all(
-      layersToFetch.map((layer) => databaseFetchPixels(layer))
+      layersToFetch.map((layer) => databaseFetchPixels(layer)),
     );
 
     // Update pixels state with freshly fetched data
@@ -198,7 +232,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       />
 
       {isEditing && (
-        <Box position="absolute" bottom="10px" left="50%" transform="translateX(-50%)" zIndex="100">
+        <Box
+          position="absolute"
+          bottom="10px"
+          left="50%"
+          transform="translateX(-50%)"
+          zIndex="100"
+        >
           <Grid templateColumns={`repeat(${colors.length}, 1fr)`} gap={2}>
             {colors.map((color) => (
               <Box
@@ -206,7 +246,11 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                 w="30px"
                 h="30px"
                 bg={color.Color}
-                border={selectedColor === color.Color ? "2px solid black" : "1px solid #ccc"}
+                border={
+                  selectedColor === color.Color
+                    ? "2px solid black"
+                    : "1px solid #ccc"
+                }
                 cursor="pointer"
                 onClick={() => handleColorSelect(color.Color)}
               />
