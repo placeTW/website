@@ -1,0 +1,140 @@
+[
+    {
+        "art_id": "capoo",
+        "title": "BugCat Capoo",
+        "blurb": "Populārs tēls, ko radījis Taivānas mākslinieks Yara.",
+        "desc": "Komiksu tēls, kas līdzinās apaļīgam, zilam kaķim ar sešām kājām. Viņš ir galvenais varonis tīmekļa komiksā, kas atrodams Facebook, Instagram, komiksu video Youtube un uz uzlīmēm LINE un citos sociālajos medijos. Viņu radīja Taivānas mākslinieks Yara 2014. gadā un kopš tā laika viņš ir kļuvis par kultūras fenomenu Taivānā. Pateicoties Capoo popularitātei ir radies plašs preču un atrakciju klāsts, sākot ar drēbēm un plīša rotaļlietām un beidzot ar veikalu un kafejnīcu Taidžunā. Taipejā ir arī veikaliņš ar Capoo tematiku. ",
+        "links": [
+            "https://www.instagram.com/bugcat_capoo/?hl=en",
+            "https://www.youtube.com/@BugCatCapoo",
+            "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
+            "https://store.line.me/stickershop/author/24287/en"
+        ]
+    },
+    {
+        "art_id": "chip",
+        "title": "Drukātās shēmas plate",
+        "blurb": "Drukātās shēmas plate ar mikroprocesoriem",
+        "desc": "A printed circuit board with microprocessors. One of Taiwan's largest and most important industries is the production of semiconductors.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Printed_circuit_board"
+        ]
+    },
+    {
+        "art_id": "taipei_101",
+        "title": "Taipei 101",
+        "blurb": "Ikoniska ēka galvaspilsētas sirdī.",
+        "desc": "Augstākā ēka Taivānā, un agrāk arī augstākā ēka pasaulē. Tā atrodas galvaspilsētā Taipejā un ir populārs gan vietējo iedzīvotāju, gan tūristu galamērķis. Tajā atrodas augstas klases veikali, restorāni un skatu tornis. Tā ir Taivānas lielākā Jaungada vakara uguņošanas vieta, un tā ir labi savienota ar Taipejas finanšu rajonu.",
+        "links": [
+            "https://www.taipei-101.com.tw/",
+            "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
+            "https://en.wikipedia.org/wiki/Taipei_101"
+        ]
+    },
+    {
+        "art_id": "tw_flag",
+        "title": "Taivānas karogs",
+        "blurb": "Taivānas valsts karogs",
+        "desc": "Taivānas oficiālais karogs. Starptautiski pazīstams arī kā 'Zilas debesis, balta saule' karogs, un tas ir starptautiski pazīstams kā Taivānas simbols. Karogs ir saistīts arī ar Ķīnas Republikas valdību un tās dibināšanas partiju Kuomintang (KMT), un dažkārt ir pretrunu avots valsts iekšienē, ņemot vērā tās vēsturi. Neraugoties uz to, lielākā daļa Taivānas iedzīvotāju ārzemēs to parasti izmanto kā identifikācijas simbolu. Šo karogu var atrast arī uz visām valsts valdības ēkām, vēstniecībām ārvalstīs un tiem, kas vēlas lielāku Taivānas starptautisko atzinību, jo īpaši tāpēc, ka Taivānas komandas lielākajā daļā starptautisku pasākumu nevar startēt ar šo karogu (vai pat ar nosaukumu 'Taivāna').",
+        "links": [
+            "https://en.mofa.gov.tw/"
+        ]
+    },
+    {
+        "art_id": "formosan_bear",
+        "title": "Formozas melnais lācis",
+        "blurb": "Taivānas nacionālais simbols",
+        "desc": "Formozas melnais lācis ir endēmisks Taivānas lācis. Tāpēc tos uzskata par Taivānas nacionālo simbolu. Tie ir slaveni ar saviem raksturīgajiem baltajiem V veida kakliem, un tie ir lielākie sauszemes dzīvnieki Taivānā. Taipejas pilsētas talismans ir lācis vārdā Bravo.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Formosan_black_bear",
+            "https://bravo.travel.taipei/en"
+        ]
+    },
+    {
+        "art_id": "boba_tea_bear",
+        "title": "Burbuļtēja",
+        "blurb": "Populārs Taivānas dzēriens",
+        "desc": "Burbuļtēja ir slavens Taivānas izcelsmes dzēriens. Kopš tā laika tas ir izplatījies visā pasaulē un kļuvis par populāru dzērienu.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Bubble_tea"
+        ]
+    },
+    {
+        "art_id": "tw_magpie",
+        "title": "Taivānas zilā žagata",
+        "blurb": "Slavens un svēts Taivānas putns",
+        "desc": "Taivānas zilā žagata ir endēmisks Taivānas putns. Tā ir slavena ar savu draudzīgumu pret cilvēkiem, īpatnējo izskatu un attiecībām ar Taivānas aborigēnu ciltīm, no kurām dažas šo putnu uzskata par svētu.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
+        ]
+    },
+    {
+        "art_id": "heart_baltics",
+        "title": "Baltijas draudzības sirds",
+        "blurb": "Sirds ar Taivānas un Baltijas valstu karogiem",
+        "desc": "Sirds, kas simbolizē savienību un draudzību ar Baltijas valstīm. Sirdis r/place parasti tiek izmantotas, lai apzīmētu ciešas attiecības starp kaimiņu mākslas kopienām.",
+        "links": []
+    },
+    {
+        "art_id": "heart_bretons",
+        "title": "Bretaņas draudzības sirds",
+        "blurb": "Sirds ar Taivānas un Bretaņas karogiem",
+        "desc": "Sirds, kas simbolizē savienību un draudzību ar Bretaņas bretoniešiem. Sirdis r/place parasti tiek izmantotas, lai apzīmētu ciešas attiecības starp kaimiņu mākslas kopienām.",
+        "links": []
+    },
+    {
+        "art_id": "lt_pengiun_boba",
+        "title": "Lietuviešu pingvīns dzer burbuļtēju",
+        "blurb": "Atsvaidzinošs simbols draudzībai starp Baltijas un Taivānas kopienām",
+        "desc": "Lietuvas pingvīns dzer burbuļtēju virs Taivānas mākslas. Kad audekls paplašinājās vertikāli zem esošās mākslas, Taivānas un Baltijas valstu komandas skrēja, lai ieņemtu vietu zem to sākotnējām pozīcijām, uzzīmējot attiecīgi Taipei 101 un valstu karogus. Rezultātā tika pieprasīta liela vertikālā telpa. Tad Baltijas komanda piekrita atvēlēt vietu zem Lietuvas (un vēlāk Igaunijas) daļām Taivānai. Kā draudzības simbols Lietuvas pingvīnam tiek dota dzert Taivānas slavenā burbuļtēja.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Bubble_tea"
+        ]
+    },
+    {
+        "art_id": "indep_flag",
+        "title": "Taivānas neatkarības karogs",
+        "blurb": "Taivānas neatkarības kustības karogs",
+        "desc": "Taivānas neatkarības karogs ir karogs, kas saistīts ar Taivānas nacionālismu un brīvību jeb vēlmi Taivānas iedzīvotājiem būt neatkarīgiem no Ķīnas. Šim karogam ir trīs vertikālas zaļas, baltas un zaļas krāsas joslas, un tā centrā ir attēlota Taivāna un apkārtējās salas. Taivānas neatkarības kustības pastāv jau kopš 1680. gadiem, kad Cjinu valdīšanas laikā izplatīta kļuva frāze 'Ik pēc trim gadiem sacelšanās, ik pēc pieciem gadiem dumpis'. Lai gan daudzi novērotāji norāda, ka Taivāna jau ir neatkarīga un suverēna valsts, šo karogu parasti izmanto arī, lai saliedētu tos, kas kritizē Kuomintanga (KMT) rīcību, jo īpaši kara stāvokļa laikā. Karogs arī simbolizē kustību par Taivānas lielāku starptautisku atzīšanu un Taivānas suverenitātes apdraudējuma izbeigšanu. Taivānas neatkarības kustības kopīgā himna ir 'Taivāna - Formoza', jo īpaši tās pirmais pants.",
+        "links": [
+            "https://en.wikipedia.org/wiki/Taiwan_independence_movement",
+            "https://en.wikipedia.org/wiki/Taiwan_the_Formosa"
+        ]
+    },
+    {
+        "art_id": "tw_beer",
+        "title": "Taivānas alus",
+        "blurb": "Slavens Taivānas dzēriens",
+        "desc": "Taivānas alus ir viens no slavenākajiem un atpazīstamākajiem Taivānas dzērieniem, kas bieži atrodams gan bāros, gan veikalos.",
+        "links": [
+            "https://www.twbeer.com.tw/aboutEN"
+        ]
+    },
+    {
+        "art_id": "apple_cider",
+        "title": "Taivānas ābolu sidrs",
+        "blurb": "Taivānā izplatīts dzēriens",
+        "desc": "Šo garšīgo un lēto dzērienu var iegādāties veikalos un tirdzniecības automātos visā Taivānā.",
+        "links": []
+    },
+    {
+        "art_id": "tatung_rice_cooker",
+        "title": "Tatung rīsu plīts",
+        "blurb": "Simboliska rīsu plīts",
+        "desc": "Taivānas rīsu plīts no zīmola Tatung ir Taivānas simboliska gatavošanas ierīce, kas pazīstama ar savu izturību un tika ieviesta 1960. gadā. Pat ārzemēs taivānieši darīs visu iespējamo, lai iegūto šo zīmolu rīsu gatavošanai.",
+        "links": [
+            "https://taiwantoday.tw/news.php?unit=8,29,32,45&post=12699",
+            "https://www.tatung.com/en/products/index/513"
+        ]
+    },
+    {
+        "art_id": "tsmc_logo",
+        "title": "TSMC logotips",
+        "blurb": "Taivānas pusvadītāju ražošanas uzņēmums",
+        "desc": "Taiwan Semiconductor Manufacturing Company Limited (TSMC) ir viens no ietekmīgākajiem pusvadītāju ražošanas uzņēmumiem pasaulē. Tā galvenā mītne atrodas Hsinču, Taivānā, valsts tehnoloģiju centrā. Tas un tā Taivānas partneri ražo 92 % pasaules modernāko pusvadītāju.",
+        "links": [
+            "https://www.tsmc.com/english",
+            "https://en.wikipedia.org/wiki/TSMC"
+        ]
+    }
+]

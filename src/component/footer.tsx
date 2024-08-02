@@ -10,7 +10,7 @@ const Footer = () => {
         {t("Join our community today!")}
       </Text>
       <Flex alignItems="center" justifyContent="center">
-        <Link href="https://www.reddit.com/" isExternal>
+        <Link href="https://www.reddit.com/r/placeTW" isExternal>
           <IconButton
             icon={<FaReddit />}
             colorScheme="white"
@@ -20,7 +20,7 @@ const Footer = () => {
             mr={2}
           />
         </Link>
-        <Link href="https://discord.com/" isExternal>
+        <Link href="https://discord.gg/8xSQKCHSnT" isExternal>
           <IconButton
             icon={<FaDiscord />}
             colorScheme="white"
@@ -30,7 +30,7 @@ const Footer = () => {
             mr={2}
           />
         </Link>
-        <Link href="https://github.com" isExternal>
+        <Link href="https://github.com/placeTW" isExternal>
           <IconButton
             icon={<FaGithub />}
             colorScheme="white"

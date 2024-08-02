@@ -1,129 +1,129 @@
 {
-    "capoo": {
-        "title": "BugCat Capoo",
-        "blurb": "Populiarus veik\u0117jas i\u0161 Taivano menininko Yara.",
-        "desc": "Animacinis veik\u0117jas, pana\u0161us \u012f stor\u0105 m\u0117lyn\u0105j\u0105 kat\u0119 su \u0161e\u0161iomis kojomis. Jis yra bendravardis ir pagrindinis \u201eFacebook\u201c ir \u201eInstagram\u201c internetini\u0173 komiks\u0173 objektas, karikat\u016briniuose klipuose \u201eYouTube\u201c, ir lipdukuose \u201eLINE\u201c ir kitose socialini\u0173 tinkl\u0173 svetain\u0117se. Jis buvo sukurtas Taivano menininko Yara 2014 m. ir nuo tada tapo kult\u016brin\u0117s rei\u0161kinio Taivane dalimi. D\u0117l Capoo populiarumo, atsirado \u012fvairi\u0173 suvenyr\u0173 ir pramog\u0173, nuo drabu\u017ei\u0173 ir pliu\u0161ini\u0173 \u017eaisl\u0173 iki nuolatin\u0117s suvenyr\u0173 parduotuv\u0117s ir kavin\u0117s Taichunge. Taip pat yra Capoo tematin\u0117 parduotuv\u0117 visuomenin\u0117je Taip\u0117je.",
-        "links": [
-            "https://www.instagram.com/bugcat_capoo/?hl=en",
-            "https://www.youtube.com/@BugCatCapoo",
-            "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
-            "https://store.line.me/stickershop/author/24287/en"
-        ]
-    },
-    "chip": {
-        "title": "Spausdintas Plok\u0161t\u0117s Valdymo \u012erenginys",
-        "blurb": "Spausdintas plok\u0161t\u0117s valdymo \u012frenginys su mikroprocesoriais",
-        "desc": "Spausdintas plok\u0161t\u0117s valdymo \u012frenginys su mikroprocesoriais. Viena i\u0161 did\u017eiausi\u0173 ir svarbiausi\u0173 Taivano pramon\u0117s \u0161ak\u0173 yra puslaidininki\u0173 gamyba.",
-        "links": [
-            "https://lt.wikipedia.org/wiki/Spausdinta_schema",
-            "https://en.wikipedia.org/wiki/Printed_circuit_board"
-        ]
-    },
-    "taipei_101": {
-        "title": "Taip\u0117jus 101",
-        "blurb": "Simbolinis pastatas \u0161irdyje sostin\u0117s",
-        "desc": "Auk\u0161\u010diausias pastatas Taivane ir anks\u010diau auk\u0161\u010diausia bok\u0161tas pasaulyje. Esantis sostin\u0117je Taip\u0117juje, jis yra populiari vieta vietiniams ir turistams. Jis turi auk\u0161to lygio parduotuves, restoranus ir steb\u0117jimo bok\u0161t\u0105 vir\u0161uje. Tai yra did\u017eiausio Naujametinio fejerverk\u0173 Taivane vieta ir gerai susijungusi su Taip\u0117jaus finans\u0173 rajonu.",
-        "links": [
-            "https://www.taipei-101.com.tw/",
-            "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
-            "https://lt.wikipedia.org/wiki/Taipei_101",
-            "https://en.wikipedia.org/wiki/Taipei_101"
-        ]
-    },
-    "tw_flag": {
-        "title": "Taivano V\u0117liava",
-        "blurb": "Nacionalin\u0117 Taivano v\u0117liava",
-        "desc": "Oficiali Taivano v\u0117liava. Taip pat da\u017enai vadinama 'M\u0117lyna Dangus, Baltas Saul\u0117s' v\u0117liava, tarptauti\u0161kai \u017einoma kaip Taivano simbolis. V\u0117liava taip pat siejama su Kinijos Respublikos vyriausybe ir jos \u012fk\u016brusi\u0105 partija Kuomintang\u0173 (KMT) ir kartais yra \u0161altinis vidaus kontroversijoms d\u0117l \u0161ios partijos istorijos. Nepaisant to, dauguma taivanie\u010di\u0173 u\u017esienyje j\u0105 naudoja kaip atpa\u017einimo simbol\u012f. V\u0117liava taip pat randama visose vidaus nacionalin\u0117se vyriausyb\u0117s pastatose, u\u017esienio ambasadose ir t\u0173, kurie nori, kad Taivanas b\u016bt\u0173 pla\u010diau tarptauti\u0161kai pripa\u017eintas, ypa\u010d tod\u0117l, kad Taivano komandos negali var\u017eytis pagal \u0161i\u0105 v\u0117liav\u0105 (ar netgi pagal pavadinim\u0105 'Taivanas') daugelyje tarptautini\u0173 rengini\u0173.",
-        "links": [
-            "https://en.mofa.gov.tw/"
-        ]
-    },
-    "formosan_bear": {
-        "title": "Formozinis Juodasis Lokys",
-        "blurb": "Taivano nacionalinis simbolis",
-        "desc": "Formozinis juodasis lokys yra lokys endemikas Taivane. D\u0117l to jie laikomi Taivano nacionaliniu simboliu. Jie gars\u0117ja savo charakteristine balt\u0105ja V-juosta ir yra did\u017eiausi \u017eem\u0117s gyv\u016bnai Taivane. Taip\u0117jaus maskotas yra vardu Bravo.",
-        "links": [
-            "https://lt.wikipedia.org/wiki/Formozinis_himalajinis_lokys",
-            "https://en.wikipedia.org/wiki/Formosan_black_bear",
-            "https://bravo.travel.taipei/en"
-        ]
-    },
-    "boba_tea_bear": {
-        "title": "Boba Arbata",
-        "blurb": "Populiarus Taivano g\u0117rimas",
-        "desc": "Boba arbata yra garsus g\u0117rimas, kil\u0119s i\u0161 Taivano. Nuo tada jis i\u0161plito visame pasaulyje ir tapo populiarus g\u0117rimas.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Bubble_tea"
-        ]
-    },
-    "tw_magpie": {
-        "title": "Taivano M\u0117lynoji \u0160arka",
-        "blurb": "Garsus ir \u0161ventas Taivano pauk\u0161tis",
-        "desc": "Taivano m\u0117lynoji \u0161arka yra pauk\u0161tis endemikas Taivane. Jis gars\u0117ja savo draugi\u0161kumu su \u017emon\u0117mis, charakteristine i\u0161vaizda ir santykiu su taivanie\u010di\u0173 aborigenais, kuri\u0173 dalis j\u012f laiko \u0161ventu.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
-        ]
-    },
-    "heart_baltics": {
-        "title": "Baltijos Draugyst\u0117s \u0160irdis",
-        "blurb": "\u0160irdis su Taivano ir Baltijos \u0161ali\u0173 v\u0117liavomis",
-        "desc": "\u0160irdis, simbolizuojanti s\u0105jung\u0105 ir draugyst\u0119 su Baltijos \u0161alimis. \u0160irdys \u201er/place\u201c da\u017enai naudojamos rei\u0161kiant stipri\u0173 ry\u0161i\u0173 tarp kaimynini\u0173 men\u0173 bendruomeni\u0173.",
-        "links": []
-    },
-    "heart_bretons": {
-        "title": "Breton\u0173 Draugyst\u0117s \u0160irdis",
-        "blurb": "\u0160irdis su Taivano ir Breton\u0173 v\u0117liavomis",
-        "desc": "\u0160irdis, simbolizuojanti s\u0105jung\u0105 ir draugyst\u0119 su Bretonais i\u0161 Bretan\u0117s. \u0160irdys \u201er/place\u201c da\u017enai naudojamos rei\u0161kiant stipri\u0173 ry\u0161i\u0173 tarp kaimynini\u0173 men\u0173 bendruomeni\u0173.",
-        "links": []
-    },
-    "lt_pengiun_boba": {
-        "title": "Lietuvos Pingvinas Geriantis Boba Arbata",
-        "blurb": "Atgaivinantis draugyst\u0117s simbolis tarp Baltijos ir Taivano bendruomeni\u0173",
-        "desc": "Lietuvos pingvinas geriantis boba arbata vir\u0161 Taivano meno. Kai lenta i\u0161sipl\u0117t\u0117 vertikaliai \u017eemiau meno, Taivano ir Baltijos komandos lenk\u0117si u\u017eimti viet\u0105 po savo pradin\u0117mis pozicijomis, pie\u0161damos Taip\u0117j\u0173 101 ir nacionalines v\u0117liavas atitinkamai. D\u0117l to buvo u\u017eimta didel\u0117 vertikali vieta. Tada Baltijos komanda sutiko suteikti viet\u0105 po lietuvi\u0173 (o v\u0117liau est\u0173) dalimis Taivanui. Kaip draugyst\u0117s simbolis, lietuvos pingvinas gavo gerti Taivano garsi\u0105 bob\u0105 arbata.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Bubble_tea"
-        ]
-    },
-    "indep_flag": {
-        "title": "Taivano Nepriklausomyb\u0117s V\u0117liava",
-        "blurb": "Taivano Nepriklausomyb\u0117s Jud\u0117jimo V\u0117liava",
-        "desc": "Taivano nepriklausomyb\u0117s v\u0117liava siejama su taivanie\u010di\u0173 nacionalizmu ir laisve ar noru b\u016bti nepriklausomiems nuo Kinijos. \u0160i v\u0117liava turi tris vertikalias \u017eali\u0105sias, baltas ir \u017ealiasias juostas ir centrin\u0117je dalyje vaizduoja Taivan\u0105 ir aplinkines salas. Taivano nepriklausomyb\u0117s jud\u0117jimai egzistuoja nuo 1680-\u0173j\u0173, kai, esant \u012fvaldymui kin\u0173 dinastijos \u010cingo laikais, tapo \u012fprasta fraz\u0117 \u201eKiekvienus tris metus mai\u0161tas, kiekvienais penkeriais metais sukilimas\u201c. Nors daugelis steb\u0117toj\u0173 pastebi, kad Taivanas jau yra nepriklausoma ir suvereni \u0161alis, \u0161i\u0105 v\u0117liav\u0105 taip pat da\u017enai naudoja tie, kurie kritikuoja Kuomintango (KMT) veiksmus, ypa\u010d martialinio \u012fstatymo laikotarpiu. V\u0117liava taip pat simbolizuoja jud\u0117jimus u\u017e didesn\u012f tarptautin\u012f Taivano pripa\u017einim\u0105 ir gr\u0117smi\u0173 Taivano suverenumui pabaig\u0105. Paplitusi pirmojo Taivano nepriklausomyb\u0117s jud\u0117jimo himno 'Taiwan the Formosa', ypa\u010d pirmoji strofa.",
-        "links": [
-            "https://en.wikipedia.org/wiki/Taiwan_independence_movement",
-            "https://en.wikipedia.org/wiki/Taiwan_the_Formosa"
-        ]
-    },
-    "tw_beer": {
-        "title": "Taivano Alus",
-        "blurb": "Garsus Taivano g\u0117rimas",
-        "desc": "Taivano alus paplit\u0119s tiek baruose, tiek maisto preki\u0173 parduotuv\u0117se ir yra vienas i\u0161 garsiausi\u0173 ir atpa\u017e\u012fstamiausi\u0173 Taivano g\u0117rim\u0173.",
-        "links": [
-            "https://www.twbeer.com.tw/aboutEN"
-        ]
-    },
-    "apple_sidra": {
-        "title": "Taivano Obuoli\u0173 Sidras",
-        "blurb": "Paplit\u0119s g\u0117rimas Taivane",
-        "desc": "Skanus ir pigus g\u0117rimas, galima \u012fsigyti maisto preki\u0173 parduotuv\u0117se ir automatuose visame Taivane.",
-        "links": []
-    },
-    "tatung_rice_cooker": {
-        "title": "Tatung Ry\u017ei\u0173 Virimo \u012erenginys",
-        "blurb": "Ikoni\u0161kas ry\u017ei\u0173 virimo \u012frenginys",
-        "desc": "Taivano ry\u017ei\u0173 virimo \u012frenginys i\u0161 \u201eTatung\u201c prek\u0117s \u017eenklo yra \u0161alies ikoni\u0161kas virtuv\u0117s prietaisas, \u017einomas d\u0117l savo patvarumo ir pristatytas 1960 m. Net u\u017esienyje taivanie\u010diai darys visk\u0105, kad gaut\u0173 \u0161io prek\u0117s \u017eenklo \u012frengin\u012f ry\u017ei\u0173 gamybai.",
-        "links": [
-            "https://taiwantoday.tw/news.php?unit=8,29,32,45&post=12699",
-            "https://www.tatung.com/en/products/index/513"
-        ]
-    },
-    "tsmc_logo": {
-        "title": "TSMC Logotipas",
-        "blurb": "Taivano Puslaidininki\u0173 Gamybos \u012emon\u0117",
-        "desc": "Taivano puslaidininki\u0173 gamybos \u012fmon\u0117 Limited (TSMC) yra viena i\u0161 \u012ftakingiausi\u0173 pasaulio puslaidininki\u0173 gamybos \u012fmoni\u0173. Ji turi savo b\u016bstin\u0119 Hsinkiu, Taivano technologij\u0173 centre. 92% pa\u017eangiausi\u0173 pasaulio puslaidinink\u0173 yra gaminti jos ir jos Taivano partneri\u0173.",
-        "links": [
-            "https://www.tsmc.com/english",
-            "https://lt.wikipedia.org/wiki/TSMC",
-            "https://en.wikipedia.org/wiki/TSMC"
-        ]
-    }
+  "capoo": {
+    "title": "BugCat Capoo",
+    "blurb": "Populiarus veikėjas iš Taivano menininko Yara.",
+    "desc": "Animacinis veikėjas, panašus į storą mėlynąją katę su šešiomis kojomis. Jis yra bendravardis ir pagrindinis „Facebook“ ir „Instagram“ internetinių komiksų objektas, karikatūriniuose klipuose „YouTube“, ir lipdukuose „LINE“ ir kitose socialinių tinklų svetainėse. Jis buvo sukurtas Taivano menininko Yara 2014 m. ir nuo tada tapo kultūrinės reiškinio Taivane dalimi. Dėl Capoo populiarumo, atsirado įvairių suvenyrų ir pramogų, nuo drabužių ir pliušinių žaislų iki nuolatinės suvenyrų parduotuvės ir kavinės Taichunge. Taip pat yra Capoo tematinė parduotuvė visuomeninėje Taipėje.",
+    "links": [
+      "https://www.instagram.com/bugcat_capoo/?hl=en",
+      "https://www.youtube.com/@BugCatCapoo",
+      "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
+      "https://store.line.me/stickershop/author/24287/en"
+    ]
+  },
+  "chip": {
+    "title": "Spausdintas Plokštės Valdymo Įrenginys",
+    "blurb": "Spausdintas plokštės valdymo įrenginys su mikroprocesoriais",
+    "desc": "Spausdintas plokštės valdymo įrenginys su mikroprocesoriais. Viena iš didžiausių ir svarbiausių Taivano pramonės šakų yra puslaidininkių gamyba.",
+    "links": [
+      "https://lt.wikipedia.org/wiki/Spausdinta_schema",
+      "https://en.wikipedia.org/wiki/Printed_circuit_board"
+    ]
+  },
+  "taipei_101": {
+    "title": "Taipėjus 101",
+    "blurb": "Simbolinis pastatas širdyje sostinės",
+    "desc": "Aukščiausias pastatas Taivane ir anksčiau aukščiausia bokštas pasaulyje. Esantis sostinėje Taipėjuje, jis yra populiari vieta vietiniams ir turistams. Jis turi aukšto lygio parduotuves, restoranus ir stebėjimo bokštą viršuje. Tai yra didžiausio Naujametinio fejerverkų Taivane vieta ir gerai susijungusi su Taipėjaus finansų rajonu.",
+    "links": [
+      "https://www.taipei-101.com.tw/",
+      "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
+      "https://lt.wikipedia.org/wiki/Taipei_101",
+      "https://en.wikipedia.org/wiki/Taipei_101"
+    ]
+  },
+  "tw_flag": {
+    "title": "Taivano Vėliava",
+    "blurb": "Nacionalinė Taivano vėliava",
+    "desc": "Oficiali Taivano vėliava. Taip pat dažnai vadinama 'Mėlyna Dangus, Baltas Saulės' vėliava, tarptautiškai žinoma kaip Taivano simbolis. Vėliava taip pat siejama su Kinijos Respublikos vyriausybe ir jos įkūrusią partija Kuomintangų (KMT) ir kartais yra šaltinis vidaus kontroversijoms dėl šios partijos istorijos. Nepaisant to, dauguma taivaniečių užsienyje ją naudoja kaip atpažinimo simbolį. Vėliava taip pat randama visose vidaus nacionalinėse vyriausybės pastatose, užsienio ambasadose ir tų, kurie nori, kad Taivanas būtų plačiau tarptautiškai pripažintas, ypač todėl, kad Taivano komandos negali varžytis pagal šią vėliavą (ar netgi pagal pavadinimą 'Taivanas') daugelyje tarptautinių renginių.",
+    "links": [
+      "https://en.mofa.gov.tw/"
+    ]
+  },
+  "formosan_bear": {
+    "title": "Formozinis Juodasis Lokys",
+    "blurb": "Taivano nacionalinis simbolis",
+    "desc": "Formozinis juodasis lokys yra lokys endemikas Taivane. Dėl to jie laikomi Taivano nacionaliniu simboliu. Jie garsėja savo charakteristine baltąja V-juosta ir yra didžiausi žemės gyvūnai Taivane. Taipėjaus maskotas yra vardu Bravo.",
+    "links": [
+      "https://lt.wikipedia.org/wiki/Formozinis_himalajinis_lokys",
+      "https://en.wikipedia.org/wiki/Formosan_black_bear",
+      "https://bravo.travel.taipei/en"
+    ]
+  },
+  "boba_tea_bear": {
+    "title": "Boba Arbata",
+    "blurb": "Populiarus Taivano gėrimas",
+    "desc": "Boba arbata yra garsus gėrimas, kilęs iš Taivano. Nuo tada jis išplito visame pasaulyje ir tapo populiarus gėrimas.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Bubble_tea"
+    ]
+  },
+  "tw_magpie": {
+    "title": "Taivano Mėlynoji Šarka",
+    "blurb": "Garsus ir šventas Taivano paukštis",
+    "desc": "Taivano mėlynoji šarka yra paukštis endemikas Taivane. Jis garsėja savo draugiškumu su žmonėmis, charakteristine išvaizda ir santykiu su taivaniečių aborigenais, kurių dalis jį laiko šventu.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
+    ]
+  },
+  "heart_baltics": {
+    "title": "Baltijos Draugystės Širdis",
+    "blurb": "Širdis su Taivano ir Baltijos šalių vėliavomis",
+    "desc": "Širdis, simbolizuojanti sąjungą ir draugystę su Baltijos šalimis. Širdys „r/place“ dažnai naudojamos reiškiant stiprių ryšių tarp kaimyninių menų bendruomenių.",
+    "links": []
+  },
+  "heart_bretons": {
+    "title": "Bretonų Draugystės Širdis",
+    "blurb": "Širdis su Taivano ir Bretonų vėliavomis",
+    "desc": "Širdis, simbolizuojanti sąjungą ir draugystę su Bretonais iš Bretanės. Širdys „r/place“ dažnai naudojamos reiškiant stiprių ryšių tarp kaimyninių menų bendruomenių.",
+    "links": []
+  },
+  "lt_pengiun_boba": {
+    "title": "Lietuvos Pingvinas Geriantis Boba Arbata",
+    "blurb": "Atgaivinantis draugystės simbolis tarp Baltijos ir Taivano bendruomenių",
+    "desc": "Lietuvos pingvinas geriantis boba arbata virš Taivano meno. Kai lenta išsiplėtė vertikaliai žemiau meno, Taivano ir Baltijos komandos lenkėsi užimti vietą po savo pradinėmis pozicijomis, piešdamos Taipėjų 101 ir nacionalines vėliavas atitinkamai. Dėl to buvo užimta didelė vertikali vieta. Tada Baltijos komanda sutiko suteikti vietą po lietuvių (o vėliau estų) dalimis Taivanui. Kaip draugystės simbolis, lietuvos pingvinas gavo gerti Taivano garsią bobą arbata.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Bubble_tea"
+    ]
+  },
+  "indep_flag": {
+    "title": "Taivano Nepriklausomybės Vėliava",
+    "blurb": "Taivano Nepriklausomybės Judėjimo Vėliava",
+    "desc": "Taivano nepriklausomybės vėliava siejama su taivaniečių nacionalizmu ir laisve ar noru būti nepriklausomiems nuo Kinijos. Ši vėliava turi tris vertikalias žaliąsias, baltas ir žaliasias juostas ir centrinėje dalyje vaizduoja Taivaną ir aplinkines salas. Taivano nepriklausomybės judėjimai egzistuoja nuo 1680-ųjų, kai, esant įvaldymui kinų dinastijos Čingo laikais, tapo įprasta frazė „Kiekvienus tris metus maištas, kiekvienais penkeriais metais sukilimas“. Nors daugelis stebėtojų pastebi, kad Taivanas jau yra nepriklausoma ir suvereni šalis, šią vėliavą taip pat dažnai naudoja tie, kurie kritikuoja Kuomintango (KMT) veiksmus, ypač karo padėties eroje. Vėliava taip pat simbolizuoja judėjimus už didesnį tarptautinį Taivano pripažinimą ir grėsmių Taivano suverenumui pabaigą. Paplitusi pirmojo Taivano nepriklausomybės judėjimo himno 'Taiwan the Formosa', ypač pirmoji strofa.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Taiwan_independence_movement",
+      "https://en.wikipedia.org/wiki/Taiwan_the_Formosa"
+    ]
+  },
+  "tw_beer": {
+    "title": "Taivano Alus",
+    "blurb": "Garsus Taivano gėrimas",
+    "desc": "Taivano alus paplitęs tiek baruose, tiek maisto prekių parduotuvėse ir yra vienas iš garsiausių ir atpažįstamiausių Taivano gėrimų.",
+    "links": [
+      "https://www.twbeer.com.tw/aboutEN"
+    ]
+  },
+  "apple_sidra": {
+    "title": "Taivano Obuolių Sidras",
+    "blurb": "Paplitęs gėrimas Taivane",
+    "desc": "Skanus ir pigus gėrimas, galima įsigyti maisto prekių parduotuvėse ir automatuose visame Taivane.",
+    "links": []
+  },
+  "tatung_rice_cooker": {
+    "title": "Tatung Ryžių Virimo Įrenginys",
+    "blurb": "Ikoniškas ryžių virimo įrenginys",
+    "desc": "Taivano ryžių virimo įrenginys iš „Tatung“ prekės ženklo yra šalies ikoniškas virtuvės prietaisas, žinomas dėl savo patvarumo ir pristatytas 1960 m. Net užsienyje taivaniečiai darys viską, kad gautų šio prekės ženklo įrenginį ryžių gamybai.",
+    "links": [
+      "https://taiwantoday.tw/news.php?unit=8,29,32,45&post=12699",
+      "https://www.tatung.com/en/products/index/513"
+    ]
+  },
+  "tsmc_logo": {
+    "title": "TSMC Logotipas",
+    "blurb": "Taivano Puslaidininkių Gamybos Įmonė",
+    "desc": "Taivano puslaidininkių gamybos įmonė Limited (TSMC) yra viena iš įtakingiausių pasaulio puslaidininkių gamybos įmonių. Ji turi savo būstinę Hsinkiu, Taivano technologijų centre. 92% pažangiausių pasaulio puslaidininkų yra gaminti jos ir jos Taivano partnerių.",
+    "links": [
+      "https://www.tsmc.com/english",
+      "https://lt.wikipedia.org/wiki/TSMC",
+      "https://en.wikipedia.org/wiki/TSMC"
+    ]
+  }
 }
