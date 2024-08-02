@@ -4,25 +4,31 @@ import { supabase } from "../api/supabase";
 import {
   databaseFetchDesignsWithUserDetails,
   saveEditedPixels,
+  databaseFetchPixels,
+  databaseFetchColors,
+  uploadThumbnailToSupabase,
+  updateDesignThumbnail
 } from "../api/supabase/database";
 import Canvas from "../component/art_tool/canvas";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
 import { DesignInfo, Pixel } from "../types/art-tool";
+import { createThumbnail } from "../utils/imageUtils";
 
 const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<DesignInfo[]>([]);
+  const [colors, setColors] = useState<{ Color: string; color_sort: number | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<string[]>([]);
-  const [editedPixels, setEditedPixels] = useState<Omit<Pixel, "id">[]>([]); // Store edited pixels
+  const [editedPixels, setEditedPixels] = useState<Omit<Pixel, "id">[]>([]);
   const toast = useToast();
 
   const fetchLayersWithUserDetails = async () => {
     try {
       const data = await databaseFetchDesignsWithUserDetails();
-      const formattedData = data.map((item: any) => ({
+      const formattedData = (data || []).map((item: any) => ({
         id: item.id.toString(),
         design_name: item.design_name,
         created_by: item.created_by,
@@ -37,6 +43,22 @@ const DesignOffice: React.FC = () => {
       console.error("Error fetching layers with user details:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchColors = async () => {
+    try {
+      const fetchedColors = await databaseFetchColors();
+
+      // Append the special colors on the client-side
+      const specialColors = [
+        { Color: "ClearOnDesign", color_sort: null },
+        { Color: "ClearOnMain", color_sort: null },
+      ];
+
+      setColors([...fetchedColors, ...specialColors]);
+    } catch (error) {
+      console.error("Error fetching colors:", error);
     }
   };
 
@@ -73,21 +95,45 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
-      if (editedPixels.length > 0) {
-        await saveEditedPixels(currentDesign.design_name, editedPixels); // Ensure correct design name
-        toast({
-          title: "Changes Saved",
-          description: `${currentDesign.design_name} has been updated successfully.`,
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-        setIsEditing(false); // Exit edit mode after submission
-      } else {
-        console.warn("No pixels to save or pixels array is undefined.");
-      }
+      console.log("Before submitting, editedPixels state:", editedPixels);
+
+      // Step 1: Fetch existing pixels for the design
+      const existingPixels = await databaseFetchPixels(currentDesign.design_name);
+
+      // Step 2: Filter out pixels marked as "ClearOnDesign"
+      const filteredPixels = editedPixels.reduce<Omit<Pixel, "id">[]>((acc, pixel) => {
+        if (pixel.color === "ClearOnDesign") {
+          return acc.filter(p => !(p.x === pixel.x && p.y === pixel.y));
+        }
+        acc.push(pixel);
+        return acc;
+      }, existingPixels || []);
+
+      console.log("Filtered Pixels before saving:", filteredPixels);
+
+      // Step 3: Save filtered pixels to the database
+      await saveEditedPixels(currentDesign.design_name, filteredPixels);
+
+      // Step 4: Generate a thumbnail of the current design with filtered pixels
+      const thumbnailBlob = await createThumbnail(filteredPixels);
+      const thumbnailUrl = await uploadThumbnailToSupabase(thumbnailBlob, currentDesign.id);
+
+      // Step 5: Update the database with the new thumbnail URL
+      await updateDesignThumbnail(currentDesign.id, thumbnailUrl);
+
+      toast({
+        title: "Changes Saved",
+        description: `${currentDesign.design_name} has been updated successfully.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      // Step 6: Clear the editedPixels array but stay in edit mode
+      setEditedPixels([]);
+      
     } catch (error: any) {
-      console.error("Error saving edited pixels:", error);
+      console.error("Error saving edited pixels or updating thumbnail:", error);
       toast({
         title: "Error",
         description: `Failed to save changes: ${error.message}`,
@@ -109,6 +155,7 @@ const DesignOffice: React.FC = () => {
     });
 
     fetchLayersWithUserDetails();
+    fetchColors();
 
     const subscription = supabase
       .channel("art_tool_designs")
@@ -124,7 +171,7 @@ const DesignOffice: React.FC = () => {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [editedPixels]); // Add editedPixels to dependency array to observe changes
+  }, [editedPixels]);
 
   if (loading) {
     return <Spinner size="xl" />;

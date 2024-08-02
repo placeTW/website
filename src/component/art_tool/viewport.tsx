@@ -1,15 +1,13 @@
-// src/component/art_tool/viewport.tsx
-
 import Konva from "konva";
 import React, { useEffect, useRef, useState } from "react";
 import { Pixel } from "../../types/art-tool"; // Import shared Pixel type
-import { Layer, Line, Rect, Stage } from "react-konva"; // Import Line from react-konva
+import { Layer, Line, Rect, Stage } from "react-konva";
 
 interface ViewportProps {
   designId: string | null;
   pixels: Pixel[];
-  isEditing?: boolean; // Made optional or remove if not used in regular viewport
-  onPixelPaint?: (x: number, y: number) => void; // Made optional or remove if not used in regular viewport
+  isEditing?: boolean;
+  onPixelPaint?: (x: number, y: number) => void;
 }
 
 const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixelPaint }) => {
@@ -17,12 +15,34 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
   const stageRef = useRef<Konva.Stage | null>(null);
   const gridSize = 10;
   const coordinatesRef = useRef<HTMLDivElement>(null);
-  const checkerPatternRef = useRef<HTMLCanvasElement | null>(null);
   const divRef = useRef(null);
-  const [dimensions, setDimensions] = useState({
-    width: 0,
-    height: 0,
-  });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  // Create checkerboard patterns and return as HTMLImageElement
+  const createCheckerboardPattern = (color1: string, color2: string): HTMLImageElement => {
+    const size = gridSize;
+    const canvas = document.createElement("canvas");
+    canvas.width = size * 2;
+    canvas.height = size * 2;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      ctx.fillStyle = color1;
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillRect(size, size, size, size);
+
+      ctx.fillStyle = color2;
+      ctx.fillRect(size, 0, size, size);
+      ctx.fillRect(0, size, size, size);
+    }
+
+    const image = new Image();
+    image.src = canvas.toDataURL();
+    return image;
+  };
+
+  const clearOnDesignPattern = createCheckerboardPattern("#eee", "#fff");
+  const clearOnMainPattern = createCheckerboardPattern("rgba(255,0,0,0.1)", "rgba(255,255,255,0.1)");
 
   useEffect(() => {
     if (!divRef.current) return;
@@ -53,23 +73,19 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     const pointer = stage.getPointerPosition();
     if (!pointer) return;
 
-    // Determine the scale direction (in or out)
     const scaleBy = 1.1;
     const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
-    // Compute the position of the pointer relative to the stage
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
 
-    // Apply the new scale
     stage.scale({ x: newScale, y: newScale });
 
-    // Calculate the new position of the stage to keep the pointer in the same place
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale, // Adjusted this line
+      y: pointer.y - mousePointTo.y * newScale,
     };
 
     stage.position(newPos);
@@ -101,24 +117,13 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     return lines;
   };
 
-  const createCheckerboardPattern = () => {
-    const size = gridSize;
-    const canvas = document.createElement("canvas");
-    canvas.width = size * 2;
-    canvas.height = size * 2;
-    const ctx = canvas.getContext("2d");
-
-    if (ctx) {
-      ctx.fillStyle = "#eee";
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillRect(size, size, size, size);
-
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(size, 0, size, size);
-      ctx.fillRect(0, size, size, size);
+  const renderPixelColor = (color: string): string | HTMLImageElement | null => {
+    if (color === 'ClearOnDesign') {
+      return null; // Return null for cleared pixels to render the background
+    } else if (color === 'ClearOnMain') {
+      return clearOnMainPattern;
     }
-
-    return canvas;
+    return color;
   };
 
   const handleMouseMove = () => {
@@ -147,10 +152,6 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     }
   };
 
-  useEffect(() => {
-    checkerPatternRef.current = createCheckerboardPattern();
-  }, []);
-
   return (
     <div
       className="viewport-container"
@@ -171,7 +172,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
         onWheel={handleWheel}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        onClick={handleClick} // Handle click for pixel painting if in editing mode
+        onClick={handleClick}
       >
         <Layer>
           <Rect
@@ -179,25 +180,29 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
             y={0}
             width={dimensions.width}
             height={dimensions.height}
-            fillPatternImage={
-              checkerPatternRef.current as unknown as HTMLImageElement
-            }
+            fillPatternImage={clearOnDesignPattern} // General checkerboard pattern under the main canvas
             fillPatternScale={{ x: 0.5, y: 0.5 }}
           />
           {drawGrid(dimensions.width, dimensions.height)}
         </Layer>
         <Layer>
-          {pixels.map((pixel) => (
-            <Rect
-              key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
-              x={pixel.x * gridSize}
-              y={pixel.y * gridSize}
-              width={gridSize}
-              height={gridSize}
-              fill={pixel.color}
-              strokeWidth={0}
-            />
-          ))}
+          {pixels.map((pixel) => {
+            const pixelColor = renderPixelColor(pixel.color);
+
+            // Only render the pixel if the color is not null
+            return pixelColor ? (
+              <Rect
+                key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
+                x={pixel.x * gridSize}
+                y={pixel.y * gridSize}
+                width={gridSize}
+                height={gridSize}
+                fill={typeof pixelColor === 'string' ? pixelColor : undefined}
+                fillPatternImage={typeof pixelColor === 'object' ? pixelColor : undefined}
+                strokeWidth={0}
+              />
+            ) : null;
+          })}
         </Layer>
       </Stage>
       {hoveredPixel && (

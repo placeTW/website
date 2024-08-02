@@ -1,3 +1,5 @@
+// src/types/art-tool.ts
+
 export interface DesignInfo {
   id: string;
   design_name: string;
@@ -9,7 +11,7 @@ export interface DesignInfo {
   liked_by: string[];
 }
 
-// src/types/art-tool.ts
+
 export interface Pixel {
   id?: number;
   x: number;

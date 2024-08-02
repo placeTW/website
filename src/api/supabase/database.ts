@@ -190,45 +190,33 @@ export const saveEditedPixels = async (
   pixels: Omit<Pixel, "id">[],
 ) => {
   try {
-    if (!pixels || pixels.length === 0) {
-      console.error("No pixels to save or pixels array is undefined.");
-      throw new Error("No pixels to save or pixels array is undefined.");
-    }
+    console.log("saveEditedPixels received pixels:", pixels);  // Log received pixels
 
-    // Step 1: Fetch existing pixels for the design
-    const { data: existingPixels, error: fetchError } = await supabase
+    // Step 1: Clear existing pixels for the design
+    const { error: deleteError } = await supabase
       .from("art_tool_pixels")
-      .select("*")
+      .delete()
       .eq("canvas", canvas);
 
-    if (fetchError) {
-      console.error("Error fetching existing pixels:", fetchError);
-      throw new Error(fetchError.message);
+    if (deleteError) {
+      console.error("Error deleting existing pixels:", deleteError);
+      throw new Error(deleteError.message);
     }
 
-    // Step 2: Create a map of the existing pixels by their coordinates, omitting the 'id'
-    const existingPixelMap = new Map<string, Omit<Pixel, "id">>(
-      (existingPixels || []).map((pixel) => [
-        `${pixel.x}-${pixel.y}`,
-        { x: pixel.x, y: pixel.y, color: pixel.color, canvas: pixel.canvas }, // Ensure 'id' is not included
-      ]),
-    );
+    // Step 2: Filter out pixels marked as "ClearOnDesign"
+    const filteredPixels = pixels.filter((pixel) => pixel.color !== "ClearOnDesign");
 
-    // Step 3: Merge the new pixels into the existing map (overwriting any pixels at the same coordinates)
-    pixels.forEach((pixel) => {
-      existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
-    });
+    console.log("Filtered Pixels to save:", filteredPixels);
 
-    // Step 4: Prepare the merged set of pixels for insertion, ensuring the id is omitted
-    const mergedPixels = Array.from(existingPixelMap.values());
+    if (filteredPixels.length === 0) {
+      console.log("No pixels to save after filtering ClearOnDesign.");
+      return true; // No pixels to save, return early
+    }
 
-    // Log the merged pixels to ensure 'id' is not included
-    console.log("Merged Pixels:", mergedPixels);
-
-    // Step 5: Upsert (insert or update) the merged pixels
+    // Step 3: Upsert the remaining pixels
     const { error: upsertError } = await supabase
       .from("art_tool_pixels")
-      .upsert(mergedPixels, { onConflict: "x,y,canvas" }); // Fixing the onConflict type error
+      .upsert(filteredPixels, { onConflict: "x,y,canvas" });
 
     if (upsertError) {
       console.error("Error upserting pixels:", upsertError);
@@ -240,4 +228,80 @@ export const saveEditedPixels = async (
     console.error("Error saving edited pixels:", error);
     throw error;
   }
+};
+
+export const uploadThumbnailToSupabase = async (thumbnailBlob: Blob, designId: string) => {
+  const { VITE_SUPABASE_URL } = import.meta.env;
+
+  // Step 1: Fetch the current thumbnail URL from the database
+  const { data: designData, error: designError } = await supabase
+    .from('art_tool_designs')
+    .select('design_thumbnail')
+    .eq('id', designId)
+    .single();
+
+  if (designError) {
+    console.error("Error fetching current thumbnail URL:", designError);
+    throw new Error(designError.message);
+  }
+
+  const oldThumbnailUrl = designData?.design_thumbnail;
+
+  // Step 2: Upload the new thumbnail to Supabase
+  const { error: uploadError } = await supabase.storage
+    .from('art-tool-thumbnails')
+    .upload(`${designId}.png`, thumbnailBlob, {
+      upsert: true, // Allow overwriting if the file already exists
+      contentType: 'image/png', // Explicitly set the content type
+    });
+
+  if (uploadError) {
+    console.error("Error uploading thumbnail:", uploadError);
+    throw new Error(uploadError.message);
+  }
+
+  // Step 3: Get the public URL of the uploaded image using Supabase SDK
+  const { data: publicUrlData } = supabase
+    .storage
+    .from('art-tool-thumbnails')
+    .getPublicUrl(`${designId}.png`);
+
+    // Generate a cache-busting URL by appending a timestamp
+  const cacheBustedUrl = `${publicUrlData.publicUrl}?t=${new Date().getTime()}`;
+
+  // Step 4: Update the thumbnail URL in the database to the cache-busted one
+  await updateDesignThumbnail(designId, cacheBustedUrl);
+
+  // Step 5: Delete the old thumbnail from Supabase storage if it exists
+  if (oldThumbnailUrl && !oldThumbnailUrl.includes('loading.gif')) {
+    // Extract the file path from the old thumbnail URL
+    const filePath = oldThumbnailUrl.split(`${VITE_SUPABASE_URL}/storage/v1/object/public/art-tool-thumbnails/`)[1];
+    if (filePath) {
+      const { error: deleteError } = await supabase.storage
+        .from('art-tool-thumbnails')
+        .remove([`${filePath}`]);
+
+      if (deleteError) {
+        console.error("Error deleting old thumbnail:", deleteError);
+        throw new Error(deleteError.message);
+      }
+    }
+  }
+
+  return cacheBustedUrl; // Return the cache-busted URL
+};
+
+// Update the design with the new thumbnail URL
+export const updateDesignThumbnail = async (designId: string, thumbnailUrl: string) => {
+  const { data, error } = await supabase
+    .from("art_tool_designs")
+    .update({ design_thumbnail: thumbnailUrl })
+    .eq("id", designId);
+
+  if (error) {
+    console.error("Error updating design thumbnail URL:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
 };

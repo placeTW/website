@@ -1,13 +1,8 @@
-// src/component/art_tool/advanced-viewport.tsx
-
 import { Box, Grid } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../api/supabase";
-import {
-  databaseFetchColors,
-  databaseFetchPixels,
-} from "../../api/supabase/database";
-import { Pixel } from "../../types/art-tool"; // Import shared Pixel type
+import { databaseFetchPixels } from "../../api/supabase/database";
+import { Pixel } from "../../types/art-tool";
 import Viewport from "./viewport";
 
 interface AdvancedViewportProps {
@@ -16,6 +11,7 @@ interface AdvancedViewportProps {
   visibleLayers: string[];
   onUpdatePixels: (pixels: Pixel[]) => void;
   designName: string;
+  colors: { Color: string; color_sort: number | null }[];
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -24,74 +20,46 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   visibleLayers,
   onUpdatePixels,
   designName,
+  colors,
 }) => {
-  const [colors, setColors] = useState<
-    { Color: string; color_sort: number | null }[]
-  >([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const previousVisibleLayers = useRef<string[]>([]);
 
-  // Fetch colors on mount
-  useEffect(() => {
-    const fetchColors = async () => {
-      setColors(await databaseFetchColors());
-    };
+  // Function to create a checkerboard pattern as an HTMLCanvasElement
+  const createCheckerboardPattern = (color1: string, color2: string): HTMLCanvasElement => {
+    const size = 20;
+    const canvas = document.createElement("canvas");
+    canvas.width = size * 2;
+    canvas.height = size * 2;
+    const ctx = canvas.getContext("2d");
 
-    fetchColors();
+    if (ctx) {
+      ctx.fillStyle = color1;
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillRect(size, size, size, size);
 
-    const colorSubscription = supabase
-      .channel("realtime-art_tool_colors")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_colors" },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setColors((prevColors) =>
-              [
-                ...prevColors,
-                payload.new as { Color: string; color_sort: number | null },
-              ].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)),
-            );
-          } else if (payload.eventType === "DELETE") {
-            setColors((prevColors) =>
-              prevColors.filter((color) => color.Color !== payload.old.Color),
-            );
-          } else if (payload.eventType === "UPDATE") {
-            setColors((prevColors) =>
-              prevColors
-                .map((color) =>
-                  color.Color === payload.old.Color
-                    ? (payload.new as {
-                        Color: string;
-                        color_sort: number | null;
-                      })
-                    : color,
-                )
-                .sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)),
-            );
-          }
-        },
-      )
-      .subscribe();
+      ctx.fillStyle = color2;
+      ctx.fillRect(size, 0, size, size);
+      ctx.fillRect(0, size, size, size);
+    }
 
-    return () => {
-      supabase.removeChannel(colorSubscription);
-    };
-  }, []);
+    return canvas;
+  };
+
+  // Generate checkerboard patterns for the special colors
+  const clearOnDesignPatternCanvas = createCheckerboardPattern("#eee", "#fff");
+  const clearOnMainPatternCanvas = createCheckerboardPattern("rgba(255,0,0,0.1)", "rgba(255,255,255,0.1)");
+
+  const clearOnDesignPattern = clearOnDesignPatternCanvas.toDataURL();
+  const clearOnMainPattern = clearOnMainPatternCanvas.toDataURL();
 
   // Fetch pixels based on visible layers
   useEffect(() => {
-    const layersToFetch = [
-      "main",
-      ...visibleLayers.filter((layer) => layer !== "main"),
-    ];
+    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
 
-    if (
-      JSON.stringify(previousVisibleLayers.current) !==
-      JSON.stringify(layersToFetch)
-    ) {
+    if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
       previousVisibleLayers.current = layersToFetch;
 
       const fetchPixels = async () => {
@@ -101,7 +69,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         }
 
         const allVisiblePixels = await Promise.all(
-          layersToFetch.map((layer) => databaseFetchPixels(layer)),
+          layersToFetch.map((layer) => databaseFetchPixels(layer))
         );
         setPixels(allVisiblePixels.flat());
       };
@@ -130,23 +98,15 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             });
 
             // Handle the event based on its type
-            if (
-              payload.eventType === "INSERT" ||
-              payload.eventType === "UPDATE"
-            ) {
-              pixelMap.set(
-                `${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`,
-                updatedPixel,
-              );
+            if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+              pixelMap.set(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`, updatedPixel);
             } else if (payload.eventType === "DELETE") {
-              pixelMap.delete(
-                `${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`,
-              );
+              pixelMap.delete(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`);
             }
 
             return Array.from(pixelMap.values());
           });
-        },
+        }
       )
       .subscribe();
 
@@ -167,7 +127,11 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
       // Overwrite with any edited pixels
       editedPixels.forEach((pixel) => {
-        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+        if (pixel.color !== "ClearOnDesign") {
+          pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+        } else {
+          pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.canvas}`);
+        }
       });
 
       const mergedPixels = Array.from(pixelMap.values());
@@ -180,10 +144,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Function to regenerate pixels array from scratch
   const regeneratePixels = async () => {
-    const layersToFetch = [
-      "main",
-      ...visibleLayers.filter((layer) => layer !== "main"),
-    ];
+    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
 
     if (layersToFetch.length === 0) {
       setPixels([]); // No layers, so empty pixels array
@@ -191,7 +152,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
 
     const allVisiblePixels = await Promise.all(
-      layersToFetch.map((layer) => databaseFetchPixels(layer)),
+      layersToFetch.map((layer) => databaseFetchPixels(layer))
     );
 
     // Update pixels state with freshly fetched data
@@ -215,11 +176,22 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const handlePixelPaint = (x: number, y: number) => {
     if (!isEditing || !selectedColor) return;
 
-    const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
-    const updatedPixels = [...editedPixels, newPixel];
-
-    setEditedPixels(updatedPixels);
-    onUpdatePixels(updatedPixels);
+    if (selectedColor === "ClearOnDesign") {
+      // Remove the pixel at this position for ClearOnDesign from the viewport
+      setPixels((prevPixels) => prevPixels.filter((p) => !(p.x === x && p.y === y)));
+      // Add it to editedPixels to be tracked
+      const removedPixel: Pixel = { x, y, color: "ClearOnDesign", canvas: designName };
+      const updatedPixels = [...editedPixels, removedPixel];
+      setEditedPixels(updatedPixels);
+      console.log("Edited Pixels:", updatedPixels);
+      onUpdatePixels(updatedPixels);
+    } else {
+      const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
+      const updatedPixels = [...editedPixels, newPixel];
+      setEditedPixels(updatedPixels);
+      console.log("Edited Pixels:", updatedPixels);
+      onUpdatePixels(updatedPixels);
+    }
   };
 
   return (
@@ -245,7 +217,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                 key={color.Color}
                 w="30px"
                 h="30px"
-                bg={color.Color}
+                bg={
+                  color.Color === "ClearOnDesign"
+                    ? `url(${clearOnDesignPattern})`
+                    : color.Color === "ClearOnMain"
+                    ? `url(${clearOnMainPattern})`
+                    : color.Color
+                }
                 border={
                   selectedColor === color.Color
                     ? "2px solid black"
