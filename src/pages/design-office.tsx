@@ -1,25 +1,34 @@
 import { Box, Flex, Spinner, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
-import { databaseFetchDesignsWithUserDetails, saveEditedPixels } from "../api/supabase/database";
+import {
+  databaseFetchDesignsWithUserDetails,
+  saveEditedPixels,
+  databaseFetchPixels,
+  databaseFetchColors,
+  uploadThumbnailToSupabase,
+  updateDesignThumbnail
+} from "../api/supabase/database";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import { DesignInfo, Pixel } from "../types/art-tool";
+import { createThumbnail } from "../utils/imageUtils";
 
 const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<DesignInfo[]>([]);
+  const [colors, setColors] = useState<{ Color: string; color_sort: number | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<string[]>([]);
-  const [editedPixels, setEditedPixels] = useState<Omit<Pixel, "id">[]>([]); // Store edited pixels
+  const [editedPixels, setEditedPixels] = useState<Omit<Pixel, "id">[]>([]);
   const toast = useToast();
 
   const fetchLayersWithUserDetails = async () => {
     try {
       const data = await databaseFetchDesignsWithUserDetails();
-      const formattedData = data.map((item: any) => ({
+      const formattedData = (data || []).map((item: any) => ({
         id: item.id.toString(),
         design_name: item.design_name,
         created_by: item.created_by,
@@ -34,6 +43,15 @@ const DesignOffice: React.FC = () => {
       console.error("Error fetching layers with user details:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchColors = async () => {
+    try {
+      const fetchedColors = await databaseFetchColors();
+      setColors(fetchedColors || []); // Ensure colors is an array
+    } catch (error) {
+      console.error("Error fetching colors:", error);
     }
   };
 
@@ -65,21 +83,32 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
-      if (editedPixels.length > 0) {
-        await saveEditedPixels(currentDesign.design_name, editedPixels); // Ensure correct design name
-        toast({
-          title: "Changes Saved",
-          description: `${currentDesign.design_name} has been updated successfully.`,
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-        setIsEditing(false); // Exit edit mode after submission
-      } else {
-        console.warn("No pixels to save or pixels array is undefined.");
-      }
+      // Step 1: Fetch existing pixels for the design
+      const existingPixels = await databaseFetchPixels(currentDesign.design_name);
+
+      // Ensure existingPixels is an array
+      const allPixels = [...(existingPixels || []), ...editedPixels];
+
+      // Step 2: Save merged pixels to the database
+      await saveEditedPixels(currentDesign.design_name, allPixels.map(({ x, y, color, canvas }) => ({ x, y, color, canvas }))); // Exclude `id`
+
+      // Step 3: Generate a thumbnail of the current design with all pixels
+      const thumbnailBlob = await createThumbnail(allPixels, colors);
+      const thumbnailUrl = await uploadThumbnailToSupabase(thumbnailBlob, currentDesign.id);
+
+      // Step 4: Update the database with the new thumbnail URL
+      await updateDesignThumbnail(currentDesign.id, thumbnailUrl);
+
+      toast({
+        title: "Changes Saved",
+        description: `${currentDesign.design_name} has been updated successfully.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      setIsEditing(false); // Exit edit mode after submission
     } catch (error: any) {
-      console.error("Error saving edited pixels:", error);
+      console.error("Error saving edited pixels or updating thumbnail:", error);
       toast({
         title: "Error",
         description: `Failed to save changes: ${error.message}`,
@@ -99,8 +128,9 @@ const DesignOffice: React.FC = () => {
       visibleLayers,
       editedPixels,
     });
-    
+
     fetchLayersWithUserDetails();
+    fetchColors();
 
     const subscription = supabase
       .channel("art_tool_designs")
@@ -134,6 +164,7 @@ const DesignOffice: React.FC = () => {
           visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]} // Ensure "main" layer is always included
           onUpdatePixels={handleUpdatePixels} 
           designName={currentDesign ? currentDesign.design_name : "main"} // Default to "main" if not editing
+          colors={colors} // Pass colors to AdvancedViewport
         />
       </Box>
       <Box w="350px" overflowY="auto">

@@ -1,12 +1,7 @@
-// src/component/art_tool/advanced-viewport.tsx
-
 import { Box, Grid } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../api/supabase";
-import {
-  databaseFetchColors,
-  databaseFetchPixels,
-} from "../../api/supabase/database";
+import { databaseFetchPixels } from "../../api/supabase/database";
 import { Pixel } from "../../types/art-tool"; // Import shared Pixel type
 import Viewport from "./viewport";
 
@@ -16,6 +11,7 @@ interface AdvancedViewportProps {
   visibleLayers: string[];
   onUpdatePixels: (pixels: Pixel[]) => void;
   designName: string;
+  colors: { Color: string; color_sort: number | null }[]; // Add colors prop here
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -24,62 +20,12 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   visibleLayers,
   onUpdatePixels,
   designName,
+  colors, // Use colors prop here
 }) => {
-  const [colors, setColors] = useState<
-    { Color: string; color_sort: number | null }[]
-  >([]);
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const previousVisibleLayers = useRef<string[]>([]);
-
-  // Fetch colors on mount
-  useEffect(() => {
-    const fetchColors = async () => {
-      setColors(await databaseFetchColors());
-    };
-
-    fetchColors();
-
-    const colorSubscription = supabase
-      .channel("realtime-art_tool_colors")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_colors" },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setColors((prevColors) =>
-              [
-                ...prevColors,
-                payload.new as { Color: string; color_sort: number | null },
-              ].sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)),
-            );
-          } else if (payload.eventType === "DELETE") {
-            setColors((prevColors) =>
-              prevColors.filter((color) => color.Color !== payload.old.Color),
-            );
-          } else if (payload.eventType === "UPDATE") {
-            setColors((prevColors) =>
-              prevColors
-                .map((color) =>
-                  color.Color === payload.old.Color
-                    ? (payload.new as {
-                        Color: string;
-                        color_sort: number | null;
-                      })
-                    : color,
-                )
-                .sort((a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)),
-            );
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(colorSubscription);
-    };
-  }, []);
 
   // Fetch pixels based on visible layers
   useEffect(() => {

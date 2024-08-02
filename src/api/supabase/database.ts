@@ -241,3 +241,48 @@ export const saveEditedPixels = async (
     throw error;
   }
 };
+
+
+export const uploadThumbnailToSupabase = async (thumbnailBlob: Blob, designId: string) => {
+  // Upload the thumbnail to the 'art-tool-thumbnails' bucket
+  const { error: uploadError } = await supabase.storage
+    .from('art-tool-thumbnails')
+    .upload(`${designId}.png`, thumbnailBlob, {
+      upsert: true, // Allow overwriting if the file already exists
+      contentType: 'image/png', // Explicitly set the content type
+    });
+
+  if (uploadError) {
+    console.error("Error uploading thumbnail:", uploadError);
+    throw new Error(uploadError.message);
+  }
+
+  // Get the public URL of the uploaded image using Supabase SDK
+  const { data: publicUrlData } = supabase
+    .storage
+    .from('art-tool-thumbnails')
+    .getPublicUrl(`${designId}.png`);
+
+  if (!publicUrlData?.publicUrl) {
+    console.error("Failed to retrieve public URL for the thumbnail");
+    throw new Error('Failed to retrieve public URL for the thumbnail');
+  }
+
+  return publicUrlData.publicUrl; // Return the public URL
+};
+
+
+// Update the design with the new thumbnail URL
+export const updateDesignThumbnail = async (designId: string, thumbnailUrl: string) => {
+  const { data, error } = await supabase
+    .from("art_tool_designs")
+    .update({ design_thumbnail: thumbnailUrl })
+    .eq("id", designId);
+
+  if (error) {
+    console.error("Error updating design thumbnail URL:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
