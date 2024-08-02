@@ -123,7 +123,10 @@ const DesignOffice: React.FC = () => {
         duration: 3000,
         isClosable: true,
       });
-      setIsEditing(false); // Exit edit mode after submission
+
+      // Step 6: Clear the editedPixels array but stay in edit mode
+      setEditedPixels([]);
+      
     } catch (error: any) {
       console.error("Error saving edited pixels or updating thumbnail:", error);
       toast({
