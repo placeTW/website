@@ -244,7 +244,23 @@ export const saveEditedPixels = async (
 
 
 export const uploadThumbnailToSupabase = async (thumbnailBlob: Blob, designId: string) => {
-  // Upload the thumbnail to the 'art-tool-thumbnails' bucket
+  const { VITE_SUPABASE_URL } = import.meta.env;
+
+  // Step 1: Fetch the current thumbnail URL from the database
+  const { data: designData, error: designError } = await supabase
+    .from('art_tool_designs')
+    .select('design_thumbnail')
+    .eq('id', designId)
+    .single();
+
+  if (designError) {
+    console.error("Error fetching current thumbnail URL:", designError);
+    throw new Error(designError.message);
+  }
+
+  const oldThumbnailUrl = designData?.design_thumbnail;
+
+  // Step 2: Upload the new thumbnail to Supabase
   const { error: uploadError } = await supabase.storage
     .from('art-tool-thumbnails')
     .upload(`${designId}.png`, thumbnailBlob, {
@@ -257,19 +273,37 @@ export const uploadThumbnailToSupabase = async (thumbnailBlob: Blob, designId: s
     throw new Error(uploadError.message);
   }
 
-  // Get the public URL of the uploaded image using Supabase SDK
+  // Step 3: Get the public URL of the uploaded image using Supabase SDK
   const { data: publicUrlData } = supabase
     .storage
     .from('art-tool-thumbnails')
     .getPublicUrl(`${designId}.png`);
 
-  if (!publicUrlData?.publicUrl) {
-    console.error("Failed to retrieve public URL for the thumbnail");
-    throw new Error('Failed to retrieve public URL for the thumbnail');
+    // Generate a cache-busting URL by appending a timestamp
+  const cacheBustedUrl = `${publicUrlData.publicUrl}?t=${new Date().getTime()}`;
+
+  // Step 4: Update the thumbnail URL in the database to the cache-busted one
+  await updateDesignThumbnail(designId, cacheBustedUrl);
+
+  // Step 5: Delete the old thumbnail from Supabase storage if it exists
+  if (oldThumbnailUrl && !oldThumbnailUrl.includes('loading.gif')) {
+    // Extract the file path from the old thumbnail URL
+    const filePath = oldThumbnailUrl.split(`${VITE_SUPABASE_URL}/storage/v1/object/public/art-tool-thumbnails/`)[1];
+    if (filePath) {
+      const { error: deleteError } = await supabase.storage
+        .from('art-tool-thumbnails')
+        .remove([`${filePath}`]);
+
+      if (deleteError) {
+        console.error("Error deleting old thumbnail:", deleteError);
+        throw new Error(deleteError.message);
+      }
+    }
   }
 
-  return publicUrlData.publicUrl; // Return the public URL
+  return cacheBustedUrl; // Return the cache-busted URL
 };
+
 
 
 // Update the design with the new thumbnail URL
