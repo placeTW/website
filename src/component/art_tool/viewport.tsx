@@ -85,7 +85,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
 
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y * newScale - mousePointTo.y * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
     };
 
     stage.position(newPos);
