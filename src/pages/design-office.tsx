@@ -7,7 +7,7 @@ import {
   databaseFetchPixels,
   databaseFetchColors,
   uploadThumbnailToSupabase,
-  updateDesignThumbnail
+  updateDesignThumbnail,
 } from "../api/supabase/database";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
@@ -95,25 +95,36 @@ const DesignOffice: React.FC = () => {
       // Step 1: Fetch existing pixels for the design
       const existingPixels = await databaseFetchPixels(currentDesign.design_name);
 
-      // Step 2: Filter out pixels marked as "ClearOnDesign"
-      const filteredPixels = editedPixels.reduce<Omit<Pixel, "id">[]>((acc, pixel) => {
+      // Step 2: Create a map of existing pixels to ensure efficient merging
+      const existingPixelMap = new Map<string, Pixel>();
+      existingPixels?.forEach((pixel) => {
+        existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
+      });
+
+      // Step 3: Merge edited pixels with existing ones, with edited ones taking priority
+      editedPixels.forEach((pixel) => {
         if (pixel.color === "ClearOnDesign") {
-          return acc.filter(p => !(p.x === pixel.x && p.y === pixel.y));
+          existingPixelMap.delete(`${pixel.x}-${pixel.y}`);
+        } else {
+          existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
         }
-        acc.push(pixel);
-        return acc;
-      }, existingPixels || []);
+      });
 
-      console.log("Filtered Pixels before saving:", filteredPixels);
+      // Step 4: Convert the map back to an array and filter out any 'ClearOnDesign' pixels
+      const mergedPixels = Array.from(existingPixelMap.values()).filter(
+        (pixel) => pixel.color !== "ClearOnDesign"
+      );
 
-      // Step 3: Save filtered pixels to the database
-      await saveEditedPixels(currentDesign.design_name, filteredPixels);
+      console.log("Filtered Pixels before saving:", mergedPixels);
 
-      // Step 4: Generate a thumbnail of the current design with filtered pixels
-      const thumbnailBlob = await createThumbnail(filteredPixels);
+      // Step 5: Save filtered pixels to the database
+      await saveEditedPixels(currentDesign.design_name, mergedPixels);
+
+      // Step 6: Generate a thumbnail of the current design with filtered pixels
+      const thumbnailBlob = await createThumbnail(mergedPixels);
       const thumbnailUrl = await uploadThumbnailToSupabase(thumbnailBlob, currentDesign.id);
 
-      // Step 5: Update the database with the new thumbnail URL
+      // Step 7: Update the database with the new thumbnail URL
       await updateDesignThumbnail(currentDesign.id, thumbnailUrl);
 
       toast({
@@ -124,7 +135,7 @@ const DesignOffice: React.FC = () => {
         isClosable: true,
       });
 
-      // Step 6: Clear the editedPixels array but stay in edit mode
+      // Step 8: Clear the editedPixels array but stay in edit mode
       setEditedPixels([]);
       
     } catch (error: any) {

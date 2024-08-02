@@ -213,14 +213,19 @@ export const saveEditedPixels = async (
       return true; // No pixels to save, return early
     }
 
-    // Step 3: Upsert the remaining pixels
-    const { error: upsertError } = await supabase
-      .from("art_tool_pixels")
-      .upsert(filteredPixels, { onConflict: "x,y,canvas" });
+    // Extra debug logging: Check if any pixel still has an 'id'
+    filteredPixels.forEach((pixel, index) => {
+      console.log(`Pixel ${index}:`, pixel);
+    });
 
-    if (upsertError) {
-      console.error("Error upserting pixels:", upsertError);
-      throw new Error(upsertError.message);
+    // Step 3: Insert the remaining pixels
+    const { error: insertError } = await supabase
+      .from("art_tool_pixels")
+      .insert(filteredPixels);
+
+    if (insertError) {
+      console.error("Error inserting pixels:", insertError);
+      throw new Error(insertError.message);
     }
 
     return true;
@@ -229,6 +234,12 @@ export const saveEditedPixels = async (
     throw error;
   }
 };
+
+
+
+
+
+
 
 export const uploadThumbnailToSupabase = async (thumbnailBlob: Blob, designId: string) => {
   const { VITE_SUPABASE_URL } = import.meta.env;
