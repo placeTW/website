@@ -1,10 +1,13 @@
 import { Box, Flex, Spinner, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
-import { databaseFetchDesignsWithUserDetails, saveEditedPixels } from "../api/supabase/database";
+import {
+  databaseFetchDesignsWithUserDetails,
+  saveEditedPixels,
+} from "../api/supabase/database";
+import Canvas from "../component/art_tool/canvas";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
-import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import { DesignInfo, Pixel } from "../types/art-tool";
 
 const DesignOffice: React.FC = () => {
@@ -37,7 +40,10 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleEditStateChange = (isEditing: boolean, designId: string | null) => {
+  const handleEditStateChange = (
+    isEditing: boolean,
+    designId: string | null,
+  ) => {
     setIsEditing(isEditing);
     setEditDesignId(designId);
   };
@@ -52,7 +58,9 @@ const DesignOffice: React.FC = () => {
       console.log("Updating editedPixels with:", pixels);
       setEditedPixels(pixels);
     } else {
-      console.warn("handleUpdatePixels received undefined or empty pixels array.");
+      console.warn(
+        "handleUpdatePixels received undefined or empty pixels array.",
+      );
       setEditedPixels([]); // Ensure state is reset if the array is empty or undefined
     }
   };
@@ -99,7 +107,7 @@ const DesignOffice: React.FC = () => {
       visibleLayers,
       editedPixels,
     });
-    
+
     fetchLayersWithUserDetails();
 
     const subscription = supabase
@@ -109,7 +117,7 @@ const DesignOffice: React.FC = () => {
         { event: "*", schema: "public", table: "art_tool_designs" },
         () => {
           fetchLayersWithUserDetails();
-        }
+        },
       )
       .subscribe();
 
@@ -127,21 +135,14 @@ const DesignOffice: React.FC = () => {
   return (
     <Flex height="calc(100vh - 80px)" position="relative" direction="row">
       <Box flex="1" border="1px solid #ccc">
-        {/* Always render AdvancedViewport even when not editing */}
-        <AdvancedViewport 
-          isEditing={isEditing} 
-          editDesignId={editDesignId} 
-          visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]} // Ensure "main" layer is always included
-          onUpdatePixels={handleUpdatePixels} 
-          designName={currentDesign ? currentDesign.design_name : "main"} // Default to "main" if not editing
-        />
+        <Canvas isEditing={isEditing} />
       </Box>
       <Box w="350px" overflowY="auto">
-        <DesignCardsList 
-          designs={designs} 
+        <DesignCardsList
+          designs={designs}
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
-          onSubmitEdit={handleSubmitEdit} 
+          onSubmitEdit={handleSubmitEdit}
         />
         <Box h="100px" />
       </Box>
