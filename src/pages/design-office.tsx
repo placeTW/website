@@ -93,7 +93,7 @@ const DesignOffice: React.FC = () => {
       await saveEditedPixels(currentDesign.design_name, allPixels.map(({ x, y, color, canvas }) => ({ x, y, color, canvas }))); // Exclude `id`
 
       // Step 3: Generate a thumbnail of the current design with all pixels
-      const thumbnailBlob = await createThumbnail(allPixels, colors);
+      const thumbnailBlob = await createThumbnail(allPixels);
       const thumbnailUrl = await uploadThumbnailToSupabase(thumbnailBlob, currentDesign.id);
 
       // Step 4: Update the database with the new thumbnail URL
