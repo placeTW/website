@@ -49,7 +49,14 @@ const DesignOffice: React.FC = () => {
   const fetchColors = async () => {
     try {
       const fetchedColors = await databaseFetchColors();
-      setColors(fetchedColors || []); // Ensure colors is an array
+
+      // Append the special colors on the client-side
+      const specialColors = [
+        { Color: "ClearOnDesign", color_sort: null },
+        { Color: "ClearOnMain", color_sort: null },
+      ];
+
+      setColors([...fetchedColors, ...specialColors]);
     } catch (error) {
       console.error("Error fetching colors:", error);
     }
@@ -87,16 +94,19 @@ const DesignOffice: React.FC = () => {
       const existingPixels = await databaseFetchPixels(currentDesign.design_name);
 
       // Ensure existingPixels is an array
-      const allPixels = [...(existingPixels || []), ...editedPixels];
+      let allPixels = [...(existingPixels || []), ...editedPixels];
 
-      // Step 2: Save merged pixels to the database
-      await saveEditedPixels(currentDesign.design_name, allPixels.map(({ x, y, color, canvas }) => ({ x, y, color, canvas }))); // Exclude `id`
+      // Step 2: Process special colors
+      const filteredPixels = allPixels.filter((pixel) => pixel.color !== "ClearOnDesign");
 
-      // Step 3: Generate a thumbnail of the current design with all pixels
-      const thumbnailBlob = await createThumbnail(allPixels);
+      // Step 3: Save filtered pixels to the database
+      await saveEditedPixels(currentDesign.design_name, filteredPixels.map(({ x, y, color, canvas }) => ({ x, y, color, canvas }))); // Exclude `id`
+
+      // Step 4: Generate a thumbnail of the current design with filtered pixels
+      const thumbnailBlob = await createThumbnail(filteredPixels);
       const thumbnailUrl = await uploadThumbnailToSupabase(thumbnailBlob, currentDesign.id);
 
-      // Step 4: Update the database with the new thumbnail URL
+      // Step 5: Update the database with the new thumbnail URL
       await updateDesignThumbnail(currentDesign.id, thumbnailUrl);
 
       toast({
@@ -146,7 +156,7 @@ const DesignOffice: React.FC = () => {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [editedPixels]); // Add editedPixels to dependency array to observe changes
+  }, [editedPixels]);
 
   if (loading) {
     return <Spinner size="xl" />;
@@ -157,14 +167,13 @@ const DesignOffice: React.FC = () => {
   return (
     <Flex height="calc(100vh - 80px)" position="relative" direction="row">
       <Box flex="1" border="1px solid #ccc">
-        {/* Always render AdvancedViewport even when not editing */}
         <AdvancedViewport 
           isEditing={isEditing} 
           editDesignId={editDesignId} 
-          visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]} // Ensure "main" layer is always included
+          visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]}
           onUpdatePixels={handleUpdatePixels} 
-          designName={currentDesign ? currentDesign.design_name : "main"} // Default to "main" if not editing
-          colors={colors} // Pass colors to AdvancedViewport
+          designName={currentDesign ? currentDesign.design_name : "main"}
+          colors={colors}
         />
       </Box>
       <Box w="350px" overflowY="auto">

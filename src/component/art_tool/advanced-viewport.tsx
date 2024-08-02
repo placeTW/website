@@ -2,7 +2,7 @@ import { Box, Grid } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../api/supabase";
 import { databaseFetchPixels } from "../../api/supabase/database";
-import { Pixel } from "../../types/art-tool"; // Import shared Pixel type
+import { Pixel } from "../../types/art-tool";
 import Viewport from "./viewport";
 
 interface AdvancedViewportProps {
@@ -11,7 +11,7 @@ interface AdvancedViewportProps {
   visibleLayers: string[];
   onUpdatePixels: (pixels: Pixel[]) => void;
   designName: string;
-  colors: { Color: string; color_sort: number | null }[]; // Add colors prop here
+  colors: { Color: string; color_sort: number | null }[];
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -20,24 +20,46 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   visibleLayers,
   onUpdatePixels,
   designName,
-  colors, // Use colors prop here
+  colors,
 }) => {
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const previousVisibleLayers = useRef<string[]>([]);
 
+  // Function to create a checkerboard pattern as an HTMLCanvasElement
+  const createCheckerboardPattern = (color1: string, color2: string): HTMLCanvasElement => {
+    const size = 20;
+    const canvas = document.createElement("canvas");
+    canvas.width = size * 2;
+    canvas.height = size * 2;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      ctx.fillStyle = color1;
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillRect(size, size, size, size);
+
+      ctx.fillStyle = color2;
+      ctx.fillRect(size, 0, size, size);
+      ctx.fillRect(0, size, size, size);
+    }
+
+    return canvas;
+  };
+
+  // Generate checkerboard patterns for the special colors
+  const clearOnDesignPatternCanvas = createCheckerboardPattern("#eee", "#fff");
+  const clearOnMainPatternCanvas = createCheckerboardPattern("rgba(255,0,0,0.1)", "rgba(255,255,255,0.1)");
+
+  const clearOnDesignPattern = clearOnDesignPatternCanvas.toDataURL();
+  const clearOnMainPattern = clearOnMainPatternCanvas.toDataURL();
+
   // Fetch pixels based on visible layers
   useEffect(() => {
-    const layersToFetch = [
-      "main",
-      ...visibleLayers.filter((layer) => layer !== "main"),
-    ];
+    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
 
-    if (
-      JSON.stringify(previousVisibleLayers.current) !==
-      JSON.stringify(layersToFetch)
-    ) {
+    if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
       previousVisibleLayers.current = layersToFetch;
 
       const fetchPixels = async () => {
@@ -47,7 +69,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         }
 
         const allVisiblePixels = await Promise.all(
-          layersToFetch.map((layer) => databaseFetchPixels(layer)),
+          layersToFetch.map((layer) => databaseFetchPixels(layer))
         );
         setPixels(allVisiblePixels.flat());
       };
@@ -76,23 +98,15 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             });
 
             // Handle the event based on its type
-            if (
-              payload.eventType === "INSERT" ||
-              payload.eventType === "UPDATE"
-            ) {
-              pixelMap.set(
-                `${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`,
-                updatedPixel,
-              );
+            if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+              pixelMap.set(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`, updatedPixel);
             } else if (payload.eventType === "DELETE") {
-              pixelMap.delete(
-                `${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`,
-              );
+              pixelMap.delete(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`);
             }
 
             return Array.from(pixelMap.values());
           });
-        },
+        }
       )
       .subscribe();
 
@@ -126,10 +140,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Function to regenerate pixels array from scratch
   const regeneratePixels = async () => {
-    const layersToFetch = [
-      "main",
-      ...visibleLayers.filter((layer) => layer !== "main"),
-    ];
+    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
 
     if (layersToFetch.length === 0) {
       setPixels([]); // No layers, so empty pixels array
@@ -137,7 +148,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
 
     const allVisiblePixels = await Promise.all(
-      layersToFetch.map((layer) => databaseFetchPixels(layer)),
+      layersToFetch.map((layer) => databaseFetchPixels(layer))
     );
 
     // Update pixels state with freshly fetched data
@@ -162,10 +173,15 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     if (!isEditing || !selectedColor) return;
 
     const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
-    const updatedPixels = [...editedPixels, newPixel];
 
-    setEditedPixels(updatedPixels);
-    onUpdatePixels(updatedPixels);
+    if (selectedColor === "ClearOnDesign") {
+      // Remove the pixel at this position for ClearOnDesign
+      setEditedPixels((prev) => prev.filter((p) => !(p.x === x && p.y === y)));
+    } else {
+      const updatedPixels = [...editedPixels, newPixel];
+      setEditedPixels(updatedPixels);
+      onUpdatePixels(updatedPixels);
+    }
   };
 
   return (
@@ -191,7 +207,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                 key={color.Color}
                 w="30px"
                 h="30px"
-                bg={color.Color}
+                bg={
+                  color.Color === "ClearOnDesign"
+                    ? `url(${clearOnDesignPattern})`
+                    : color.Color === "ClearOnMain"
+                    ? `url(${clearOnMainPattern})`
+                    : color.Color
+                }
                 border={
                   selectedColor === color.Color
                     ? "2px solid black"
