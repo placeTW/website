@@ -3,11 +3,11 @@ import {
   CanvasHoverPixelChangeHandler,
   Dotting,
   DottingRef,
-  useDotting,
   useHandlers,
 } from "dotting";
 import { FC, useEffect, useRef, useState } from "react";
 import { databaseFetchColors } from "../../api/supabase";
+import { createDottingData } from "../../utils/dotting";
 
 interface CanvasProps {
   isEditing?: boolean;
@@ -19,11 +19,7 @@ const Canvas: FC<CanvasProps> = ({ isEditing }) => {
   >([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const ref = useRef<DottingRef>(null);
-  const { getForegroundCanvas, convertWorldPosToCanvasOffset } =
-    useDotting(ref);
   const {
-    addCanvasInfoChangeEventListener,
-    removeCanvasInfoChangeEventListener,
     addCanvasElementEventListener,
     removeCanvasElementEventListener,
     addHoverPixelChangeListener,
@@ -37,7 +33,6 @@ const Canvas: FC<CanvasProps> = ({ isEditing }) => {
   const handleHoverPixelChangeHandler: CanvasHoverPixelChangeHandler = ({
     indices,
   }) => {
-    console.log("Hovered pixel:", indices);
     setHoveredPixel(indices);
   };
   const coordinatesRef = useRef<HTMLDivElement>(null);
@@ -51,13 +46,11 @@ const Canvas: FC<CanvasProps> = ({ isEditing }) => {
 
   useEffect(() => {
     const renderer: EventListenerOrEventListenerObject = (e: any) => {
-
       if (coordinatesRef.current) {
         coordinatesRef.current.style.left = `${e.offsetX + 10}px`;
         coordinatesRef.current.style.top = `${e.offsetY + 10}px`;
       }
-
-    }
+    };
     addHoverPixelChangeListener(handleHoverPixelChangeHandler);
     addCanvasElementEventListener("mousemove", renderer);
     return () => {
@@ -72,7 +65,18 @@ const Canvas: FC<CanvasProps> = ({ isEditing }) => {
 
   return (
     <Box width="100%" height="100%" position="relative">
-      <Dotting ref={ref} width="100%" height="100%" />
+      <Dotting
+        ref={ref}
+        width="100%"
+        height="100%"
+        isGridFixed={true}
+        initLayers={[
+          {
+            id: "layer1",
+            data: createDottingData(100, 50),
+          }
+        ]}
+      />
 
       {isEditing && (
         <Box
