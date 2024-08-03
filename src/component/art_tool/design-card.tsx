@@ -1,5 +1,5 @@
-import * as React from "react"; // Import React without triggering the warning
-import { FC, useEffect, useState } from "react";
+// @ts-ignore
+import React, { FC, useEffect, useState } from "react";
 import {
   Box,
   Button,
