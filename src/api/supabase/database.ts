@@ -316,3 +316,108 @@ export const updateDesignThumbnail = async (designId: string, thumbnailUrl: stri
 
   return data;
 };
+
+
+export const databaseMergeDesignIntoBaseline = async (
+  designId: string,
+  baseline: string,
+) => {
+  try {
+    console.log(`Starting merge for designId: ${designId} into baseline: ${baseline}`);
+
+    // Fetch the design's name from the designs table based on the ID
+    const { data: designData, error: designError } = await supabase
+      .from("art_tool_designs")
+      .select("design_name")
+      .eq("id", designId)
+      .single();
+
+    if (designError || !designData) {
+      throw new Error(`Error fetching design name: ${designError?.message}`);
+    }
+
+    const designName = designData.design_name;
+    console.log(`Fetched design name: ${designName}`);
+
+    // Fetch the current baseline pixels
+    const { data: baselinePixels, error: fetchBaselineError } = await supabase
+      .from("art_tool_pixels")
+      .select("*")
+      .eq("canvas", baseline);
+
+    if (fetchBaselineError) {
+      console.error(`Error fetching baseline: ${fetchBaselineError.message}`);
+      throw new Error(`Error fetching baseline: ${fetchBaselineError.message}`);
+    }
+
+    console.log(`Baseline pixels fetched:`, baselinePixels);
+
+    // Fetch the selected design's pixels using the design name
+    const { data: designPixels, error: fetchDesignError } = await supabase
+      .from("art_tool_pixels")
+      .select("*")
+      .eq("canvas", designName);
+
+    if (fetchDesignError) {
+      console.error(`Error fetching design pixels: ${fetchDesignError.message}`);
+      throw new Error(`Error fetching design pixels: ${fetchDesignError.message}`);
+    }
+
+    console.log(`Design pixels fetched:`, designPixels);
+
+    // Create a map of the baseline pixels
+    const baselinePixelMap = new Map<string, Pixel>();
+    baselinePixels?.forEach((pixel: Pixel) => {
+      baselinePixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
+    });
+
+    console.log(`Baseline pixel map created.`);
+
+    // Apply merge logic: handle ClearOnMain pixels and merge others
+    designPixels?.forEach((pixel: Pixel) => {
+      if (pixel.color === "ClearOnMain") {
+        // Remove the corresponding pixel in the baseline
+        baselinePixelMap.delete(`${pixel.x}-${pixel.y}`);
+      } else if (pixel.color !== "ClearOnDesign") {
+        // Update the baseline with new pixels (excluding ClearOnDesign)
+        baselinePixelMap.set(`${pixel.x}-${pixel.y}`, { ...pixel, canvas: baseline });
+      }
+    });
+
+    const mergedPixels = Array.from(baselinePixelMap.values());
+    console.log(`Pixels after merge logic applied:`, mergedPixels);
+
+    // Clear existing baseline pixels before inserting
+    const { error: deleteError } = await supabase
+      .from("art_tool_pixels")
+      .delete()
+      .eq("canvas", baseline);
+
+    if (deleteError) {
+      console.error(`Error clearing baseline pixels: ${deleteError.message}`);
+      throw new Error(`Error clearing baseline pixels: ${deleteError.message}`);
+    }
+
+    console.log(`Baseline pixels cleared.`);
+
+    // Prepare pixels for insertion by omitting the 'id' field
+    const pixelsToInsert = mergedPixels.map(({ id, ...rest }) => rest);
+
+    // Insert the merged pixels into the baseline
+    const { error: insertError } = await supabase
+      .from("art_tool_pixels")
+      .insert(pixelsToInsert);
+
+    if (insertError) {
+      console.error(`Error inserting merged pixels: ${insertError.message}`);
+      throw new Error(`Error inserting merged pixels: ${insertError.message}`);
+    }
+
+    console.log(`Merged pixels inserted successfully.`);
+
+    return true;
+  } catch (error) {
+    console.error("Error in databaseMergeDesignIntoBaseline:", error);
+    throw error;
+  }
+};

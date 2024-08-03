@@ -26,6 +26,7 @@ import {
   databaseDeleteLayerAndPixels,
   likeDesign,
   unlikeDesign,
+  databaseMergeDesignIntoBaseline, // Import the new merge function
 } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
@@ -40,7 +41,7 @@ interface DesignCardProps {
   onCancelEdit: () => void;
   onToggleVisibility: (designName: string, isVisible: boolean) => void;
   isVisible: boolean;
-  onSubmitEdit: () => void;  // New prop to handle submit
+  onSubmitEdit: () => void;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -52,7 +53,7 @@ const DesignCard: FC<DesignCardProps> = ({
   onCancelEdit,
   onToggleVisibility,
   isVisible,
-  onSubmitEdit,  // Destructure new prop
+  onSubmitEdit,
 }) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -126,6 +127,42 @@ const DesignCard: FC<DesignCardProps> = ({
       if (onEdit(design.id)) {
         // Enter edit mode only if allowed
       }
+    }
+  };
+
+  const handleMerge = async () => {
+    console.log("Merge button clicked."); // Log when the function starts
+    try {
+      // Prompt the user to select the baseline
+      const baseline = window.confirm("Merge into 'Main' baseline? Click 'Cancel' for 'Expansion'.")
+        ? "main"
+        : "expansion";
+
+      console.log(`Merging design '${design.design_name}' into baseline '${baseline}'.`);
+
+      // Call the merge function with the selected design ID and baseline
+      const mergeResult = await databaseMergeDesignIntoBaseline(design.id, baseline);
+
+      console.log("Merge result:", mergeResult);
+
+      toast({
+        title: "Merge Successful",
+        description: `${design.design_name} has been merged into the ${baseline} baseline.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      console.error("Error merging design:", error);
+
+      toast({
+        title: "Merge Failed",
+        description: `Failed to merge design: ${errorMessage}`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
@@ -238,7 +275,7 @@ const DesignCard: FC<DesignCardProps> = ({
               </>
             )}
             {canMerge && (
-              <IconButton icon={<FaCodeMerge />} aria-label="Merge" />
+              <IconButton icon={<FaCodeMerge />} aria-label="Merge" onClick={handleMerge} />
             )}
           </Box>
         </CardFooter>
