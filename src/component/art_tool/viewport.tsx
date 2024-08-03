@@ -24,10 +24,13 @@ const Viewport: React.FC<ViewportProps> = ({
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const divRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const isPanning = useRef(false);  // To track if we are in panning mode
-  const isPainting = useRef(false);  // To track if we are in painting mode
+  
+  // Ref to track the initial position of the mouse for panning
+  const initialMousePos = useRef<{ x: number; y: number } | null>(null);
+  const initialStagePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const isPanning = useRef(false);
+  const isPainting = useRef(false);
 
-  // Create checkerboard patterns and return as HTMLImageElement
   const createCheckerboardPattern = (color1: string, color2: string, size: number): HTMLImageElement => {
     const canvas = document.createElement("canvas");
     canvas.width = size * 2;
@@ -93,7 +96,7 @@ const Viewport: React.FC<ViewportProps> = ({
 
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: mousePointTo.y * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
     };
 
     stage.position(newPos);
@@ -143,36 +146,40 @@ const Viewport: React.FC<ViewportProps> = ({
     const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
     const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
     setHoveredPixel({ x, y });
-  
+
     if (coordinatesRef.current) {
       coordinatesRef.current.style.left = `${pointer.x + 10}px`;
       coordinatesRef.current.style.top = `${pointer.y + 10}px`;
     }
-  
+
     if (isPainting.current && isEditing && onPixelPaint) {
       onPixelPaint(x, y);
     }
-  
-    if (isPanning.current) {
-      const pos = stage.getPointerPosition();
-      if (pos) { // Ensure pos is not null
-        stage.position({
-          x: pos.x - stage.width() / 2,
-          y: pos.y - stage.height() / 2,
-        });
-        stage.batchDraw();
-      }
+
+    if (isPanning.current && initialMousePos.current) {
+      const dx = pointer.x - initialMousePos.current.x;
+      const dy = pointer.y - initialMousePos.current.y;
+
+      stage.position({
+        x: initialStagePos.current.x + dx,
+        y: initialStagePos.current.y + dy,
+      });
+      stage.batchDraw();
     }
   };
-  
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
     if (e.evt.button === 0 && isEditing) {
       // Left-click
       isPainting.current = true;
     } else if (e.evt.button === 2) {
       // Right-click
       isPanning.current = true;
+      initialMousePos.current = stage.getPointerPosition(); // Capture initial mouse position
+      initialStagePos.current = stage.position(); // Capture initial stage position
     }
   };
 
@@ -213,8 +220,8 @@ const Viewport: React.FC<ViewportProps> = ({
             y={0}
             width={dimensions.width}
             height={dimensions.height}
-            fillPatternImage={clearOnDesignPattern} // General checkerboard pattern under the main canvas
-            fillPatternScale={{ x: 0.5, y: 0.5 }} // Keep the original scale for grey
+            fillPatternImage={clearOnDesignPattern}
+            fillPatternScale={{ x: 0.5, y: 0.5 }}
           />
           {drawGrid(dimensions.width, dimensions.height)}
         </Layer>
@@ -224,8 +231,6 @@ const Viewport: React.FC<ViewportProps> = ({
               .filter((pixel) => pixel.canvas === layer)
               .map((pixel) => {
                 const pixelColor = renderPixelColor(pixel.color);
-
-                // Only render the pixel if the color is not null
                 return pixelColor ? (
                   <Rect
                     key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
@@ -235,7 +240,7 @@ const Viewport: React.FC<ViewportProps> = ({
                     height={gridSize}
                     fill={typeof pixelColor === "string" ? pixelColor : undefined}
                     fillPatternImage={typeof pixelColor === "object" ? pixelColor : undefined}
-                    fillPatternScale={pixel.color === "ClearOnMain" ? { x: 1, y: 1 } : { x: 1, y: 1 }} // Scale pink checkerboard
+                    fillPatternScale={pixel.color === "ClearOnMain" ? { x: 1, y: 1 } : { x: 1, y: 1 }}
                     strokeWidth={0}
                   />
                 ) : null;
