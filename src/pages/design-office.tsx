@@ -1,4 +1,4 @@
-import { Box, Flex, Spinner, useToast } from "@chakra-ui/react";
+import { Box, Spinner, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
 import {
@@ -186,8 +186,14 @@ const DesignOffice: React.FC = () => {
   const currentDesign = designs.find((d) => d.id === editDesignId);
 
   return (
-    <Flex height="calc(100vh - 80px)" position="relative" direction="row">
-      <Box flex="1" border="1px solid #ccc">
+    <Box
+      display="grid"
+      gridTemplateColumns="1fr 350px"
+      height="calc(100vh - 80px)"
+      overflow="hidden"
+      position="relative"
+    >
+      <Box border="1px solid #ccc" overflow="hidden">
         <AdvancedViewport 
           isEditing={isEditing} 
           editDesignId={editDesignId} 
@@ -197,7 +203,7 @@ const DesignOffice: React.FC = () => {
           colors={colors}
         />
       </Box>
-      <Box w="350px" overflowY="auto">
+      <Box overflowY="auto">
         <DesignCardsList 
           designs={designs} 
           onEditStateChange={handleEditStateChange}
@@ -209,7 +215,7 @@ const DesignOffice: React.FC = () => {
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
         <CreateDesignButton />
       </Box>
-    </Flex>
+    </Box>
   );
 };
 
