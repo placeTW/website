@@ -96,19 +96,19 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
             // Add existing pixels to the map first
             prevPixels.forEach((pixel) => {
-              pixelMap.set(`${pixel.id}`, pixel); // Use id as key
+              pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel); // Use coordinates and canvas as key
             });
 
             // Handle the event based on its type
             if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
               const { id, x, y, color, canvas } = payload.new as Pixel;
               const updatedPixel: Pixel = { id, x, y, color, canvas };
-              pixelMap.set(`${id}`, updatedPixel);
+              pixelMap.set(`${x}-${y}-${canvas}`, updatedPixel);
               console.log('Inserted/Updated pixel:', updatedPixel);
             } else if (payload.eventType === "DELETE") {
-              const deletedId = payload.old.id;
-              pixelMap.delete(`${deletedId}`);
-              console.log('Deleted pixel by ID:', deletedId);
+              const { x, y, canvas } = payload.old;
+              pixelMap.delete(`${x}-${y}-${canvas}`);
+              console.log('Deleted pixel at coordinates:', { x, y, canvas });
             }
 
             const updatedPixels = Array.from(pixelMap.values());
@@ -125,30 +125,30 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     };
   }, [visibleLayers]);
 
-  // Merge pixels from different layers with edited pixels
+  // Merge pixels from different layers with edited pixels for rendering
   useEffect(() => {
     if (isEditing) {
       const pixelMap = new Map<string, Pixel>();
 
       // Add existing pixels to the map first
       pixels.forEach((pixel) => {
-        pixelMap.set(`${pixel.id}`, pixel);
+        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
       });
 
       // Overwrite with any edited pixels
       editedPixels.forEach((pixel) => {
         if (pixel.color !== "ClearOnDesign") {
-          pixelMap.set(`${pixel.id}`, pixel);
+          pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
         } else {
-          pixelMap.delete(`${pixel.id}`);
+          pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.canvas}`);
         }
       });
 
       const mergedPixels = Array.from(pixelMap.values());
-      console.log('Merging pixels:', mergedPixels);
+      console.log('Merging pixels for rendering:', mergedPixels);
 
       if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
-        setPixels(mergedPixels);
+        setPixels(mergedPixels); // Update the pixels state for rendering
       }
     }
   }, [pixels, editedPixels, isEditing]);
@@ -198,22 +198,17 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const handlePixelPaint = (x: number, y: number) => {
     if (!isEditing || !selectedColor) return;
 
-    if (selectedColor === "ClearOnDesign") {
-      // Remove the pixel at this position for ClearOnDesign from the viewport
-      setPixels((prevPixels) => prevPixels.filter((p) => !(p.x === x && p.y === y)));
-      // Add it to editedPixels to be tracked
-      const removedPixel: Pixel = { x, y, color: "ClearOnDesign", canvas: designName };
-      const updatedPixels = [...editedPixels, removedPixel];
-      setEditedPixels(updatedPixels);
+    const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
+
+    setEditedPixels((prevEditedPixels) => {
+      const updatedPixels = prevEditedPixels.filter((p) => !(p.x === x && p.y === y));
+      updatedPixels.push(newPixel);
       console.log("Edited Pixels:", updatedPixels);
       onUpdatePixels(updatedPixels);
-    } else {
-      const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
-      const updatedPixels = [...editedPixels, newPixel];
-      setEditedPixels(updatedPixels);
-      console.log("Edited Pixels:", updatedPixels);
-      onUpdatePixels(updatedPixels);
-    }
+      return updatedPixels;
+    });
+
+    // No need to update `pixels` here since it will be handled in the merging step above.
   };
 
   return (
