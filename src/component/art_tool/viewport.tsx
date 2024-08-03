@@ -25,12 +25,10 @@ const Viewport: React.FC<ViewportProps> = ({
   const divRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  const isPanning = useRef(false);
   const isPainting = useRef(false);
   const lastTouchDistance = useRef(0);
   const initialStagePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const initialTouchPos = useRef<{ x: number; y: number } | null>(null);
-  const touchStartTime = useRef(0); // Track the time when the touch starts
+  const initialTouchMidpoint = useRef<{ x: number; y: number } | null>(null);
 
   const createCheckerboardPattern = (color1: string, color2: string, size: number): HTMLImageElement => {
     const canvas = document.createElement("canvas");
@@ -108,59 +106,60 @@ const Viewport: React.FC<ViewportProps> = ({
     const stage = stageRef.current;
     if (!stage) return;
 
-    // Handle pinch to zoom
+    // Handle pinch to zoom with simultaneous panning
     if (e.touches.length === 2) {
-      e.preventDefault(); // Prevent default zoom behavior
+      e.preventDefault();
+
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
+
+      // Calculate the new distance between the two fingers
       const dist = Math.sqrt(
         Math.pow(touch2.clientX - touch1.clientX, 2) +
         Math.pow(touch2.clientY - touch1.clientY, 2)
       );
 
+      // Calculate the midpoint between the two fingers
+      const midpoint = {
+        x: (touch1.clientX + touch2.clientX) / 2,
+        y: (touch1.clientY + touch2.clientY) / 2,
+      };
+
       if (lastTouchDistance.current === 0) {
         lastTouchDistance.current = dist;
+        initialTouchMidpoint.current = midpoint;
+        initialStagePos.current = stage.position();
       } else {
+        // Scale the stage based on the change in distance
         const scaleBy = dist / lastTouchDistance.current;
         const oldScale = stage.scaleX();
         const newScale = oldScale * scaleBy;
 
-        // Calculate the center point of the pinch
-        const center = {
-          x: (touch1.clientX + touch2.clientX) / 2,
-          y: (touch1.clientY + touch2.clientY) / 2,
+        // Calculate the new stage position to account for panning
+        const deltaMidpoint = {
+          x: midpoint.x - initialTouchMidpoint.current!.x,
+          y: midpoint.y - initialTouchMidpoint.current!.y,
         };
 
         const mousePointTo = {
-          x: (center.x - stage.x()) / oldScale,
-          y: (center.y - stage.y()) / oldScale,
+          x: (initialTouchMidpoint.current!.x - stage.x()) / oldScale,
+          y: (initialTouchMidpoint.current!.y - stage.y()) / oldScale,
         };
 
         stage.scale({ x: newScale, y: newScale });
 
         const newPos = {
-          x: center.x - mousePointTo.x * newScale,
-          y: center.y - mousePointTo.y * newScale,
+          x: initialStagePos.current.x - mousePointTo.x * (newScale - oldScale) + deltaMidpoint.x,
+          y: initialStagePos.current.y - mousePointTo.y * (newScale - oldScale) + deltaMidpoint.y,
         };
 
         stage.position(newPos);
         stage.batchDraw();
 
-        lastTouchDistance.current = dist; // Update the last distance
+        // Update the last distance and midpoint
+        lastTouchDistance.current = dist;
+        initialTouchMidpoint.current = midpoint;
       }
-    }
-
-    // Handle single touch panning
-    if (e.touches.length === 1 && isPanning.current && initialTouchPos.current) {
-      const touch = e.touches[0];
-      const dx = touch.clientX - initialTouchPos.current.x;
-      const dy = touch.clientY - initialTouchPos.current.y;
-
-      stage.position({
-        x: initialStagePos.current.x + dx,
-        y: initialStagePos.current.y + dy,
-      });
-      stage.batchDraw();
     }
   };
 
@@ -168,45 +167,16 @@ const Viewport: React.FC<ViewportProps> = ({
     const stage = stageRef.current;
     if (!stage) return;
 
-    touchStartTime.current = Date.now();
-
-    if (e.touches.length === 1) {
-      // Single touch - initiate potential painting or panning
-      isPanning.current = false;
-      initialTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      initialStagePos.current = stage.position();
-    } else if (e.touches.length === 2) {
-      // Multi-touch - initiate pinch to zoom
+    if (e.touches.length === 2) {
       lastTouchDistance.current = 0;
+      initialTouchMidpoint.current = null;
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    const stage = stageRef.current;
-    if (!stage) return;
-
-    const touchDuration = Date.now() - touchStartTime.current;
-
-    // If it's a quick tap and the user hasn't moved far, treat it as a pixel placement
-    if (e.changedTouches.length === 1 && touchDuration < 200 && initialTouchPos.current) {
-      const touch = e.changedTouches[0];
-      const dx = Math.abs(touch.clientX - initialTouchPos.current.x);
-      const dy = Math.abs(touch.clientY - initialTouchPos.current.y);
-
-      if (dx < 5 && dy < 5 && isEditing && onPixelPaint) {
-        const pointer = stage.getPointerPosition();
-        if (!pointer) return;
-        const scale = stage.scaleX();
-        const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
-        const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
-        onPixelPaint(x, y);
-      }
-    }
-
-    // Reset panning and pinch state on touch end
-    isPanning.current = false;
+  const handleTouchEnd = () => {
+    // Reset zooming state on touch end
     lastTouchDistance.current = 0;
-    initialTouchPos.current = null;
+    initialTouchMidpoint.current = null;
   };
 
   const handleMouseMove = () => {
@@ -227,17 +197,6 @@ const Viewport: React.FC<ViewportProps> = ({
     if (isPainting.current && isEditing && onPixelPaint) {
       onPixelPaint(x, y);
     }
-
-    if (isPanning.current && initialTouchPos.current) {
-      const dx = pointer.x - initialTouchPos.current.x;
-      const dy = pointer.y - initialTouchPos.current.y;
-
-      stage.position({
-        x: initialStagePos.current.x + dx,
-        y: initialStagePos.current.y + dy,
-      });
-      stage.batchDraw();
-    }
   };
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -247,17 +206,11 @@ const Viewport: React.FC<ViewportProps> = ({
     if (e.evt.button === 0 && isEditing) {
       // Left-click
       isPainting.current = true;
-    } else if (e.evt.button === 2) {
-      // Right-click
-      isPanning.current = true;
-      initialTouchPos.current = stage.getPointerPosition(); // Capture initial mouse position
-      initialStagePos.current = stage.position(); // Capture initial stage position
     }
   };
 
   const handleMouseUp = () => {
     isPainting.current = false;
-    isPanning.current = false;
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {
