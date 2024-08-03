@@ -22,15 +22,15 @@ const Viewport: React.FC<ViewportProps> = ({
   const stageRef = useRef<Konva.Stage | null>(null);
   const gridSize = 10;
   const coordinatesRef = useRef<HTMLDivElement>(null);
-  const divRef = useRef<HTMLDivElement>(null); // Fix type to HTMLDivElement
+  const divRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  // Refs to track panning and zooming
   const isPanning = useRef(false);
   const isPainting = useRef(false);
   const lastTouchDistance = useRef(0);
   const initialStagePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const initialTouchPos = useRef<{ x: number; y: number } | null>(null);
+  const touchStartTime = useRef(0); // Track the time when the touch starts
 
   const createCheckerboardPattern = (color1: string, color2: string, size: number): HTMLImageElement => {
     const canvas = document.createElement("canvas");
@@ -168,9 +168,11 @@ const Viewport: React.FC<ViewportProps> = ({
     const stage = stageRef.current;
     if (!stage) return;
 
+    touchStartTime.current = Date.now();
+
     if (e.touches.length === 1) {
-      // Single touch - initiate panning
-      isPanning.current = true;
+      // Single touch - initiate potential painting or panning
+      isPanning.current = false;
       initialTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       initialStagePos.current = stage.position();
     } else if (e.touches.length === 2) {
@@ -179,7 +181,28 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const touchDuration = Date.now() - touchStartTime.current;
+
+    // If it's a quick tap and the user hasn't moved far, treat it as a pixel placement
+    if (e.changedTouches.length === 1 && touchDuration < 200 && initialTouchPos.current) {
+      const touch = e.changedTouches[0];
+      const dx = Math.abs(touch.clientX - initialTouchPos.current.x);
+      const dy = Math.abs(touch.clientY - initialTouchPos.current.y);
+
+      if (dx < 5 && dy < 5 && isEditing && onPixelPaint) {
+        const pointer = stage.getPointerPosition();
+        if (!pointer) return;
+        const scale = stage.scaleX();
+        const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
+        const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
+        onPixelPaint(x, y);
+      }
+    }
+
     // Reset panning and pinch state on touch end
     isPanning.current = false;
     lastTouchDistance.current = 0;
