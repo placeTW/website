@@ -19,8 +19,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Create checkerboard patterns and return as HTMLImageElement
-  const createCheckerboardPattern = (color1: string, color2: string): HTMLImageElement => {
-    const size = gridSize;
+  const createCheckerboardPattern = (color1: string, color2: string, size: number): HTMLImageElement => {
     const canvas = document.createElement("canvas");
     canvas.width = size * 2;
     canvas.height = size * 2;
@@ -42,8 +41,8 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
   };
 
   // Update checkerboard patterns
-  const clearOnDesignPattern = createCheckerboardPattern("#eee", "#fff");
-  const clearOnMainPattern = createCheckerboardPattern("#ff69b4", "#fff"); // Opaque pink and white checkerboard
+  const clearOnDesignPattern = createCheckerboardPattern("#eee", "#fff", gridSize); // Original size for grey
+  const clearOnMainPattern = createCheckerboardPattern("#fc7e7e", "#fff", gridSize / 2); // Smaller pink checkerboard
 
   useEffect(() => {
     if (!divRef.current) return;
@@ -182,7 +181,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
             width={dimensions.width}
             height={dimensions.height}
             fillPatternImage={clearOnDesignPattern} // General checkerboard pattern under the main canvas
-            fillPatternScale={{ x: 0.5, y: 0.5 }}
+            fillPatternScale={{ x: 0.5, y: 0.5 }} // Keep the original scale for grey
           />
           {drawGrid(dimensions.width, dimensions.height)}
         </Layer>
@@ -200,6 +199,7 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
                 height={gridSize}
                 fill={typeof pixelColor === 'string' ? pixelColor : undefined}
                 fillPatternImage={typeof pixelColor === 'object' ? pixelColor : undefined}
+                fillPatternScale={pixel.color === 'ClearOnMain' ? { x: 1, y: 1 } : { x: 1, y: 1 }} // Scale pink checkerboard
                 strokeWidth={0}
               />
             ) : null;

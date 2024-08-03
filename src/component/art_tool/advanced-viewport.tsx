@@ -50,7 +50,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Generate checkerboard patterns for the special colors
   const clearOnDesignPatternCanvas = createCheckerboardPattern("#eee", "#fff");
-  const clearOnMainPatternCanvas = createCheckerboardPattern("#ff69b4", "#fff"); // Opaque pink and white checkerboard
+  const clearOnMainPatternCanvas = createCheckerboardPattern("#fc7e7e", "#fff"); // Opaque pink and white checkerboard
 
   const clearOnDesignPattern = clearOnDesignPatternCanvas.toDataURL();
   const clearOnMainPattern = clearOnMainPatternCanvas.toDataURL();
