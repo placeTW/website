@@ -41,8 +41,9 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
     return image;
   };
 
+  // Update checkerboard patterns
   const clearOnDesignPattern = createCheckerboardPattern("#eee", "#fff");
-  const clearOnMainPattern = createCheckerboardPattern("rgba(255,0,0,0.1)", "rgba(255,255,255,0.1)");
+  const clearOnMainPattern = createCheckerboardPattern("#ff69b4", "#fff"); // Opaque pink and white checkerboard
 
   useEffect(() => {
     if (!divRef.current) return;

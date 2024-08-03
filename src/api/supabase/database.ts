@@ -185,6 +185,15 @@ export const databaseFetchColors = async () => {
   return data;
 };
 
+interface Pixel {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  canvas: string;
+}
+
+// Function to save edited pixels
 export const saveEditedPixels = async (
   canvas: string,
   pixels: Omit<Pixel, "id">[],
@@ -213,15 +222,23 @@ export const saveEditedPixels = async (
       return true; // No pixels to save, return early
     }
 
+    // Prepare pixels for insertion
+    const pixelsToInsert = filteredPixels.map((pixel) => ({
+      x: pixel.x,
+      y: pixel.y,
+      color: pixel.color,
+      canvas: pixel.canvas,
+    }));
+
     // Extra debug logging: Check if any pixel still has an 'id'
-    filteredPixels.forEach((pixel, index) => {
-      console.log(`Pixel ${index}:`, pixel);
+    pixelsToInsert.forEach((pixel, index) => {
+      console.log(`Pixel ${index} to insert:`, pixel);
     });
 
     // Step 3: Insert the remaining pixels
     const { error: insertError } = await supabase
       .from("art_tool_pixels")
-      .insert(filteredPixels);
+      .insert(pixelsToInsert);
 
     if (insertError) {
       console.error("Error inserting pixels:", insertError);
