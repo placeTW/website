@@ -1,6 +1,6 @@
 import Konva from "konva";
 import React, { useEffect, useRef, useState } from "react";
-import { Pixel } from "../../types/art-tool"; // Import shared Pixel type
+import { Pixel } from "../../types/art-tool";
 import { Layer, Line, Rect, Stage } from "react-konva";
 
 interface ViewportProps {
@@ -8,7 +8,7 @@ interface ViewportProps {
   pixels: Pixel[];
   isEditing?: boolean;
   onPixelPaint?: (x: number, y: number) => void;
-  layerOrder: string[]; // Add the layerOrder prop
+  layerOrder: string[];
 }
 
 const Viewport: React.FC<ViewportProps> = ({
@@ -24,6 +24,8 @@ const Viewport: React.FC<ViewportProps> = ({
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const divRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const isPanning = useRef(false);  // To track if we are in panning mode
+  const isPainting = useRef(false);  // To track if we are in painting mode
 
   // Create checkerboard patterns and return as HTMLImageElement
   const createCheckerboardPattern = (color1: string, color2: string, size: number): HTMLImageElement => {
@@ -47,9 +49,8 @@ const Viewport: React.FC<ViewportProps> = ({
     return image;
   };
 
-  // Update checkerboard patterns
-  const clearOnDesignPattern = createCheckerboardPattern("#eee", "#fff", gridSize); // Original size for grey
-  const clearOnMainPattern = createCheckerboardPattern("#fc7e7e", "#fff", gridSize / 2); // Smaller pink checkerboard
+  const clearOnDesignPattern = createCheckerboardPattern("#eee", "#fff", gridSize);
+  const clearOnMainPattern = createCheckerboardPattern("#fc7e7e", "#fff", gridSize / 2);
 
   useEffect(() => {
     if (!divRef.current) return;
@@ -92,7 +93,7 @@ const Viewport: React.FC<ViewportProps> = ({
 
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
+      y: mousePointTo.y * newScale,
     };
 
     stage.position(newPos);
@@ -125,15 +126,15 @@ const Viewport: React.FC<ViewportProps> = ({
   };
 
   const renderPixelColor = (color: string): string | HTMLImageElement | null => {
-    if (color === 'ClearOnDesign') {
+    if (color === "ClearOnDesign") {
       return null; // Return null for cleared pixels to render the background
-    } else if (color === 'ClearOnMain') {
+    } else if (color === "ClearOnMain") {
       return clearOnMainPattern;
     }
     return color;
   };
 
-  const handleMouseMove = () => {
+  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     const stage = stageRef.current;
     if (!stage) return;
     const pointer = stage.getPointerPosition();
@@ -142,21 +143,46 @@ const Viewport: React.FC<ViewportProps> = ({
     const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
     const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
     setHoveredPixel({ x, y });
-
+  
     if (coordinatesRef.current) {
       coordinatesRef.current.style.left = `${pointer.x + 10}px`;
       coordinatesRef.current.style.top = `${pointer.y + 10}px`;
     }
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredPixel(null);
-  };
-
-  const handleClick = () => {
-    if (isEditing && hoveredPixel && onPixelPaint) {
-      onPixelPaint(hoveredPixel.x, hoveredPixel.y);
+  
+    if (isPainting.current && isEditing && onPixelPaint) {
+      onPixelPaint(x, y);
     }
+  
+    if (isPanning.current) {
+      const pos = stage.getPointerPosition();
+      if (pos) { // Ensure pos is not null
+        stage.position({
+          x: pos.x - stage.width() / 2,
+          y: pos.y - stage.height() / 2,
+        });
+        stage.batchDraw();
+      }
+    }
+  };
+  
+
+  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (e.evt.button === 0 && isEditing) {
+      // Left-click
+      isPainting.current = true;
+    } else if (e.evt.button === 2) {
+      // Right-click
+      isPanning.current = true;
+    }
+  };
+
+  const handleMouseUp = () => {
+    isPainting.current = false;
+    isPanning.current = false;
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default context menu from showing
   };
 
   return (
@@ -170,16 +196,16 @@ const Viewport: React.FC<ViewportProps> = ({
         height: "100%",
       }}
       ref={divRef}
+      onContextMenu={handleContextMenu}
     >
       <Stage
         width={dimensions.width}
         height={dimensions.height}
-        draggable
         ref={stageRef}
         onWheel={handleWheel}
         onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleClick}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
       >
         <Layer>
           <Rect
@@ -207,9 +233,9 @@ const Viewport: React.FC<ViewportProps> = ({
                     y={pixel.y * gridSize}
                     width={gridSize}
                     height={gridSize}
-                    fill={typeof pixelColor === 'string' ? pixelColor : undefined}
-                    fillPatternImage={typeof pixelColor === 'object' ? pixelColor : undefined}
-                    fillPatternScale={pixel.color === 'ClearOnMain' ? { x: 1, y: 1 } : { x: 1, y: 1 }} // Scale pink checkerboard
+                    fill={typeof pixelColor === "string" ? pixelColor : undefined}
+                    fillPatternImage={typeof pixelColor === "object" ? pixelColor : undefined}
+                    fillPatternScale={pixel.color === "ClearOnMain" ? { x: 1, y: 1 } : { x: 1, y: 1 }} // Scale pink checkerboard
                     strokeWidth={0}
                   />
                 ) : null;
