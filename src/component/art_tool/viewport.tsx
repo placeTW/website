@@ -137,7 +137,7 @@ const Viewport: React.FC<ViewportProps> = ({
     return color;
   };
 
-  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleMouseMove = () => {
     const stage = stageRef.current;
     if (!stage) return;
     const pointer = stage.getPointerPosition();
@@ -146,20 +146,20 @@ const Viewport: React.FC<ViewportProps> = ({
     const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
     const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
     setHoveredPixel({ x, y });
-
+  
     if (coordinatesRef.current) {
       coordinatesRef.current.style.left = `${pointer.x + 10}px`;
       coordinatesRef.current.style.top = `${pointer.y + 10}px`;
     }
-
+  
     if (isPainting.current && isEditing && onPixelPaint) {
       onPixelPaint(x, y);
     }
-
+  
     if (isPanning.current && initialMousePos.current) {
       const dx = pointer.x - initialMousePos.current.x;
       const dy = pointer.y - initialMousePos.current.y;
-
+  
       stage.position({
         x: initialStagePos.current.x + dx,
         y: initialStagePos.current.y + dy,
