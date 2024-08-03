@@ -8,9 +8,16 @@ interface ViewportProps {
   pixels: Pixel[];
   isEditing?: boolean;
   onPixelPaint?: (x: number, y: number) => void;
+  layerOrder: string[]; // Add the layerOrder prop
 }
 
-const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixelPaint }) => {
+const Viewport: React.FC<ViewportProps> = ({
+  designId,
+  pixels,
+  isEditing,
+  onPixelPaint,
+  layerOrder,
+}) => {
   const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
   const stageRef = useRef<Konva.Stage | null>(null);
   const gridSize = 10;
@@ -185,26 +192,30 @@ const Viewport: React.FC<ViewportProps> = ({ designId, pixels, isEditing, onPixe
           />
           {drawGrid(dimensions.width, dimensions.height)}
         </Layer>
-        <Layer>
-          {pixels.map((pixel) => {
-            const pixelColor = renderPixelColor(pixel.color);
+        {layerOrder.map((layer) => (
+          <Layer key={layer}>
+            {pixels
+              .filter((pixel) => pixel.canvas === layer)
+              .map((pixel) => {
+                const pixelColor = renderPixelColor(pixel.color);
 
-            // Only render the pixel if the color is not null
-            return pixelColor ? (
-              <Rect
-                key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
-                x={pixel.x * gridSize}
-                y={pixel.y * gridSize}
-                width={gridSize}
-                height={gridSize}
-                fill={typeof pixelColor === 'string' ? pixelColor : undefined}
-                fillPatternImage={typeof pixelColor === 'object' ? pixelColor : undefined}
-                fillPatternScale={pixel.color === 'ClearOnMain' ? { x: 1, y: 1 } : { x: 1, y: 1 }} // Scale pink checkerboard
-                strokeWidth={0}
-              />
-            ) : null;
-          })}
-        </Layer>
+                // Only render the pixel if the color is not null
+                return pixelColor ? (
+                  <Rect
+                    key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
+                    x={pixel.x * gridSize}
+                    y={pixel.y * gridSize}
+                    width={gridSize}
+                    height={gridSize}
+                    fill={typeof pixelColor === 'string' ? pixelColor : undefined}
+                    fillPatternImage={typeof pixelColor === 'object' ? pixelColor : undefined}
+                    fillPatternScale={pixel.color === 'ClearOnMain' ? { x: 1, y: 1 } : { x: 1, y: 1 }} // Scale pink checkerboard
+                    strokeWidth={0}
+                  />
+                ) : null;
+              })}
+          </Layer>
+        ))}
       </Stage>
       {hoveredPixel && (
         <div

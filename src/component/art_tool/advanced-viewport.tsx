@@ -142,6 +142,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
   }, [pixels, editedPixels, isEditing]);
 
+  // Update layerOrder to include the edit layer right above the design being edited
+  const layerOrder = ["main"];
+  if (editDesignId && isEditing) {
+    layerOrder.push(editDesignId);
+  }
+  layerOrder.push(...visibleLayers.filter(layer => layer !== "main" && layer !== editDesignId));
+
   // Function to regenerate pixels array from scratch
   const regeneratePixels = async () => {
     const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
@@ -201,6 +208,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         pixels={pixels}
         isEditing={isEditing}
         onPixelPaint={handlePixelPaint}
+        layerOrder={layerOrder} // Pass the updated layerOrder prop
       />
 
       {isEditing && (
