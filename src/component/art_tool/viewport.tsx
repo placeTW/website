@@ -22,14 +22,15 @@ const Viewport: React.FC<ViewportProps> = ({
   const stageRef = useRef<Konva.Stage | null>(null);
   const gridSize = 10;
   const coordinatesRef = useRef<HTMLDivElement>(null);
-  const divRef = useRef(null);
+  const divRef = useRef<HTMLDivElement>(null); // Fix type to HTMLDivElement
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  
-  // Ref to track the initial position of the mouse for panning
-  const initialMousePos = useRef<{ x: number; y: number } | null>(null);
-  const initialStagePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Refs to track panning and zooming
   const isPanning = useRef(false);
   const isPainting = useRef(false);
+  const lastTouchDistance = useRef(0);
+  const initialStagePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const initialTouchPos = useRef<{ x: number; y: number } | null>(null);
 
   const createCheckerboardPattern = (color1: string, color2: string, size: number): HTMLImageElement => {
     const canvas = document.createElement("canvas");
@@ -103,6 +104,143 @@ const Viewport: React.FC<ViewportProps> = ({
     stage.batchDraw();
   };
 
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    // Handle pinch to zoom
+    if (e.touches.length === 2) {
+      e.preventDefault(); // Prevent default zoom behavior
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const dist = Math.sqrt(
+        Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2)
+      );
+
+      if (lastTouchDistance.current === 0) {
+        lastTouchDistance.current = dist;
+      } else {
+        const scaleBy = dist / lastTouchDistance.current;
+        const oldScale = stage.scaleX();
+        const newScale = oldScale * scaleBy;
+
+        // Calculate the center point of the pinch
+        const center = {
+          x: (touch1.clientX + touch2.clientX) / 2,
+          y: (touch1.clientY + touch2.clientY) / 2,
+        };
+
+        const mousePointTo = {
+          x: (center.x - stage.x()) / oldScale,
+          y: (center.y - stage.y()) / oldScale,
+        };
+
+        stage.scale({ x: newScale, y: newScale });
+
+        const newPos = {
+          x: center.x - mousePointTo.x * newScale,
+          y: center.y - mousePointTo.y * newScale,
+        };
+
+        stage.position(newPos);
+        stage.batchDraw();
+
+        lastTouchDistance.current = dist; // Update the last distance
+      }
+    }
+
+    // Handle single touch panning
+    if (e.touches.length === 1 && isPanning.current && initialTouchPos.current) {
+      const touch = e.touches[0];
+      const dx = touch.clientX - initialTouchPos.current.x;
+      const dy = touch.clientY - initialTouchPos.current.y;
+
+      stage.position({
+        x: initialStagePos.current.x + dx,
+        y: initialStagePos.current.y + dy,
+      });
+      stage.batchDraw();
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    if (e.touches.length === 1) {
+      // Single touch - initiate panning
+      isPanning.current = true;
+      initialTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      initialStagePos.current = stage.position();
+    } else if (e.touches.length === 2) {
+      // Multi-touch - initiate pinch to zoom
+      lastTouchDistance.current = 0;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // Reset panning and pinch state on touch end
+    isPanning.current = false;
+    lastTouchDistance.current = 0;
+    initialTouchPos.current = null;
+  };
+
+  const handleMouseMove = () => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const pointer = stage.getPointerPosition();
+    if (!pointer) return;
+    const scale = stage.scaleX();
+    const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
+    const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
+    setHoveredPixel({ x, y });
+
+    if (coordinatesRef.current) {
+      coordinatesRef.current.style.left = `${pointer.x + 10}px`;
+      coordinatesRef.current.style.top = `${pointer.y + 10}px`;
+    }
+
+    if (isPainting.current && isEditing && onPixelPaint) {
+      onPixelPaint(x, y);
+    }
+
+    if (isPanning.current && initialTouchPos.current) {
+      const dx = pointer.x - initialTouchPos.current.x;
+      const dy = pointer.y - initialTouchPos.current.y;
+
+      stage.position({
+        x: initialStagePos.current.x + dx,
+        y: initialStagePos.current.y + dy,
+      });
+      stage.batchDraw();
+    }
+  };
+
+  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    if (e.evt.button === 0 && isEditing) {
+      // Left-click
+      isPainting.current = true;
+    } else if (e.evt.button === 2) {
+      // Right-click
+      isPanning.current = true;
+      initialTouchPos.current = stage.getPointerPosition(); // Capture initial mouse position
+      initialStagePos.current = stage.position(); // Capture initial stage position
+    }
+  };
+
+  const handleMouseUp = () => {
+    isPainting.current = false;
+    isPanning.current = false;
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default context menu from showing
+  };
+
   const drawGrid = (width: number, height: number) => {
     const lines = [];
     for (let i = 0; i < width / gridSize; i++) {
@@ -137,61 +275,6 @@ const Viewport: React.FC<ViewportProps> = ({
     return color;
   };
 
-  const handleMouseMove = () => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const pointer = stage.getPointerPosition();
-    if (!pointer) return;
-    const scale = stage.scaleX();
-    const x = Math.floor((pointer.x - stage.x()) / (gridSize * scale));
-    const y = Math.floor((pointer.y - stage.y()) / (gridSize * scale));
-    setHoveredPixel({ x, y });
-  
-    if (coordinatesRef.current) {
-      coordinatesRef.current.style.left = `${pointer.x + 10}px`;
-      coordinatesRef.current.style.top = `${pointer.y + 10}px`;
-    }
-  
-    if (isPainting.current && isEditing && onPixelPaint) {
-      onPixelPaint(x, y);
-    }
-  
-    if (isPanning.current && initialMousePos.current) {
-      const dx = pointer.x - initialMousePos.current.x;
-      const dy = pointer.y - initialMousePos.current.y;
-  
-      stage.position({
-        x: initialStagePos.current.x + dx,
-        y: initialStagePos.current.y + dy,
-      });
-      stage.batchDraw();
-    }
-  };
-
-  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    const stage = stageRef.current;
-    if (!stage) return;
-
-    if (e.evt.button === 0 && isEditing) {
-      // Left-click
-      isPainting.current = true;
-    } else if (e.evt.button === 2) {
-      // Right-click
-      isPanning.current = true;
-      initialMousePos.current = stage.getPointerPosition(); // Capture initial mouse position
-      initialStagePos.current = stage.position(); // Capture initial stage position
-    }
-  };
-
-  const handleMouseUp = () => {
-    isPainting.current = false;
-    isPanning.current = false;
-  };
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default context menu from showing
-  };
-
   return (
     <div
       className="viewport-container"
@@ -204,6 +287,9 @@ const Viewport: React.FC<ViewportProps> = ({
       }}
       ref={divRef}
       onContextMenu={handleContextMenu}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       <Stage
         width={dimensions.width}
