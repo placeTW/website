@@ -5,7 +5,7 @@ import { useAlertContext } from "../context/alert-context";
 import { alertLevels, validAlertLevels } from "../definitions/alert-level";
 import { databaseFetchPixels } from "../api/supabase/database";
 
-interface Pixel { // Define the Pixel type here
+interface Pixel { 
   id: number;
   x: number;
   y: number;
@@ -16,17 +16,20 @@ interface Pixel { // Define the Pixel type here
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { alertLevel, alertMessage } = useAlertContext();
-  const [pixels, setPixels] = useState<Pixel[]>([]); // Set the correct type for pixels
+  const [pixels, setPixels] = useState<Pixel[]>([]); 
 
   useEffect(() => {
     const fetchPixels = async () => {
-      const designId = "someDesignId"; // Replace this with the actual designId logic
+      const designId = "someDesignId"; 
       const fetchedPixels = await databaseFetchPixels(designId);
-      setPixels(fetchedPixels || []); // Use an empty array if fetchedPixels is undefined
+      setPixels(fetchedPixels || []); 
     };
 
     fetchPixels();
   }, []);
+
+  // Provide a default layer order
+  const layerOrder = ["main"]; // Adjust this based on your requirements
 
   return (
     <div>
@@ -40,7 +43,7 @@ const BriefingRoom: React.FC = () => {
           )}
           {!!alertMessage && <p>{alertMessage}</p>}
           {alertLevels.get(alertLevel)?.showViewport && (
-            <Viewport designId="someDesignId" pixels={pixels} />
+            <Viewport designId="someDesignId" pixels={pixels} layerOrder={layerOrder} />
           )}
         </div>
       ) : (

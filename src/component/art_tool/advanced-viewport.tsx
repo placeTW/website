@@ -58,6 +58,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   // Fetch pixels based on visible layers
   useEffect(() => {
     const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
+    console.log('Fetching pixels for layers:', layersToFetch);
 
     if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
       previousVisibleLayers.current = layersToFetch;
@@ -72,6 +73,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           layersToFetch.map((layer) => databaseFetchPixels(layer))
         );
         setPixels(allVisiblePixels.flat());
+        console.log('Fetched pixels:', allVisiblePixels.flat());
       };
 
       fetchPixels();
@@ -80,40 +82,48 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Real-time subscription to pixel changes
   useEffect(() => {
+    console.log('Setting up real-time subscription for pixel changes...');
     const pixelSubscription = supabase
       .channel("realtime-art_tool_pixels")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "art_tool_pixels" },
         (payload) => {
-          const { x, y, color, canvas } = payload.new as Pixel;
-          const updatedPixel: Pixel = { x, y, color, canvas };
+          console.log('Received real-time update:', payload);
 
           setPixels((prevPixels) => {
             const pixelMap = new Map<string, Pixel>();
 
             // Add existing pixels to the map first
             prevPixels.forEach((pixel) => {
-              pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+              pixelMap.set(`${pixel.id}`, pixel); // Use id as key
             });
 
             // Handle the event based on its type
             if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-              pixelMap.set(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`, updatedPixel);
+              const { id, x, y, color, canvas } = payload.new as Pixel;
+              const updatedPixel: Pixel = { id, x, y, color, canvas };
+              pixelMap.set(`${id}`, updatedPixel);
+              console.log('Inserted/Updated pixel:', updatedPixel);
             } else if (payload.eventType === "DELETE") {
-              pixelMap.delete(`${updatedPixel.x}-${updatedPixel.y}-${updatedPixel.canvas}`);
+              const deletedId = payload.old.id;
+              pixelMap.delete(`${deletedId}`);
+              console.log('Deleted pixel by ID:', deletedId);
             }
 
-            return Array.from(pixelMap.values());
+            const updatedPixels = Array.from(pixelMap.values());
+            console.log('Updated pixel map:', updatedPixels);
+            return updatedPixels;
           });
         }
       )
       .subscribe();
 
     return () => {
+      console.log('Unsubscribing from real-time updates...');
       supabase.removeChannel(pixelSubscription);
     };
-  }, []);
+  }, [visibleLayers]);
 
   // Merge pixels from different layers with edited pixels
   useEffect(() => {
@@ -122,19 +132,20 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
       // Add existing pixels to the map first
       pixels.forEach((pixel) => {
-        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+        pixelMap.set(`${pixel.id}`, pixel);
       });
 
       // Overwrite with any edited pixels
       editedPixels.forEach((pixel) => {
         if (pixel.color !== "ClearOnDesign") {
-          pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+          pixelMap.set(`${pixel.id}`, pixel);
         } else {
-          pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.canvas}`);
+          pixelMap.delete(`${pixel.id}`);
         }
       });
 
       const mergedPixels = Array.from(pixelMap.values());
+      console.log('Merging pixels:', mergedPixels);
 
       if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
         setPixels(mergedPixels);
@@ -148,10 +159,12 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     layerOrder.push(editDesignId);
   }
   layerOrder.push(...visibleLayers.filter(layer => layer !== "main" && layer !== editDesignId));
+  console.log('Calculated layer order:', layerOrder);
 
   // Function to regenerate pixels array from scratch
   const regeneratePixels = async () => {
     const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
+    console.log('Regenerating pixels for layers:', layersToFetch);
 
     if (layersToFetch.length === 0) {
       setPixels([]); // No layers, so empty pixels array
@@ -164,6 +177,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
     // Update pixels state with freshly fetched data
     setPixels(allVisiblePixels.flat());
+    console.log('Regenerated pixels:', allVisiblePixels.flat());
   };
 
   // Clear edited pixels on submission or exit from edit mode
@@ -177,6 +191,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   }, [isEditing]);
 
   const handleColorSelect = (color: string) => {
+    console.log('Selected color:', color);
     setSelectedColor(color);
   };
 
