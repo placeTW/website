@@ -1,17 +1,15 @@
-// @ts-ignore
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Box,
   Button,
   Card,
   CardBody,
-  CardFooter,
   Heading,
   IconButton,
   Image,
-  Stack,
   Text,
   useToast,
+  Flex,
 } from "@chakra-ui/react";
 import {
   FaCloudArrowUp,
@@ -21,7 +19,8 @@ import {
   FaHeart,
   FaPen,
   FaTrash,
-  FaSquareXmark,
+  FaArrowRightFromBracket,
+  FaImage,
 } from "react-icons/fa6";
 import {
   databaseDeleteLayerAndPixels,
@@ -32,9 +31,8 @@ import {
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
 import ImageModal from "../image-modal";
-import MergePopup from "./merge-popup"; // Import the MergePopup component
+import MergePopup from "./merge-popup";
 
-// Define the types for the props
 interface DesignCardProps {
   design: DesignInfo;
   userId: string;
@@ -63,7 +61,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const [isLiked, setIsLiked] = useState(
     currentUser ? design.liked_by.includes(currentUser.user_id) : false
   );
-  const [isMergePopupOpen, setIsMergePopupOpen] = useState(false); // State to control the merge popup
+  const [isMergePopupOpen, setIsMergePopupOpen] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -135,14 +133,14 @@ const DesignCard: FC<DesignCardProps> = ({
   };
 
   const handleMerge = () => {
-    setIsMergePopupOpen(true); // Open the merge popup when merge is clicked
+    setIsMergePopupOpen(true);
   };
 
   const handleMergeDecision = async (destination: string) => {
-    setIsMergePopupOpen(false); // Close the popup
+    setIsMergePopupOpen(false);
 
     if (destination === "cancel") {
-      return; // Do nothing if user canceled the merge
+      return;
     }
 
     try {
@@ -187,13 +185,22 @@ const DesignCard: FC<DesignCardProps> = ({
 
   return (
     <>
-      <Card bg={isEditing ? "blue.100" : "white"}>
-        <CardBody>
+      <Card
+        bg="white" // Ensure the background of the entire card is white
+        width="100%"
+        maxWidth="4in"
+        minWidth="3in"
+        position="relative"
+        height="130px"
+      >
+        <CardBody display="flex" padding="0">
           <Box
+            height="100%"
+            width="120px"
             position="relative"
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
+            flex="none"
+            borderRight="1px solid #ccc"
+            overflow="hidden"
           >
             <IconButton
               icon={isVisible ? <FaEye /> : <FaEyeSlash />}
@@ -202,96 +209,93 @@ const DesignCard: FC<DesignCardProps> = ({
               position="absolute"
               top="5px"
               left="5px"
+              zIndex={2}
+              size="sm"
+              backgroundColor="rgba(255, 255, 255, 0.8)"
+              _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
             />
             <Image
               alt={design.design_name}
-              fallbackSrc="https://via.placeholder.com/150"
-              h="300px"
-              w="300px"
+              fallback={
+                <Box
+                  height="100%"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  background="gray.100"
+                >
+                  <FaImage size="50%" color="white" /> {/* Inverted image icon */}
+                </Box>
+              }
+              height="100%"
+              width="120px"
               objectFit="cover"
               onClick={handleImageClick}
-              src={
-                design.design_thumbnail ||
-                "https://via.placeholder.com/300?text=No+Image"
-              }
-              borderRadius={8}
+              src={design.design_thumbnail || ""}
             />
-          </Box>
-          <Box p={4} pb={0}>
-            <Stack>
-              <Text
-                color={"green.500"}
-                textTransform={"uppercase"}
-                fontWeight={800}
-                fontSize={"sm"}
-                letterSpacing={1.1}
-              >
-                {rankName} {userHandle}
-              </Text>
-              <Heading fontSize={"2xl"} fontFamily={"body"}>
-                {design.design_name}
-              </Heading>
-            </Stack>
-          </Box>
-        </CardBody>
-        <CardFooter
-          pt={0}
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="space-between"
-          flexWrap="wrap"
-          gap={2}
-        >
-          <Box display="flex" flexDirection="row" alignItems="center">
             <Button
               leftIcon={<FaHeart color={isLiked ? "red" : "gray"} />}
               onClick={handleLike}
+              position="absolute"
+              bottom="5px"
+              left="5px"
+              zIndex={2}
+              size="sm"
+              backgroundColor="rgba(255, 255, 255, 0.8)"
+              _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
             >
               {design.liked_by.length}
             </Button>
           </Box>
-          <Box display="flex" gap={2}>
-            {isAdminOrCreator && (
-              <IconButton
-                icon={<FaTrash />}
-                aria-label="Delete"
-                onClick={handleDelete}
-              />
-            )}
-            {isCreator && !isEditing && (
-              <IconButton
-                icon={<FaPen />}
-                aria-label="Edit"
-                onClick={handleEditToggle}
-              />
-            )}
-            {isEditing && (
-              <>
-                <IconButton
-                  icon={<FaSquareXmark />}
-                  aria-label="Cancel"
-                  onClick={handleEditToggle}
-                />
-                <IconButton
-                  icon={<FaCloudArrowUp />}
-                  aria-label="Submit"
-                  onClick={onSubmitEdit} // Call onSubmitEdit prop
-                />
-              </>
-            )}
-            {canMerge && (
-              <IconButton icon={<FaCodeMerge />} aria-label="Merge" onClick={handleMerge} />
-            )}
-          </Box>
-        </CardFooter>
+          <Flex
+            direction="column"
+            justifyContent="space-between"
+            p={2}
+            width="100%"
+            bg={isEditing ? "blue.100" : "white"} // Only the right side turns blue
+          >
+            <Box>
+              <Heading fontSize={"md"}>{design.design_name}</Heading>
+              <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
+                {rankName} {userHandle}
+              </Text>
+            </Box>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
+              {isCreator && !isEditing && (
+                <IconButton icon={<FaPen />} aria-label="Edit" onClick={handleEditToggle} size="sm" />
+              )}
+              {isEditing && (
+                <>
+                  <IconButton
+                    icon={<FaArrowRightFromBracket />}
+                    aria-label="Cancel"
+                    onClick={handleEditToggle}
+                    size="sm"
+                  />
+                  <IconButton
+                    icon={<FaCloudArrowUp />}
+                    aria-label="Submit"
+                    onClick={onSubmitEdit}
+                    size="sm"
+                  />
+                </>
+              )}
+              {canMerge && (
+                <IconButton icon={<FaCodeMerge />} aria-label="Merge" onClick={handleMerge} size="sm" />
+              )}
+              {isAdminOrCreator && (
+                <IconButton icon={<FaTrash />} aria-label="Delete" onClick={handleDelete} size="sm" />
+              )}
+            </Box>
+          </Flex>
+        </CardBody>
       </Card>
       <ImageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         imageUrl={
           design.design_thumbnail ||
-          "https://via.placeholder.com/300?text=No+Image"
+          "https://via.placeholder.com/100?text=No+Image"
         }
         altText={design.design_name}
       />
