@@ -1,3 +1,5 @@
+import * as React from "react"; // Import React without triggering the warning
+import { FC, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -11,7 +13,6 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { FC, useEffect, useState } from "react";
 import {
   FaCloudArrowUp,
   FaCodeMerge,
@@ -26,12 +27,14 @@ import {
   databaseDeleteLayerAndPixels,
   likeDesign,
   unlikeDesign,
-  databaseMergeDesignIntoBaseline, // Import the new merge function
+  databaseMergeDesignIntoBaseline,
 } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
 import { DesignInfo } from "../../types/art-tool";
 import ImageModal from "../image-modal";
+import MergePopup from "./merge-popup"; // Import the MergePopup component
 
+// Define the types for the props
 interface DesignCardProps {
   design: DesignInfo;
   userId: string;
@@ -60,6 +63,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const [isLiked, setIsLiked] = useState(
     currentUser ? design.liked_by.includes(currentUser.user_id) : false
   );
+  const [isMergePopupOpen, setIsMergePopupOpen] = useState(false); // State to control the merge popup
   const toast = useToast();
 
   useEffect(() => {
@@ -130,24 +134,26 @@ const DesignCard: FC<DesignCardProps> = ({
     }
   };
 
-  const handleMerge = async () => {
-    console.log("Merge button clicked."); // Log when the function starts
+  const handleMerge = () => {
+    setIsMergePopupOpen(true); // Open the merge popup when merge is clicked
+  };
+
+  const handleMergeDecision = async (destination: string) => {
+    setIsMergePopupOpen(false); // Close the popup
+
+    if (destination === "cancel") {
+      return; // Do nothing if user canceled the merge
+    }
+
     try {
-      // Prompt the user to select the baseline
-      const baseline = window.confirm("Merge into 'Main' baseline? Click 'Cancel' for 'Expansion'.")
-        ? "main"
-        : "expansion";
-
-      console.log(`Merging design '${design.design_name}' into baseline '${baseline}'.`);
-
-      // Call the merge function with the selected design ID and baseline
-      const mergeResult = await databaseMergeDesignIntoBaseline(design.id, baseline);
+      console.log(`Merging design '${design.design_name}' into baseline '${destination}'.`);
+      const mergeResult = await databaseMergeDesignIntoBaseline(design.id, destination);
 
       console.log("Merge result:", mergeResult);
 
       toast({
         title: "Merge Successful",
-        description: `${design.design_name} has been merged into the ${baseline} baseline.`,
+        description: `${design.design_name} has been merged into the ${destination} baseline.`,
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -288,6 +294,11 @@ const DesignCard: FC<DesignCardProps> = ({
           "https://via.placeholder.com/300?text=No+Image"
         }
         altText={design.design_name}
+      />
+      <MergePopup
+        isOpen={isMergePopupOpen}
+        onClose={() => setIsMergePopupOpen(false)}
+        onMerge={handleMergeDecision}
       />
     </>
   );
