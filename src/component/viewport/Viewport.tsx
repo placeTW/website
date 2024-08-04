@@ -44,42 +44,47 @@ const Viewport: React.FC<ViewportProps> = ({
   const [backgroundImage] = useImage("/images/background.png");
   const gridSize = 40; // Each cell pixel in the image is 40x40 image pixels
   const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>([]);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
-  
 
-  
   const calculateVisibleTiles = useCallback(() => {
     if (!stageRef.current) return;
-  
+
     const stage = stageRef.current;
     const scale = stage.scaleX(); // Assume uniform scaling (same for X and Y)
+    setZoomLevel(scale); // Update zoom level state
+
+    if (scale <= 0.125) {
+        // If zoom level is 0.125 or lower, skip tile calculation
+        setVisibleTiles([]); // Clear the visible tiles array
+        console.log("Zoom level too low, rendering grey background only");
+        return;
+    }
+
     const viewWidth = stage.width() / scale;
     const viewHeight = stage.height() / scale;
-  
+
     // Adjusted to handle scaling and offset correctly
     const offsetX = -stage.x() / scale;
     const offsetY = -stage.y() / scale;
-  
+
     // Calculate the range of visible tiles
     const minX = Math.floor(offsetX / backgroundTileSize);
     const minY = Math.floor(offsetY / backgroundTileSize);
     const maxX = Math.ceil((offsetX + viewWidth) / backgroundTileSize);
     const maxY = Math.ceil((offsetY + viewHeight) / backgroundTileSize);
-  
+
     const newVisibleTiles: { x: number; y: number }[] = [];
     for (let x = minX; x < maxX; x++) {
-      for (let y = minY; y < maxY; y++) {
-        newVisibleTiles.push({ x, y });
-      }
+        for (let y = minY; y < maxY; y++) {
+            newVisibleTiles.push({ x, y });
+        }
     }
-  
+
     setVisibleTiles(newVisibleTiles);
     console.log("Currently visible tiles:", newVisibleTiles.length);
-  }, [backgroundTileSize]);
-
-
-  
+}, [backgroundTileSize]);
 
   useEffect(() => {
     calculateVisibleTiles();
@@ -125,7 +130,11 @@ const Viewport: React.FC<ViewportProps> = ({
   };
 
   const handleZoom = () => {
-    calculateVisibleTiles();
+    if (stageRef.current) {
+      const scale = stageRef.current.scaleX(); // Assuming uniform scaling (scaleX = scaleY)
+      console.log("Current zoom level:", scale);
+      calculateVisibleTiles();
+    }
   };
 
   return (
@@ -154,18 +163,29 @@ const Viewport: React.FC<ViewportProps> = ({
         draggable={!isEditing}
       >
         <Layer>
-          {visibleTiles.map((tile) => (
-            <KonvaImage
-              key={`${tile.x}-${tile.y}`}
-              image={backgroundImage}
-              x={tile.x * backgroundTileSize}
-              y={tile.y * backgroundTileSize}
-              width={backgroundTileSize}
-              height={backgroundTileSize}
-              perfectDrawEnabled={false}
-              imageSmoothingEnabled={false}
+          {/* Conditionally render the background tiles or a solid grey rectangle */}
+          {zoomLevel > 0.125 ? (
+            visibleTiles.map((tile) => (
+              <KonvaImage
+                key={`${tile.x}-${tile.y}`}
+                image={backgroundImage}
+                x={tile.x * backgroundTileSize}
+                y={tile.y * backgroundTileSize}
+                width={backgroundTileSize}
+                height={backgroundTileSize}
+                perfectDrawEnabled={false}
+                imageSmoothingEnabled={false}
+              />
+            ))
+          ) : (
+            <Rect
+              x={-stageRef.current!.x() / zoomLevel - (dimensions.width * 2.5) / zoomLevel}
+              y={-stageRef.current!.y() / zoomLevel - (dimensions.height * 2.5) / zoomLevel}
+              width={(dimensions.width * 5) / zoomLevel}
+              height={(dimensions.height * 5) / zoomLevel}
+              fill="#f5f5f5" // A lighter grey shade, halfway between #eeeeee and white
             />
-          ))}
+          )}
         </Layer>
         {layerOrder.map((layer) => (
           <Layer key={layer}>
