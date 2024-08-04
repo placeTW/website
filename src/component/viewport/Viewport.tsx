@@ -42,7 +42,7 @@ const Viewport: React.FC<ViewportProps> = ({
   const divRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [backgroundImage] = useImage("/images/background.png");
-  const [clearOnMainImage] = useImage("/images/ClearOnMain.png"); // Load the ClearOnMain image
+  const [clearOnMainImage] = useImage("/images/ClearOnMain.png");
   const gridSize = 40; // Each cell pixel in the image is 40x40 image pixels
   const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>([]);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -119,15 +119,6 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   }, [designId]);
 
-  const renderPixelColor = (color: string): string | HTMLImageElement | null => {
-    if (color === "ClearOnDesign") {
-      return null; // Handle ClearOnDesign if needed
-    } else if (color === "ClearOnMain") {
-      return clearOnMainImage || null;
-    }
-    return color;
-  };
-
   const handleDragEnd = () => {
     calculateVisibleTiles();
   };
@@ -174,50 +165,58 @@ const Viewport: React.FC<ViewportProps> = ({
         draggable={!isEditing}
       >
         <Layer>
-          {/* Conditionally render the background tiles or a solid grey rectangle */}
-          {zoomLevel > 0.125 ? (
-            visibleTiles.map((tile) => (
-              <KonvaImage
-                key={`${tile.x}-${tile.y}`}
-                image={backgroundImage}
-                x={tile.x * backgroundTileSize}
-                y={tile.y * backgroundTileSize}
-                width={backgroundTileSize}
-                height={backgroundTileSize}
-                perfectDrawEnabled={false}
-                imageSmoothingEnabled={false}
-              />
-            ))
-          ) : (
-            <Rect
-              x={-stageRef.current!.x() / zoomLevel - (dimensions.width * 2.5) / zoomLevel}
-              y={-stageRef.current!.y() / zoomLevel - (dimensions.height * 2.5) / zoomLevel}
-              width={(dimensions.width * 5) / zoomLevel}
-              height={(dimensions.height * 5) / zoomLevel}
-              fill="#f5f5f5" // A lighter grey shade, halfway between #eeeeee and white
-            />
-          )}
+          {/* Render background tiles */}
+          {zoomLevel > 0.125
+            ? visibleTiles.map((tile) => (
+                <KonvaImage
+                  key={`${tile.x}-${tile.y}`}
+                  image={backgroundImage}
+                  x={tile.x * backgroundTileSize}
+                  y={tile.y * backgroundTileSize}
+                  width={backgroundTileSize}
+                  height={backgroundTileSize}
+                  perfectDrawEnabled={false}
+                  imageSmoothingEnabled={false}
+                />
+              ))
+            : null}
+
+          {/* Render ClearOnMain image */}
+          {pixels.map((pixel) => {
+            if (pixel.color === "ClearOnMain" && clearOnMainImage) {
+              return (
+                <KonvaImage
+                  key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
+                  image={clearOnMainImage}
+                  x={pixel.x * gridSize}
+                  y={pixel.y * gridSize}
+                  width={clearOnMainImage.width}
+                  height={clearOnMainImage.height}
+                  perfectDrawEnabled={false}
+                  imageSmoothingEnabled={false}
+                />
+              );
+            }
+            return null;
+          })}
         </Layer>
+
+        {/* Render the pixel grid */}
         {layerOrder.map((layer) => (
           <Layer key={layer}>
             {pixels
               .filter((pixel) => pixel.canvas === layer)
-              .map((pixel) => {
-                const pixelColor = renderPixelColor(pixel.color);
-                return pixelColor ? (
-                  <Rect
-                    key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
-                    x={pixel.x * gridSize}
-                    y={pixel.y * gridSize}
-                    width={gridSize}
-                    height={gridSize}
-                    fill={typeof pixelColor === "string" ? pixelColor : undefined}
-                    fillPatternImage={typeof pixelColor === "object" ? pixelColor : undefined}
-                    fillPatternScale={{ x: 1, y: 1 }}
-                    strokeWidth={0}
-                  />
-                ) : null;
-              })}
+              .map((pixel) => (
+                <Rect
+                  key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
+                  x={pixel.x * gridSize}
+                  y={pixel.y * gridSize}
+                  width={gridSize}
+                  height={gridSize}
+                  fill={pixel.color !== "ClearOnMain" ? pixel.color : undefined}
+                  strokeWidth={0}
+                />
+              ))}
           </Layer>
         ))}
       </Stage>
