@@ -165,6 +165,17 @@ const Viewport: React.FC<ViewportProps> = ({
         draggable={!isEditing}
       >
         <Layer>
+          {/* Render grey background if zoom level is low */}
+          {zoomLevel <= 0.125 && (
+            <Rect
+              x={-stageRef.current!.x() / zoomLevel - (dimensions.width * 2.5) / zoomLevel}
+              y={-stageRef.current!.y() / zoomLevel - (dimensions.height * 2.5) / zoomLevel}
+              width={(dimensions.width * 5) / zoomLevel}
+              height={(dimensions.height * 5) / zoomLevel}
+              fill="#f5f5f5" // A lighter grey shade, halfway between #eeeeee and white
+            />
+          )}
+
           {/* Render background tiles */}
           {zoomLevel > 0.125
             ? visibleTiles.map((tile) => (
