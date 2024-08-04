@@ -1,5 +1,5 @@
 import Konva from "konva";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Layer, Rect, Stage, Image as KonvaImage } from "react-konva";
 import { Pixel } from "../../types/art-tool";
 import { mouseHandlers, touchHandlers, wheelHandler } from "./handlers";
@@ -43,6 +43,47 @@ const Viewport: React.FC<ViewportProps> = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [backgroundImage] = useImage("/images/background.png");
   const gridSize = 40; // Each cell pixel in the image is 40x40 image pixels
+  const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>([]);
+
+  const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
+  
+
+  
+  const calculateVisibleTiles = useCallback(() => {
+    if (!stageRef.current) return;
+  
+    const stage = stageRef.current;
+    const scale = stage.scaleX(); // Assume uniform scaling (same for X and Y)
+    const viewWidth = stage.width() / scale;
+    const viewHeight = stage.height() / scale;
+  
+    // Adjusted to handle scaling and offset correctly
+    const offsetX = -stage.x() / scale;
+    const offsetY = -stage.y() / scale;
+  
+    // Calculate the range of visible tiles
+    const minX = Math.floor(offsetX / backgroundTileSize);
+    const minY = Math.floor(offsetY / backgroundTileSize);
+    const maxX = Math.ceil((offsetX + viewWidth) / backgroundTileSize);
+    const maxY = Math.ceil((offsetY + viewHeight) / backgroundTileSize);
+  
+    const newVisibleTiles: { x: number; y: number }[] = [];
+    for (let x = minX; x < maxX; x++) {
+      for (let y = minY; y < maxY; y++) {
+        newVisibleTiles.push({ x, y });
+      }
+    }
+  
+    setVisibleTiles(newVisibleTiles);
+    console.log("Currently visible tiles:", newVisibleTiles.length);
+  }, [backgroundTileSize]);
+
+
+  
+
+  useEffect(() => {
+    calculateVisibleTiles();
+  }, [dimensions, calculateVisibleTiles]);
 
   useEffect(() => {
     if (!divRef.current) return;
@@ -79,6 +120,14 @@ const Viewport: React.FC<ViewportProps> = ({
     return color;
   };
 
+  const handleDragEnd = () => {
+    calculateVisibleTiles();
+  };
+
+  const handleZoom = () => {
+    calculateVisibleTiles();
+  };
+
   return (
     <div
       className="viewport-container"
@@ -96,20 +145,27 @@ const Viewport: React.FC<ViewportProps> = ({
         width={dimensions.width}
         height={dimensions.height}
         ref={stageRef}
-        onWheel={wheelHandler}
+        onWheel={(e) => {
+          wheelHandler(e);
+          handleZoom();
+        }}
         {...mouseHandlers(onPixelPaint, isEditing, stageRef, setHoveredPixel, coordinatesRef)}
+        onDragEnd={handleDragEnd}
         draggable={!isEditing}
       >
         <Layer>
-          <KonvaImage
-            image={backgroundImage}
-            x={0}
-            y={0}
-            width={1000} // Width of the background image
-            height={1000} // Height of the background image
-            perfectDrawEnabled={false}
-            imageSmoothingEnabled={false}
-          />
+          {visibleTiles.map((tile) => (
+            <KonvaImage
+              key={`${tile.x}-${tile.y}`}
+              image={backgroundImage}
+              x={tile.x * backgroundTileSize}
+              y={tile.y * backgroundTileSize}
+              width={backgroundTileSize}
+              height={backgroundTileSize}
+              perfectDrawEnabled={false}
+              imageSmoothingEnabled={false}
+            />
+          ))}
         </Layer>
         {layerOrder.map((layer) => (
           <Layer key={layer}>
