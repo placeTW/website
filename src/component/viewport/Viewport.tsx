@@ -113,7 +113,7 @@ const Viewport: React.FC<ViewportProps> = ({
       let scale = stageRef.current.scaleX(); // Assuming uniform scaling (scaleX = scaleY)
 
       // Cap the zoom level
-      const minZoomLevel = 0.0078125;
+      const minZoomLevel = 1/128;
       if (scale < minZoomLevel) {
         scale = minZoomLevel;
         stageRef.current.scale({ x: scale, y: scale });
