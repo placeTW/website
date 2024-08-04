@@ -1,4 +1,3 @@
-import React from "react";
 import { Line } from "react-konva";
 
 export const drawGrid = (width: number, height: number, gridSize: number) => {
