@@ -9,7 +9,7 @@ export const wheelHandler = (e: Konva.KonvaEventObject<WheelEvent>) => {
   const pointer = stage.getPointerPosition();
   if (!pointer) return;
 
-  const scaleBy = 1.1;
+  const scaleBy = 2;
   const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
   const mousePointTo = {
