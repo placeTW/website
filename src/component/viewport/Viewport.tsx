@@ -12,8 +12,8 @@ interface ViewportProps {
   layerOrder: string[];
 }
 
-const useImage = (src: string): [CanvasImageSource | undefined] => {
-  const [image, setImage] = useState<CanvasImageSource | undefined>(undefined);
+const useImage = (src: string): [HTMLImageElement | undefined] => {
+  const [image, setImage] = useState<HTMLImageElement | undefined>(undefined);
 
   useEffect(() => {
     const img = new Image();
@@ -42,6 +42,7 @@ const Viewport: React.FC<ViewportProps> = ({
   const divRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [backgroundImage] = useImage("/images/background.png");
+  const [clearOnMainImage] = useImage("/images/ClearOnMain.png"); // Load the ClearOnMain image
   const gridSize = 40; // Each cell pixel in the image is 40x40 image pixels
   const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>([]);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -119,8 +120,10 @@ const Viewport: React.FC<ViewportProps> = ({
   }, [designId]);
 
   const renderPixelColor = (color: string): string | HTMLImageElement | null => {
-    if (color === "ClearOnDesign" || color === "ClearOnMain") {
-      return null;
+    if (color === "ClearOnDesign") {
+      return null; // Handle ClearOnDesign if needed
+    } else if (color === "ClearOnMain") {
+      return clearOnMainImage || null;
     }
     return color;
   };
@@ -209,6 +212,8 @@ const Viewport: React.FC<ViewportProps> = ({
                     width={gridSize}
                     height={gridSize}
                     fill={typeof pixelColor === "string" ? pixelColor : undefined}
+                    fillPatternImage={typeof pixelColor === "object" ? pixelColor : undefined}
+                    fillPatternScale={{ x: 1, y: 1 }}
                     strokeWidth={0}
                   />
                 ) : null;
