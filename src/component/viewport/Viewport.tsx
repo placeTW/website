@@ -1,9 +1,8 @@
 import Konva from "konva";
 import React, { useEffect, useRef, useState } from "react";
-import { Layer, Line, Rect, Stage } from "react-konva";
+import { Layer, Rect, Stage, Image as KonvaImage } from "react-konva";
 import { Pixel } from "../../types/art-tool";
 import { mouseHandlers, touchHandlers, wheelHandler } from "./handlers";
-import { createCheckerboardPattern } from "./utils/createCheckerboardPattern";
 
 interface ViewportProps {
   designId: string | null;
@@ -13,6 +12,23 @@ interface ViewportProps {
   layerOrder: string[];
 }
 
+const useImage = (src: string): [CanvasImageSource | undefined] => {
+  const [image, setImage] = useState<CanvasImageSource | undefined>(undefined);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      setImage(img);
+    };
+    img.onerror = () => {
+      setImage(undefined);
+    };
+  }, [src]);
+
+  return [image];
+};
+
 const Viewport: React.FC<ViewportProps> = ({
   designId,
   pixels,
@@ -20,26 +36,13 @@ const Viewport: React.FC<ViewportProps> = ({
   onPixelPaint,
   layerOrder,
 }) => {
-  const [hoveredPixel, setHoveredPixel] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
   const stageRef = useRef<Konva.Stage | null>(null);
-  const gridSize = 10;
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-  const clearOnDesignPattern = createCheckerboardPattern(
-    "#eee",
-    "#fff",
-    gridSize,
-  );
-  const clearOnMainPattern = createCheckerboardPattern(
-    "#fc7e7e",
-    "#fff",
-    gridSize / 2,
-  );
+  const [backgroundImage] = useImage("/images/background.png");
+  const gridSize = 40; // Each cell pixel in the image is 40x40 image pixels
 
   useEffect(() => {
     if (!divRef.current) return;
@@ -56,43 +59,22 @@ const Viewport: React.FC<ViewportProps> = ({
   }, []);
 
   useEffect(() => {
+    if (stageRef.current) {
+      const layer = stageRef.current.getLayers()[0];
+      const context = layer.getCanvas().getContext();
+      context.imageSmoothingEnabled = false;
+    }
+  }, [backgroundImage]);
+
+  useEffect(() => {
     if (designId) {
       console.log(`Currently editing design with ID: ${designId}`);
     }
   }, [designId]);
 
-  const drawGrid = (width: number, height: number) => {
-    const lines = [];
-    for (let i = 0; i < width / gridSize; i++) {
-      lines.push(
-        <Line
-          key={`v-${i}`}
-          points={[i * gridSize, 0, i * gridSize, height]}
-          stroke="#ddd"
-          strokeWidth={0.5}
-        />,
-      );
-    }
-    for (let j = 0; j < height / gridSize; j++) {
-      lines.push(
-        <Line
-          key={`h-${j}`}
-          points={[0, j * gridSize, width, j * gridSize]}
-          stroke="#ddd"
-          strokeWidth={0.5}
-        />,
-      );
-    }
-    return lines;
-  };
-
-  const renderPixelColor = (
-    color: string,
-  ): string | HTMLImageElement | null => {
-    if (color === "ClearOnDesign") {
+  const renderPixelColor = (color: string): string | HTMLImageElement | null => {
+    if (color === "ClearOnDesign" || color === "ClearOnMain") {
       return null;
-    } else if (color === "ClearOnMain") {
-      return clearOnMainPattern;
     }
     return color;
   };
@@ -108,7 +90,6 @@ const Viewport: React.FC<ViewportProps> = ({
         height: "100%",
       }}
       ref={divRef}
-      // Apply touch handlers
       {...touchHandlers(onPixelPaint, isEditing)}
     >
       <Stage
@@ -116,20 +97,19 @@ const Viewport: React.FC<ViewportProps> = ({
         height={dimensions.height}
         ref={stageRef}
         onWheel={wheelHandler}
-        // Apply mouse handlers
         {...mouseHandlers(onPixelPaint, isEditing, stageRef, setHoveredPixel, coordinatesRef)}
         draggable={!isEditing}
       >
         <Layer>
-          <Rect
+          <KonvaImage
+            image={backgroundImage}
             x={0}
             y={0}
-            width={dimensions.width}
-            height={dimensions.height}
-            fillPatternImage={clearOnDesignPattern}
-            fillPatternScale={{ x: 0.5, y: 0.5 }}
+            width={1000} // Width of the background image
+            height={1000} // Height of the background image
+            perfectDrawEnabled={false}
+            imageSmoothingEnabled={false}
           />
-          {drawGrid(dimensions.width, dimensions.height)}
         </Layer>
         {layerOrder.map((layer) => (
           <Layer key={layer}>
@@ -144,17 +124,7 @@ const Viewport: React.FC<ViewportProps> = ({
                     y={pixel.y * gridSize}
                     width={gridSize}
                     height={gridSize}
-                    fill={
-                      typeof pixelColor === "string" ? pixelColor : undefined
-                    }
-                    fillPatternImage={
-                      typeof pixelColor === "object" ? pixelColor : undefined
-                    }
-                    fillPatternScale={
-                      pixel.color === "ClearOnMain"
-                        ? { x: 1, y: 1 }
-                        : { x: 1, y: 1 }
-                    }
+                    fill={typeof pixelColor === "string" ? pixelColor : undefined}
                     strokeWidth={0}
                   />
                 ) : null;

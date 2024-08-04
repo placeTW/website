@@ -1,6 +1,6 @@
 import { createCheckerboardPattern } from "./utils/createCheckerboardPattern";
 
-export const GRID_SIZE = 10;
+export const GRID_SIZE = 40;
 export const CLEAR_ON_DESIGN_PATTERN = createCheckerboardPattern(
   "#eee",
   "#fff",
