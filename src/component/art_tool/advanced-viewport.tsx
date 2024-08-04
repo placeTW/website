@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../api/supabase";
 import { databaseFetchPixels } from "../../api/supabase/database";
 import { Pixel } from "../../types/art-tool";
-import Viewport from "./viewport";
+// import Viewport from "./viewport";
+import Viewport from "../viewport/Viewport";
 
 interface AdvancedViewportProps {
   isEditing: boolean;

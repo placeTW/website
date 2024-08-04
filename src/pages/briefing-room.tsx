@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Viewport from "../component/art_tool/viewport";
+import Viewport from "../component/viewport/Viewport";
 import { useAlertContext } from "../context/alert-context";
 import { alertLevels, validAlertLevels } from "../definitions/alert-level";
 import { databaseFetchPixels } from "../api/supabase/database";
