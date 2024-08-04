@@ -192,7 +192,7 @@ const Viewport: React.FC<ViewportProps> = ({
               ))
             : null}
 
-          {/* Render ClearOnMain image */}
+          {/* Render ClearOnMain image based on layer visibility */}
           {pixels.map((pixel) => {
             if (pixel.color === "ClearOnMain" && clearOnMainImage) {
               return (
@@ -205,6 +205,7 @@ const Viewport: React.FC<ViewportProps> = ({
                   height={clearOnMainImage.height}
                   perfectDrawEnabled={false}
                   imageSmoothingEnabled={false}
+                  visible={layerOrder.includes(pixel.canvas)}
                 />
               );
             }
