@@ -56,10 +56,10 @@ const Viewport: React.FC<ViewportProps> = ({
     setZoomLevel(scale); // Update zoom level state
 
     if (scale <= 0.125) {
-        // If zoom level is 0.125 or lower, skip tile calculation
-        setVisibleTiles([]); // Clear the visible tiles array
-        console.log("Zoom level too low, rendering grey background only");
-        return;
+      // If zoom level is 0.125 or lower, skip tile calculation
+      setVisibleTiles([]); // Clear the visible tiles array
+      console.log("Zoom level too low, rendering grey background only");
+      return;
     }
 
     const viewWidth = stage.width() / scale;
@@ -77,14 +77,14 @@ const Viewport: React.FC<ViewportProps> = ({
 
     const newVisibleTiles: { x: number; y: number }[] = [];
     for (let x = minX; x < maxX; x++) {
-        for (let y = minY; y < maxY; y++) {
-            newVisibleTiles.push({ x, y });
-        }
+      for (let y = minY; y < maxY; y++) {
+        newVisibleTiles.push({ x, y });
+      }
     }
 
     setVisibleTiles(newVisibleTiles);
     console.log("Currently visible tiles:", newVisibleTiles.length);
-}, [backgroundTileSize]);
+  }, [backgroundTileSize]);
 
   useEffect(() => {
     calculateVisibleTiles();
@@ -131,7 +131,15 @@ const Viewport: React.FC<ViewportProps> = ({
 
   const handleZoom = () => {
     if (stageRef.current) {
-      const scale = stageRef.current.scaleX(); // Assuming uniform scaling (scaleX = scaleY)
+      let scale = stageRef.current.scaleX(); // Assuming uniform scaling (scaleX = scaleY)
+
+      // Cap the zoom level
+      const minZoomLevel = 0.0078125;
+      if (scale < minZoomLevel) {
+        scale = minZoomLevel;
+        stageRef.current.scale({ x: scale, y: scale });
+      }
+
       console.log("Current zoom level:", scale);
       calculateVisibleTiles();
     }
