@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Layer, Rect, Stage, Image as KonvaImage } from "react-konva";
 import { Pixel } from "../../types/art-tool";
 import { mouseHandlers, touchHandlers, wheelHandler } from "./handlers";
+import { useImage } from "./hooks";
 
 interface ViewportProps {
   designId: string | null;
@@ -12,22 +13,6 @@ interface ViewportProps {
   layerOrder: string[];
 }
 
-const useImage = (src: string): [HTMLImageElement | undefined] => {
-  const [image, setImage] = useState<HTMLImageElement | undefined>(undefined);
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = src;
-    img.onload = () => {
-      setImage(img);
-    };
-    img.onerror = () => {
-      setImage(undefined);
-    };
-  }, [src]);
-
-  return [image];
-};
 
 const Viewport: React.FC<ViewportProps> = ({
   designId,
