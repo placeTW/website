@@ -128,11 +128,15 @@ const Viewport: React.FC<ViewportProps> = ({
     <div
       className="viewport-container"
       style={{
+        position: "relative",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
         height: "100%",
+        cursor: "grab",
+        overflow: "hidden",
+        backgroundColor: "#f0f0f0"
       }}
       ref={divRef}
       {...touchHandlers(onPixelPaint, isEditing)}
