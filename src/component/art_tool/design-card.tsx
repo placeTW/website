@@ -14,7 +14,7 @@ import { FC, useEffect, useState } from "react";
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
-  FaCodeMerge,
+  FaLayerGroup,
   FaEye,
   FaEyeSlash,
   FaHeart,
@@ -29,9 +29,9 @@ import {
   updateDesignCanvas,
 } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
-import { Design } from "../../types/art-tool";
+import { Canvas, Design } from "../../types/art-tool";
 import ImageModal from "../image-modal";
-import AddToCanvasPopup from "./add-to-canvas-popup";
+import SetDesignCanvas from "./set-design-canvas";
 
 interface DesignCardProps {
   design: Design;
@@ -140,20 +140,20 @@ const DesignCard: FC<DesignCardProps> = ({
     setIsAddToCanvasPopupOpen(true);
   };
 
-  const handleAddToCanvasDecision = async (canvasId: string | null) => {
+  const handleAddToCanvasDecision = async (canvas: Canvas | null) => {
     setIsAddToCanvasPopupOpen(false);
 
-    if (!canvasId) {
+    if (!canvas) {
       return; // Cancel if no canvas is selected
     }
 
     try {
-      await updateDesignCanvas(design.id, canvasId);
-      onAddToCanvas(design.id, canvasId); // Update the parent component
+      await updateDesignCanvas(design.id, canvas.id);
+      onAddToCanvas(design.id, canvas.id); // Update the parent component
 
       toast({
-        title: "Design Added to Canvas",
-        description: `${design.design_name} has been added to the canvas.`,
+        title: "Set Canvas for Design",
+        description: `${canvas.canvas_name} has been set as the canvas for ${design.design_name}`,
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -287,7 +287,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 </>
               )}
               <IconButton
-                icon={<FaCodeMerge />}
+                icon={<FaLayerGroup />}
                 aria-label="Add to Canvas"
                 onClick={handleAddToCanvas}
                 size="sm"
@@ -313,7 +313,7 @@ const DesignCard: FC<DesignCardProps> = ({
         }
         altText={design.design_name}
       />
-      <AddToCanvasPopup
+      <SetDesignCanvas
         isOpen={isAddToCanvasPopupOpen}
         onClose={() => setIsAddToCanvasPopupOpen(false)}
         onAddToCanvas={handleAddToCanvasDecision}

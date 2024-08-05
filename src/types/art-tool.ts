@@ -23,6 +23,6 @@ export interface Pixel {
 }
 
 export interface Canvas {
-  id: string;
+  id: number;
   canvas_name: string;
 }

@@ -15,18 +15,18 @@ import { FC, useEffect, useState } from "react";
 import { databaseFetchCanvases } from "../../api/supabase/database";
 import { Canvas } from "../../types/art-tool";
 
-interface AddToCanvasPopupProps {
+interface SetDesignCanvasProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddToCanvas: (canvasId: string | null) => void;
+  onAddToCanvas: (canvas: Canvas | null) => void;
 }
 
-const AddToCanvasPopup: FC<AddToCanvasPopupProps> = ({
+const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
   isOpen,
   onClose,
   onAddToCanvas,
 }) => {
-  const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null);
+  const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -50,11 +50,18 @@ const AddToCanvasPopup: FC<AddToCanvasPopupProps> = ({
   }, []);
 
   const handleCanvasChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCanvasId(event.target.value);
+    const selectedCanvasId = event.target.value;
+    console.log(selectedCanvasId)
+    console.log(canvases)
+    const selectedCanvas = canvases.find((canvas) => canvas.id === Number(selectedCanvasId));
+    console.log(selectedCanvas)
+
+    setSelectedCanvas(selectedCanvas || null);
   };
 
   const handleAddToCanvas = () => {
-    onAddToCanvas(selectedCanvasId);
+    onAddToCanvas(selectedCanvas || null);
+    onClose();
   };
 
   return (
@@ -69,7 +76,7 @@ const AddToCanvasPopup: FC<AddToCanvasPopupProps> = ({
           ) : (
             <Select
               placeholder="Select a canvas"
-              value={selectedCanvasId || ""}
+              value={selectedCanvas?.id || ""}
               onChange={handleCanvasChange}
             >
               {canvases.map((canvas) => (
@@ -84,7 +91,7 @@ const AddToCanvasPopup: FC<AddToCanvasPopupProps> = ({
           <Button
             colorScheme="blue"
             onClick={handleAddToCanvas}
-            isDisabled={!selectedCanvasId}
+            isDisabled={!selectedCanvas?.id}
           >
             Add
           </Button>
@@ -97,4 +104,4 @@ const AddToCanvasPopup: FC<AddToCanvasPopupProps> = ({
   );
 };
 
-export default AddToCanvasPopup;
+export default SetDesignCanvas;
