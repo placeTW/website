@@ -198,7 +198,7 @@ const Viewport: React.FC<ViewportProps> = ({
 
           {/* Render ClearOnMain image based on layer visibility */}
           {pixels.map((pixel) => {
-            if (pixel.color === "ClearOnMain" && clearOnMainImage) {
+            if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
               return (
                 <KonvaImage
                   key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
@@ -229,7 +229,7 @@ const Viewport: React.FC<ViewportProps> = ({
                   y={pixel.y * gridSize}
                   width={gridSize}
                   height={gridSize}
-                  fill={pixel.color !== "ClearOnMain" ? pixel.color : undefined}
+                  fill={pixel.color !== CLEAR_ON_MAIN ? pixel.color : undefined}
                   strokeWidth={0}
                 />
               ))}

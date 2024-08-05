@@ -154,7 +154,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
       // Overwrite with edited pixels (assuming designName is available)
       editedPixels.forEach((pixel) => {
-        if (pixel.color !== "ClearOnDesign" && designName) {
+        if (pixel.color !== CLEAR_ON_DESIGN && designName) {
           pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
         } else {
           pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.canvas}`);
@@ -259,9 +259,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                 w="30px"
                 h="30px"
                 bg={
-                  color.Color === "ClearOnDesign"
+                  color.Color === CLEAR_ON_DESIGN
                     ? `url(${clearOnDesignPattern})`
-                    : color.Color === "ClearOnMain"
+                    : color.Color === CLEAR_ON_MAIN
                     ? `url(${clearOnMainPattern})`
                     : color.Color
                 }
