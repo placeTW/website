@@ -2,6 +2,7 @@ import { Box, Spinner, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
 import {
+  databaseFetchCanvases,
   databaseFetchColors,
   databaseFetchDesigns,
   saveEditedPixels,
@@ -15,8 +16,8 @@ import {
   CLEAR_ON_DESIGN,
   CLEAR_ON_MAIN,
 } from "../component/viewport/constants";
+import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
-import { Design, Pixel } from "../types/art-tool";
 
 const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<Design[]>([]);
@@ -28,6 +29,8 @@ const DesignOffice: React.FC = () => {
   const [editDesignId, setEditDesignId] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<string[]>([]);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
+  const [canvases, setCanvases] = useState<Canvas[]>([]);
+  const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const toast = useToast();
 
   const fetchDesigns = async () => {
@@ -138,9 +141,30 @@ const DesignOffice: React.FC = () => {
     }
   };
 
+  const fetchCanvases = async () => {
+    try {
+      const fetchedCanvases = await databaseFetchCanvases();
+      setCanvases(fetchedCanvases);
+      // Optionally set the first canvas as selected if there are canvases
+      if (fetchedCanvases.length > 0) {
+        setSelectedCanvas(fetchedCanvases[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching canvases:", error);
+      // Handle error, e.g., show a toast message
+    }
+  };
+
+  const handleAddToCanvas = (designId: string, canvasId: string) => {
+    // Update the selectedCanvas state to trigger a re-render of AdvancedViewport
+    const updatedCanvas = canvases.find((canvas) => canvas.id === canvasId);
+    setSelectedCanvas(updatedCanvas || null);
+  };
+
   useEffect(() => {
     fetchDesigns();
     fetchColors();
+    fetchCanvases(); // Fetch canvases on component mount
 
     const subscription = supabase
       .channel("art_tool_designs")
@@ -188,6 +212,7 @@ const DesignOffice: React.FC = () => {
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
           onSubmitEdit={handleSubmitEdit}
+          onAddToCanvas={handleAddToCanvas}
         />
         <Box h="100px" /> {/* Spacer at the bottom */}
       </Box>

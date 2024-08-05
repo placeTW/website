@@ -1,8 +1,5 @@
-import {
-  CLEAR_ON_DESIGN,
-  CLEAR_ON_MAIN,
-} from "../../component/viewport/constants";
-import { Design, Pixel } from "../../types/art-tool";
+import { CLEAR_ON_DESIGN, CLEAR_ON_MAIN } from "../../component/viewport/constants";
+import { Canvas, CanvasDesign, Design, Pixel } from "../../types/art-tool";
 import { supabase } from "./index";
 
 // Layers-related functions
@@ -23,6 +20,17 @@ export const databaseCreateDesign = async (
 
   return data;
 };
+
+export const databaseFetchCanvases = async () => {
+  const { data, error } = await supabase.from("art_tool_canvases").select("*");
+
+  if (error) {
+    console.error("Error fetching canvases:", error);
+    return [];
+  }
+
+  return data as Canvas[];
+}
 
 export const databaseFetchDesigns = async () => {
   const { data, error } = await supabase.from("art_tool_designs").select(`
@@ -290,116 +298,84 @@ export const updateDesignThumbnail = async (
 
   return data;
 };
-
-export const databaseMergeDesignIntoBaseline = async (
+export const databaseMergeDesignIntoCanvas = async (
   designId: string,
-  baseline: string,
+  canvasId: string,
 ) => {
   try {
-    console.log(
-      `Starting merge for designId: ${designId} into baseline: ${baseline}`,
-    );
-
-    // Fetch the design's name from the designs table based on the ID
+    // 1. Fetch the design
     const { data: designData, error: designError } = await supabase
       .from("art_tool_designs")
-      .select("design_name")
+      .select("*")
       .eq("id", designId)
       .single();
 
     if (designError || !designData) {
-      throw new Error(`Error fetching design name: ${designError?.message}`);
+      throw new Error(`Error fetching design: ${designError?.message}`);
     }
 
-    const designName = designData.design_name;
-    console.log(`Fetched design name: ${designName}`);
+    const design = designData as Design;
 
-    // Fetch the current baseline pixels
-    const { data: baselinePixels, error: fetchBaselineError } = await supabase
-      .from("art_tool_pixels")
-      .select("*")
-      .eq("canvas", baseline);
+    // 2. Fetch existing CanvasDesigns for the canvas
+    const { data: canvasDesignsData, error: canvasDesignsError } =
+      await supabase
+        .from("art_tool_canvas_designs")
+        .select("*")
+        .eq("canvas_id", canvasId)
+        .order("order", { ascending: true }); // Ensure designs are fetched in order
 
-    if (fetchBaselineError) {
-      console.error(`Error fetching baseline: ${fetchBaselineError.message}`);
-      throw new Error(`Error fetching baseline: ${fetchBaselineError.message}`);
-    }
-
-    console.log(`Baseline pixels fetched:`, baselinePixels);
-
-    // Fetch the selected design's pixels using the design name
-    const { data: designPixels, error: fetchDesignError } = await supabase
-      .from("art_tool_pixels")
-      .select("*")
-      .eq("canvas", designName);
-
-    if (fetchDesignError) {
-      console.error(
-        `Error fetching design pixels: ${fetchDesignError.message}`,
-      );
+    if (canvasDesignsError) {
       throw new Error(
-        `Error fetching design pixels: ${fetchDesignError.message}`,
+        `Error fetching canvas designs: ${canvasDesignsError.message}`,
       );
     }
 
-    console.log(`Design pixels fetched:`, designPixels);
+    const canvasDesigns = canvasDesignsData as CanvasDesign[];
 
-    // Create a map of the baseline pixels
-    const baselinePixelMap = new Map<string, Pixel>();
-    baselinePixels?.forEach((pixel: Pixel) => {
-      baselinePixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
+    // 3. Create a map of existing pixels on the canvas
+    const canvasPixelMap = new Map<string, Pixel>();
+    canvasDesigns.forEach((canvasDesign) => {
+      const designPixels = canvasDesign.pixels || []; // Handle cases where pixels might be null
+      designPixels.forEach((pixel) => {
+        const x = pixel.x; // No need to add design.x since pixels are already positioned for the canvas
+        const y = pixel.y; // No need to add design.y
+        canvasPixelMap.set(`${x}-${y}`, pixel);
+      });
     });
 
-    console.log(`Baseline pixel map created.`);
+    // 4. Apply merge logic
+    design.pixels.forEach((pixel) => {
+      const x = pixel.x + design.x;
+      const y = pixel.y + design.y;
 
-    // Apply merge logic: handle ClearOnMain pixels and merge others
-    designPixels?.forEach((pixel: Pixel) => {
       if (pixel.color === CLEAR_ON_MAIN) {
-        // Remove the corresponding pixel in the baseline
-        baselinePixelMap.delete(`${pixel.x}-${pixel.y}`);
+        // Treat "ClearOnMain" as "ClearOnCanvas"
+        canvasPixelMap.delete(`${x}-${y}`);
       } else if (pixel.color !== CLEAR_ON_DESIGN) {
-        // Update the baseline with new pixels (excluding ClearOnDesign)
-        baselinePixelMap.set(`${pixel.x}-${pixel.y}`, {
-          ...pixel,
-          canvas: baseline,
-        });
+        canvasPixelMap.set(`${x}-${y}`, { ...pixel });
       }
     });
 
-    const mergedPixels = Array.from(baselinePixelMap.values());
-    console.log(`Pixels after merge logic applied:`, mergedPixels);
+    // 5. Update or insert the CanvasDesign record
+    const mergedPixels = Array.from(canvasPixelMap.values());
+    const { error: upsertError } = await supabase
+      .from("art_tool_canvas_designs")
+      .upsert(
+        {
+          canvas_id: canvasId,
+          design_id: designId,
+          order: canvasDesigns.length, // Add to the end
+          pixels: mergedPixels,
+        },
+      );
 
-    // Clear existing baseline pixels before inserting
-    const { error: deleteError } = await supabase
-      .from("art_tool_pixels")
-      .delete()
-      .eq("canvas", baseline);
-
-    if (deleteError) {
-      console.error(`Error clearing baseline pixels: ${deleteError.message}`);
-      throw new Error(`Error clearing baseline pixels: ${deleteError.message}`);
+    if (upsertError) {
+      throw new Error(`Error upserting canvas design: ${upsertError.message}`);
     }
-
-    console.log(`Baseline pixels cleared.`);
-
-    // Prepare pixels for insertion by omitting the 'id' field
-    const pixelsToInsert = mergedPixels.map(({ ...rest }) => rest);
-
-    // Insert the merged pixels into the baseline
-    const { error: insertError } = await supabase
-      .from("art_tool_pixels")
-      .insert(pixelsToInsert);
-
-    if (insertError) {
-      console.error(`Error inserting merged pixels: ${insertError.message}`);
-      throw new Error(`Error inserting merged pixels: ${insertError.message}`);
-    }
-
-    console.log(`Merged pixels inserted successfully.`);
 
     return true;
   } catch (error) {
-    console.error("Error in databaseMergeDesignIntoBaseline:", error);
+    console.error("Error in databaseMergeDesignIntoCanvas:", error);
     throw error;
   }
 };

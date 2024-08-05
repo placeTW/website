@@ -5,6 +5,7 @@ import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { Pixel } from "../../types/art-tool";
 import { mouseHandlers, touchHandlers, wheelHandler } from "./handlers";
 import { useImage } from "./hooks";
+import { CLEAR_ON_MAIN } from "./constants";
 
 interface ViewportProps {
   designId: string | null;

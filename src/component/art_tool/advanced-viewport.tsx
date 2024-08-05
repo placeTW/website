@@ -2,9 +2,10 @@
 import { Box, Grid } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import { databaseFetchDesigns, supabase } from "../../api/supabase";
-import Viewport from "../viewport/Viewport";
-import { Pixel } from "../viewport/types";
 import { Design } from "../../types/art-tool";
+import Viewport from "../viewport/Viewport";
+import { CLEAR_ON_DESIGN, CLEAR_ON_MAIN } from "../viewport/constants";
+import { Pixel } from "../viewport/types";
 
 interface AdvancedViewportProps {
   isEditing: boolean;
@@ -13,6 +14,7 @@ interface AdvancedViewportProps {
   onUpdatePixels: (pixels: Pixel[]) => void;
   designName: string | null;
   colors: { Color: string; color_sort: number | null }[];
+  canvasId: string; // Add canvasId prop
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -22,6 +24,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   onUpdatePixels,
   designName,
   colors,
+  canvasId,
 }) => {
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -66,6 +69,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       ...visibleLayers.filter((layer) => layer !== "main"),
     ];
 
+    // Check if visibleLayers has actually changed
     if (
       JSON.stringify(previousVisibleLayers.current) !==
       JSON.stringify(layersToFetch)
@@ -113,21 +117,32 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           setPixels((prevPixels) => {
             if (payload.eventType === "UPDATE") {
               const updatedDesign = payload.new as Design;
-              const updatedPixels = updatedDesign.pixels.map((pixel: Pixel) => ({
-                ...pixel,
-                x: pixel.x + updatedDesign.x,
-                y: pixel.y + updatedDesign.y,
-              }));
 
-              // Merge updatedPixels with existing pixels
-              const pixelMap = new Map<string, Pixel>();
-              prevPixels.forEach((pixel) =>
-                pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel),
-              );
-              updatedPixels.forEach((pixel: Pixel) =>
-                pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel),
-              );
-              return Array.from(pixelMap.values());
+              if (updatedDesign.pixels) {
+                const updatedPixels = updatedDesign.pixels.map(
+                  (pixel: Pixel) => ({
+                    ...pixel,
+                    x: pixel.x + updatedDesign.x,
+                    y: pixel.y + updatedDesign.y,
+                    canvas: updatedDesign.design_name, // Add canvas property
+                  }),
+                );
+
+                // Merge updatedPixels with existing pixels
+                const pixelMap = new Map<string, Pixel>();
+                prevPixels.forEach((pixel) =>
+                  pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel),
+                );
+                updatedPixels.forEach((pixel: Pixel) =>
+                  pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel),
+                );
+                return Array.from(pixelMap.values());
+              } else {
+                console.warn(
+                  "updatedDesign.pixels is undefined. Skipping update.",
+                );
+                return prevPixels;
+              }
             } else {
               // Handle other event types like INSERT and DELETE
               return prevPixels;
@@ -140,7 +155,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     return () => {
       supabase.removeChannel(pixelSubscription);
     };
-  }, [visibleLayers]);
+  }, []);
 
   // Merge pixels from different layers with edited pixels for rendering
   useEffect(() => {
@@ -163,7 +178,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
       setPixels(Array.from(pixelMap.values()));
     }
-  }, [pixels, editedPixels, isEditing]);
+  }, [pixels, editedPixels, isEditing, designName]);
 
   const layerOrder = ["main"];
   if (editDesignId && isEditing) {
@@ -210,9 +225,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   // Clear edited pixels on submission or exit from edit mode
   useEffect(() => {
     if (!isEditing) {
-      setEditedPixels([]); // Clear the edited pixels array when exiting edit mode
+      setEditedPixels([]);
 
-      regeneratePixels(); // Regenerate pixels from scratch
+      regeneratePixels();
     }
   }, [isEditing]);
 
