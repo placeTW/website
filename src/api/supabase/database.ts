@@ -2,7 +2,7 @@ import {
   CLEAR_ON_DESIGN,
   CLEAR_ON_MAIN,
 } from "../../component/viewport/constants";
-import { Design } from "../../types/art-tool";
+import { Design, Pixel } from "../../types/art-tool";
 import { supabase } from "./index";
 
 // Layers-related functions
