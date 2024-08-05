@@ -43,7 +43,7 @@ interface DesignCardProps {
   onToggleVisibility: (designName: string, isVisible: boolean) => void;
   isVisible: boolean;
   onSubmitEdit: () => void;
-  onAddToCanvas: (designId: string, canvasId: string) => void;
+  onSetCanvas: (designId: string, canvasId: number) => void;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -56,14 +56,14 @@ const DesignCard: FC<DesignCardProps> = ({
   onToggleVisibility,
   isVisible,
   onSubmitEdit,
-  onAddToCanvas,
+  onSetCanvas,
 }) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
     currentUser ? design.liked_by.includes(currentUser.user_id) : false,
   );
-  const [isAddToCanvasPopupOpen, setIsAddToCanvasPopupOpen] = useState(false);
+  const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -137,11 +137,11 @@ const DesignCard: FC<DesignCardProps> = ({
   };
 
   const handleAddToCanvas = () => {
-    setIsAddToCanvasPopupOpen(true);
+    setIsSetCanvasPopupOpen(true);
   };
 
-  const handleAddToCanvasDecision = async (canvas: Canvas | null) => {
-    setIsAddToCanvasPopupOpen(false);
+  const handleSetCanvasDecision = async (canvas: Canvas | null) => {
+    setIsSetCanvasPopupOpen(false);
 
     if (!canvas) {
       return; // Cancel if no canvas is selected
@@ -149,7 +149,7 @@ const DesignCard: FC<DesignCardProps> = ({
 
     try {
       await updateDesignCanvas(design.id, canvas.id);
-      onAddToCanvas(design.id, canvas.id); // Update the parent component
+      onSetCanvas(design.id, canvas.id); // Update the parent component
 
       toast({
         title: "Set Canvas for Design",
@@ -314,9 +314,9 @@ const DesignCard: FC<DesignCardProps> = ({
         altText={design.design_name}
       />
       <SetDesignCanvas
-        isOpen={isAddToCanvasPopupOpen}
-        onClose={() => setIsAddToCanvasPopupOpen(false)}
-        onAddToCanvas={handleAddToCanvasDecision}
+        isOpen={isSetCanvasPopupOpen}
+        onClose={() => setIsSetCanvasPopupOpen(false)}
+        onSetCanvas={handleSetCanvasDecision}
       />
     </>
   );

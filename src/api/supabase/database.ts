@@ -168,57 +168,54 @@ export const databaseFetchColors = async () => {
 };
 
 // Function to save edited pixels
-export const saveEditedPixels = async (
-  canvasId: string,
-  designName: string,
-  pixels: Pixel[],
-) => {
+export const saveEditedPixels = async (designId: string, pixels: Pixel[]) => {
   try {
     // 1. Fetch the Design record
     const { data: designData, error: designError } = await supabase
       .from("art_tool_designs")
       .select("*")
-      .eq("design_name", designName)
+      .eq("id", designId)
       .single();
 
     if (designError || !designData) {
       throw new Error(`Error fetching Design: ${designError?.message}`);
     }
 
-    const design = designData as Design;
-
-    // 2. Calculate the offset based on top_left_x and top_left_y from CanvasDesign
-    const { data: canvasDesignData, error: canvasDesignError } = await supabase
-      .from("art_tool_canvas_designs")
-      .select("top_left_x, top_left_y")
-      .eq("canvas_id", canvasId)
-      .eq("design_id", designName)
-      .single();
-
-    if (canvasDesignError || !canvasDesignData) {
-      throw new Error(
-        `Error fetching CanvasDesign: ${canvasDesignError?.message}`,
-      );
-    }
-
-    const offsetX = canvasDesignData.top_left_x;
-    const offsetY = canvasDesignData.top_left_y;
-
-    // 3. Adjust the pixel coordinates to be relative to the design's origin
-    const adjustedPixels = pixels.map((pixel) => ({
-      ...pixel,
-      x: pixel.x - offsetX,
-      y: pixel.y - offsetY,
+    // Prepare pixels for insertion
+    const pixelsToInsert = pixels.map((pixel) => ({
+      x: pixel.x,
+      y: pixel.y,
+      color: pixel.color,
     }));
 
-    // 4. Update the pixels in the Design record
+    // Get the top left pixel of the design
+    const topLeftPixel = pixelsToInsert.reduce((acc, curr) => {
+      if (curr.x < acc.x || (curr.x === acc.x && curr.y < acc.y)) {
+        return curr;
+      }
+      return acc;
+    });
+
+    // Copy and offset the pixels to the top left corner
+    const pixelsToInsertCopy = pixelsToInsert.map((pixel) => ({
+      ...pixel,
+      x: pixel.x - topLeftPixel.x,
+      y: pixel.y - topLeftPixel.y,
+    }));
+
+    // Step 4: Update the design with the new pixels
     const { error: updateError } = await supabase
       .from("art_tool_designs")
-      .update({ pixels: adjustedPixels })
-      .eq("id", design.id);
+      .update({
+        pixels: pixelsToInsertCopy,
+        x: topLeftPixel.x,
+        y: topLeftPixel.y,
+      })
+      .eq("design_name", designId);
 
     if (updateError) {
-      throw new Error(`Error updating Design: ${updateError.message}`);
+      console.error("Error updating design with pixels:", updateError);
+      throw new Error(updateError.message);
     }
 
     return true;
@@ -313,7 +310,7 @@ export const updateDesignThumbnail = async (
 
 export const updateDesignCanvas = async (
   designId: string,
-  canvasId: string,
+  canvasId: number,
 ) => {
   const { data, error } = await supabase
     .from("art_tool_designs")
@@ -326,4 +323,4 @@ export const updateDesignCanvas = async (
   }
 
   return data;
-}
+};

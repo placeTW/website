@@ -107,7 +107,7 @@ const DesignOffice: React.FC = () => {
       );
 
       // Save filtered pixels to the database
-      await saveEditedPixels(currentDesign.design_name, mergedPixels);
+      await saveEditedPixels(currentDesign.id, mergedPixels);
 
       // Generate a thumbnail of the current design with filtered pixels
       const thumbnailBlob = await createThumbnail(mergedPixels);
@@ -155,10 +155,12 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleAddToCanvas = (designId: string, canvasId: string) => {
+  const handleSetCanvas = (designId: string, canvasId: number) => {
+    console.log(designId, canvasId);
     // Update the selectedCanvas state to trigger a re-render of AdvancedViewport
     const updatedCanvas = canvases.find((canvas) => canvas.id === canvasId);
     setSelectedCanvas(updatedCanvas || null);
+    console.log(selectedCanvas);
   };
 
   useEffect(() => {
@@ -203,8 +205,7 @@ const DesignOffice: React.FC = () => {
           visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]}
           onUpdatePixels={handleUpdatePixels}
           designName={currentDesign ? currentDesign.design_name : "main"}
-          colors={colors}
-        />
+          colors={colors} canvasId={""}        />
       </Box>
       <Box overflowY="auto">
         <DesignCardsList
@@ -212,7 +213,7 @@ const DesignOffice: React.FC = () => {
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
           onSubmitEdit={handleSubmitEdit}
-          onAddToCanvas={handleAddToCanvas}
+          onSetCanvas={handleSetCanvas}
         />
         <Box h="100px" /> {/* Spacer at the bottom */}
       </Box>

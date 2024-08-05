@@ -18,13 +18,13 @@ import { Canvas } from "../../types/art-tool";
 interface SetDesignCanvasProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddToCanvas: (canvas: Canvas | null) => void;
+  onSetCanvas: (canvas: Canvas | null) => void;
 }
 
 const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
   isOpen,
   onClose,
-  onAddToCanvas,
+  onSetCanvas,
 }) => {
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
@@ -36,7 +36,7 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
         setIsLoading(true);
         const fetchedCanvases = await databaseFetchCanvases();
         setCanvases(fetchedCanvases);
-        console.log(fetchedCanvases)
+        console.log(fetchedCanvases);
       } catch (error) {
         console.error("Error fetching canvases:", error);
         // Handle error, e.g., show a toast message
@@ -44,23 +44,24 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
         setIsLoading(false);
       }
     };
-    
 
     fetchCanvases();
   }, []);
 
   const handleCanvasChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCanvasId = event.target.value;
-    console.log(selectedCanvasId)
-    console.log(canvases)
-    const selectedCanvas = canvases.find((canvas) => canvas.id === Number(selectedCanvasId));
-    console.log(selectedCanvas)
+    console.log(selectedCanvasId);
+    console.log(canvases);
+    const selectedCanvas = canvases.find(
+      (canvas) => canvas.id === Number(selectedCanvasId),
+    );
+    console.log(selectedCanvas);
 
     setSelectedCanvas(selectedCanvas || null);
   };
 
-  const handleAddToCanvas = () => {
-    onAddToCanvas(selectedCanvas || null);
+  const handleSetCanvas = () => {
+    onSetCanvas(selectedCanvas || null);
     onClose();
   };
 
@@ -90,7 +91,7 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
         <ModalFooter>
           <Button
             colorScheme="blue"
-            onClick={handleAddToCanvas}
+            onClick={handleSetCanvas}
             isDisabled={!selectedCanvas?.id}
           >
             Add
