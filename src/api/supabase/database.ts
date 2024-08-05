@@ -211,7 +211,7 @@ export const saveEditedPixels = async (designId: string, pixels: Pixel[]) => {
         x: topLeftPixel.x,
         y: topLeftPixel.y,
       })
-      .eq("design_name", designId);
+      .eq("id", designId);
 
     if (updateError) {
       console.error("Error updating design with pixels:", updateError);
