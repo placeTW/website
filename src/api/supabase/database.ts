@@ -383,7 +383,7 @@ export const databaseMergeDesignIntoBaseline = async (
     console.log(`Baseline pixels cleared.`);
 
     // Prepare pixels for insertion by omitting the 'id' field
-    const pixelsToInsert = mergedPixels.map(({ id, ...rest }) => rest);
+    const pixelsToInsert = mergedPixels.map(({ ...rest }) => rest);
 
     // Insert the merged pixels into the baseline
     const { error: insertError } = await supabase
