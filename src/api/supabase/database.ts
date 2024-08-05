@@ -1,5 +1,4 @@
-import { CLEAR_ON_DESIGN, CLEAR_ON_MAIN } from "../../component/viewport/constants";
-import { Canvas, CanvasDesign, Design, Pixel } from "../../types/art-tool";
+import { Canvas, Design, Pixel } from "../../types/art-tool";
 import { supabase } from "./index";
 
 // Layers-related functions
@@ -30,7 +29,7 @@ export const databaseFetchCanvases = async () => {
   }
 
   return data as Canvas[];
-}
+};
 
 export const databaseFetchDesigns = async () => {
   const { data, error } = await supabase.from("art_tool_designs").select(`
@@ -46,7 +45,8 @@ export const databaseFetchDesigns = async () => {
     ),
     pixels,
     x,
-    y
+    y,
+    canvas
   `);
 
   if (error) {
@@ -168,45 +168,57 @@ export const databaseFetchColors = async () => {
 };
 
 // Function to save edited pixels
-export const saveEditedPixels = async (canvas: string, pixels: Pixel[]) => {
+export const saveEditedPixels = async (
+  canvasId: string,
+  designName: string,
+  pixels: Pixel[],
+) => {
   try {
-    console.log("saveEditedPixels received pixels:", pixels); // Log received pixels
+    // 1. Fetch the Design record
+    const { data: designData, error: designError } = await supabase
+      .from("art_tool_designs")
+      .select("*")
+      .eq("design_name", designName)
+      .single();
 
-    // Prepare pixels for insertion
-    const pixelsToInsert = pixels.map((pixel) => ({
-      x: pixel.x,
-      y: pixel.y,
-      color: pixel.color,
-    }));
+    if (designError || !designData) {
+      throw new Error(`Error fetching Design: ${designError?.message}`);
+    }
 
-    // Get the top left pixel of the design
-    const topLeftPixel = pixelsToInsert.reduce((acc, curr) => {
-      if (curr.x < acc.x || (curr.x === acc.x && curr.y < acc.y)) {
-        return curr;
-      }
-      return acc;
-    });
+    const design = designData as Design;
 
-    // Copy and offset the pixels to the top left corner
-    const pixelsToInsertCopy = pixelsToInsert.map((pixel) => ({
+    // 2. Calculate the offset based on top_left_x and top_left_y from CanvasDesign
+    const { data: canvasDesignData, error: canvasDesignError } = await supabase
+      .from("art_tool_canvas_designs")
+      .select("top_left_x, top_left_y")
+      .eq("canvas_id", canvasId)
+      .eq("design_id", designName)
+      .single();
+
+    if (canvasDesignError || !canvasDesignData) {
+      throw new Error(
+        `Error fetching CanvasDesign: ${canvasDesignError?.message}`,
+      );
+    }
+
+    const offsetX = canvasDesignData.top_left_x;
+    const offsetY = canvasDesignData.top_left_y;
+
+    // 3. Adjust the pixel coordinates to be relative to the design's origin
+    const adjustedPixels = pixels.map((pixel) => ({
       ...pixel,
-      x: pixel.x - topLeftPixel.x,
-      y: pixel.y - topLeftPixel.y,
+      x: pixel.x - offsetX,
+      y: pixel.y - offsetY,
     }));
 
-    // Step 4: Update the design with the new pixels
+    // 4. Update the pixels in the Design record
     const { error: updateError } = await supabase
       .from("art_tool_designs")
-      .update({
-        pixels: pixelsToInsertCopy,
-        x: topLeftPixel.x,
-        y: topLeftPixel.y,
-      })
-      .eq("design_name", canvas);
+      .update({ pixels: adjustedPixels })
+      .eq("id", design.id);
 
     if (updateError) {
-      console.error("Error updating design with pixels:", updateError);
-      throw new Error(updateError.message);
+      throw new Error(`Error updating Design: ${updateError.message}`);
     }
 
     return true;
@@ -298,84 +310,20 @@ export const updateDesignThumbnail = async (
 
   return data;
 };
-export const databaseMergeDesignIntoCanvas = async (
+
+export const updateDesignCanvas = async (
   designId: string,
   canvasId: string,
 ) => {
-  try {
-    // 1. Fetch the design
-    const { data: designData, error: designError } = await supabase
-      .from("art_tool_designs")
-      .select("*")
-      .eq("id", designId)
-      .single();
+  const { data, error } = await supabase
+    .from("art_tool_designs")
+    .update({ canvas: canvasId })
+    .eq("id", designId);
 
-    if (designError || !designData) {
-      throw new Error(`Error fetching design: ${designError?.message}`);
-    }
-
-    const design = designData as Design;
-
-    // 2. Fetch existing CanvasDesigns for the canvas
-    const { data: canvasDesignsData, error: canvasDesignsError } =
-      await supabase
-        .from("art_tool_canvas_designs")
-        .select("*")
-        .eq("canvas_id", canvasId)
-        .order("order", { ascending: true }); // Ensure designs are fetched in order
-
-    if (canvasDesignsError) {
-      throw new Error(
-        `Error fetching canvas designs: ${canvasDesignsError.message}`,
-      );
-    }
-
-    const canvasDesigns = canvasDesignsData as CanvasDesign[];
-
-    // 3. Create a map of existing pixels on the canvas
-    const canvasPixelMap = new Map<string, Pixel>();
-    canvasDesigns.forEach((canvasDesign) => {
-      const designPixels = canvasDesign.pixels || []; // Handle cases where pixels might be null
-      designPixels.forEach((pixel) => {
-        const x = pixel.x; // No need to add design.x since pixels are already positioned for the canvas
-        const y = pixel.y; // No need to add design.y
-        canvasPixelMap.set(`${x}-${y}`, pixel);
-      });
-    });
-
-    // 4. Apply merge logic
-    design.pixels.forEach((pixel) => {
-      const x = pixel.x + design.x;
-      const y = pixel.y + design.y;
-
-      if (pixel.color === CLEAR_ON_MAIN) {
-        // Treat "ClearOnMain" as "ClearOnCanvas"
-        canvasPixelMap.delete(`${x}-${y}`);
-      } else if (pixel.color !== CLEAR_ON_DESIGN) {
-        canvasPixelMap.set(`${x}-${y}`, { ...pixel });
-      }
-    });
-
-    // 5. Update or insert the CanvasDesign record
-    const mergedPixels = Array.from(canvasPixelMap.values());
-    const { error: upsertError } = await supabase
-      .from("art_tool_canvas_designs")
-      .upsert(
-        {
-          canvas_id: canvasId,
-          design_id: designId,
-          order: canvasDesigns.length, // Add to the end
-          pixels: mergedPixels,
-        },
-      );
-
-    if (upsertError) {
-      throw new Error(`Error upserting canvas design: ${upsertError.message}`);
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error in databaseMergeDesignIntoCanvas:", error);
-    throw error;
+  if (error) {
+    console.error("Error updating design canvas:", error);
+    throw new Error(error.message);
   }
-};
+
+  return data;
+}

@@ -12,6 +12,7 @@ export interface Design {
   pixels: Pixel[];
   x: number;
   y: number;
+  canvas: string;
 }
 
 export interface Pixel {
@@ -24,12 +25,4 @@ export interface Pixel {
 export interface Canvas {
   id: string;
   canvas_name: string;
-}
-
-export interface CanvasDesign {
-  id: string;
-  canvas_id: string;
-  design_id: string;
-  order: number;
-  pixels: Pixel[]; // Added: pixels for the combined canvas view
 }

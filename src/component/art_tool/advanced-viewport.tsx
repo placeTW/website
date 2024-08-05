@@ -24,7 +24,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   onUpdatePixels,
   designName,
   colors,
-  canvasId,
 }) => {
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);

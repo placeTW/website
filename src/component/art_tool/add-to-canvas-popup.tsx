@@ -61,7 +61,7 @@ const AddToCanvasPopup: FC<AddToCanvasPopupProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Add Design to Canvas</ModalHeader>
+        <ModalHeader>Set Design Canvas</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {isLoading ? (

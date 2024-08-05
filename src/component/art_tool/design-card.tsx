@@ -24,9 +24,9 @@ import {
 } from "react-icons/fa6";
 import {
   databaseDeleteDesign,
-  databaseMergeDesignIntoCanvas,
   likeDesign,
   unlikeDesign,
+  updateDesignCanvas,
 } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
 import { Design } from "../../types/art-tool";
@@ -148,7 +148,7 @@ const DesignCard: FC<DesignCardProps> = ({
     }
 
     try {
-      await databaseMergeDesignIntoCanvas(design.id, canvasId);
+      await updateDesignCanvas(design.id, canvasId);
       onAddToCanvas(design.id, canvasId); // Update the parent component
 
       toast({
