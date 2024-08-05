@@ -250,13 +250,16 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   return (
     <Box position="relative" height="100%">
-      <Viewport
-        designId={editDesignId}
-        pixels={pixels}
-        isEditing={isEditing}
-        onPixelPaint={handlePixelPaint}
-        layerOrder={layerOrder}
-      />
+      <Box height="100%">
+        {/* TODO: Add canvas selector */}
+        <Viewport
+          designId={editDesignId}
+          pixels={pixels}
+          isEditing={isEditing}
+          onPixelPaint={handlePixelPaint}
+          layerOrder={layerOrder}
+        />
+      </Box>
 
       {isEditing && (
         <Box

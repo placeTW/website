@@ -13,6 +13,7 @@ export interface Design {
   x: number;
   y: number;
   canvas: string;
+  canvas_name: string;
 }
 
 export interface Pixel {

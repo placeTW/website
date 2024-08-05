@@ -46,7 +46,10 @@ export const databaseFetchDesigns = async () => {
     pixels,
     x,
     y,
-    canvas
+    canvas,
+    art_tool_canvases:canvas (
+      canvas_name
+    )
   `);
 
   if (error) {

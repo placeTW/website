@@ -37,6 +37,7 @@ interface DesignCardProps {
   design: Design;
   userId: string;
   userHandle: string;
+  canvasName: string;
   isEditing: boolean;
   onEdit: (designId: string) => boolean;
   onCancelEdit: () => void;
@@ -50,6 +51,7 @@ const DesignCard: FC<DesignCardProps> = ({
   design,
   userId,
   userHandle,
+  canvasName,
   isEditing,
   onEdit,
   onCancelEdit,
@@ -259,6 +261,9 @@ const DesignCard: FC<DesignCardProps> = ({
               <Heading fontSize={"md"}>{design.design_name}</Heading>
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
                 {rankName} {userHandle}
+              </Text>
+              <Text color={"gray.600"} fontWeight={400} fontSize={"sm"}>
+                {canvasName}
               </Text>
             </Box>
             <Box display="flex" justifyContent="flex-end" gap={2}>

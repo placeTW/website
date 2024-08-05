@@ -31,6 +31,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     return user ? user.handle : "Unknown";
   };
 
+
   const handleEdit = (designId: string): boolean => {
     if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
       toast({
@@ -93,6 +94,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             design={design}
             userId={design.created_by}
             userHandle={getUserHandle(design.created_by)}
+            canvasName={design.canvas}
             isEditing={currentlyEditingCardId === design.id}
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
