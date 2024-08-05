@@ -23,18 +23,18 @@ import {
   FaImage,
 } from "react-icons/fa6";
 import {
-  databaseDeleteLayerAndPixels,
+  databaseDeleteDesign,
   likeDesign,
   unlikeDesign,
   databaseMergeDesignIntoBaseline,
 } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
-import { DesignInfo } from "../../types/art-tool";
+import { Design } from "../../types/art-tool";
 import ImageModal from "../image-modal";
 import MergePopup from "./merge-popup";
 
 interface DesignCardProps {
-  design: DesignInfo;
+  design: Design;
   userId: string;
   userHandle: string;
   isEditing: boolean;
@@ -102,7 +102,7 @@ const DesignCard: FC<DesignCardProps> = ({
 
   const handleDelete = async () => {
     try {
-      await databaseDeleteLayerAndPixels(design.design_name);
+      await databaseDeleteDesign(design.id);
       toast({
         title: "Design deleted.",
         description: `${design.design_name} has been removed successfully.`,

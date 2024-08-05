@@ -1,6 +1,7 @@
+// Viewport.tsx
 import Konva from "konva";
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Layer, Rect, Stage, Image as KonvaImage } from "react-konva";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { Pixel } from "../../types/art-tool";
 import { mouseHandlers, touchHandlers, wheelHandler } from "./handlers";
 import { useImage } from "./hooks";
@@ -13,7 +14,6 @@ interface ViewportProps {
   layerOrder: string[];
 }
 
-
 const Viewport: React.FC<ViewportProps> = ({
   designId,
   pixels,
@@ -21,7 +21,10 @@ const Viewport: React.FC<ViewportProps> = ({
   onPixelPaint,
   layerOrder,
 }) => {
-  const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredPixel, setHoveredPixel] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const stageRef = useRef<Konva.Stage | null>(null);
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
@@ -29,7 +32,9 @@ const Viewport: React.FC<ViewportProps> = ({
   const [backgroundImage] = useImage("/images/background.png");
   const [clearOnMainImage] = useImage("/images/ClearOnMain.png");
   const gridSize = 40; // Each cell pixel in the image is 40x40 image pixels
-  const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>([]);
+  const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>(
+    [],
+  );
   const [zoomLevel, setZoomLevel] = useState(1);
 
   const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
@@ -44,7 +49,6 @@ const Viewport: React.FC<ViewportProps> = ({
     if (scale <= 0.125) {
       // If zoom level is 0.125 or lower, skip tile calculation
       setVisibleTiles([]); // Clear the visible tiles array
-      console.log("Zoom level too low, rendering grey background only");
       return;
     }
 
@@ -69,7 +73,6 @@ const Viewport: React.FC<ViewportProps> = ({
     }
 
     setVisibleTiles(newVisibleTiles);
-    console.log("Currently visible tiles:", newVisibleTiles.length);
   }, [backgroundTileSize]);
 
   useEffect(() => {
@@ -113,7 +116,7 @@ const Viewport: React.FC<ViewportProps> = ({
       let scale = stageRef.current.scaleX(); // Assuming uniform scaling (scaleX = scaleY)
 
       // Cap the zoom level
-      const minZoomLevel = 1/128;
+      const minZoomLevel = 1 / 128;
       if (scale < minZoomLevel) {
         scale = minZoomLevel;
         stageRef.current.scale({ x: scale, y: scale });
@@ -136,7 +139,7 @@ const Viewport: React.FC<ViewportProps> = ({
         height: "100%",
         cursor: "grab",
         overflow: "hidden",
-        backgroundColor: "#f0f0f0"
+        backgroundColor: "#f0f0f0",
       }}
       ref={divRef}
       {...touchHandlers(onPixelPaint, isEditing)}
@@ -149,7 +152,13 @@ const Viewport: React.FC<ViewportProps> = ({
           wheelHandler(e);
           handleZoom();
         }}
-        {...mouseHandlers(onPixelPaint, isEditing, stageRef, setHoveredPixel, coordinatesRef)}
+        {...mouseHandlers(
+          onPixelPaint,
+          isEditing,
+          stageRef,
+          setHoveredPixel,
+          coordinatesRef,
+        )}
         onDragEnd={handleDragEnd}
         draggable={!isEditing}
       >
@@ -157,8 +166,14 @@ const Viewport: React.FC<ViewportProps> = ({
           {/* Render grey background if zoom level is low */}
           {zoomLevel <= 0.125 && (
             <Rect
-              x={-stageRef.current!.x() / zoomLevel - (dimensions.width * 2.5) / zoomLevel}
-              y={-stageRef.current!.y() / zoomLevel - (dimensions.height * 2.5) / zoomLevel}
+              x={
+                -stageRef.current!.x() / zoomLevel -
+                (dimensions.width * 2.5) / zoomLevel
+              }
+              y={
+                -stageRef.current!.y() / zoomLevel -
+                (dimensions.height * 2.5) / zoomLevel
+              }
               width={(dimensions.width * 5) / zoomLevel}
               height={(dimensions.height * 5) / zoomLevel}
               fill="#f5f5f5" // A lighter grey shade, halfway between #eeeeee and white

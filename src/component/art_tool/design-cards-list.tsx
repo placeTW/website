@@ -1,11 +1,11 @@
 import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
 import { FC, useState, useEffect, useRef } from "react";
 import { useUserContext } from "../../context/user-context";
-import { DesignInfo } from "../../types/art-tool";
+import { Design } from "../../types/art-tool";
 import DesignCard from "./design-card";
 
 interface DesignCardsListProps {
-  designs: DesignInfo[];
+  designs: Design[];
   onEditStateChange: (isEditing: boolean, designId: string | null) => void;
   onVisibilityChange: (visibleLayers: string[]) => void;
   onSubmitEdit: () => void;  // New prop to handle submit from DesignOffice

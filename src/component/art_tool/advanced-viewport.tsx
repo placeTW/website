@@ -1,16 +1,17 @@
+// advanced-viewport.tsx
 import { Box, Grid } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
-import { supabase } from "../../api/supabase";
-import { databaseFetchPixels } from "../../api/supabase/database";
-import { Pixel } from "../../types/art-tool";
+import { databaseFetchDesigns, supabase } from "../../api/supabase";
 import Viewport from "../viewport/Viewport";
+import { Pixel } from "../viewport/types";
+import { Design } from "../../types/art-tool";
 
 interface AdvancedViewportProps {
   isEditing: boolean;
   editDesignId: string | null;
   visibleLayers: string[];
   onUpdatePixels: (pixels: Pixel[]) => void;
-  designName: string;
+  designName: string | null;
   colors: { Color: string; color_sort: number | null }[];
 }
 
@@ -28,7 +29,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const previousVisibleLayers = useRef<string[]>([]);
 
   // Function to create a checkerboard pattern as an HTMLCanvasElement
-  const createCheckerboardPattern = (color1: string, color2: string): HTMLCanvasElement => {
+  const createCheckerboardPattern = (
+    color1: string,
+    color2: string,
+  ): HTMLCanvasElement => {
     const size = 20;
     const canvas = document.createElement("canvas");
     canvas.width = size * 2;
@@ -57,10 +61,15 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Fetch pixels based on visible layers
   useEffect(() => {
-    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
-    console.log('Fetching pixels for layers:', layersToFetch);
+    const layersToFetch = [
+      "main",
+      ...visibleLayers.filter((layer) => layer !== "main"),
+    ];
 
-    if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
+    if (
+      JSON.stringify(previousVisibleLayers.current) !==
+      JSON.stringify(layersToFetch)
+    ) {
       previousVisibleLayers.current = layersToFetch;
 
       const fetchPixels = async () => {
@@ -69,11 +78,24 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           return;
         }
 
+        const designs = await databaseFetchDesigns();
+
         const allVisiblePixels = await Promise.all(
-          layersToFetch.map((layer) => databaseFetchPixels(layer))
+          layersToFetch.map(async (layer) => {
+            const design = designs?.find((d) => d.design_name === layer);
+            if (design) {
+              return design.pixels.map((pixel: Pixel) => ({
+                ...pixel,
+                x: pixel.x + design.x,
+                y: pixel.y + design.y,
+                canvas: layer, // Add the canvas property
+              }));
+            }
+            return [];
+          }),
         );
+
         setPixels(allVisiblePixels.flat());
-        console.log('Fetched pixels:', allVisiblePixels.flat());
       };
 
       fetchPixels();
@@ -82,45 +104,40 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Real-time subscription to pixel changes
   useEffect(() => {
-    console.log('Setting up real-time subscription for pixel changes...');
     const pixelSubscription = supabase
-      .channel("realtime-art_tool_pixels")
+      .channel("realtime-art_tool_designs")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_pixels" },
+        { event: "*", schema: "public", table: "art_tool_designs" },
         (payload) => {
-          console.log('Received real-time update:', payload);
-
           setPixels((prevPixels) => {
-            const pixelMap = new Map<string, Pixel>();
+            if (payload.eventType === "UPDATE") {
+              const updatedDesign = payload.new as Design;
+              const updatedPixels = updatedDesign.pixels.map((pixel: Pixel) => ({
+                ...pixel,
+                x: pixel.x + updatedDesign.x,
+                y: pixel.y + updatedDesign.y,
+              }));
 
-            // Add existing pixels to the map first
-            prevPixels.forEach((pixel) => {
-              pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel); // Use coordinates and canvas as key
-            });
-
-            // Handle the event based on its type
-            if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-              const { id, x, y, color, canvas } = payload.new as Pixel;
-              const updatedPixel: Pixel = { id, x, y, color, canvas };
-              pixelMap.set(`${x}-${y}-${canvas}`, updatedPixel);
-              console.log('Inserted/Updated pixel:', updatedPixel);
-            } else if (payload.eventType === "DELETE") {
-              const { x, y, canvas } = payload.old;
-              pixelMap.delete(`${x}-${y}-${canvas}`);
-              console.log('Deleted pixel at coordinates:', { x, y, canvas });
+              // Merge updatedPixels with existing pixels
+              const pixelMap = new Map<string, Pixel>();
+              prevPixels.forEach((pixel) =>
+                pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel),
+              );
+              updatedPixels.forEach((pixel: Pixel) =>
+                pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel),
+              );
+              return Array.from(pixelMap.values());
+            } else {
+              // Handle other event types like INSERT and DELETE
+              return prevPixels;
             }
-
-            const updatedPixels = Array.from(pixelMap.values());
-            console.log('Updated pixel map:', updatedPixels);
-            return updatedPixels;
           });
-        }
+        },
       )
       .subscribe();
 
     return () => {
-      console.log('Unsubscribing from real-time updates...');
       supabase.removeChannel(pixelSubscription);
     };
   }, [visibleLayers]);
@@ -135,55 +152,64 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
       });
 
-      // Overwrite with any edited pixels
+      // Overwrite with edited pixels (assuming designName is available)
       editedPixels.forEach((pixel) => {
-        if (pixel.color !== "ClearOnDesign") {
+        if (pixel.color !== "ClearOnDesign" && designName) {
           pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
         } else {
           pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.canvas}`);
         }
       });
 
-      const mergedPixels = Array.from(pixelMap.values());
-      console.log('Merging pixels for rendering:', mergedPixels);
-
-      if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
-        setPixels(mergedPixels); // Update the pixels state for rendering
-      }
+      setPixels(Array.from(pixelMap.values()));
     }
   }, [pixels, editedPixels, isEditing]);
 
-  // Update layerOrder to include the edit layer right above the design being edited
   const layerOrder = ["main"];
   if (editDesignId && isEditing) {
     layerOrder.push(editDesignId);
   }
-  layerOrder.push(...visibleLayers.filter(layer => layer !== "main" && layer !== editDesignId));
-  console.log('Calculated layer order:', layerOrder);
+  layerOrder.push(
+    ...visibleLayers.filter(
+      (layer) => layer !== "main" && layer !== editDesignId,
+    ),
+  );
 
   // Function to regenerate pixels array from scratch
   const regeneratePixels = async () => {
-    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
-    console.log('Regenerating pixels for layers:', layersToFetch);
+    const layersToFetch = [
+      "main",
+      ...visibleLayers.filter((layer) => layer !== "main"),
+    ];
 
     if (layersToFetch.length === 0) {
       setPixels([]); // No layers, so empty pixels array
       return;
     }
 
+    const designs = await databaseFetchDesigns();
+
     const allVisiblePixels = await Promise.all(
-      layersToFetch.map((layer) => databaseFetchPixels(layer))
+      layersToFetch.map(async (layer) => {
+        const design = designs?.find((d) => d.design_name === layer);
+        if (design) {
+          return design.pixels.map((pixel: Pixel) => ({
+            ...pixel,
+            x: pixel.x + design.x,
+            y: pixel.y + design.y,
+            canvas: layer,
+          }));
+        }
+        return [];
+      }),
     );
 
-    // Update pixels state with freshly fetched data
     setPixels(allVisiblePixels.flat());
-    console.log('Regenerated pixels:', allVisiblePixels.flat());
   };
 
   // Clear edited pixels on submission or exit from edit mode
   useEffect(() => {
     if (!isEditing) {
-      console.log("Exiting edit mode, clearing editedPixels:", editedPixels); // Log before clearing
       setEditedPixels([]); // Clear the edited pixels array when exiting edit mode
 
       regeneratePixels(); // Regenerate pixels from scratch
@@ -191,24 +217,21 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   }, [isEditing]);
 
   const handleColorSelect = (color: string) => {
-    console.log('Selected color:', color);
     setSelectedColor(color);
   };
 
   const handlePixelPaint = (x: number, y: number) => {
-    if (!isEditing || !selectedColor) return;
-
+    if (!isEditing || !selectedColor || !designName) return;
     const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
 
     setEditedPixels((prevEditedPixels) => {
-      const updatedPixels = prevEditedPixels.filter((p) => !(p.x === x && p.y === y));
+      const updatedPixels = prevEditedPixels.filter(
+        (p) => !(p.x === x && p.y === y && p.canvas === designName),
+      );
       updatedPixels.push(newPixel);
-      console.log("Edited Pixels:", updatedPixels);
       onUpdatePixels(updatedPixels);
       return updatedPixels;
     });
-
-    // No need to update `pixels` here since it will be handled in the merging step above.
   };
 
   return (
@@ -218,7 +241,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         pixels={pixels}
         isEditing={isEditing}
         onPixelPaint={handlePixelPaint}
-        layerOrder={layerOrder} // Pass the updated layerOrder prop
+        layerOrder={layerOrder}
       />
 
       {isEditing && (

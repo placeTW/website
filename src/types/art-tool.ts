@@ -1,6 +1,6 @@
 // src/types/art-tool.ts
 
-export interface DesignInfo {
+export interface Design {
   id: string;
   design_name: string;
   design_thumbnail: string;
@@ -9,11 +9,13 @@ export interface DesignInfo {
   rank: string;
   rank_name: string; // Ensure this property is included
   liked_by: string[];
+  pixels: Pixel[];
+  x: number;
+  y: number;
 }
 
 
 export interface Pixel {
-  id?: number;
   x: number;
   y: number;
   color: string;

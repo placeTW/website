@@ -2,45 +2,40 @@ import { Box, Spinner, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
 import {
-  databaseFetchDesignsWithUserDetails,
-  saveEditedPixels,
-  databaseFetchPixels,
   databaseFetchColors,
-  uploadThumbnailToSupabase,
+  databaseFetchDesigns,
+  saveEditedPixels,
   updateDesignThumbnail,
+  uploadThumbnailToSupabase,
 } from "../api/supabase/database";
+import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
-import AdvancedViewport from "../component/art_tool/advanced-viewport";
-import { DesignInfo, Pixel } from "../types/art-tool";
+import {
+  CLEAR_ON_DESIGN,
+  CLEAR_ON_MAIN,
+} from "../component/viewport/constants";
 import { createThumbnail } from "../utils/imageUtils";
+import { Design, Pixel } from "../types/art-tool";
 
 const DesignOffice: React.FC = () => {
-  const [designs, setDesigns] = useState<DesignInfo[]>([]);
-  const [colors, setColors] = useState<{ Color: string; color_sort: number | null }[]>([]);
+  const [designs, setDesigns] = useState<Design[]>([]);
+  const [colors, setColors] = useState<
+    { Color: string; color_sort: number | null }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<string[]>([]);
-  const [editedPixels, setEditedPixels] = useState<Omit<Pixel, "id">[]>([]);
+  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const toast = useToast();
 
-  const fetchLayersWithUserDetails = async () => {
+  const fetchDesigns = async () => {
     try {
-      const data = await databaseFetchDesignsWithUserDetails();
-      const formattedData = (data || []).map((item: any) => ({
-        id: item.id.toString(),
-        design_name: item.design_name,
-        created_by: item.created_by,
-        handle: item.art_tool_users.handle || "",
-        rank: item.art_tool_users.rank || "",
-        rank_name: item.art_tool_users.rank_name || "",
-        liked_by: item.liked_by,
-        design_thumbnail: item.design_thumbnail,
-      }));
-      setDesigns(formattedData);
+      const data = await databaseFetchDesigns();
+      setDesigns(data);
     } catch (error) {
-      console.error("Error fetching layers with user details:", error);
+      console.error("Error fetching designs:", error);
     } finally {
       setLoading(false);
     }
@@ -52,8 +47,8 @@ const DesignOffice: React.FC = () => {
 
       // Append the special colors on the client-side
       const specialColors = [
-        { Color: "ClearOnDesign", color_sort: null },
-        { Color: "ClearOnMain", color_sort: null },
+        { Color: CLEAR_ON_DESIGN, color_sort: null },
+        { Color: CLEAR_ON_MAIN, color_sort: null },
       ];
 
       setColors([...fetchedColors, ...specialColors]);
@@ -62,22 +57,22 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleEditStateChange = (isEditing: boolean, designId: string | null) => {
+  const handleEditStateChange = (
+    isEditing: boolean,
+    designId: string | null,
+  ) => {
     setIsEditing(isEditing);
     setEditDesignId(designId);
   };
 
   const handleVisibilityChange = (newVisibleLayers: string[]) => {
-    console.log("Visibility changed:", newVisibleLayers);
     setVisibleLayers(newVisibleLayers);
   };
 
-  const handleUpdatePixels = (pixels: Omit<Pixel, "id">[]) => {
+  const handleUpdatePixels = (pixels: Pixel[]) => {
     if (pixels && pixels.length > 0) {
-      console.log("Updating editedPixels with:", pixels);
       setEditedPixels(pixels);
     } else {
-      console.warn("handleUpdatePixels received undefined or empty pixels array.");
       setEditedPixels([]); // Ensure state is reset if the array is empty or undefined
     }
   };
@@ -90,41 +85,35 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
-      console.log("Before submitting, editedPixels state:", editedPixels);
-
-      // Step 1: Fetch existing pixels for the design
-      const existingPixels = await databaseFetchPixels(currentDesign.design_name);
-
-      // Step 2: Create a map of existing pixels to ensure efficient merging
+      // Merge edited pixels with existing ones, with edited ones taking priority
       const existingPixelMap = new Map<string, Pixel>();
-      existingPixels?.forEach((pixel) => {
+      currentDesign.pixels.forEach((pixel) => {
         existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
       });
 
-      // Step 3: Merge edited pixels with existing ones, with edited ones taking priority
       editedPixels.forEach((pixel) => {
-        if (pixel.color === "ClearOnDesign") {
+        if (pixel.color === CLEAR_ON_DESIGN) {
           existingPixelMap.delete(`${pixel.x}-${pixel.y}`);
         } else {
           existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
         }
       });
 
-      // Step 4: Convert the map back to an array and filter out any 'ClearOnDesign' pixels
       const mergedPixels = Array.from(existingPixelMap.values()).filter(
-        (pixel) => pixel.color !== "ClearOnDesign"
+        (pixel) => pixel.color !== CLEAR_ON_DESIGN,
       );
 
-      console.log("Filtered Pixels before saving:", mergedPixels);
-
-      // Step 5: Save filtered pixels to the database
+      // Save filtered pixels to the database
       await saveEditedPixels(currentDesign.design_name, mergedPixels);
 
-      // Step 6: Generate a thumbnail of the current design with filtered pixels
+      // Generate a thumbnail of the current design with filtered pixels
       const thumbnailBlob = await createThumbnail(mergedPixels);
-      const thumbnailUrl = await uploadThumbnailToSupabase(thumbnailBlob, currentDesign.id);
+      const thumbnailUrl = await uploadThumbnailToSupabase(
+        thumbnailBlob,
+        currentDesign.id,
+      );
 
-      // Step 7: Update the database with the new thumbnail URL
+      // Update the database with the new thumbnail URL
       await updateDesignThumbnail(currentDesign.id, thumbnailUrl);
 
       toast({
@@ -135,9 +124,8 @@ const DesignOffice: React.FC = () => {
         isClosable: true,
       });
 
-      // Step 8: Clear the editedPixels array but stay in edit mode
+      // Clear the editedPixels array but stay in edit mode
       setEditedPixels([]);
-      
     } catch (error: any) {
       console.error("Error saving edited pixels or updating thumbnail:", error);
       toast({
@@ -151,16 +139,7 @@ const DesignOffice: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log("DesignOffice rendered with state:", {
-      designs,
-      loading,
-      isEditing,
-      editDesignId,
-      visibleLayers,
-      editedPixels,
-    });
-
-    fetchLayersWithUserDetails();
+    fetchDesigns();
     fetchColors();
 
     const subscription = supabase
@@ -169,15 +148,15 @@ const DesignOffice: React.FC = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "art_tool_designs" },
         () => {
-          fetchLayersWithUserDetails();
-        }
+          fetchDesigns();
+        },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [editedPixels]);
+  }, []);
 
   if (loading) {
     return <Spinner size="xl" />;
@@ -194,23 +173,23 @@ const DesignOffice: React.FC = () => {
       position="relative"
     >
       <Box border="1px solid #ccc" overflow="hidden">
-        <AdvancedViewport 
-          isEditing={isEditing} 
-          editDesignId={editDesignId} 
+        <AdvancedViewport
+          isEditing={isEditing}
+          editDesignId={editDesignId}
           visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]}
-          onUpdatePixels={handleUpdatePixels} 
+          onUpdatePixels={handleUpdatePixels}
           designName={currentDesign ? currentDesign.design_name : "main"}
           colors={colors}
         />
       </Box>
       <Box overflowY="auto">
-        <DesignCardsList 
-          designs={designs} 
+        <DesignCardsList
+          designs={designs}
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
-          onSubmitEdit={handleSubmitEdit} 
+          onSubmitEdit={handleSubmitEdit}
         />
-        <Box h="100px" />
+        <Box h="100px" /> {/* Spacer at the bottom */}
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
         <CreateDesignButton />
