@@ -42,3 +42,5 @@ concat_files.sh
 .devcontainer-internal.json
 .github/dependabot.yml
 .dockerignore
+concat_select_files.sh
+concatenated_code.txt
