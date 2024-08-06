@@ -1,4 +1,3 @@
-// advanced-viewport.tsx
 import { Box, Grid } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import { databaseFetchDesigns, supabase } from "../../api/supabase";
@@ -29,6 +28,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const previousVisibleLayers = useRef<string[]>([]);
+  const [selection, setSelection] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [copyBuffer, setCopyBuffer] = useState<Pixel[]>([]);
 
   // Function to create a checkerboard pattern as an HTMLCanvasElement
   const createCheckerboardPattern = (
@@ -248,6 +249,42 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     });
   };
 
+  // Handle Copy Pixels
+  const handleCopy = () => {
+    if (selection && pixels) {
+      const { x, y, width, height } = selection;
+      const selectedPixels = pixels.filter(
+        (pixel) =>
+          pixel.x >= x &&
+          pixel.y >= y &&
+          pixel.x < x + width &&
+          pixel.y < y + height,
+      );
+      setCopyBuffer(selectedPixels);
+    }
+  };
+
+  // Handle Paste Pixels
+  const handlePaste = (pasteX: number, pasteY: number) => {
+    if (!isEditing || !designName) return;
+    if (copyBuffer.length > 0) {
+      const offsetX = pasteX - copyBuffer[0].x;
+      const offsetY = pasteY - copyBuffer[0].y;
+      const pastedPixels = copyBuffer.map((pixel) => ({
+        ...pixel,
+        x: pixel.x + offsetX,
+        y: pixel.y + offsetY,
+        canvas: designName,
+      }));
+
+      setEditedPixels((prevEditedPixels) => {
+        const updatedPixels = [...prevEditedPixels, ...pastedPixels];
+        onUpdatePixels(updatedPixels);
+        return updatedPixels;
+      });
+    }
+  };
+
   return (
     <Box position="relative" height="100%">
       <Box height="100%">
@@ -258,6 +295,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           isEditing={isEditing}
           onPixelPaint={handlePixelPaint}
           layerOrder={layerOrder}
+          onCopy={handleCopy}
+          onPaste={handlePaste}
+          selection={selection}
+          setSelection={setSelection}
         />
       </Box>
 

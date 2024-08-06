@@ -1,4 +1,3 @@
-// Viewport.tsx
 import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
@@ -13,6 +12,12 @@ interface ViewportProps {
   isEditing?: boolean;
   onPixelPaint?: (x: number, y: number) => void;
   layerOrder: string[];
+  selection?: { x: number; y: number; width: number; height: number } | null;
+  setSelection?: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number; width: number; height: number } | null>
+  >;
+  onCopy?: () => void;
+  onPaste?: (x: number, y: number) => void;
 }
 
 const Viewport: React.FC<ViewportProps> = ({
@@ -21,6 +26,10 @@ const Viewport: React.FC<ViewportProps> = ({
   isEditing,
   onPixelPaint,
   layerOrder,
+  selection,
+  setSelection,
+  onCopy,
+  onPaste,
 }) => {
   const [hoveredPixel, setHoveredPixel] = useState<{
     x: number;
@@ -159,6 +168,10 @@ const Viewport: React.FC<ViewportProps> = ({
           stageRef,
           setHoveredPixel,
           coordinatesRef,
+          selection,
+          setSelection,
+          onCopy,
+          onPaste,
         )}
         onDragEnd={handleDragEnd}
         draggable={!isEditing}
@@ -236,6 +249,21 @@ const Viewport: React.FC<ViewportProps> = ({
               ))}
           </Layer>
         ))}
+
+        {/* Render selection rectangle */}
+        {selection && (
+          <Layer>
+            <Rect
+              x={selection.x * gridSize}
+              y={selection.y * gridSize}
+              width={selection.width * gridSize}
+              height={selection.height * gridSize}
+              stroke="blue"
+              strokeWidth={2}
+              dash={[4, 4]}
+            />
+          </Layer>
+        )}
       </Stage>
       {hoveredPixel && (
         <div
