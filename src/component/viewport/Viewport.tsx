@@ -114,7 +114,6 @@ const Viewport: React.FC<ViewportProps> = ({
 
   useEffect(() => {
     if (designId) {
-      console.log(`Currently editing design with ID: ${designId}`);
     }
   }, [designId]);
 
@@ -133,7 +132,6 @@ const Viewport: React.FC<ViewportProps> = ({
         stageRef.current.scale({ x: scale, y: scale });
       }
 
-      console.log("Current zoom level:", scale);
       calculateVisibleTiles();
     }
   };

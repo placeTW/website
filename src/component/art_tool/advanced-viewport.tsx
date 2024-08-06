@@ -296,7 +296,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   
       // Set the copy buffer
       setCopyBuffer(finalCopiedPixels);
-      console.log("Copied Pixels:", finalCopiedPixels); // Debug log
     }
   }, [selection, pixels, editedPixels, designName]);
   
@@ -320,8 +319,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       canvas: designName,
     }));
   
-    console.log("Pasted Pixels:", pastedPixels); // Debug log
-  
+
     setEditedPixels((prevEditedPixels) => {
       const updatedPixels = [...prevEditedPixels, ...pastedPixels];
       onUpdatePixels(updatedPixels);
