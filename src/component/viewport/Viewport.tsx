@@ -18,6 +18,7 @@ interface ViewportProps {
   >;
   onCopy?: () => void;
   onPaste?: (x: number, y: number) => void;
+  stageRef: React.RefObject<Konva.Stage>; // Include stageRef in the props
 }
 
 const Viewport: React.FC<ViewportProps> = ({
@@ -30,12 +31,12 @@ const Viewport: React.FC<ViewportProps> = ({
   setSelection,
   onCopy,
   onPaste,
+  stageRef, // Destructure stageRef
 }) => {
   const [hoveredPixel, setHoveredPixel] = useState<{
     x: number;
     y: number;
   } | null>(null);
-  const stageRef = useRef<Konva.Stage | null>(null);
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -83,7 +84,7 @@ const Viewport: React.FC<ViewportProps> = ({
     }
 
     setVisibleTiles(newVisibleTiles);
-  }, [backgroundTileSize]);
+  }, [backgroundTileSize, stageRef]);
 
   useEffect(() => {
     calculateVisibleTiles();
@@ -109,7 +110,7 @@ const Viewport: React.FC<ViewportProps> = ({
       const context = layer.getCanvas().getContext();
       context.imageSmoothingEnabled = false;
     }
-  }, [backgroundImage]);
+  }, [backgroundImage, stageRef]);
 
   useEffect(() => {
     if (designId) {
@@ -157,7 +158,7 @@ const Viewport: React.FC<ViewportProps> = ({
       <Stage
         width={dimensions.width}
         height={dimensions.height}
-        ref={stageRef}
+        ref={stageRef} // Use stageRef here
         onWheel={(e) => {
           wheelHandler(e);
           handleZoom();

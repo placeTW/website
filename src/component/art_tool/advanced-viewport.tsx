@@ -5,6 +5,8 @@ import { Design } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import { CLEAR_ON_DESIGN, CLEAR_ON_MAIN } from "../viewport/constants";
 import { Pixel } from "../viewport/types";
+import Konva from "konva"; // Import Konva
+import { GRID_SIZE } from "../viewport/constants"; // Import GRID_SIZE
 
 interface AdvancedViewportProps {
   isEditing: boolean;
@@ -30,6 +32,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const previousVisibleLayers = useRef<string[]>([]);
   const [selection, setSelection] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [copyBuffer, setCopyBuffer] = useState<Pixel[]>([]);
+  const stageRef = useRef<Konva.Stage>(null); // Define stageRef
 
   // Function to create a checkerboard pattern as an HTMLCanvasElement
   const createCheckerboardPattern = (
@@ -271,25 +274,31 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Handle Paste Pixels
   const handlePaste = useCallback((pasteX: number, pasteY: number) => {
-    if (!isEditing || !designName) return;
-    if (copyBuffer.length > 0) {
-      const offsetX = pasteX - copyBuffer[0].x;
-      const offsetY = pasteY - copyBuffer[0].y;
-      const pastedPixels = copyBuffer.map((pixel) => ({
-        ...pixel,
-        x: pixel.x + offsetX,
-        y: pixel.y + offsetY,
-        canvas: designName,
-      }));
-
-      console.log("Pasted Pixels:", pastedPixels); // Debug log
-
-      setEditedPixels((prevEditedPixels) => {
-        const updatedPixels = [...prevEditedPixels, ...pastedPixels];
-        onUpdatePixels(updatedPixels);
-        return updatedPixels;
-      });
-    }
+    if (!isEditing || !designName || copyBuffer.length === 0) return;
+  
+    // Get the top-left corner of the copied selection
+    const minX = Math.min(...copyBuffer.map((pixel) => pixel.x));
+    const minY = Math.min(...copyBuffer.map((pixel) => pixel.y));
+  
+    // Calculate the offset needed to align the top-left corner of the copied selection with the paste location
+    const offsetX = pasteX - minX;
+    const offsetY = pasteY - minY;
+  
+    // Apply the offset to all copied pixels
+    const pastedPixels = copyBuffer.map((pixel) => ({
+      ...pixel,
+      x: pixel.x + offsetX,
+      y: pixel.y + offsetY,
+      canvas: designName,
+    }));
+  
+    console.log("Pasted Pixels:", pastedPixels); // Debug log
+  
+    setEditedPixels((prevEditedPixels) => {
+      const updatedPixels = [...prevEditedPixels, ...pastedPixels];
+      onUpdatePixels(updatedPixels);
+      return updatedPixels;
+    });
   }, [copyBuffer, isEditing, designName, onUpdatePixels]);
 
   // Global keydown listener for copy/paste
@@ -298,10 +307,17 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       if (e.ctrlKey && e.key === "c") {
         handleCopy();
       } else if (e.ctrlKey && e.key === "v") {
-        // Assuming you have some way of getting the current cursor position for pasting
-        const pasteX = 0; // Replace with actual X coordinate for paste
-        const pasteY = 0; // Replace with actual Y coordinate for paste
-        handlePaste(pasteX, pasteY);
+        // Paste at the current cursor position
+        const stage = stageRef.current?.getStage();
+        if (stage) {
+          const pointer = stage.getPointerPosition();
+          if (pointer) {
+            const scale = stage.scaleX();
+            const pasteX = Math.floor((pointer.x - stage.x()) / (GRID_SIZE * scale));
+            const pasteY = Math.floor((pointer.y - stage.y()) / (GRID_SIZE * scale));
+            handlePaste(pasteX, pasteY);
+          }
+        }
       }
     };
 
@@ -327,6 +343,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           onPaste={handlePaste}
           selection={selection}
           setSelection={setSelection}
+          stageRef={stageRef} // Pass stageRef to Viewport
         />
       </Box>
 
