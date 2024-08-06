@@ -1,16 +1,18 @@
 // briefing-room.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Viewport from "../component/viewport/Viewport";
 import { useAlertContext } from "../context/alert-context";
 import { alertLevels, validAlertLevels } from "../definitions/alert-level";
 import { databaseFetchDesigns } from "../api/supabase/database";
 import { Pixel } from "../types/art-tool";
+import Konva from "konva"; // Ensure Konva is imported
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { alertLevel, alertMessage } = useAlertContext();
   const [pixels, setPixels] = useState<Pixel[]>([]);
+  const stageRef = useRef<Konva.Stage>(null); // Create the stageRef using useRef
 
   useEffect(() => {
     const fetchPixels = async () => {
@@ -49,7 +51,12 @@ const BriefingRoom: React.FC = () => {
           )}
           {!!alertMessage && <p>{alertMessage}</p>}
           {alertLevels.get(alertLevel)?.showViewport && (
-            <Viewport designId="someDesignId" pixels={pixels} layerOrder={layerOrder} />
+            <Viewport 
+              designId="someDesignId" 
+              pixels={pixels} 
+              layerOrder={layerOrder} 
+              stageRef={stageRef} // Pass the stageRef to Viewport
+            />
           )}
         </div>
       ) : (
