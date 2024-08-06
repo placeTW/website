@@ -258,19 +258,48 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Handle Copy Pixels
   const handleCopy = useCallback(() => {
-    if (selection && pixels) {
+    if (selection && pixels && designName) {
       const { x, y, width, height } = selection;
-      const selectedPixels = pixels.filter(
-        (pixel) =>
-          pixel.x >= x &&
-          pixel.y >= y &&
-          pixel.x < x + width &&
-          pixel.y < y + height,
+  
+      // Filter pixels that are part of the current design layer or added during the current session
+      const selectedPixels = pixels
+        .filter(
+          (pixel) =>
+            pixel.canvas === designName && // Only include pixels from the current design layer
+            pixel.x >= x &&
+            pixel.y >= y &&
+            pixel.x < x + width &&
+            pixel.y < y + height,
+        );
+  
+      // Include edited pixels (those added in the current session)
+      const selectedEditedPixels = editedPixels
+        .filter(
+          (pixel) =>
+            pixel.canvas === designName && // Ensure these are part of the current design
+            pixel.x >= x &&
+            pixel.y >= y &&
+            pixel.x < x + width &&
+            pixel.y < y + height,
+        );
+  
+      // Combine both arrays, ensuring no duplicates
+      const combinedPixels = [...selectedPixels, ...selectedEditedPixels];
+  
+      // Remove any duplicates by creating a Map
+      const uniquePixels = new Map<string, Pixel>();
+      combinedPixels.forEach((pixel) =>
+        uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel),
       );
-      setCopyBuffer(selectedPixels);
-      console.log("Copied Pixels:", selectedPixels); // Debug log
+  
+      const finalCopiedPixels = Array.from(uniquePixels.values());
+  
+      // Set the copy buffer
+      setCopyBuffer(finalCopiedPixels);
+      console.log("Copied Pixels:", finalCopiedPixels); // Debug log
     }
-  }, [selection, pixels]);
+  }, [selection, pixels, editedPixels, designName]);
+  
 
   // Handle Paste Pixels
   const handlePaste = useCallback((pasteX: number, pasteY: number) => {
