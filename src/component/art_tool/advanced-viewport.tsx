@@ -1,5 +1,5 @@
 import { Box, Grid } from "@chakra-ui/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { databaseFetchDesigns, supabase } from "../../api/supabase";
 import { Design } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
@@ -254,7 +254,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   };
 
   // Handle Copy Pixels
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     if (selection && pixels) {
       const { x, y, width, height } = selection;
       const selectedPixels = pixels.filter(
@@ -267,10 +267,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       setCopyBuffer(selectedPixels);
       console.log("Copied Pixels:", selectedPixels); // Debug log
     }
-  };
+  }, [selection, pixels]);
 
   // Handle Paste Pixels
-  const handlePaste = (pasteX: number, pasteY: number) => {
+  const handlePaste = useCallback((pasteX: number, pasteY: number) => {
     if (!isEditing || !designName) return;
     if (copyBuffer.length > 0) {
       const offsetX = pasteX - copyBuffer[0].x;
@@ -290,7 +290,28 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         return updatedPixels;
       });
     }
-  };
+  }, [copyBuffer, isEditing, designName, onUpdatePixels]);
+
+  // Global keydown listener for copy/paste
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "c") {
+        handleCopy();
+      } else if (e.ctrlKey && e.key === "v") {
+        // Assuming you have some way of getting the current cursor position for pasting
+        const pasteX = 0; // Replace with actual X coordinate for paste
+        const pasteY = 0; // Replace with actual Y coordinate for paste
+        handlePaste(pasteX, pasteY);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleCopy, handlePaste]); // Ensure these functions are included in the dependency array
 
   return (
     <Box position="relative" height="100%">
