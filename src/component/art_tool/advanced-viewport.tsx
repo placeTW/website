@@ -274,15 +274,14 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Handle Paste Pixels
   const handlePaste = useCallback((pasteX: number, pasteY: number) => {
-    if (!isEditing || !designName || copyBuffer.length === 0) return;
+    if (!isEditing || !designName || copyBuffer.length === 0 || !selection) return;
   
-    // Get the top-left corner of the copied selection
-    const minX = Math.min(...copyBuffer.map((pixel) => pixel.x));
-    const minY = Math.min(...copyBuffer.map((pixel) => pixel.y));
+    // Get the top-left corner of the full selection area
+    const { x: selectionX, y: selectionY } = selection;
   
-    // Calculate the offset needed to align the top-left corner of the copied selection with the paste location
-    const offsetX = pasteX - minX;
-    const offsetY = pasteY - minY;
+    // Calculate the offset needed to align the top-left corner of the selection with the paste location
+    const offsetX = pasteX - selectionX;
+    const offsetY = pasteY - selectionY;
   
     // Apply the offset to all copied pixels
     const pastedPixels = copyBuffer.map((pixel) => ({
@@ -299,8 +298,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       onUpdatePixels(updatedPixels);
       return updatedPixels;
     });
-  }, [copyBuffer, isEditing, designName, onUpdatePixels]);
-
+  }, [copyBuffer, isEditing, designName, onUpdatePixels, selection]);
+  
   // Global keydown listener for copy/paste
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
