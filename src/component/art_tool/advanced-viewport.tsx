@@ -176,9 +176,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         }
       });
 
-      setPixels(Array.from(pixelMap.values()));
+      // Only set pixels if they have actually changed
+      const newPixelsArray = Array.from(pixelMap.values());
+      if (JSON.stringify(newPixelsArray) !== JSON.stringify(pixels)) {
+        setPixels(newPixelsArray);
+      }
     }
-  }, [pixels, editedPixels, isEditing, designName]);
+  }, [editedPixels, isEditing, designName]); // Removed 'pixels' from dependencies
 
   const layerOrder = ["main"];
   if (editDesignId && isEditing) {
@@ -261,6 +265,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           pixel.y < y + height,
       );
       setCopyBuffer(selectedPixels);
+      console.log("Copied Pixels:", selectedPixels); // Debug log
     }
   };
 
@@ -276,6 +281,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         y: pixel.y + offsetY,
         canvas: designName,
       }));
+
+      console.log("Pasted Pixels:", pastedPixels); // Debug log
 
       setEditedPixels((prevEditedPixels) => {
         const updatedPixels = [...prevEditedPixels, ...pastedPixels];
