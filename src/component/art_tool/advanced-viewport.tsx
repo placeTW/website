@@ -6,7 +6,7 @@ import Viewport from "../viewport/Viewport";
 import { CLEAR_ON_DESIGN, CLEAR_ON_MAIN } from "../viewport/constants";
 import { Pixel } from "../viewport/types";
 import Konva from "konva"; // Import Konva
-import { GRID_SIZE } from "../viewport/constants"; // Import GRID_SIZE
+import { GRID_SIZE } from "../viewport/constants";
 
 interface AdvancedViewportProps {
   isEditing: boolean;
@@ -29,7 +29,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
-  const previousVisibleLayers = useRef<string[]>([]);
+  const previousVisibleLayers = useRef<string[]>(visibleLayers); // Initialize with visibleLayers
   const [selection, setSelection] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [copyBuffer, setCopyBuffer] = useState<Pixel[]>([]);
   const stageRef = useRef<Konva.Stage>(null); // Define stageRef
@@ -107,7 +107,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
       fetchPixels();
     }
-  }, [visibleLayers]);
+  }, [visibleLayers]); // Updated dependencies: only visibleLayers to avoid unnecessary re-renders
 
   // Real-time subscription to pixel changes
   useEffect(() => {
@@ -156,9 +156,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       .subscribe();
 
     return () => {
-      supabase.removeChannel(pixelSubscription);
+      supabase.removeChannel(pixelSubscription); // Ensure cleanup
     };
-  }, []);
+  }, []); // Empty dependency array to run only on mount
 
   // Merge pixels from different layers with edited pixels for rendering
   useEffect(() => {
@@ -198,7 +198,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   );
 
   // Function to regenerate pixels array from scratch
-  const regeneratePixels = async () => {
+  const regeneratePixels = useCallback(async () => {
     const layersToFetch = [
       "main",
       ...visibleLayers.filter((layer) => layer !== "main"),
@@ -227,37 +227,36 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     );
 
     setPixels(allVisiblePixels.flat());
-  };
+  }, [visibleLayers]);
 
   // Clear edited pixels on submission or exit from edit mode
   useEffect(() => {
     if (!isEditing) {
       setEditedPixels([]);
-
       regeneratePixels();
     }
-  }, [isEditing]);
+  }, [isEditing, regeneratePixels]); // Ensure it only runs when editing state changes
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
-  
+
     if (selection && isEditing && designName) {
       const { x, y, width, height } = selection;
-  
+
       // Create an array to hold the new pixels
       const newPixels: Pixel[] = [];
-  
+
       // Iterate over the selection area
       for (let i = 0; i < width; i++) {
         for (let j = 0; j < height; j++) {
           const pixelX = x + i;
           const pixelY = y + j;
-  
+
           // Add new pixel to the array, including CLEAR_ON_DESIGN as a regular color
           newPixels.push({ x: pixelX, y: pixelY, color, canvas: designName });
         }
       }
-  
+
       // Update the edited pixels with the new fill
       setEditedPixels((prevEditedPixels) => {
         // Filter out any existing pixels in the same positions
@@ -271,17 +270,14 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               p.canvas === designName
             )
         );
-  
+
         // Add the new pixels
         const finalPixels = [...updatedPixels, ...newPixels];
-        onUpdatePixels(finalPixels);
+        requestAnimationFrame(() => onUpdatePixels(finalPixels)); // Defer the state update to the next frame
         return finalPixels;
       });
     }
   };
-  
-  
-  
 
   const handlePixelPaint = (x: number, y: number) => {
     if (!isEditing || !selectedColor || !designName) return;
@@ -292,7 +288,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         (p) => !(p.x === x && p.y === y && p.canvas === designName),
       );
       updatedPixels.push(newPixel);
-      onUpdatePixels(updatedPixels);
+      requestAnimationFrame(() => onUpdatePixels(updatedPixels)); // Defer the state update to the next frame
       return updatedPixels;
     });
   };
@@ -301,7 +297,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const handleCopy = useCallback(() => {
     if (selection && pixels && designName) {
       const { x, y, width, height } = selection;
-  
+
       // Filter pixels that are part of the current design layer or added during the current session
       const selectedPixels = pixels
         .filter(
@@ -312,7 +308,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             pixel.x < x + width &&
             pixel.y < y + height,
         );
-  
+
       // Include edited pixels (those added in the current session)
       const selectedEditedPixels = editedPixels
         .filter(
@@ -323,35 +319,34 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             pixel.x < x + width &&
             pixel.y < y + height,
         );
-  
+
       // Combine both arrays, ensuring no duplicates
       const combinedPixels = [...selectedPixels, ...selectedEditedPixels];
-  
+
       // Remove any duplicates by creating a Map
       const uniquePixels = new Map<string, Pixel>();
       combinedPixels.forEach((pixel) =>
         uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel),
       );
-  
+
       const finalCopiedPixels = Array.from(uniquePixels.values());
-  
+
       // Set the copy buffer
       setCopyBuffer(finalCopiedPixels);
     }
   }, [selection, pixels, editedPixels, designName]);
-  
 
   // Handle Paste Pixels
   const handlePaste = useCallback((pasteX: number, pasteY: number) => {
     if (!isEditing || !designName || copyBuffer.length === 0 || !selection) return;
-  
+
     // Get the top-left corner of the full selection area
     const { x: selectionX, y: selectionY } = selection;
-  
+
     // Calculate the offset needed to align the top-left corner of the selection with the paste location
     const offsetX = pasteX - selectionX;
     const offsetY = pasteY - selectionY;
-  
+
     // Apply the offset to all copied pixels
     const pastedPixels = copyBuffer.map((pixel) => ({
       ...pixel,
@@ -359,15 +354,14 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       y: pixel.y + offsetY,
       canvas: designName,
     }));
-  
 
     setEditedPixels((prevEditedPixels) => {
       const updatedPixels = [...prevEditedPixels, ...pastedPixels];
-      onUpdatePixels(updatedPixels);
+      requestAnimationFrame(() => onUpdatePixels(updatedPixels)); // Defer the state update to the next frame
       return updatedPixels;
     });
   }, [copyBuffer, isEditing, designName, onUpdatePixels, selection]);
-  
+
   // Global keydown listener for copy/paste
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -436,8 +430,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                     color.Color === CLEAR_ON_DESIGN
                       ? `url(${clearOnDesignPattern})`
                       : color.Color === CLEAR_ON_MAIN
-                      ? `url(${clearOnMainPattern})`
-                      : color.Color
+                        ? `url(${clearOnMainPattern})`
+                        : color.Color
                   }
                   border={
                     selectedColor === color.Color
