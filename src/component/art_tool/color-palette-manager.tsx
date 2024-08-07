@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 import {
   Box,
   Button,
@@ -28,7 +28,17 @@ interface Color {
   color_name: string;
 }
 
-const ColorRow = ({
+interface ColorRowProps {
+  color: Color;
+  index: number;
+  totalColors: number;
+  moveColorUp: (index: number) => void;
+  moveColorDown: (index: number) => void;
+  handleEditColor: (color: Color, newColor: string, newColorName: string) => void;
+  handleRemoveColor: (color: string) => void;
+}
+
+const ColorRow: FC<ColorRowProps> = ({
   color,
   index,
   totalColors,
@@ -36,7 +46,7 @@ const ColorRow = ({
   moveColorDown,
   handleEditColor,
   handleRemoveColor,
-}: any) => {
+}: ColorRowProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedColor, setEditedColor] = useState(color.Color);
   const [editedColorName, setEditedColorName] = useState(color.color_name);
