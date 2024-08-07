@@ -240,7 +240,42 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
+  
+    if (selection && isEditing && designName) {
+      const { x, y, width, height } = selection;
+  
+      // Create an array to hold the new pixels
+      const newPixels: Pixel[] = [];
+  
+      // Iterate over the selection area
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          const pixelX = x + i;
+          const pixelY = y + j;
+  
+          if (color === CLEAR_ON_DESIGN) {
+            // If clearing, we delete any existing pixel at this location
+            setEditedPixels((prevEditedPixels) => {
+              return prevEditedPixels.filter(
+                (p) => !(p.x === pixelX && p.y === pixelY && p.canvas === designName)
+              );
+            });
+          } else {
+            // Otherwise, we create a new pixel with the selected color
+            newPixels.push({ x: pixelX, y: pixelY, color, canvas: designName });
+          }
+        }
+      }
+  
+      // Update the edited pixels with the new fill
+      setEditedPixels((prevEditedPixels) => {
+        const updatedPixels = [...prevEditedPixels, ...newPixels];
+        onUpdatePixels(updatedPixels);
+        return updatedPixels;
+      });
+    }
   };
+  
 
   const handlePixelPaint = (x: number, y: number) => {
     if (!isEditing || !selectedColor || !designName) return;
