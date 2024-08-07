@@ -253,28 +253,34 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           const pixelX = x + i;
           const pixelY = y + j;
   
-          if (color === CLEAR_ON_DESIGN) {
-            // If clearing, we delete any existing pixel at this location
-            setEditedPixels((prevEditedPixels) => {
-              return prevEditedPixels.filter(
-                (p) => !(p.x === pixelX && p.y === pixelY && p.canvas === designName)
-              );
-            });
-          } else {
-            // Otherwise, we create a new pixel with the selected color
-            newPixels.push({ x: pixelX, y: pixelY, color, canvas: designName });
-          }
+          // Add new pixel to the array, including CLEAR_ON_DESIGN as a regular color
+          newPixels.push({ x: pixelX, y: pixelY, color, canvas: designName });
         }
       }
   
       // Update the edited pixels with the new fill
       setEditedPixels((prevEditedPixels) => {
-        const updatedPixels = [...prevEditedPixels, ...newPixels];
-        onUpdatePixels(updatedPixels);
-        return updatedPixels;
+        // Filter out any existing pixels in the same positions
+        const updatedPixels = prevEditedPixels.filter(
+          (p) =>
+            !(
+              p.x >= x &&
+              p.x < x + width &&
+              p.y >= y &&
+              p.y < y + height &&
+              p.canvas === designName
+            )
+        );
+  
+        // Add the new pixels
+        const finalPixels = [...updatedPixels, ...newPixels];
+        onUpdatePixels(finalPixels);
+        return finalPixels;
       });
     }
   };
+  
+  
   
 
   const handlePixelPaint = (x: number, y: number) => {
