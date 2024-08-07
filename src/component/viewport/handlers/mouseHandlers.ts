@@ -50,6 +50,8 @@ export const mouseHandlers = (
               stage.container().style.cursor = "crosshair";
               stage.draggable(false); // Disable dragging while painting
               onPixelPaint && onPixelPaint(x, y);
+              // Reset the selection when painting
+              setSelection && setSelection(null);
             }
           }
         }
