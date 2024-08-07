@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { authSignOut, functionsGetRankName, functionsGetSessionInfo, supabase, functionsFetchUsers as supabaseFetchUsers } from "../api/supabase";
+import { authSignOut, functionsGetRankName, functionsGetSessionInfo, supabase, removeSupabaseChannel, functionsFetchUsers as supabaseFetchUsers } from "../api/supabase";
 import { UserContext } from "../context/user-context";
 import { UserType } from "../types/users";
 
@@ -101,7 +101,7 @@ const GlobalUserStatusListener = ({
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      removeSupabaseChannel(channel);
     };
   }, [rankNames, t]);
 

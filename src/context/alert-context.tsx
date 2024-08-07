@@ -8,6 +8,7 @@ import {
 import {
   databaseFetchAlertLevel,
   databaseUpdateAlertLevel,
+  removeSupabaseChannel,
   supabase,
 } from "../api/supabase";
 
@@ -50,7 +51,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(alertSubscription);
+      removeSupabaseChannel(alertSubscription);
     };
   }, []);
 

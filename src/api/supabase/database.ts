@@ -328,3 +328,29 @@ export const updateDesignCanvas = async (
 
   return data;
 };
+
+// Function to remove a Supabase channel
+export const removeSupabaseChannel = (subscription: any) => {
+  supabase.removeChannel(subscription);
+};
+
+// Color-related database functions moved from color-palette-manager.tsx
+export const insertColor = async (color: string, colorName: string, sort: number) => {
+  const { error } = await supabase.from("art_tool_colors").insert({
+    Color: color,
+    color_name: colorName,
+    color_sort: sort,
+  });
+
+  if (error) {
+    console.error("Error adding color:", error);
+  }
+};
+
+export const deleteColor = async (color: string) => {
+  const { error } = await supabase.from("art_tool_colors").delete().eq("Color", color);
+
+  if (error) {
+    console.error("Error removing color:", error);
+  }
+};

@@ -8,6 +8,7 @@ import {
   saveEditedPixels,
   updateDesignThumbnail,
   uploadThumbnailToSupabase,
+  removeSupabaseChannel,
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
@@ -186,7 +187,7 @@ const DesignOffice: React.FC = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscription);
+      removeSupabaseChannel(subscription);
     };
   }, []);
 
@@ -211,8 +212,9 @@ const DesignOffice: React.FC = () => {
           visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]}
           onUpdatePixels={handleUpdatePixels}
           designName={currentDesign ? currentDesign.design_name : "main"}
-          colors={colors} 
-          canvasId={""}        />
+          colors={colors}
+          canvasId={""}
+        />
       </Box>
       <Box overflowY="auto">
         <DesignCardsList

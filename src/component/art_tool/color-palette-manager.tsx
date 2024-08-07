@@ -15,6 +15,12 @@ import {
 } from '@chakra-ui/react';
 import { supabase } from '../../api/supabase';
 import { FaPen, FaTrash, FaPlus, FaAngleUp, FaAngleDown } from 'react-icons/fa6';
+import {
+  databaseFetchColors,
+  insertColor,
+  deleteColor,
+  removeSupabaseChannel, // Updated import
+} from '../../api/supabase/database';
 
 interface Color {
   Color: string;
@@ -116,16 +122,8 @@ const ColorPaletteManager = () => {
 
   useEffect(() => {
     const fetchColors = async () => {
-      const { data, error } = await supabase
-        .from('art_tool_colors')
-        .select('*')
-        .order('color_sort', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching colors:', error);
-      } else {
-        setColors(data as Color[]);
-      }
+      const fetchedColors = await databaseFetchColors();
+      setColors(fetchedColors as Color[]);
     };
 
     fetchColors();
@@ -136,7 +134,7 @@ const ColorPaletteManager = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscription);
+      removeSupabaseChannel(subscription);
     };
   }, []);
 
@@ -175,75 +173,45 @@ const ColorPaletteManager = () => {
 
   const handleAddColor = async () => {
     if (newColor && newColorName) {
-      const { error } = await supabase.from('art_tool_colors').insert({
-        Color: newColor,
-        color_name: newColorName,
-        color_sort: colors.length + 1,
-      });
+      await insertColor(newColor, newColorName, colors.length + 1);
+      setNewColor('');
+      setNewColorName('');
+    }
+  };
 
-      if (error) {
-        console.error('Error adding color:', error);
-      } else {
-        setNewColor('');
-        setNewColorName('');
-      }
+  const handleEditColor = async (color: Color, newColor: string, newColorName: string) => {
+    const { error } = await supabase
+      .from('art_tool_colors')
+      .update({ Color: newColor, color_name: newColorName })
+      .eq('Color', color.Color);
+
+    if (error) {
+      console.error('Error editing color:', error);
+    } else {
+      setColors(
+        colors.map((c) =>
+          c.Color === color.Color ? { ...c, Color: newColor, color_name: newColorName } : c
+        )
+      );
     }
   };
 
   const handleRemoveColor = async (color: string) => {
-    const { error } = await supabase.from('art_tool_colors').delete().eq('Color', color);
-
-    if (error) {
-      console.error('Error removing color:', error);
-    }
-  };
-
-  const handleEditColor = async (color: Color, newColorCode: string, newColorName: string) => {
-    if (newColorCode && newColorName) {
-      const { error } = await supabase
-        .from('art_tool_colors')
-        .update({ Color: newColorCode, color_name: newColorName })
-        .eq('Color', color.Color);
-
-      if (error) {
-        console.error('Error editing color:', error);
-      }
-    }
+    await deleteColor(color);
+    setColors(colors.filter((c) => c.Color !== color));
   };
 
   return (
-    <Box p={4}>
-      <Heading as="h3" size="md" mb={4}>
+    <Box>
+      <Heading size="md" mb={4}>
         Color Palette Manager
       </Heading>
-      <Flex mb={4} align="center">
-        <Input
-          placeholder="Color code"
-          value={newColor}
-          onChange={(e) => setNewColor(e.target.value)}
-          mr={2}
-          width="120px" // Adjust width
-        />
-        <Input
-          placeholder="Color name"
-          value={newColorName}
-          onChange={(e) => setNewColorName(e.target.value)}
-          mr={2}
-          width="150px" // Adjust width
-        />
-        <Button 
-          onClick={handleAddColor} 
-          leftIcon={<FaPlus />} 
-        >
-          Add Color
-        </Button>
-      </Flex>
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>Preview</Th>
-            <Th>Color Code</Th>
-            <Th>Color Name</Th>
+            <Th>Color</Th>
+            <Th>Hex Code</Th>
+            <Th>Name</Th>
             <Th>Actions</Th>
             <Th>Order</Th>
           </Tr>
@@ -252,8 +220,8 @@ const ColorPaletteManager = () => {
           {colors.map((color, index) => (
             <ColorRow
               key={color.Color}
-              index={index}
               color={color}
+              index={index}
               totalColors={colors.length}
               moveColorUp={moveColorUp}
               moveColorDown={moveColorDown}
@@ -263,6 +231,23 @@ const ColorPaletteManager = () => {
           ))}
         </Tbody>
       </Table>
+      <Flex mt={4}>
+        <Input
+          placeholder="Enter Hex Code"
+          value={newColor}
+          onChange={(e) => setNewColor(e.target.value)}
+          mr={2}
+        />
+        <Input
+          placeholder="Enter Color Name"
+          value={newColorName}
+          onChange={(e) => setNewColorName(e.target.value)}
+          mr={2}
+        />
+        <Button onClick={handleAddColor} colorScheme="blue" leftIcon={<FaPlus />}>
+          Add Color
+        </Button>
+      </Flex>
     </Box>
   );
 };
