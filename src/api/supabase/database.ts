@@ -159,7 +159,7 @@ export const unlikeDesign = async (designId: string, userId: string) => {
 export const databaseFetchColors = async () => {
   const { data, error } = await supabase
     .from("art_tool_colors")
-    .select("Color, color_sort")
+    .select("Color, color_sort, color_name")  // Include color_name
     .order("color_sort", { ascending: true });
 
   if (error) {
@@ -169,6 +169,7 @@ export const databaseFetchColors = async () => {
 
   return data;
 };
+
 
 // Function to save edited pixels
 export const saveEditedPixels = async (designId: string, pixels: Pixel[]) => {

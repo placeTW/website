@@ -22,7 +22,7 @@ import { createThumbnail } from "../utils/imageUtils";
 const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [colors, setColors] = useState<
-    { Color: string; color_sort: number | null }[]
+    { Color: string; color_sort: number | null; color_name: string }[] // Updated type
   >([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -48,13 +48,19 @@ const DesignOffice: React.FC = () => {
     try {
       const fetchedColors = await databaseFetchColors();
 
+      // Add color_name to each color object based on your data structure
+      const colorsWithNames = fetchedColors.map((color) => ({
+        ...color,
+        color_name: color.color_name || "Unnamed", // Add color_name or a fallback name
+      }));
+
       // Append the special colors on the client-side
       const specialColors = [
-        { Color: CLEAR_ON_DESIGN, color_sort: null },
-        { Color: CLEAR_ON_MAIN, color_sort: null },
+        { Color: CLEAR_ON_DESIGN, color_sort: null, color_name: "Clear on Design" },
+        { Color: CLEAR_ON_MAIN, color_sort: null, color_name: "Clear on Main" },
       ];
 
-      setColors([...fetchedColors, ...specialColors]);
+      setColors([...colorsWithNames, ...specialColors]);
     } catch (error) {
       console.error("Error fetching colors:", error);
     }
@@ -205,7 +211,8 @@ const DesignOffice: React.FC = () => {
           visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]}
           onUpdatePixels={handleUpdatePixels}
           designName={currentDesign ? currentDesign.design_name : "main"}
-          colors={colors} canvasId={""}        />
+          colors={colors} 
+          canvasId={""}        />
       </Box>
       <Box overflowY="auto">
         <DesignCardsList

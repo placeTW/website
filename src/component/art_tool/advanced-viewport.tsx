@@ -1,4 +1,4 @@
-import { Box, Grid } from "@chakra-ui/react";
+import { Box, Grid, Tooltip } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { databaseFetchDesigns, supabase } from "../../api/supabase";
 import { Design } from "../../types/art-tool";
@@ -14,7 +14,7 @@ interface AdvancedViewportProps {
   visibleLayers: string[];
   onUpdatePixels: (pixels: Pixel[]) => void;
   designName: string | null;
-  colors: { Color: string; color_sort: number | null }[];
+  colors: { Color: string; color_sort: number | null; color_name: string }[]; // Include color_name
   canvasId: string; // Add canvasId prop
 }
 
@@ -424,25 +424,30 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         >
           <Grid templateColumns={`repeat(${colors.length}, 1fr)`} gap={2}>
             {colors.map((color) => (
-              <Box
+              <Tooltip
                 key={color.Color}
-                w="30px"
-                h="30px"
-                bg={
-                  color.Color === CLEAR_ON_DESIGN
-                    ? `url(${clearOnDesignPattern})`
-                    : color.Color === CLEAR_ON_MAIN
-                    ? `url(${clearOnMainPattern})`
-                    : color.Color
-                }
-                border={
-                  selectedColor === color.Color
-                    ? "2px solid black"
-                    : "1px solid #ccc"
-                }
-                cursor="pointer"
-                onClick={() => handleColorSelect(color.Color)}
-              />
+                label={color.color_name} // Display color name on hover
+                aria-label={`Tooltip for ${color.color_name}`}
+              >
+                <Box
+                  w="30px"
+                  h="30px"
+                  bg={
+                    color.Color === CLEAR_ON_DESIGN
+                      ? `url(${clearOnDesignPattern})`
+                      : color.Color === CLEAR_ON_MAIN
+                      ? `url(${clearOnMainPattern})`
+                      : color.Color
+                  }
+                  border={
+                    selectedColor === color.Color
+                      ? "2px solid black"
+                      : "1px solid #ccc"
+                  }
+                  cursor="pointer"
+                  onClick={() => handleColorSelect(color.Color)}
+                />
+              </Tooltip>
             ))}
           </Grid>
         </Box>
