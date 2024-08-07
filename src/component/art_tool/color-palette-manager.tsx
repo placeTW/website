@@ -231,7 +231,10 @@ const ColorPaletteManager = () => {
           mr={2}
           width="150px" // Adjust width
         />
-        <Button onClick={handleAddColor} leftIcon={<FaPlus />} size="sm">
+        <Button 
+          onClick={handleAddColor} 
+          leftIcon={<FaPlus />} 
+        >
           Add Color
         </Button>
       </Flex>
