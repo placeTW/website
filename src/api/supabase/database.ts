@@ -1,3 +1,4 @@
+import { RealtimeChannel } from "@supabase/supabase-js";
 import { Canvas, Design, Pixel } from "../../types/art-tool";
 import { supabase } from "./index";
 
@@ -330,7 +331,7 @@ export const updateDesignCanvas = async (
 };
 
 // Function to remove a Supabase channel
-export const removeSupabaseChannel = (subscription: any) => {
+export const removeSupabaseChannel = (subscription: RealtimeChannel) => {
   supabase.removeChannel(subscription);
 };
 
