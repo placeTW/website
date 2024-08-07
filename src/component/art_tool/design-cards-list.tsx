@@ -1,14 +1,15 @@
 import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
 import { FC, useState, useEffect, useRef } from "react";
 import { useUserContext } from "../../context/user-context";
-import { DesignInfo } from "../../types/art-tool";
+import { Design } from "../../types/art-tool";
 import DesignCard from "./design-card";
 
 interface DesignCardsListProps {
-  designs: DesignInfo[];
+  designs: Design[];
   onEditStateChange: (isEditing: boolean, designId: string | null) => void;
   onVisibilityChange: (visibleLayers: string[]) => void;
   onSubmitEdit: () => void;  // New prop to handle submit from DesignOffice
+  onSetCanvas: (designId: string, canvasId: number) => void;
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -16,6 +17,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onEditStateChange,
   onVisibilityChange,
   onSubmitEdit, // Destructure the new prop
+  onSetCanvas,
 }) => {
   const { users } = useUserContext();
   const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<string | null>(null);
@@ -28,6 +30,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     const user = users.find((u) => u.user_id === userId);
     return user ? user.handle : "Unknown";
   };
+
 
   const handleEdit = (designId: string): boolean => {
     if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
@@ -91,12 +94,14 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             design={design}
             userId={design.created_by}
             userHandle={getUserHandle(design.created_by)}
+            canvasName={design.canvas}
             isEditing={currentlyEditingCardId === design.id}
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
             onToggleVisibility={handleToggleVisibility}
             isVisible={visibilityMap[design.design_name] ?? false}
             onSubmitEdit={onSubmitEdit} // Pass down the onSubmitEdit function
+            onSetCanvas={onSetCanvas}
           />
         </Box>
       ))}

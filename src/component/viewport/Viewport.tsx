@@ -1,9 +1,10 @@
 import Konva from "konva";
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Layer, Rect, Stage, Image as KonvaImage } from "react-konva";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { Pixel } from "../../types/art-tool";
 import { mouseHandlers, touchHandlers, wheelHandler } from "./handlers";
 import { useImage } from "./hooks";
+import { CLEAR_ON_MAIN } from "./constants";
 
 interface ViewportProps {
   designId: string | null;
@@ -11,8 +12,14 @@ interface ViewportProps {
   isEditing?: boolean;
   onPixelPaint?: (x: number, y: number) => void;
   layerOrder: string[];
+  selection?: { x: number; y: number; width: number; height: number } | null;
+  setSelection?: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number; width: number; height: number } | null>
+  >;
+  onCopy?: () => void;
+  onPaste?: (x: number, y: number) => void;
+  stageRef: React.RefObject<Konva.Stage>; // Include stageRef in the props
 }
-
 
 const Viewport: React.FC<ViewportProps> = ({
   designId,
@@ -20,16 +27,25 @@ const Viewport: React.FC<ViewportProps> = ({
   isEditing,
   onPixelPaint,
   layerOrder,
+  selection,
+  setSelection,
+  onCopy,
+  onPaste,
+  stageRef, // Destructure stageRef
 }) => {
-  const [hoveredPixel, setHoveredPixel] = useState<{ x: number; y: number } | null>(null);
-  const stageRef = useRef<Konva.Stage | null>(null);
+  const [hoveredPixel, setHoveredPixel] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const coordinatesRef = useRef<HTMLDivElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [backgroundImage] = useImage("/images/background.png");
   const [clearOnMainImage] = useImage("/images/ClearOnMain.png");
   const gridSize = 40; // Each cell pixel in the image is 40x40 image pixels
-  const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>([]);
+  const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>(
+    [],
+  );
   const [zoomLevel, setZoomLevel] = useState(1);
 
   const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
@@ -44,7 +60,6 @@ const Viewport: React.FC<ViewportProps> = ({
     if (scale <= 0.125) {
       // If zoom level is 0.125 or lower, skip tile calculation
       setVisibleTiles([]); // Clear the visible tiles array
-      console.log("Zoom level too low, rendering grey background only");
       return;
     }
 
@@ -69,8 +84,7 @@ const Viewport: React.FC<ViewportProps> = ({
     }
 
     setVisibleTiles(newVisibleTiles);
-    console.log("Currently visible tiles:", newVisibleTiles.length);
-  }, [backgroundTileSize]);
+  }, [backgroundTileSize, stageRef]);
 
   useEffect(() => {
     calculateVisibleTiles();
@@ -96,11 +110,10 @@ const Viewport: React.FC<ViewportProps> = ({
       const context = layer.getCanvas().getContext();
       context.imageSmoothingEnabled = false;
     }
-  }, [backgroundImage]);
+  }, [backgroundImage, stageRef]);
 
   useEffect(() => {
     if (designId) {
-      console.log(`Currently editing design with ID: ${designId}`);
     }
   }, [designId]);
 
@@ -113,13 +126,12 @@ const Viewport: React.FC<ViewportProps> = ({
       let scale = stageRef.current.scaleX(); // Assuming uniform scaling (scaleX = scaleY)
 
       // Cap the zoom level
-      const minZoomLevel = 1/128;
+      const minZoomLevel = 1 / 128;
       if (scale < minZoomLevel) {
         scale = minZoomLevel;
         stageRef.current.scale({ x: scale, y: scale });
       }
 
-      console.log("Current zoom level:", scale);
       calculateVisibleTiles();
     }
   };
@@ -136,7 +148,7 @@ const Viewport: React.FC<ViewportProps> = ({
         height: "100%",
         cursor: "grab",
         overflow: "hidden",
-        backgroundColor: "#f0f0f0"
+        backgroundColor: "#f0f0f0",
       }}
       ref={divRef}
       {...touchHandlers(onPixelPaint, isEditing)}
@@ -144,12 +156,22 @@ const Viewport: React.FC<ViewportProps> = ({
       <Stage
         width={dimensions.width}
         height={dimensions.height}
-        ref={stageRef}
+        ref={stageRef} // Use stageRef here
         onWheel={(e) => {
           wheelHandler(e);
           handleZoom();
         }}
-        {...mouseHandlers(onPixelPaint, isEditing, stageRef, setHoveredPixel, coordinatesRef)}
+        {...mouseHandlers(
+          onPixelPaint,
+          isEditing,
+          stageRef,
+          setHoveredPixel,
+          coordinatesRef,
+          selection,
+          setSelection,
+          onCopy,
+          onPaste,
+        )}
         onDragEnd={handleDragEnd}
         draggable={!isEditing}
       >
@@ -157,8 +179,14 @@ const Viewport: React.FC<ViewportProps> = ({
           {/* Render grey background if zoom level is low */}
           {zoomLevel <= 0.125 && (
             <Rect
-              x={-stageRef.current!.x() / zoomLevel - (dimensions.width * 2.5) / zoomLevel}
-              y={-stageRef.current!.y() / zoomLevel - (dimensions.height * 2.5) / zoomLevel}
+              x={
+                -stageRef.current!.x() / zoomLevel -
+                (dimensions.width * 2.5) / zoomLevel
+              }
+              y={
+                -stageRef.current!.y() / zoomLevel -
+                (dimensions.height * 2.5) / zoomLevel
+              }
               width={(dimensions.width * 5) / zoomLevel}
               height={(dimensions.height * 5) / zoomLevel}
               fill="#f5f5f5" // A lighter grey shade, halfway between #eeeeee and white
@@ -183,7 +211,7 @@ const Viewport: React.FC<ViewportProps> = ({
 
           {/* Render ClearOnMain image based on layer visibility */}
           {pixels.map((pixel) => {
-            if (pixel.color === "ClearOnMain" && clearOnMainImage) {
+            if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
               return (
                 <KonvaImage
                   key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
@@ -214,12 +242,27 @@ const Viewport: React.FC<ViewportProps> = ({
                   y={pixel.y * gridSize}
                   width={gridSize}
                   height={gridSize}
-                  fill={pixel.color !== "ClearOnMain" ? pixel.color : undefined}
+                  fill={pixel.color !== CLEAR_ON_MAIN ? pixel.color : undefined}
                   strokeWidth={0}
                 />
               ))}
           </Layer>
         ))}
+
+        {/* Render selection rectangle */}
+        {selection && (
+          <Layer>
+            <Rect
+              x={selection.x * gridSize}
+              y={selection.y * gridSize}
+              width={selection.width * gridSize}
+              height={selection.height * gridSize}
+              stroke="blue"
+              strokeWidth={2}
+              dash={[4, 4]}
+            />
+          </Layer>
+        )}
       </Stage>
       {hoveredPixel && (
         <div

@@ -1,28 +1,36 @@
-import React, { useState, useEffect } from "react";
+// briefing-room.tsx
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Viewport from "../component/viewport/Viewport";
 import { useAlertContext } from "../context/alert-context";
 import { alertLevels, validAlertLevels } from "../definitions/alert-level";
-import { databaseFetchPixels } from "../api/supabase/database";
-
-interface Pixel { 
-  id: number;
-  x: number;
-  y: number;
-  color: string;
-  canvas: string;
-}
+import { databaseFetchDesigns } from "../api/supabase/database";
+import { Pixel } from "../types/art-tool";
+import Konva from "konva"; // Ensure Konva is imported
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { alertLevel, alertMessage } = useAlertContext();
-  const [pixels, setPixels] = useState<Pixel[]>([]); 
+  const [pixels, setPixels] = useState<Pixel[]>([]);
+  const stageRef = useRef<Konva.Stage>(null); // Create the stageRef using useRef
 
   useEffect(() => {
     const fetchPixels = async () => {
-      const designId = "someDesignId"; 
-      const fetchedPixels = await databaseFetchPixels(designId);
-      setPixels(fetchedPixels || []); 
+      const designId = "someDesignId"; // Replace with the actual design ID or name
+      const designs = await databaseFetchDesigns();
+      const design = designs.find((d) => d.id === designId || d.design_name === designId);
+
+      if (design) {
+        const designPixels = design.pixels.map((pixel: Pixel) => ({
+          ...pixel,
+          x: pixel.x + design.x,
+          y: pixel.y + design.y,
+          canvas: design.design_name, // Add canvas property
+        }));
+        setPixels(designPixels);
+      } else {
+        setPixels([]); // Handle the case where the design is not found
+      }
     };
 
     fetchPixels();
@@ -43,7 +51,12 @@ const BriefingRoom: React.FC = () => {
           )}
           {!!alertMessage && <p>{alertMessage}</p>}
           {alertLevels.get(alertLevel)?.showViewport && (
-            <Viewport designId="someDesignId" pixels={pixels} layerOrder={layerOrder} />
+            <Viewport 
+              designId="someDesignId" 
+              pixels={pixels} 
+              layerOrder={layerOrder} 
+              stageRef={stageRef} // Pass the stageRef to Viewport
+            />
           )}
         </div>
       ) : (
