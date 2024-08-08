@@ -39,12 +39,12 @@ interface DesignCardProps {
   userHandle: string;
   canvasName: string;
   isEditing: boolean;
-  onEdit: (designId: string) => boolean;
+  onEdit: (designId: number) => boolean;
   onCancelEdit: () => void;
-  onToggleVisibility: (designName: string, isVisible: boolean) => void;
+  onToggleVisibility: (designId: number, isVisible: boolean) => void;
   isVisible: boolean;
   onSubmitEdit: () => void;
-  onSetCanvas: (designId: string, canvasId: number) => void;
+  onSetCanvas: (designId: number, canvasId: number) => void;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -80,7 +80,7 @@ const DesignCard: FC<DesignCardProps> = ({
 
   const handleToggleVisibility = () => {
     const newVisibility = !isVisible;
-    onToggleVisibility(design.design_name, newVisibility);
+    onToggleVisibility(design.id, newVisibility);
   };
 
   const handleLike = async () => {

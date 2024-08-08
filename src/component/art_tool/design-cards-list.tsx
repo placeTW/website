@@ -6,10 +6,10 @@ import DesignCard from "./design-card";
 
 interface DesignCardsListProps {
   designs: Design[];
-  onEditStateChange: (isEditing: boolean, designId: string | null) => void;
-  onVisibilityChange: (visibleLayers: string[]) => void;
+  onEditStateChange: (isEditing: boolean, designId: number | null) => void;
+  onVisibilityChange: (visibleLayers: number[]) => void;
   onSubmitEdit: () => void;  // New prop to handle submit from DesignOffice
-  onSetCanvas: (designId: string, canvasId: number) => void;
+  onSetCanvas: (designId: number, canvasId: number) => void;
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -20,11 +20,11 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onSetCanvas,
 }) => {
   const { users } = useUserContext();
-  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<string | null>(null);
-  const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>({});
+  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<number | null>(null);
+  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>({});
   const toast = useToast();
   const isFirstRender = useRef(true);
-  const previousVisibleLayers = useRef<string[]>([]);
+  const previousVisibleLayers = useRef<number[]>([]);
 
   const getUserHandle = (userId: string) => {
     const user = users.find((u) => u.user_id === userId);
@@ -32,7 +32,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   };
 
 
-  const handleEdit = (designId: string): boolean => {
+  const handleEdit = (designId: number): boolean => {
     if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
       toast({
         title: "Edit in Progress",
@@ -55,14 +55,14 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     return true;
   };
 
-  const handleToggleVisibility = (designName: string, isVisible: boolean) => {
+  const handleToggleVisibility = (designId: number, isVisible: boolean) => {
     setVisibilityMap(prev => {
       const updated = { ...prev };
 
       if (isVisible) {
-        updated[designName] = true;
+        updated[designId] = true;
       } else {
-        delete updated[designName];
+        delete updated[designId];
       }
 
       return updated;
@@ -75,7 +75,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
       return;
     }
 
-    const newVisibleLayers = Object.keys(visibilityMap).filter(layer => visibilityMap[layer]);
+    const newVisibleLayers = Object.keys(visibilityMap).filter(layer => visibilityMap[Number(layer)]).map(Number);
 
     if (JSON.stringify(newVisibleLayers) !== JSON.stringify(previousVisibleLayers.current)) {
       previousVisibleLayers.current = newVisibleLayers;
@@ -99,7 +99,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
             onToggleVisibility={handleToggleVisibility}
-            isVisible={visibilityMap[design.design_name] ?? false}
+            isVisible={visibilityMap[design.id] ?? false}
             onSubmitEdit={onSubmitEdit} // Pass down the onSubmitEdit function
             onSetCanvas={onSetCanvas}
           />

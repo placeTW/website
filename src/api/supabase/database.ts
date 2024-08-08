@@ -106,7 +106,7 @@ export const databaseUpdateAlertLevel = async (
   return true;
 };
 
-export const databaseDeleteDesign = async (designId: string): Promise<void> => {
+export const databaseDeleteDesign = async (designId: number): Promise<void> => {
   const deleteDesignQuery = await supabase
     .from("art_tool_designs")
     .update({ is_deleted: true })
@@ -169,7 +169,7 @@ export const unlikeDesign = async (
 export const saveEditedPixels = async (
   design: Design,
   pixels: Pixel[],
-): Promise<void> => {
+): Promise<Design> => {
   // Prepare pixels for insertion
   const pixelsToInsert = pixels.map((pixel) => ({
     x: pixel.x,
@@ -183,7 +183,7 @@ export const saveEditedPixels = async (
       return curr;
     }
     return acc;
-  });
+  }, { x: Infinity, y: Infinity }); // Provide initial value
 
   // Copy and offset the pixels to the top left corner
   const pixelsToInsertCopy = pixelsToInsert.map((pixel) => ({
@@ -197,8 +197,8 @@ export const saveEditedPixels = async (
     .from("art_tool_designs")
     .update({
       pixels: pixelsToInsertCopy,
-      x: topLeftPixel.x + design.x,
-      y: topLeftPixel.y + design.x,
+      x: topLeftPixel.x,
+      y: topLeftPixel.y,
     })
     .eq("id", design.id);
 
@@ -210,6 +210,11 @@ export const saveEditedPixels = async (
   if (updateError) {
     throw new Error(updateError.message);
   }
+
+  // Copy the design with the new pixels
+  const updatedDesign = { ...design, pixels: pixelsToInsertCopy };
+
+  return updatedDesign;
 };
 
 export const uploaDesignThumbnailToSupabase = async (
@@ -245,7 +250,7 @@ export const uploaDesignThumbnailToSupabase = async (
 
 // Update the design with the new thumbnail URL
 const updateDesignThumbnail = async (
-  designId: string,
+  designId: number,
   thumbnailUrl: string,
 ): Promise<void> => {
   const updateThumbnailQuery = await supabase
@@ -264,7 +269,7 @@ const updateDesignThumbnail = async (
 };
 
 export const updateDesignCanvas = async (
-  designId: string,
+  designId: number,
   canvasId: number,
 ): Promise<void> => {
   const updateDesignCanvasQuery = await supabase

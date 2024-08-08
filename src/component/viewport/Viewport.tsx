@@ -7,11 +7,11 @@ import { useImage } from "./hooks";
 import { CLEAR_ON_MAIN } from "./constants";
 
 interface ViewportProps {
-  designId: string | null;
+  designId: number | null;
   pixels: Pixel[];
   isEditing?: boolean;
   onPixelPaint?: (x: number, y: number) => void;
-  layerOrder: string[];
+  layerOrder: number[];
   selection?: { x: number; y: number; width: number; height: number } | null;
   setSelection?: React.Dispatch<
     React.SetStateAction<{ x: number; y: number; width: number; height: number } | null>
@@ -112,11 +112,6 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   }, [backgroundImage, stageRef]);
 
-  useEffect(() => {
-    if (designId) {
-    }
-  }, [designId]);
-
   const handleDragEnd = () => {
     calculateVisibleTiles();
   };
@@ -214,7 +209,7 @@ const Viewport: React.FC<ViewportProps> = ({
             if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
               return (
                 <KonvaImage
-                  key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
+                  key={`${pixel.x}-${pixel.y}-${designId}`}
                   image={clearOnMainImage}
                   x={pixel.x * gridSize}
                   y={pixel.y * gridSize}
@@ -222,7 +217,7 @@ const Viewport: React.FC<ViewportProps> = ({
                   height={clearOnMainImage.height}
                   perfectDrawEnabled={false}
                   imageSmoothingEnabled={false}
-                  visible={layerOrder.includes(pixel.canvas)}
+                  visible={!!designId && layerOrder.includes(designId)}
                 />
               );
             }
@@ -234,10 +229,9 @@ const Viewport: React.FC<ViewportProps> = ({
         {layerOrder.map((layer) => (
           <Layer key={layer}>
             {pixels
-              .filter((pixel) => pixel.canvas === layer)
               .map((pixel) => (
                 <Rect
-                  key={`${pixel.x}-${pixel.y}-${pixel.canvas}`}
+                  key={`${pixel.x}-${pixel.y}-${designId}`}
                   x={pixel.x * gridSize}
                   y={pixel.y * gridSize}
                   width={gridSize}

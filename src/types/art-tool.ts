@@ -8,7 +8,7 @@ export enum DesignStatus {
 }
 
 export interface Design {
-  id: string;
+  id: number;
   design_name: string;
   design_thumbnail: string;
   created_by: string;
@@ -28,7 +28,6 @@ export interface Pixel {
   x: number;
   y: number;
   color: string;
-  canvas: string;
 }
 
 export interface Canvas {

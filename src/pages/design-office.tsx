@@ -26,8 +26,8 @@ const DesignOffice: React.FC = () => {
   >([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editDesignId, setEditDesignId] = useState<string | null>(null);
-  const [visibleLayers, setVisibleLayers] = useState<string[]>([]);
+  const [editDesignId, setEditDesignId] = useState<number | null>(null);
+  const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
@@ -77,13 +77,13 @@ const DesignOffice: React.FC = () => {
 
   const handleEditStateChange = (
     isEditing: boolean,
-    designId: string | null,
+    designId: number | null,
   ) => {
     setIsEditing(isEditing);
     setEditDesignId(designId);
   };
 
-  const handleVisibilityChange = (newVisibleLayers: string[]) => {
+  const handleVisibilityChange = (newVisibleLayers: number[]) => {
     setVisibleLayers(newVisibleLayers);
   };
 
@@ -123,7 +123,11 @@ const DesignOffice: React.FC = () => {
 
       // Save filtered pixels to the database
       try {
-        await saveEditedPixels(currentDesign, mergedPixels);
+        const updatedDesign = await saveEditedPixels(currentDesign, mergedPixels);
+        // Update the designs state with the updated design
+        setDesigns((prevDesigns) =>
+          prevDesigns.map((d) => (d.id === updatedDesign.id ? updatedDesign : d)),
+        );
       } catch (error) {
         toast({
           title: "Error",
@@ -188,7 +192,7 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleSetCanvas = (designId: string, canvasId: number) => {
+  const handleSetCanvas = (designId: number, canvasId: number) => {
     // Update the selectedCanvas state to trigger a re-render of AdvancedViewport
     const updatedCanvas = canvases.find((canvas) => canvas.id === canvasId);
     setSelectedCanvas(updatedCanvas || null);
@@ -236,9 +240,9 @@ const DesignOffice: React.FC = () => {
         <AdvancedViewport
           isEditing={isEditing}
           editDesignId={editDesignId}
-          visibleLayers={visibleLayers.length > 0 ? visibleLayers : ["main"]}
+          visibleLayers={visibleLayers}
           onUpdatePixels={handleUpdatePixels}
-          designName={currentDesign ? currentDesign.design_name : "main"}
+          designId={currentDesign ? currentDesign.design_name : "main"}
           colors={colors}
           canvasId={""}
         />
