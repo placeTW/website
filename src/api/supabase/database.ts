@@ -181,7 +181,7 @@ export const saveEditedPixels = async (designId: string, pixels: Pixel[]) => {
       .from("art_tool_designs")
       .select("*")
       .eq("id", designId)
-      .single();
+      .single<Design>();
 
     if (designError || !designData) {
       throw new Error(`Error fetching Design: ${designError?.message}`);
@@ -214,8 +214,8 @@ export const saveEditedPixels = async (designId: string, pixels: Pixel[]) => {
       .from("art_tool_designs")
       .update({
         pixels: pixelsToInsertCopy,
-        x: topLeftPixel.x,
-        y: topLeftPixel.y,
+        x: topLeftPixel.x + designData.x,
+        y: topLeftPixel.y + designData.x,
       })
       .eq("id", designId);
 
