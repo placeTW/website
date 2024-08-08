@@ -111,7 +111,7 @@ const DesignOffice: React.FC = () => {
 
       editedPixels.forEach((pixel) => {
         if (pixel.color === CLEAR_ON_DESIGN) {
-          existingPixelMap.delete(`${pixel.x}-${pixel.y}`);
+          existingPixelMap.delete(`${pixel.x - currentDesign.x}-${pixel.y - currentDesign.y}`);
         } else {
           existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
             ...pixel,
