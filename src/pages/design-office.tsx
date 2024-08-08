@@ -234,8 +234,6 @@ const DesignOffice: React.FC = () => {
     return <Spinner size="xl" />;
   }
 
-  const currentDesign = designs.find((d) => d.id === editDesignId);
-
   return (
     <Box
       display="grid"
@@ -250,9 +248,7 @@ const DesignOffice: React.FC = () => {
           editDesignId={editDesignId}
           visibleLayers={visibleLayers}
           onUpdatePixels={handleUpdatePixels}
-          designId={currentDesign ? currentDesign.id : null}
           colors={colors}
-          canvasId={""}
         />
       </Box>
       <Box overflowY="auto">
