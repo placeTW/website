@@ -188,8 +188,8 @@ export const saveEditedPixels = async (
   // Copy and offset the pixels to the top left corner
   const pixelsToInsertCopy = pixelsToInsert.map((pixel) => ({
     ...pixel,
-    x: pixel.x - topLeftPixel.x,
-    y: pixel.y - topLeftPixel.y,
+    x: pixel.x - topLeftPixel.x - design.x,
+    y: pixel.y - topLeftPixel.y - design.y,
   }));
 
   //Update the design with the new pixels

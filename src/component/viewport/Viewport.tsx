@@ -1,14 +1,14 @@
 import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
-import { Pixel } from "../../types/art-tool";
 import { mouseHandlers, touchHandlers, wheelHandler } from "./handlers";
 import { useImage } from "./hooks";
 import { CLEAR_ON_MAIN } from "./constants";
+import { ViewportPixel } from "./types";
 
 interface ViewportProps {
   designId: number | null;
-  pixels: Pixel[];
+  pixels: ViewportPixel[];
   isEditing?: boolean;
   onPixelPaint?: (x: number, y: number) => void;
   layerOrder: number[];
@@ -229,6 +229,7 @@ const Viewport: React.FC<ViewportProps> = ({
         {layerOrder.map((layer) => (
           <Layer key={layer}>
             {pixels
+              .filter((pixel) => pixel.designId === layer)
               .map((pixel) => (
                 <Rect
                   key={`${pixel.x}-${pixel.y}-${designId}`}

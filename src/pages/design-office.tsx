@@ -242,7 +242,7 @@ const DesignOffice: React.FC = () => {
           editDesignId={editDesignId}
           visibleLayers={visibleLayers}
           onUpdatePixels={handleUpdatePixels}
-          designId={currentDesign ? currentDesign.design_name : "main"}
+          designId={currentDesign ? currentDesign.id : null}
           colors={colors}
           canvasId={""}
         />
