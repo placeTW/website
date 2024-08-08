@@ -63,7 +63,15 @@ const DesignOffice: React.FC = () => {
 
       setColors([...colorsWithNames, ...specialColors]);
     } catch (error) {
-      console.error("Error fetching colors:", error);
+      toast({
+        title: "Error",
+        description: `Failed to fetch colors: ${
+          (error as Error).message || error
+        }`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
@@ -117,7 +125,6 @@ const DesignOffice: React.FC = () => {
       try {
         await saveEditedPixels(currentDesign, mergedPixels);
       } catch (error) {
-        console.error("Error saving edited pixels:", error);
         toast({
           title: "Error",
           description: `Failed to save changes: ${
@@ -159,15 +166,25 @@ const DesignOffice: React.FC = () => {
   };
 
   const fetchCanvases = async () => {
-    const fetchedCanvases = await databaseFetchCanvases();
-    if (fetchedCanvases) {
-      setCanvases(fetchedCanvases);
-      // Optionally set the first canvas as selected if there are canvases
-      if (fetchedCanvases.length > 0) {
-        setSelectedCanvas(fetchedCanvases[0]);
+    try {
+      const fetchedCanvases = await databaseFetchCanvases();
+      if (fetchedCanvases) {
+        setCanvases(fetchedCanvases);
+        // Optionally set the first canvas as selected if there are canvases
+        if (fetchedCanvases.length > 0) {
+          setSelectedCanvas(fetchedCanvases[0]);
+        }
       }
-    } else {
-      // Handle error, e.g., show a toast message
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to fetch canvases: ${
+          (error as Error).message || error
+        }`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 

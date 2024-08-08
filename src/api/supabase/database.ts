@@ -29,7 +29,11 @@ export const databaseFetchCanvases = async (): Promise<Canvas[] | null> => {
     .select("*")
     .returns<Canvas[]>();
 
-  const { data } = logSupabaseDatabaseQuery(fetchCanvasQuery, "fetchCanvases");
+  const { data, error } = logSupabaseDatabaseQuery(fetchCanvasQuery, "fetchCanvases");
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   return data;
 };

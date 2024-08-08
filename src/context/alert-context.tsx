@@ -11,6 +11,7 @@ import {
   removeSupabaseChannel,
   supabase,
 } from "../api/supabase";
+import { useToast } from "@chakra-ui/react";
 
 interface AlertContextType {
   alertLevel: number | null;
@@ -27,6 +28,7 @@ interface AlertProviderProps {
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [alertLevel, setAlertLevelState] = useState<number | null>(1);
   const [alertMessage, setAlertMessageState] = useState<string | null>(null);
+  const toast = useToast()
 
   useEffect(() => {
     const fetchAlertLevel = async () => {
@@ -35,7 +37,13 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         setAlertLevelState(data.state);
         setAlertMessageState(data.message);
       } else {
-        // Handle error, e.g., show a toast message
+        toast({
+          title: "Error",
+          description: "Failed to fetch alert level",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       }
     };
 
@@ -62,7 +70,13 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     if (response) {
       setAlertLevelState(level);
     } else {
-      // Handle error, e.g., show a toast message
+      toast({
+        title: "Error",
+        description: "Failed to update alert level",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 

@@ -9,7 +9,8 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
-  Text, // Added import for Text
+  Text,
+  useToast, // Added import for Text
 } from "@chakra-ui/react";
 import { FC, useEffect, useState } from "react";
 import { databaseFetchCanvases } from "../../api/supabase/database";
@@ -29,16 +30,25 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     const fetchCanvases = async () => {
-      const fetchedCanvases = await databaseFetchCanvases();
-      if (fetchedCanvases) {
-        setCanvases(fetchedCanvases);
-      } else {
-        // Handle error, e.g., show a toast message
+      try {
+        const fetchedCanvases = await databaseFetchCanvases();
+        if (fetchedCanvases) {
+          setCanvases(fetchedCanvases);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch canvases",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       }
-      setIsLoading(false);
     };
 
     fetchCanvases();
