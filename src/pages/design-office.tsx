@@ -205,6 +205,10 @@ const DesignOffice: React.FC = () => {
     );
   };
 
+  const handleOnDeleted = () => {
+    setEditDesignId(null);
+  }
+
   useEffect(() => {
     fetchDesigns();
     fetchColors();
@@ -258,6 +262,7 @@ const DesignOffice: React.FC = () => {
           onVisibilityChange={handleVisibilityChange}
           onSubmitEdit={handleSubmitEdit}
           onSetCanvas={handleSetCanvas}
+          onDeleted={handleOnDeleted}
         />
         <Box h="100px" /> {/* Spacer at the bottom */}
       </Box>

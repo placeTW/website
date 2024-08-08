@@ -45,6 +45,7 @@ interface DesignCardProps {
   isVisible: boolean;
   onSubmitEdit: () => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
+  onDeleted: () => void;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -59,6 +60,7 @@ const DesignCard: FC<DesignCardProps> = ({
   isVisible,
   onSubmitEdit,
   onSetCanvas,
+  onDeleted,
 }) => {
   const { currentUser, rankNames, users } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,6 +110,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const handleDelete = async () => {
     try {
       await databaseDeleteDesign(design.id);
+      onDeleted(); // Update the parent
       toast({
         title: "Design deleted.",
         description: `${design.design_name} has been removed successfully.`,

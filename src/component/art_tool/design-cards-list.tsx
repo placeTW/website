@@ -10,6 +10,7 @@ interface DesignCardsListProps {
   onVisibilityChange: (visibleLayers: number[]) => void;
   onSubmitEdit: () => void;  // New prop to handle submit from DesignOffice
   onSetCanvas: (designId: number, canvasId: number) => void;
+  onDeleted: () => void;
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -18,6 +19,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onVisibilityChange,
   onSubmitEdit, // Destructure the new prop
   onSetCanvas,
+  onDeleted,
 }) => {
   const { users } = useUserContext();
   const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<number | null>(null);
@@ -102,6 +104,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             isVisible={visibilityMap[design.id] ?? false}
             onSubmitEdit={onSubmitEdit} // Pass down the onSubmitEdit function
             onSetCanvas={onSetCanvas}
+            onDeleted={onDeleted}
           />
         </Box>
       ))}
