@@ -136,7 +136,11 @@ export const functionsUpdateUserStatus = async (
   return response.json();
 };
 
-export const insertNewUser = async (user_id: string, email: string, handle: string) => {
+export const insertNewUser = async (
+  user_id: string,
+  email: string,
+  handle: string,
+) => {
   const [, access_token] = await functionsGetSessionInfo();
   console.log("Inserting new user with", { user_id, email, handle });
 

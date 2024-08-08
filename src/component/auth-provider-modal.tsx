@@ -18,6 +18,7 @@ import {
   functionsFetchOneUser,
   insertNewUser,
   supabase,
+  removeSupabaseChannel,
 } from "../api/supabase";
 
 interface AuthProviderModalProps {
@@ -126,7 +127,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
 
     // Clean up subscription on unmount
     return () => {
-      supabase.removeChannel(subscription);
+      removeSupabaseChannel(subscription);
     };
   }, [isOpen, onClose, t]);
 

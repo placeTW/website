@@ -1,0 +1,115 @@
+import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
+import { FC, useState, useEffect, useRef } from "react";
+import { useUserContext } from "../../context/user-context";
+import { Design } from "../../types/art-tool";
+import DesignCard from "./design-card";
+
+interface DesignCardsListProps {
+  designs: Design[];
+  onEditStateChange: (isEditing: boolean, designId: number | null) => void;
+  onVisibilityChange: (visibleLayers: number[]) => void;
+  onSubmitEdit: () => void;  // New prop to handle submit from DesignOffice
+  onSetCanvas: (designId: number, canvasId: number) => void;
+  onDeleted: () => void;
+}
+
+const DesignCardsList: FC<DesignCardsListProps> = ({
+  designs,
+  onEditStateChange,
+  onVisibilityChange,
+  onSubmitEdit, // Destructure the new prop
+  onSetCanvas,
+  onDeleted,
+}) => {
+  const { users } = useUserContext();
+  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<number | null>(null);
+  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>({});
+  const toast = useToast();
+  const isFirstRender = useRef(true);
+  const previousVisibleLayers = useRef<number[]>([]);
+
+  const getUserHandle = (userId: string) => {
+    const user = users.find((u) => u.user_id === userId);
+    return user ? user.handle : "Unknown";
+  };
+
+
+  const handleEdit = (designId: number): boolean => {
+    if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
+      toast({
+        title: "Edit in Progress",
+        description: "You can only edit one card at a time.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return false;
+    }
+
+    setCurrentlyEditingCardId(designId);
+    onEditStateChange(true, designId);
+    return true;
+  };
+
+  const handleCancelEdit = (): boolean => {
+    setCurrentlyEditingCardId(null);
+    onEditStateChange(false, null);
+    return true;
+  };
+
+  const handleToggleVisibility = (designId: number, isVisible: boolean) => {
+    setVisibilityMap(prev => {
+      const updated = { ...prev };
+
+      if (isVisible) {
+        updated[designId] = true;
+      } else {
+        delete updated[designId];
+      }
+
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const newVisibleLayers = Object.keys(visibilityMap).filter(layer => visibilityMap[Number(layer)]).map(Number);
+
+    if (JSON.stringify(newVisibleLayers) !== JSON.stringify(previousVisibleLayers.current)) {
+      previousVisibleLayers.current = newVisibleLayers;
+      onVisibilityChange(newVisibleLayers);
+    }
+  }, [visibilityMap, onVisibilityChange]);
+
+  // Sort designs by the number of likes in descending order
+  const sortedDesigns = [...designs].sort((a, b) => b.liked_by.length - a.liked_by.length);
+
+  return (
+    <SimpleGrid minChildWidth="300px" spacing="20px" m={4}>
+      {sortedDesigns.map((design) => (
+        <Box key={design.id}>
+          <DesignCard
+            design={design}
+            userId={design.created_by}
+            userHandle={getUserHandle(design.created_by)}
+            canvasName={design.canvas}
+            isEditing={currentlyEditingCardId === design.id}
+            onEdit={handleEdit}
+            onCancelEdit={handleCancelEdit}
+            onToggleVisibility={handleToggleVisibility}
+            isVisible={visibilityMap[design.id] ?? false}
+            onSubmitEdit={onSubmitEdit} // Pass down the onSubmitEdit function
+            onSetCanvas={onSetCanvas}
+            onDeleted={onDeleted}
+          />
+        </Box>
+      ))}
+    </SimpleGrid>
+  );
+};
+
+export default DesignCardsList;
