@@ -1,5 +1,12 @@
 // src/types/art-tool.ts
 
+export enum DesignStatus {
+  DRAFT,
+  SUBMITTED,
+  CURRENT,
+  ARCHIVED
+}
+
 export interface Design {
   id: string;
   design_name: string;
@@ -14,6 +21,7 @@ export interface Design {
   y: number;
   canvas: string;
   canvas_name: string;
+  status: string;
 }
 
 export interface Pixel {

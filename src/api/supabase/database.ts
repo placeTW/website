@@ -50,8 +50,9 @@ export const databaseFetchDesigns = async () => {
     canvas,
     art_tool_canvases:canvas (
       canvas_name
-    )
-  `);
+    ),
+    status
+  `).eq('is_deleted', false);
 
   if (error) {
     throw new Error(error.message);
@@ -88,7 +89,7 @@ export const databaseUpdateAlertLevel = async (level: number) => {
 export const databaseDeleteDesign = async (designId: string) => {
   const { error } = await supabase
     .from("art_tool_designs")
-    .delete()
+    .update({ is_deleted: true })
     .eq("id", designId);
 
   if (error) {
