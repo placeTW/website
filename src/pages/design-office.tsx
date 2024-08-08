@@ -113,7 +113,11 @@ const DesignOffice: React.FC = () => {
         if (pixel.color === CLEAR_ON_DESIGN) {
           existingPixelMap.delete(`${pixel.x}-${pixel.y}`);
         } else {
-          existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
+          existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
+            ...pixel,
+            x: pixel.x - currentDesign.x,
+            y: pixel.y - currentDesign.y,
+          });
         }
       });
 

@@ -170,15 +170,8 @@ export const saveEditedPixels = async (
   design: Design,
   pixels: Pixel[],
 ): Promise<Design> => {
-  // Prepare pixels for insertion
-  const pixelsToInsert = pixels.map((pixel) => ({
-    x: pixel.x,
-    y: pixel.y,
-    color: pixel.color,
-  }));
-
   // Get the top left pixel of the design
-  const topLeftPixel = pixelsToInsert.reduce((acc, curr) => {
+  const topLeftPixel = pixels.reduce((acc, curr) => {
     if (curr.x < acc.x || (curr.x === acc.x && curr.y < acc.y)) {
       return curr;
     }
@@ -186,10 +179,10 @@ export const saveEditedPixels = async (
   }, { x: Infinity, y: Infinity }); // Provide initial value
 
   // Copy and offset the pixels to the top left corner
-  const pixelsToInsertCopy = pixelsToInsert.map((pixel) => ({
+  const pixelsToInsertCopy = pixels.map((pixel) => ({
     ...pixel,
-    x: pixel.x - topLeftPixel.x - design.x,
-    y: pixel.y - topLeftPixel.y - design.y,
+    x: pixel.x - topLeftPixel.x,
+    y: pixel.y - topLeftPixel.y,
   }));
 
   //Update the design with the new pixels
@@ -197,8 +190,8 @@ export const saveEditedPixels = async (
     .from("art_tool_designs")
     .update({
       pixels: pixelsToInsertCopy,
-      x: topLeftPixel.x,
-      y: topLeftPixel.y,
+      x: topLeftPixel.x + design.x,
+      y: topLeftPixel.y + design.y,
     })
     .eq("id", design.id);
 
