@@ -197,6 +197,12 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
   }, [editedPixels, isEditing, designId]);
 
+  useEffect(() => {
+    if (!editDesignId) {
+      setSelection(null);
+    }
+  }, [editDesignId])
+
   const layerOrder: number[] = [];
   if (editDesignId && isEditing) {
     layerOrder.push(editDesignId);
