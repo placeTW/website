@@ -21,7 +21,7 @@ export interface Design {
   y: number;
   canvas: string;
   canvas_name: string;
-  status: string;
+  status: DesignStatus;
 }
 
 export interface Pixel {
