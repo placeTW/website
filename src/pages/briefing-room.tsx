@@ -18,6 +18,11 @@ const BriefingRoom: React.FC = () => {
     const fetchPixels = async () => {
       const designId = "someDesignId"; // Replace with the actual design ID or name
       const designs = await databaseFetchDesigns();
+      if (!designs) {
+        setPixels([]); // Handle the case where designs are not found
+        return;
+      }
+
       const design = designs.find((d) => d.id === designId || d.design_name === designId);
 
       if (design) {

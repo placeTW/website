@@ -34,6 +34,8 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       if (data) {
         setAlertLevelState(data.state);
         setAlertMessageState(data.message);
+      } else {
+        // Handle error, e.g., show a toast message
       }
     };
 
@@ -56,11 +58,11 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   }, []);
 
   const setAlertLevel = async (level: number) => {
-    try {
-      await databaseUpdateAlertLevel(level);
+    const response = await databaseUpdateAlertLevel(level);
+    if (response) {
       setAlertLevelState(level);
-    } catch (error) {
-      console.error("Error updating alert level:", error);
+    } else {
+      // Handle error, e.g., show a toast message
     }
   };
 

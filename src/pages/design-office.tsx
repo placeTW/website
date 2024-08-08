@@ -5,10 +5,9 @@ import {
   databaseFetchCanvases,
   databaseFetchColors,
   databaseFetchDesigns,
-  saveEditedPixels,
-  updateDesignThumbnail,
-  uploadThumbnailToSupabase,
   removeSupabaseChannel,
+  saveEditedPixels,
+  uploaDesignThumbnailToSupabase,
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
@@ -35,14 +34,11 @@ const DesignOffice: React.FC = () => {
   const toast = useToast();
 
   const fetchDesigns = async () => {
-    try {
-      const data = await databaseFetchDesigns();
+    const data = await databaseFetchDesigns();
+    if (data) {
       setDesigns(data);
-    } catch (error) {
-      console.error("Error fetching designs:", error);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const fetchColors = async () => {
@@ -57,7 +53,11 @@ const DesignOffice: React.FC = () => {
 
       // Append the special colors on the client-side
       const specialColors = [
-        { Color: CLEAR_ON_DESIGN, color_sort: null, color_name: "Clear on Design" },
+        {
+          Color: CLEAR_ON_DESIGN,
+          color_sort: null,
+          color_name: "Clear on Design",
+        },
         { Color: CLEAR_ON_MAIN, color_sort: null, color_name: "Clear on Main" },
       ];
 
@@ -114,17 +114,26 @@ const DesignOffice: React.FC = () => {
       );
 
       // Save filtered pixels to the database
-      await saveEditedPixels(currentDesign.id, mergedPixels);
+      try {
+        await saveEditedPixels(currentDesign, mergedPixels);
+      } catch (error) {
+        console.error("Error saving edited pixels:", error);
+        toast({
+          title: "Error",
+          description: `Failed to save changes: ${
+            (error as Error).message || error
+          }`,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
 
       // Generate a thumbnail of the current design with filtered pixels
       const thumbnailBlob = await createThumbnail(mergedPixels);
-      const thumbnailUrl = await uploadThumbnailToSupabase(
-        thumbnailBlob,
-        currentDesign.id,
-      );
-
-      // Update the database with the new thumbnail URL
-      await updateDesignThumbnail(currentDesign.id, thumbnailUrl);
+      // Update the design thumbnail in the database and Supabase storage
+      await uploaDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
 
       toast({
         title: "Changes Saved",
@@ -136,11 +145,12 @@ const DesignOffice: React.FC = () => {
 
       // Clear the editedPixels array but stay in edit mode
       setEditedPixels([]);
-    } catch (error: any) {
-      console.error("Error saving edited pixels or updating thumbnail:", error);
+    } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to save changes: ${error.message}`,
+        description: `Failed to save changes: ${
+          (error as Error).message || error
+        }`,
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -149,25 +159,25 @@ const DesignOffice: React.FC = () => {
   };
 
   const fetchCanvases = async () => {
-    try {
-      const fetchedCanvases = await databaseFetchCanvases();
+    const fetchedCanvases = await databaseFetchCanvases();
+    if (fetchedCanvases) {
       setCanvases(fetchedCanvases);
       // Optionally set the first canvas as selected if there are canvases
       if (fetchedCanvases.length > 0) {
         setSelectedCanvas(fetchedCanvases[0]);
       }
-    } catch (error) {
-      console.error("Error fetching canvases:", error);
+    } else {
       // Handle error, e.g., show a toast message
     }
   };
 
   const handleSetCanvas = (designId: string, canvasId: number) => {
-    console.log(designId, canvasId);
     // Update the selectedCanvas state to trigger a re-render of AdvancedViewport
     const updatedCanvas = canvases.find((canvas) => canvas.id === canvasId);
     setSelectedCanvas(updatedCanvas || null);
-    console.log(selectedCanvas);
+    console.log(
+      `Design ${designId} set to canvas ${selectedCanvas?.canvas_name}`,
+    );
   };
 
   useEffect(() => {

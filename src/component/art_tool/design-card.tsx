@@ -14,11 +14,11 @@ import { FC, useEffect, useState } from "react";
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
-  FaLayerGroup,
   FaEye,
   FaEyeSlash,
   FaHeart,
   FaImage,
+  FaLayerGroup,
   FaPen,
   FaTrash,
 } from "react-icons/fa6";
@@ -88,10 +88,10 @@ const DesignCard: FC<DesignCardProps> = ({
 
     try {
       if (isLiked) {
-        await unlikeDesign(design.id, currentUser.user_id);
+        await unlikeDesign(design, currentUser.user_id);
         setIsLiked(false);
       } else {
-        await likeDesign(design.id, currentUser.user_id);
+        await likeDesign(design, currentUser.user_id);
         setIsLiked(true);
       }
     } catch (error) {
@@ -102,7 +102,6 @@ const DesignCard: FC<DesignCardProps> = ({
         duration: 3000,
         isClosable: true,
       });
-      console.error("Error liking/unliking design:", error);
     }
   };
 
@@ -124,7 +123,6 @@ const DesignCard: FC<DesignCardProps> = ({
         duration: 3000,
         isClosable: true,
       });
-      console.error("Error deleting design:", error);
     }
   };
 
@@ -163,7 +161,6 @@ const DesignCard: FC<DesignCardProps> = ({
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "An unknown error occurred";
-      console.error("Error adding design to canvas:", error);
 
       toast({
         title: "Error",

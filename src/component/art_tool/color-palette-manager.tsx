@@ -1,9 +1,9 @@
-import { useState, useEffect, FC } from 'react';
 import {
   Box,
   Button,
   Flex,
   Heading,
+  IconButton,
   Input,
   Table,
   Tbody,
@@ -11,22 +11,25 @@ import {
   Th,
   Thead,
   Tr,
-  IconButton,
-} from '@chakra-ui/react';
-import { supabase } from '../../api/supabase';
-import { FaPen, FaTrash, FaPlus, FaAngleUp, FaAngleDown } from 'react-icons/fa6';
+  useToast,
+} from "@chakra-ui/react";
+import { FC, useEffect, useState } from "react";
+import {
+  FaAngleDown,
+  FaAngleUp,
+  FaPen,
+  FaPlus,
+  FaTrash,
+} from "react-icons/fa6";
+import { supabase } from "../../api/supabase";
 import {
   databaseFetchColors,
-  insertColor,
   deleteColor,
-  removeSupabaseChannel, // Updated import
-} from '../../api/supabase/database';
-
-interface Color {
-  Color: string;
-  color_sort: number;
-  color_name: string;
-}
+  insertColor,
+  removeSupabaseChannel,
+  updateColor, // Updated import
+} from "../../api/supabase/database";
+import { Color } from "../../types/art-tool";
 
 interface ColorRowProps {
   color: Color;
@@ -34,7 +37,11 @@ interface ColorRowProps {
   totalColors: number;
   moveColorUp: (index: number) => void;
   moveColorDown: (index: number) => void;
-  handleEditColor: (color: Color, newColor: string, newColorName: string) => void;
+  handleEditColor: (
+    color: Color,
+    newColor: string,
+    newColorName: string,
+  ) => void;
   handleRemoveColor: (color: string) => void;
 }
 
@@ -127,20 +134,25 @@ const ColorRow: FC<ColorRowProps> = ({
 
 const ColorPaletteManager = () => {
   const [colors, setColors] = useState<Color[]>([]);
-  const [newColor, setNewColor] = useState('');
-  const [newColorName, setNewColorName] = useState('');
+  const [newColor, setNewColor] = useState("");
+  const [newColorName, setNewColorName] = useState("");
+  const toast = useToast();
 
   useEffect(() => {
     const fetchColors = async () => {
       const fetchedColors = await databaseFetchColors();
-      setColors(fetchedColors as Color[]);
+      setColors(fetchedColors);
     };
 
     fetchColors();
 
     const subscription = supabase
-      .channel('public:art_tool_colors')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'art_tool_colors' }, fetchColors)
+      .channel("public:art_tool_colors")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "art_tool_colors" },
+        fetchColors,
+      )
       .subscribe();
 
     return () => {
@@ -173,42 +185,83 @@ const ColorPaletteManager = () => {
   };
 
   const updateColorSortOrder = async (updatedColors: Color[]) => {
-    for (let i = 0; i < updatedColors.length; i++) {
-      await supabase
-        .from('art_tool_colors')
-        .update({ color_sort: i + 1 })
-        .eq('Color', updatedColors[i].Color);
+    try {
+      await updateColorSortOrder(updatedColors);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to update color sort order: ${
+          (error as Error).message || error
+        }`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   const handleAddColor = async () => {
     if (newColor && newColorName) {
-      await insertColor(newColor, newColorName, colors.length + 1);
-      setNewColor('');
-      setNewColorName('');
+      try {
+        await insertColor(newColor, newColorName, colors.length + 1);
+        setNewColor("");
+        setNewColorName("");
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: `Failed to add color: ${
+            (error as Error).message || error
+          }`,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     }
   };
 
-  const handleEditColor = async (color: Color, newColor: string, newColorName: string) => {
-    const { error } = await supabase
-      .from('art_tool_colors')
-      .update({ Color: newColor, color_name: newColorName })
-      .eq('Color', color.Color);
-
-    if (error) {
-      console.error('Error editing color:', error);
-    } else {
+  const handleEditColor = async (
+    color: Color,
+    newColor: string,
+    newColorName: string,
+  ) => {
+    try {
+      await updateColor(color.Color, newColor, newColorName);
       setColors(
         colors.map((c) =>
-          c.Color === color.Color ? { ...c, Color: newColor, color_name: newColorName } : c
-        )
+          c.Color === color.Color
+            ? { ...c, Color: newColor, color_name: newColorName }
+            : c,
+        ),
       );
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to update color: ${
+          (error as Error).message || error
+        }`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   const handleRemoveColor = async (color: string) => {
-    await deleteColor(color);
-    setColors(colors.filter((c) => c.Color !== color));
+    try {
+      await deleteColor(color);
+      setColors(colors.filter((c) => c.Color !== color));
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to delete color: ${
+          (error as Error).message || error
+        }`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
@@ -254,7 +307,11 @@ const ColorPaletteManager = () => {
           onChange={(e) => setNewColorName(e.target.value)}
           mr={2}
         />
-        <Button onClick={handleAddColor} colorScheme="blue" leftIcon={<FaPlus />}>
+        <Button
+          onClick={handleAddColor}
+          colorScheme="blue"
+          leftIcon={<FaPlus />}
+        >
           Add Color
         </Button>
       </Flex>

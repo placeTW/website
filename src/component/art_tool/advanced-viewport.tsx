@@ -1,5 +1,6 @@
 import { Box, Grid, Tooltip } from "@chakra-ui/react";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import Konva from "konva"; // Import Konva
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   databaseFetchDesigns,
   removeSupabaseChannel,
@@ -7,10 +8,12 @@ import {
 } from "../../api/supabase";
 import { Design } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
-import { CLEAR_ON_DESIGN, CLEAR_ON_MAIN } from "../viewport/constants";
+import {
+  CLEAR_ON_DESIGN,
+  CLEAR_ON_MAIN,
+  GRID_SIZE,
+} from "../viewport/constants";
 import { Pixel } from "../viewport/types";
-import Konva from "konva"; // Import Konva
-import { GRID_SIZE } from "../viewport/constants";
 
 interface AdvancedViewportProps {
   isEditing: boolean;
@@ -69,10 +72,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Generate checkerboard patterns for the special colors
   const clearOnDesignPatternCanvas = createCheckerboardPattern("#eee", "#fff");
-  const clearOnMainPatternCanvas = createCheckerboardPattern(
-    "#fc7e7e",
-    "#fff",
-  ); // Opaque pink and white checkerboard
+  const clearOnMainPatternCanvas = createCheckerboardPattern("#fc7e7e", "#fff"); // Opaque pink and white checkerboard
 
   const clearOnDesignPattern = clearOnDesignPatternCanvas.toDataURL();
   const clearOnMainPattern = clearOnMainPatternCanvas.toDataURL();
@@ -99,22 +99,24 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
         const designs = await databaseFetchDesigns();
 
-        const allVisiblePixels = await Promise.all(
-          layersToFetch.map(async (layer) => {
-            const design = designs?.find((d) => d.design_name === layer);
-            if (design) {
-              return design.pixels.map((pixel: Pixel) => ({
-                ...pixel,
-                x: pixel.x + design.x,
-                y: pixel.y + design.y,
-                canvas: layer, // Add the canvas property
-              }));
-            }
-            return [];
-          }),
-        );
+        if (designs) {
+          const allVisiblePixels = await Promise.all(
+            layersToFetch.map(async (layer) => {
+              const design = designs?.find((d) => d.design_name === layer);
+              if (design) {
+                return design.pixels.map((pixel: Pixel) => ({
+                  ...pixel,
+                  x: pixel.x + design.x,
+                  y: pixel.y + design.y,
+                  canvas: layer, // Add the canvas property
+                }));
+              }
+              return [];
+            }),
+          );
 
-        setPixels(allVisiblePixels.flat());
+          setPixels(allVisiblePixels.flat());
+        }
       };
 
       fetchPixels();
@@ -349,12 +351,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   // Handle Paste Pixels
   const handlePaste = useCallback(
     (pasteX: number, pasteY: number) => {
-      if (
-        !isEditing ||
-        !designName ||
-        copyBuffer.length === 0 ||
-        !selection
-      )
+      if (!isEditing || !designName || copyBuffer.length === 0 || !selection)
         return;
 
       // Get the top-left corner of the full selection area

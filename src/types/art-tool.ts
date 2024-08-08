@@ -4,7 +4,7 @@ export enum DesignStatus {
   DRAFT,
   SUBMITTED,
   CURRENT,
-  ARCHIVED
+  ARCHIVED,
 }
 
 export interface Design {
@@ -34,4 +34,16 @@ export interface Pixel {
 export interface Canvas {
   id: number;
   canvas_name: string;
+}
+
+export interface Color {
+  Color: string;
+  color_sort: number;
+  color_name: string;
+}
+
+export interface AlertState {
+  id: number;
+  state: number;
+  message: string;
 }

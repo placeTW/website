@@ -32,17 +32,13 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
 
   useEffect(() => {
     const fetchCanvases = async () => {
-      try {
-        setIsLoading(true);
-        const fetchedCanvases = await databaseFetchCanvases();
+      const fetchedCanvases = await databaseFetchCanvases();
+      if (fetchedCanvases) {
         setCanvases(fetchedCanvases);
-        console.log(fetchedCanvases);
-      } catch (error) {
-        console.error("Error fetching canvases:", error);
+      } else {
         // Handle error, e.g., show a toast message
-      } finally {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     };
 
     fetchCanvases();
@@ -50,12 +46,9 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
 
   const handleCanvasChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCanvasId = event.target.value;
-    console.log(selectedCanvasId);
-    console.log(canvases);
     const selectedCanvas = canvases.find(
       (canvas) => canvas.id === Number(selectedCanvasId),
     );
-    console.log(selectedCanvas);
 
     setSelectedCanvas(selectedCanvas || null);
   };
