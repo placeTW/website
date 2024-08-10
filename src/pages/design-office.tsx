@@ -196,7 +196,7 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleSetCanvas = (designId: number, canvasId: number) => {
+  const handleSetDesignCanvas = (designId: number, canvasId: number) => {
     // Update the selectedCanvas state to trigger a re-render of AdvancedViewport
     const updatedCanvas = canvases.find((canvas) => canvas.id === canvasId);
     setSelectedCanvas(updatedCanvas || null);
@@ -204,6 +204,12 @@ const DesignOffice: React.FC = () => {
       `Design ${designId} set to canvas ${selectedCanvas?.canvas_name}`,
     );
   };
+ 
+  const handleSetCanvas = (canvas: Canvas) => {
+    setSelectedCanvas(canvas);
+    const canvasDesigns = designs.filter((design) => design.canvas === canvas.id);
+    setVisibleLayers(canvasDesigns.map((design) => design.id));
+  }
 
   const handleOnDeleted = () => {
     setEditDesignId(null);
@@ -249,15 +255,19 @@ const DesignOffice: React.FC = () => {
           visibleLayers={visibleLayers}
           onUpdatePixels={handleUpdatePixels}
           colors={colors}
+          canvases={canvases}
+          selectedCanvas={selectedCanvas}
+          onSelectCanvas={handleSetCanvas}
         />
       </Box>
       <Box overflowY="auto">
         <DesignCardsList
           designs={designs}
+          visibleLayers={visibleLayers}
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
           onSubmitEdit={handleSubmitEdit}
-          onSetCanvas={handleSetCanvas}
+          onSetCanvas={handleSetDesignCanvas}
           onDeleted={handleOnDeleted}
         />
         <Box h="100px" /> {/* Spacer at the bottom */}

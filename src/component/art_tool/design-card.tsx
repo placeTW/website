@@ -35,8 +35,6 @@ import SetDesignCanvas from "./set-design-canvas";
 
 interface DesignCardProps {
   design: Design;
-  userId: string;
-  userHandle: string;
   canvasName: string;
   isEditing: boolean;
   onEdit: (designId: number) => boolean;
@@ -50,8 +48,6 @@ interface DesignCardProps {
 
 const DesignCard: FC<DesignCardProps> = ({
   design,
-  userId,
-  userHandle,
   canvasName,
   isEditing,
   onEdit,
@@ -62,7 +58,7 @@ const DesignCard: FC<DesignCardProps> = ({
   onSetCanvas,
   onDeleted,
 }) => {
-  const { currentUser, rankNames, users } = useUserContext();
+  const { currentUser, rankNames } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
     currentUser ? design.liked_by.includes(currentUser.user_id) : false,
@@ -182,9 +178,6 @@ const DesignCard: FC<DesignCardProps> = ({
       currentUser.user_id === design.created_by);
   const isCreator = currentUser && currentUser.user_id === design.created_by;
 
-  const user = users.find((u) => u.user_id === userId);
-  const rankName = user ? rankNames[user.rank] : "Unknown";
-
   return (
     <>
       <Card
@@ -260,7 +253,8 @@ const DesignCard: FC<DesignCardProps> = ({
             <Box>
               <Heading fontSize={"md"}>{design.design_name}</Heading>
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
-                {rankName} {userHandle}
+                {rankNames[design.art_tool_users.rank] ?? "Unknown"}{" "}
+                {design.art_tool_users.handle}
               </Text>
               <Text color={"gray.600"} fontWeight={400} fontSize={"sm"}>
                 {canvasName}

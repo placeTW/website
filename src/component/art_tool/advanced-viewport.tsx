@@ -1,4 +1,4 @@
-import { Box, Grid, Tooltip } from "@chakra-ui/react";
+import { Box, Button, Grid, Stack, Tooltip } from "@chakra-ui/react";
 import Konva from "konva"; // Import Konva
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -6,7 +6,7 @@ import {
   removeSupabaseChannel,
   supabase,
 } from "../../api/supabase";
-import { Design, Pixel } from "../../types/art-tool";
+import { Canvas, Design, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import {
   CLEAR_ON_DESIGN,
@@ -20,7 +20,10 @@ interface AdvancedViewportProps {
   editDesignId: number | null;
   visibleLayers: number[];
   onUpdatePixels: (pixels: ViewportPixel[]) => void;
-  colors: { Color: string; color_sort: number | null; color_name: string }[]; // Include color_name
+  colors: { Color: string; color_sort: number | null; color_name: string }[];
+  canvases: Canvas[];
+  onSelectCanvas: (canvas: Canvas) => void;
+  selectedCanvas: Canvas | null;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -29,6 +32,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   visibleLayers,
   onUpdatePixels,
   colors,
+  canvases,
+  onSelectCanvas,
+  selectedCanvas,
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -418,6 +424,21 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   return (
     <Box position="relative" height="100%">
       <Box height="100%">
+        <Stack direction="row" spacing={4} padding={2}>
+          {canvases.map((canvas) => (
+            <Button 
+              key={canvas.id}
+              onClick={() => onSelectCanvas(canvas)}
+              border={
+                canvas.id === selectedCanvas?.id
+                  ? "2px solid black"
+                  : "1px solid #ccc"
+              }
+            >
+              {canvas.canvas_name}
+            </Button>
+          ))}
+        </Stack>
         <Viewport
           designId={editDesignId}
           pixels={pixels}
