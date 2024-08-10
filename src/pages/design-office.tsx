@@ -231,6 +231,10 @@ const DesignOffice: React.FC = () => {
     }
   };
 
+  const clearVisibleLayers = () => {
+    setVisibleLayers([]);
+  }
+
   const handleOnDeleted = () => {
     setEditDesignId(null);
   };
@@ -278,6 +282,7 @@ const DesignOffice: React.FC = () => {
           canvases={canvases}
           selectedCanvas={selectedCanvas}
           onSelectCanvas={handleSetCanvas}
+          clearVisibleLayers={clearVisibleLayers}
         />
       </Box>
       <Box overflowY="auto">

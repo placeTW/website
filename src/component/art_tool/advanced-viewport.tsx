@@ -1,6 +1,17 @@
-import { Box, Button, Grid, Stack, Tooltip } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  IconButton,
+  Spacer,
+  Tooltip,
+  Wrap,
+  WrapItem,
+} from "@chakra-ui/react";
 import Konva from "konva"; // Import Konva
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { FaEyeSlash } from "react-icons/fa";
 import {
   databaseFetchDesigns,
   removeSupabaseChannel,
@@ -24,6 +35,7 @@ interface AdvancedViewportProps {
   canvases: Canvas[];
   onSelectCanvas: (canvas: Canvas | null) => void;
   selectedCanvas: Canvas | null;
+  clearVisibleLayers: () => void;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -35,6 +47,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   canvases,
   onSelectCanvas,
   selectedCanvas,
+  clearVisibleLayers,
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -424,23 +437,35 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   return (
     <Box position="relative" height="100%">
       <Box height="100%">
-        <Stack direction="row" spacing={4} padding={2}>
-          {canvases.map((canvas) => (
-            <Button 
-              key={canvas.id}
-              onClick={() => onSelectCanvas(canvas)}
-              colorScheme='teal'
-              border={
-                canvas.id === selectedCanvas?.id
-                  ? "2px solid black"
-                  : "1px solid #ccc"
-              }
-            >
-              {canvas.canvas_name}
-            </Button>
-          ))}
-          <Button onClick={() => onSelectCanvas(null)}>Unassigned</Button>
-        </Stack>
+        <Flex padding={2}>
+          <Wrap direction="row" spacing={4}>
+            {canvases.map((canvas) => (
+              <WrapItem>
+                <Button
+                  key={canvas.id}
+                  onClick={() => onSelectCanvas(canvas)}
+                  colorScheme="teal"
+                  border={
+                    canvas.id === selectedCanvas?.id
+                      ? "2px solid black"
+                      : "1px solid #ccc"
+                  }
+                >
+                  {canvas.canvas_name}
+                </Button>
+              </WrapItem>
+            ))}
+            <WrapItem>
+              <Button onClick={() => onSelectCanvas(null)}>Unassigned</Button>
+            </WrapItem>
+          </Wrap>
+          <Spacer />
+          <IconButton
+            icon={<FaEyeSlash />}
+            aria-label="Hide All Designs"
+            onClick={clearVisibleLayers}
+          />
+        </Flex>
         <Viewport
           designId={editDesignId}
           pixels={pixels}
