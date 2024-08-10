@@ -212,11 +212,14 @@ const DesignOffice: React.FC = () => {
     );
   };
 
-  const handleSetCanvas = (canvas: Canvas) => {
+  const handleSetCanvas = (canvas: Canvas | null) => {
     setSelectedCanvas(canvas);
-    const canvasDesigns = designs.filter(
-      (design) => design.canvas === canvas.id,
-    );
+    let canvasDesigns: Design[] = [];
+    if (canvas) {
+      canvasDesigns = designs.filter((design) => design.canvas === canvas.id);
+    } else {
+      canvasDesigns = designs.filter((design) => design.canvas === null);
+    }
 
     if (isEditing) {
       // Add the design that's being edited to the visible layers

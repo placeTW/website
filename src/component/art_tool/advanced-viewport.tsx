@@ -22,7 +22,7 @@ interface AdvancedViewportProps {
   onUpdatePixels: (pixels: ViewportPixel[]) => void;
   colors: { Color: string; color_sort: number | null; color_name: string }[];
   canvases: Canvas[];
-  onSelectCanvas: (canvas: Canvas) => void;
+  onSelectCanvas: (canvas: Canvas | null) => void;
   selectedCanvas: Canvas | null;
 }
 
@@ -429,6 +429,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             <Button 
               key={canvas.id}
               onClick={() => onSelectCanvas(canvas)}
+              colorScheme='teal'
               border={
                 canvas.id === selectedCanvas?.id
                   ? "2px solid black"
@@ -438,6 +439,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               {canvas.canvas_name}
             </Button>
           ))}
+          <Button onClick={() => onSelectCanvas(null)}>Unassigned</Button>
         </Stack>
         <Viewport
           designId={editDesignId}
