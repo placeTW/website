@@ -111,7 +111,9 @@ const DesignOffice: React.FC = () => {
 
       editedPixels.forEach((pixel) => {
         if (pixel.color === CLEAR_ON_DESIGN) {
-          existingPixelMap.delete(`${pixel.x - currentDesign.x}-${pixel.y - currentDesign.y}`);
+          existingPixelMap.delete(
+            `${pixel.x - currentDesign.x}-${pixel.y - currentDesign.y}`,
+          );
         } else {
           existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
             ...pixel,
@@ -127,10 +129,15 @@ const DesignOffice: React.FC = () => {
 
       // Save filtered pixels to the database
       try {
-        const updatedDesign = await saveEditedPixels(currentDesign, mergedPixels);
+        const updatedDesign = await saveEditedPixels(
+          currentDesign,
+          mergedPixels,
+        );
         // Update the designs state with the updated design
         setDesigns((prevDesigns) =>
-          prevDesigns.map((d) => (d.id === updatedDesign.id ? updatedDesign : d)),
+          prevDesigns.map((d) =>
+            d.id === updatedDesign.id ? updatedDesign : d,
+          ),
         );
       } catch (error) {
         toast({
@@ -204,16 +211,26 @@ const DesignOffice: React.FC = () => {
       `Design ${designId} set to canvas ${selectedCanvas?.canvas_name}`,
     );
   };
- 
+
   const handleSetCanvas = (canvas: Canvas) => {
     setSelectedCanvas(canvas);
-    const canvasDesigns = designs.filter((design) => design.canvas === canvas.id);
-    setVisibleLayers(canvasDesigns.map((design) => design.id));
-  }
+    const canvasDesigns = designs.filter(
+      (design) => design.canvas === canvas.id,
+    );
+
+    if (isEditing) {
+      // Add the design that's being edited to the visible layers
+      setVisibleLayers(
+        canvasDesigns.map((design) => design.id).concat(editDesignId || []),
+      );
+    } else {
+      setVisibleLayers(canvasDesigns.map((design) => design.id));
+    }
+  };
 
   const handleOnDeleted = () => {
     setEditDesignId(null);
-  }
+  };
 
   useEffect(() => {
     fetchDesigns();
