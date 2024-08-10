@@ -438,7 +438,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     <Box position="relative" height="100%">
       <Box height="100%">
         <Flex padding={2}>
-          <Wrap direction="row" spacing={4}>
+          <Wrap direction="row" spacing={2}>
             {canvases.map((canvas) => (
               <WrapItem>
                 <Button
