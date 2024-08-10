@@ -21,6 +21,7 @@ import { createThumbnail } from "../utils/imageUtils";
 
 const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<Design[]>([]);
+  const [visibleDesigns, setVisibleDesigns] = useState<Design[]>([]);
   const [colors, setColors] = useState<
     { Color: string; color_sort: number | null; color_name: string }[] // Updated type
   >([]);
@@ -213,27 +214,35 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleSetCanvas = (canvas: Canvas | null) => {
-    setSelectedCanvas(canvas);
     let canvasDesigns: Design[] = [];
     if (canvas) {
-      canvasDesigns = designs.filter((design) => design.canvas === canvas.id);
-    } else {
-      canvasDesigns = designs.filter((design) => design.canvas === null);
-    }
-
-    if (isEditing) {
-      // Add the design that's being edited to the visible layers
-      setVisibleLayers(
-        canvasDesigns.map((design) => design.id).concat(editDesignId || []),
+      canvasDesigns = designs.filter(
+        (design) =>
+          design.canvas === canvas.id ||
+          (isEditing && design.id === editDesignId),
       );
     } else {
-      setVisibleLayers(canvasDesigns.map((design) => design.id));
+      canvasDesigns = designs.filter(
+        (design) =>
+          design.canvas === null || (isEditing && design.id === editDesignId),
+      );
     }
+
+    console.log(canvasDesigns);
+
+    setSelectedCanvas(canvas);
+    setVisibleDesigns(canvasDesigns);
+    setVisibleLayers(canvasDesigns.map((design) => design.id));
   };
 
-  const clearVisibleLayers = () => {
+  const handleResetViewport = () => {
     setVisibleLayers([]);
-  }
+    setVisibleDesigns(designs);
+  };
+
+  useEffect(() => {
+    setVisibleDesigns(designs);
+  }, [designs]);
 
   const handleOnDeleted = () => {
     setEditDesignId(null);
@@ -282,12 +291,12 @@ const DesignOffice: React.FC = () => {
           canvases={canvases}
           selectedCanvas={selectedCanvas}
           onSelectCanvas={handleSetCanvas}
-          clearVisibleLayers={clearVisibleLayers}
+          onResetViewport={handleResetViewport}
         />
       </Box>
       <Box overflowY="auto">
         <DesignCardsList
-          designs={designs}
+          designs={visibleDesigns}
           visibleLayers={visibleLayers}
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}

@@ -11,7 +11,6 @@ import {
 } from "@chakra-ui/react";
 import Konva from "konva"; // Import Konva
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { FaEyeSlash } from "react-icons/fa";
 import {
   databaseFetchDesigns,
   removeSupabaseChannel,
@@ -25,6 +24,7 @@ import {
   GRID_SIZE,
 } from "../viewport/constants";
 import { ViewportPixel } from "../viewport/types";
+import { FaRepeat } from "react-icons/fa6";
 
 interface AdvancedViewportProps {
   isEditing: boolean;
@@ -35,7 +35,7 @@ interface AdvancedViewportProps {
   canvases: Canvas[];
   onSelectCanvas: (canvas: Canvas | null) => void;
   selectedCanvas: Canvas | null;
-  clearVisibleLayers: () => void;
+  onResetViewport: () => void;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -47,7 +47,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   canvases,
   onSelectCanvas,
   selectedCanvas,
-  clearVisibleLayers,
+  onResetViewport,
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -461,9 +461,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           </Wrap>
           <Spacer />
           <IconButton
-            icon={<FaEyeSlash />}
-            aria-label="Hide All Designs"
-            onClick={clearVisibleLayers}
+            icon={<FaRepeat />}
+            aria-label="Reset viewport"
+            onClick={onResetViewport}
           />
         </Flex>
         <Viewport
