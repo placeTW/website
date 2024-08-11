@@ -11,3 +11,7 @@ export const CLEAR_ON_MAIN_PATTERN = createCheckerboardPattern(
   "#fff",
   GRID_SIZE / 2
 );
+
+// Reserved colors for clear pixels
+export const CLEAR_ON_DESIGN = "ClearOnDesign"
+export const CLEAR_ON_MAIN = "ClearOnMain"

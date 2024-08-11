@@ -8,8 +8,10 @@ import {
 import {
   databaseFetchAlertLevel,
   databaseUpdateAlertLevel,
+  removeSupabaseChannel,
   supabase,
 } from "../api/supabase";
+import { useToast } from "@chakra-ui/react";
 
 interface AlertContextType {
   alertLevel: number | null;
@@ -26,6 +28,7 @@ interface AlertProviderProps {
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [alertLevel, setAlertLevelState] = useState<number | null>(1);
   const [alertMessage, setAlertMessageState] = useState<string | null>(null);
+  const toast = useToast()
 
   useEffect(() => {
     const fetchAlertLevel = async () => {
@@ -33,6 +36,14 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       if (data) {
         setAlertLevelState(data.state);
         setAlertMessageState(data.message);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to fetch alert level",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       }
     };
 
@@ -50,16 +61,22 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(alertSubscription);
+      removeSupabaseChannel(alertSubscription);
     };
   }, []);
 
   const setAlertLevel = async (level: number) => {
-    try {
-      await databaseUpdateAlertLevel(level);
+    const response = await databaseUpdateAlertLevel(level);
+    if (response) {
       setAlertLevelState(level);
-    } catch (error) {
-      console.error("Error updating alert level:", error);
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to update alert level",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 

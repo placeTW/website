@@ -1,18 +1,41 @@
-import { Box, Grid } from "@chakra-ui/react";
-import React, { useEffect, useRef, useState } from "react";
-import { supabase } from "../../api/supabase";
-import { databaseFetchPixels } from "../../api/supabase/database";
-import { Pixel } from "../../types/art-tool";
-// import Viewport from "./viewport";
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  IconButton,
+  Spacer,
+  Tooltip,
+  Wrap,
+  WrapItem,
+} from "@chakra-ui/react";
+import Konva from "konva"; // Import Konva
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  databaseFetchDesigns,
+  removeSupabaseChannel,
+  supabase,
+} from "../../api/supabase";
+import { Canvas, Design, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
+import {
+  CLEAR_ON_DESIGN,
+  CLEAR_ON_MAIN,
+  GRID_SIZE,
+} from "../viewport/constants";
+import { ViewportPixel } from "../viewport/types";
+import { FaRepeat } from "react-icons/fa6";
 
 interface AdvancedViewportProps {
   isEditing: boolean;
-  editDesignId: string | null;
-  visibleLayers: string[];
-  onUpdatePixels: (pixels: Pixel[]) => void;
-  designName: string;
-  colors: { Color: string; color_sort: number | null }[];
+  editDesignId: number | null;
+  visibleLayers: number[];
+  onUpdatePixels: (pixels: ViewportPixel[]) => void;
+  colors: { Color: string; color_sort: number | null; color_name: string }[];
+  canvases: Canvas[];
+  onSelectCanvas: (canvas: Canvas | null) => void;
+  selectedCanvas: Canvas | null;
+  onResetViewport: () => void;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -20,16 +43,30 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   editDesignId,
   visibleLayers,
   onUpdatePixels,
-  designName,
   colors,
+  canvases,
+  onSelectCanvas,
+  selectedCanvas,
+  onResetViewport,
 }) => {
-  const [pixels, setPixels] = useState<Pixel[]>([]);
+  const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
-  const previousVisibleLayers = useRef<string[]>([]);
+  const [editedPixels, setEditedPixels] = useState<ViewportPixel[]>([]);
+  const previousVisibleLayers = useRef<number[]>(visibleLayers); // Initialize with visibleLayers
+  const [selection, setSelection] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const [copyBuffer, setCopyBuffer] = useState<ViewportPixel[]>([]);
+  const stageRef = useRef<Konva.Stage>(null); // Define stageRef
 
   // Function to create a checkerboard pattern as an HTMLCanvasElement
-  const createCheckerboardPattern = (color1: string, color2: string): HTMLCanvasElement => {
+  const createCheckerboardPattern = (
+    color1: string,
+    color2: string,
+  ): HTMLCanvasElement => {
     const size = 20;
     const canvas = document.createElement("canvas");
     canvas.width = size * 2;
@@ -58,169 +95,390 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   // Fetch pixels based on visible layers
   useEffect(() => {
-    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
-    console.log('Fetching pixels for layers:', layersToFetch);
-
-    if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(layersToFetch)) {
-      previousVisibleLayers.current = layersToFetch;
+    // Check if visibleLayers has actually changed
+    if (
+      JSON.stringify(previousVisibleLayers.current) !==
+      JSON.stringify(visibleLayers)
+    ) {
+      previousVisibleLayers.current = visibleLayers;
 
       const fetchPixels = async () => {
-        if (layersToFetch.length === 0) {
+        if (visibleLayers.length === 0) {
           setPixels([]);
           return;
         }
 
-        const allVisiblePixels = await Promise.all(
-          layersToFetch.map((layer) => databaseFetchPixels(layer))
-        );
-        setPixels(allVisiblePixels.flat());
-        console.log('Fetched pixels:', allVisiblePixels.flat());
+        const designs = await databaseFetchDesigns();
+
+        if (designs) {
+          const allVisiblePixels = await Promise.all(
+            visibleLayers.map(async (layer) => {
+              const design = designs?.find((d) => d.id === layer);
+              if (design) {
+                return design.pixels.map((pixel: Pixel) => ({
+                  ...pixel,
+                  x: pixel.x + design.x,
+                  y: pixel.y + design.y,
+                  designId: design.id,
+                }));
+              }
+              return [];
+            }),
+          );
+
+          setPixels(allVisiblePixels.flat());
+        }
       };
 
       fetchPixels();
     }
-  }, [visibleLayers]);
+  }, [visibleLayers]); // Updated dependencies: only visibleLayers to avoid unnecessary re-renders
 
   // Real-time subscription to pixel changes
   useEffect(() => {
-    console.log('Setting up real-time subscription for pixel changes...');
     const pixelSubscription = supabase
-      .channel("realtime-art_tool_pixels")
+      .channel("realtime-art_tool_designs")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_pixels" },
+        { event: "*", schema: "public", table: "art_tool_designs" },
         (payload) => {
-          console.log('Received real-time update:', payload);
-
           setPixels((prevPixels) => {
-            const pixelMap = new Map<string, Pixel>();
+            if (payload.eventType === "UPDATE") {
+              const updatedDesign = payload.new as Design;
 
-            // Add existing pixels to the map first
-            prevPixels.forEach((pixel) => {
-              pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel); // Use coordinates and canvas as key
-            });
+              if (updatedDesign.pixels) {
+                const updatedPixels = updatedDesign.pixels.map(
+                  (pixel: Pixel) => ({
+                    ...pixel,
+                    x: pixel.x + updatedDesign.x,
+                    y: pixel.y + updatedDesign.y,
+                    designId: updatedDesign.id,
+                  }),
+                );
 
-            // Handle the event based on its type
-            if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-              const { id, x, y, color, canvas } = payload.new as Pixel;
-              const updatedPixel: Pixel = { id, x, y, color, canvas };
-              pixelMap.set(`${x}-${y}-${canvas}`, updatedPixel);
-              console.log('Inserted/Updated pixel:', updatedPixel);
-            } else if (payload.eventType === "DELETE") {
-              const { x, y, canvas } = payload.old;
-              pixelMap.delete(`${x}-${y}-${canvas}`);
-              console.log('Deleted pixel at coordinates:', { x, y, canvas });
+                // Merge updatedPixels with existing pixels
+                const pixelMap = new Map<string, ViewportPixel>();
+                prevPixels.forEach((pixel) =>
+                  pixelMap.set(
+                    `${pixel.x}-${pixel.y}-${pixel.designId}`,
+                    pixel,
+                  ),
+                );
+                updatedPixels.forEach((pixel: ViewportPixel) =>
+                  pixelMap.set(
+                    `${pixel.x}-${pixel.y}-${pixel.designId}`,
+                    pixel,
+                  ),
+                );
+                return Array.from(pixelMap.values());
+              } else {
+                console.warn(
+                  "updatedDesign.pixels is undefined. Skipping update.",
+                );
+                return prevPixels;
+              }
+            } else {
+              // Handle other event types like INSERT and DELETE
+              return prevPixels;
             }
-
-            const updatedPixels = Array.from(pixelMap.values());
-            console.log('Updated pixel map:', updatedPixels);
-            return updatedPixels;
           });
-        }
+        },
       )
       .subscribe();
 
     return () => {
-      console.log('Unsubscribing from real-time updates...');
-      supabase.removeChannel(pixelSubscription);
+      removeSupabaseChannel(pixelSubscription); // Ensure cleanup
     };
-  }, [visibleLayers]);
+  }, []); // Empty dependency array to run only on mount
 
   // Merge pixels from different layers with edited pixels for rendering
   useEffect(() => {
     if (isEditing) {
-      const pixelMap = new Map<string, Pixel>();
+      const pixelMap = new Map<string, ViewportPixel>();
 
       // Add existing pixels to the map first
       pixels.forEach((pixel) => {
-        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.designId}`, pixel);
       });
 
-      // Overwrite with any edited pixels
+      // Overwrite with edited pixels (assuming designName is available)
       editedPixels.forEach((pixel) => {
-        if (pixel.color !== "ClearOnDesign") {
-          pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.canvas}`, pixel);
+        if (pixel.color !== CLEAR_ON_DESIGN && editDesignId) {
+          pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.designId}`, pixel);
         } else {
-          pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.canvas}`);
+          pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.designId}`);
         }
       });
 
-      const mergedPixels = Array.from(pixelMap.values());
-      console.log('Merging pixels for rendering:', mergedPixels);
-
-      if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
-        setPixels(mergedPixels); // Update the pixels state for rendering
+      // Only set pixels if they have actually changed
+      const newPixelsArray = Array.from(pixelMap.values());
+      if (JSON.stringify(newPixelsArray) !== JSON.stringify(pixels)) {
+        setPixels(newPixelsArray);
       }
     }
-  }, [pixels, editedPixels, isEditing]);
+  }, [editedPixels, isEditing, editDesignId, pixels]);
 
-  // Update layerOrder to include the edit layer right above the design being edited
-  const layerOrder = ["main"];
+  useEffect(() => {
+    if (!editDesignId) {
+      setSelection(null);
+    }
+  }, [editDesignId]);
+
+  const layerOrder: number[] = [];
   if (editDesignId && isEditing) {
     layerOrder.push(editDesignId);
   }
-  layerOrder.push(...visibleLayers.filter(layer => layer !== "main" && layer !== editDesignId));
-  console.log('Calculated layer order:', layerOrder);
+  layerOrder.push(...visibleLayers.filter((layer) => layer !== editDesignId));
 
   // Function to regenerate pixels array from scratch
-  const regeneratePixels = async () => {
-    const layersToFetch = ["main", ...visibleLayers.filter((layer) => layer !== "main")];
-    console.log('Regenerating pixels for layers:', layersToFetch);
-
-    if (layersToFetch.length === 0) {
+  const regeneratePixels = useCallback(async () => {
+    if (visibleLayers.length === 0) {
       setPixels([]); // No layers, so empty pixels array
       return;
     }
 
+    const designs = await databaseFetchDesigns();
+
     const allVisiblePixels = await Promise.all(
-      layersToFetch.map((layer) => databaseFetchPixels(layer))
+      visibleLayers.map(async (layer) => {
+        const design = designs?.find((d) => d.id === layer);
+        if (design) {
+          return design.pixels.map((pixel: Pixel) => ({
+            ...pixel,
+            x: pixel.x + design.x,
+            y: pixel.y + design.y,
+            designId: design.id,
+          }));
+        }
+        return [];
+      }),
     );
 
-    // Update pixels state with freshly fetched data
     setPixels(allVisiblePixels.flat());
-    console.log('Regenerated pixels:', allVisiblePixels.flat());
-  };
+  }, [visibleLayers]);
 
   // Clear edited pixels on submission or exit from edit mode
   useEffect(() => {
     if (!isEditing) {
-      console.log("Exiting edit mode, clearing editedPixels:", editedPixels); // Log before clearing
-      setEditedPixels([]); // Clear the edited pixels array when exiting edit mode
-
-      regeneratePixels(); // Regenerate pixels from scratch
+      setEditedPixels([]);
+      regeneratePixels();
     }
-  }, [isEditing]);
+  }, [isEditing, regeneratePixels]); // Ensure it only runs when editing state changes
 
   const handleColorSelect = (color: string) => {
-    console.log('Selected color:', color);
     setSelectedColor(color);
+
+    if (selection && isEditing && editDesignId) {
+      const { x, y, width, height } = selection;
+
+      // Create an array to hold the new pixels
+      const newPixels: ViewportPixel[] = [];
+
+      // Iterate over the selection area
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          const pixelX = x + i;
+          const pixelY = y + j;
+
+          // Add new pixel to the array, including CLEAR_ON_DESIGN as a regular color
+          newPixels.push({
+            x: pixelX,
+            y: pixelY,
+            color,
+            designId: editDesignId,
+          });
+        }
+      }
+
+      // Update the edited pixels with the new fill
+      setEditedPixels((prevEditedPixels) => {
+        // Filter out any existing pixels in the same positions
+        const updatedPixels = prevEditedPixels.filter(
+          (p) =>
+            !(
+              p.x >= x &&
+              p.x < x + width &&
+              p.y >= y &&
+              p.y < y + height &&
+              p.designId === editDesignId
+            ),
+        );
+
+        // Add the new pixels
+        const finalPixels = [...updatedPixels, ...newPixels];
+        requestAnimationFrame(() => onUpdatePixels(finalPixels)); // Defer the state update to the next frame
+        return finalPixels;
+      });
+    }
   };
 
   const handlePixelPaint = (x: number, y: number) => {
-    if (!isEditing || !selectedColor) return;
-
-    const newPixel: Pixel = { x, y, color: selectedColor, canvas: designName };
+    if (!isEditing || !selectedColor || !editDesignId) return;
+    const newPixel: ViewportPixel = {
+      x,
+      y,
+      color: selectedColor,
+      designId: editDesignId,
+    };
 
     setEditedPixels((prevEditedPixels) => {
-      const updatedPixels = prevEditedPixels.filter((p) => !(p.x === x && p.y === y));
+      const updatedPixels = prevEditedPixels.filter(
+        (p) => !(p.x === x && p.y === y && p.designId === editDesignId),
+      );
       updatedPixels.push(newPixel);
-      console.log("Edited Pixels:", updatedPixels);
-      onUpdatePixels(updatedPixels);
+      requestAnimationFrame(() => onUpdatePixels(updatedPixels)); // Defer the state update to the next frame
       return updatedPixels;
     });
-
-    // No need to update `pixels` here since it will be handled in the merging step above.
   };
+
+  // Handle Copy Pixels
+  const handleCopy = useCallback(() => {
+    if (selection && pixels && editDesignId) {
+      const { x, y, width, height } = selection;
+
+      // Filter pixels that are part of the current design layer or added during the current session
+      const selectedPixels = pixels.filter(
+        (pixel) =>
+          pixel.designId === editDesignId && // Only include pixels from the current design layer
+          pixel.x >= x &&
+          pixel.y >= y &&
+          pixel.x < x + width &&
+          pixel.y < y + height,
+      );
+
+      // Include edited pixels (those added in the current session)
+      const selectedEditedPixels = editedPixels.filter(
+        (pixel) =>
+          pixel.designId === editDesignId && // Ensure these are part of the current design
+          pixel.x >= x &&
+          pixel.y >= y &&
+          pixel.x < x + width &&
+          pixel.y < y + height,
+      );
+
+      // Combine both arrays, ensuring no duplicates
+      const combinedPixels = [...selectedPixels, ...selectedEditedPixels];
+
+      // Remove any duplicates by creating a Map
+      const uniquePixels = new Map<string, ViewportPixel>();
+      combinedPixels.forEach((pixel) =>
+        uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel),
+      );
+
+      const finalCopiedPixels = Array.from(uniquePixels.values());
+
+      // Set the copy buffer
+      setCopyBuffer(finalCopiedPixels);
+    }
+  }, [selection, pixels, editedPixels, editDesignId]);
+
+  // Handle Paste Pixels
+  const handlePaste = useCallback(
+    (pasteX: number, pasteY: number) => {
+      if (!isEditing || !editDesignId || copyBuffer.length === 0 || !selection)
+        return;
+
+      // Get the top-left corner of the full selection area
+      const { x: selectionX, y: selectionY } = selection;
+
+      // Calculate the offset needed to align the top-left corner of the selection with the paste location
+      const offsetX = pasteX - selectionX;
+      const offsetY = pasteY - selectionY;
+
+      // Apply the offset to all copied pixels
+      const pastedPixels = copyBuffer.map((pixel) => ({
+        ...pixel,
+        x: pixel.x + offsetX,
+        y: pixel.y + offsetY,
+        designId: editDesignId,
+      }));
+
+      setEditedPixels((prevEditedPixels) => {
+        const updatedPixels = [...prevEditedPixels, ...pastedPixels];
+        requestAnimationFrame(() => onUpdatePixels(updatedPixels)); // Defer the state update to the next frame
+        return updatedPixels;
+      });
+    },
+    [copyBuffer, isEditing, editDesignId, onUpdatePixels, selection],
+  );
+
+  // Global keydown listener for copy/paste
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "c") {
+        handleCopy();
+      } else if (e.ctrlKey && e.key === "v") {
+        // Paste at the current cursor position
+        const stage = stageRef.current?.getStage();
+        if (stage) {
+          const pointer = stage.getPointerPosition();
+          if (pointer) {
+            const scale = stage.scaleX();
+            const pasteX = Math.floor(
+              (pointer.x - stage.x()) / (GRID_SIZE * scale),
+            );
+            const pasteY = Math.floor(
+              (pointer.y - stage.y()) / (GRID_SIZE * scale),
+            );
+            handlePaste(pasteX, pasteY);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleCopy, handlePaste]); // Ensure these functions are included in the dependency array
 
   return (
     <Box position="relative" height="100%">
-      <Viewport
-        designId={editDesignId}
-        pixels={pixels}
-        isEditing={isEditing}
-        onPixelPaint={handlePixelPaint}
-        layerOrder={layerOrder} // Pass the updated layerOrder prop
-      />
+      <Box height="100%">
+        <Flex padding={2}>
+          <Wrap direction="row" spacing={2}>
+            {canvases.map((canvas) => (
+              <WrapItem>
+                <Button
+                  key={canvas.id}
+                  onClick={() => onSelectCanvas(canvas)}
+                  colorScheme="teal"
+                  border={
+                    canvas.id === selectedCanvas?.id
+                      ? "2px solid black"
+                      : "1px solid #ccc"
+                  }
+                >
+                  {canvas.canvas_name}
+                </Button>
+              </WrapItem>
+            ))}
+            <WrapItem>
+              <Button onClick={() => onSelectCanvas(null)}>Unassigned</Button>
+            </WrapItem>
+          </Wrap>
+          <Spacer />
+          <IconButton
+            icon={<FaRepeat />}
+            aria-label="Reset viewport"
+            onClick={onResetViewport}
+          />
+        </Flex>
+        <Viewport
+          designId={editDesignId}
+          pixels={pixels}
+          isEditing={isEditing}
+          onPixelPaint={handlePixelPaint}
+          layerOrder={layerOrder}
+          onCopy={handleCopy}
+          onPaste={handlePaste}
+          selection={selection}
+          setSelection={setSelection}
+          stageRef={stageRef} // Pass stageRef to Viewport
+        />
+      </Box>
 
       {isEditing && (
         <Box
@@ -232,25 +490,30 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         >
           <Grid templateColumns={`repeat(${colors.length}, 1fr)`} gap={2}>
             {colors.map((color) => (
-              <Box
+              <Tooltip
                 key={color.Color}
-                w="30px"
-                h="30px"
-                bg={
-                  color.Color === "ClearOnDesign"
-                    ? `url(${clearOnDesignPattern})`
-                    : color.Color === "ClearOnMain"
-                    ? `url(${clearOnMainPattern})`
-                    : color.Color
-                }
-                border={
-                  selectedColor === color.Color
-                    ? "2px solid black"
-                    : "1px solid #ccc"
-                }
-                cursor="pointer"
-                onClick={() => handleColorSelect(color.Color)}
-              />
+                label={color.color_name} // Display color name on hover
+                aria-label={`Tooltip for ${color.color_name}`}
+              >
+                <Box
+                  w="30px"
+                  h="30px"
+                  bg={
+                    color.Color === CLEAR_ON_DESIGN
+                      ? `url(${clearOnDesignPattern})`
+                      : color.Color === CLEAR_ON_MAIN
+                      ? `url(${clearOnMainPattern})`
+                      : color.Color
+                  }
+                  border={
+                    selectedColor === color.Color
+                      ? "2px solid black"
+                      : "1px solid #ccc"
+                  }
+                  cursor="pointer"
+                  onClick={() => handleColorSelect(color.Color)}
+                />
+              </Tooltip>
             ))}
           </Grid>
         </Box>

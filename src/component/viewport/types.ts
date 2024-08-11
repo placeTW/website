@@ -1,14 +1,6 @@
-export interface ViewportProps {
-  designId: string | null;
-  pixels: Pixel[];
-  isEditing?: boolean;
-  onPixelPaint?: (x: number, y: number) => void;
-  layerOrder: string[];
-}
-
-export interface Pixel {
+export interface ViewportPixel {
   x: number;
   y: number;
   color: string;
-  canvas: string;
+  designId: number;
 }

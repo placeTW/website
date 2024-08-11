@@ -1,35 +1,49 @@
-import React, { useState, useEffect } from "react";
+// briefing-room.tsx
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Viewport from "../component/viewport/Viewport";
 import { useAlertContext } from "../context/alert-context";
 import { alertLevels, validAlertLevels } from "../definitions/alert-level";
-import { databaseFetchPixels } from "../api/supabase/database";
-
-interface Pixel { 
-  id: number;
-  x: number;
-  y: number;
-  color: string;
-  canvas: string;
-}
+import { databaseFetchDesigns } from "../api/supabase/database";
+import Konva from "konva"; // Ensure Konva is imported
+import { ViewportPixel } from "../component/viewport/types";
+import { Pixel } from "../types/art-tool";
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { alertLevel, alertMessage } = useAlertContext();
-  const [pixels, setPixels] = useState<Pixel[]>([]); 
+  const [pixels, setPixels] = useState<ViewportPixel[]>([]);
+  const stageRef = useRef<Konva.Stage>(null); // Create the stageRef using useRef
 
   useEffect(() => {
     const fetchPixels = async () => {
-      const designId = "someDesignId"; 
-      const fetchedPixels = await databaseFetchPixels(designId);
-      setPixels(fetchedPixels || []); 
+      const designId = 1; // Replace with the actual design ID or name
+      const designs = await databaseFetchDesigns();
+      if (!designs) {
+        setPixels([]); // Handle the case where designs are not found
+        return;
+      }
+
+      const design = designs.find((d) => d.id === designId || d.id === designId);
+
+      if (design) {
+        const designPixels = design.pixels.map((pixel: Pixel) => ({
+          ...pixel,
+          x: pixel.x + design.x,
+          y: pixel.y + design.y,
+          designId: design.id,
+        }));
+        setPixels(designPixels);
+      } else {
+        setPixels([]); // Handle the case where the design is not found
+      }
     };
 
     fetchPixels();
   }, []);
 
   // Provide a default layer order
-  const layerOrder = ["main"]; // Adjust this based on your requirements
+  const layerOrder = [1]; // Adjust this based on your requirements
 
   return (
     <div>
@@ -43,7 +57,12 @@ const BriefingRoom: React.FC = () => {
           )}
           {!!alertMessage && <p>{alertMessage}</p>}
           {alertLevels.get(alertLevel)?.showViewport && (
-            <Viewport designId="someDesignId" pixels={pixels} layerOrder={layerOrder} />
+            <Viewport 
+              designId={1}
+              pixels={pixels} 
+              layerOrder={layerOrder} 
+              stageRef={stageRef} // Pass the stageRef to Viewport
+            />
           )}
         </div>
       ) : (

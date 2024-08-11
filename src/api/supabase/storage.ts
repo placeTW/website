@@ -1,17 +1,36 @@
-import { supabase } from './index';
+import { Design } from "../../types/art-tool";
+import { supabase } from "./index";
 
-export const uploadThumbnail = async (file: File): Promise<string | null> => {
-  const fileName = `${Date.now()}-${file.name}`;
-  const { error } = await supabase.storage
-    .from('thumbnails')
-    .upload(fileName, file);
+const logSupabaseCalls = import.meta.env.LOG_SUPABASE_CALLS ?? false;
 
-  if (error) {
-    console.error('Error uploading thumbnail:', error);
-    return null;
+export const uploadThumbnail = async (
+  thumbnailBlob: Blob,
+  design: Design,
+): Promise<string> => {
+  // Upload the new thumbnail to Supabase
+  const { data, error: uploadError } = await supabase.storage
+    .from("art-tool-thumbnails")
+    .upload(`${design.id}.png`, thumbnailBlob, {
+      upsert: true, // Allow overwriting if the file already exists
+      contentType: "image/png", // Explicitly set the content type
+    });
+
+  if (uploadError) {
+    if (logSupabaseCalls) {
+      console.error(
+        `[SUPABASE ERROR] Failed to upload thumbnail for design ${design.id}: ${uploadError.message}`,
+      );
+    }
+    throw new Error(uploadError.message);
   }
 
-  const { data } = supabase.storage.from('thumbnails').getPublicUrl(fileName);
+  // Get the public URL of the uploaded image using Supabase SDK
+  const { data: publicUrlData } = supabase.storage
+    .from("art-tool-thumbnails")
+    .getPublicUrl(data.path);
 
-  return data?.publicUrl || null;
+  // Generate a cache-busting URL by appending a timestamp
+  const cacheBustedUrl = `${publicUrlData.publicUrl}?t=${new Date().getTime()}`;
+
+  return cacheBustedUrl;
 };

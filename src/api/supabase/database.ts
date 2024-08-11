@@ -1,32 +1,48 @@
-import { supabase } from "./index";
-
-interface Pixel {
-  id: number;
-  x: number;
-  y: number;
-  color: string;
-  canvas: string;
-}
+import { RealtimeChannel } from "@supabase/supabase-js";
+import { AlertState, Canvas, Color, Design, Pixel } from "../../types/art-tool";
+import { supabase, uploadThumbnail } from "./index";
+import { logSupabaseDatabaseQuery } from "./logging";
 
 // Layers-related functions
 export const databaseCreateDesign = async (
   layerName: string,
   userId: string,
-) => {
-  const { data, error } = await supabase
+): Promise<boolean> => {
+  const createDesignQuery = await supabase
     .from("art_tool_designs")
-    .insert([{ design_name: layerName, created_by: userId }]);
+    .insert([
+      { design_name: layerName, created_by: userId, pixels: [], x: 0, y: 0 },
+    ]);
+
+  const { error } = logSupabaseDatabaseQuery(createDesignQuery, "createDesign");
 
   if (error) {
-    console.error("Error creating layer:", error);
+    return false;
+  }
+
+  return true;
+};
+
+export const databaseFetchCanvases = async (): Promise<Canvas[] | null> => {
+  const fetchCanvasQuery = await supabase
+    .from("art_tool_canvases")
+    .select("*")
+    .returns<Canvas[]>();
+
+  const { data, error } = logSupabaseDatabaseQuery(fetchCanvasQuery, "fetchCanvases");
+
+  if (error) {
     throw new Error(error.message);
   }
 
   return data;
 };
 
-export const databaseFetchDesignsWithUserDetails = async () => {
-  const { data, error } = await supabase.from("art_tool_designs").select(`
+export const databaseFetchDesigns = async (): Promise<Design[] | null> => {
+  const fetchDesignsQuery = await supabase
+    .from("art_tool_designs")
+    .select(
+      `
     id,
     created_at,
     design_name,
@@ -36,405 +52,316 @@ export const databaseFetchDesignsWithUserDetails = async () => {
     art_tool_users:created_by (
       handle,
       rank
+    ),
+    pixels,
+    x,
+    y,
+    canvas,
+    art_tool_canvases:canvas (
+      canvas_name
+    ),
+    status
+  `,
     )
-  `);
+    .eq("is_deleted", false)
+    .returns<Design[]>();
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  const { data } = logSupabaseDatabaseQuery(fetchDesignsQuery, "fetchDesigns");
+
   return data;
 };
 
-export const databaseFetchPixels = async (canvas: string) => {
-  const { data, error } = await supabase
-    .from("art_tool_pixels")
-    .select("*")
-    .eq("canvas", canvas);
-  if (error) {
-    console.error("Error fetching pixel data:", error);
-  } else {
-    console.log("Fetched pixels:", data);
-    return data;
-  }
-};
-
-export const databaseFetchAlertLevel = async () => {
-  const { data, error } = await supabase
+export const databaseFetchAlertLevel = async (): Promise<AlertState | null> => {
+  const fetchAlertLevelQuery = await supabase
     .from("art_tool_alert_state")
     .select("*")
     .eq("id", 1)
-    .single();
+    .single<AlertState>();
 
-  if (error) {
-    console.error("Error fetching alert level:", error);
-    return null;
-  }
+  const { data } = logSupabaseDatabaseQuery(
+    fetchAlertLevelQuery,
+    "fetchAlertLevel",
+  );
 
   return data;
 };
 
-export const databaseUpdateAlertLevel = async (level: number) => {
-  const { error } = await supabase
+export const databaseUpdateAlertLevel = async (
+  level: number,
+): Promise<boolean> => {
+  const updateAlertLevelQuery = await supabase
     .from("art_tool_alert_state")
     .update({ state: level })
     .eq("id", 1);
 
+  const { error } = logSupabaseDatabaseQuery(
+    updateAlertLevelQuery,
+    "updateAlertLevel",
+  );
+
+  if (error) {
+    return false;
+  }
+
+  return true;
+};
+
+export const databaseDeleteDesign = async (designId: number): Promise<void> => {
+  const deleteDesignQuery = await supabase
+    .from("art_tool_designs")
+    .update({ is_deleted: true })
+    .eq("id", designId);
+
+  const { error } = logSupabaseDatabaseQuery(deleteDesignQuery, "deleteDesign");
+
   if (error) {
     throw new Error(error.message);
   }
 };
 
-export const databaseDeleteLayerAndPixels = async (layerName: string) => {
-  const deletePixels = supabase
-    .from("art_tool_pixels")
-    .delete()
-    .eq("canvas", layerName);
-
-  const deleteLayer = supabase
-    .from("art_tool_designs")
-    .delete()
-    .eq("design_name", layerName);
-
-  const [pixelsError, layerError] = await Promise.all([
-    deletePixels,
-    deleteLayer,
-  ]);
-
-  if (pixelsError.error) {
-    console.error("Error deleting pixels:", pixelsError.error);
-    throw new Error(pixelsError.error.message);
-  }
-
-  if (layerError.error) {
-    console.error("Error deleting layer:", layerError.error);
-    throw new Error(layerError.error.message);
-  }
-
-  return true;
-};
-
 // Function for liking a design
-export const likeDesign = async (designId: string, userId: string) => {
-  const { data, error: fetchError } = await supabase
+export const likeDesign = async (
+  design: Design,
+  userId: string,
+): Promise<void> => {
+  const updatedLikedByList = design.liked_by.includes(userId)
+    ? design.liked_by
+    : [...design.liked_by, userId];
+
+  const updateLikesQuery = await supabase
     .from("art_tool_designs")
-    .select("liked_by")
-    .eq("id", designId)
-    .single();
+    .update({ liked_by: updatedLikedByList })
+    .eq("id", design.id);
 
-  if (fetchError) {
-    console.error("Error fetching liked_by array:", fetchError);
-    throw new Error(fetchError.message);
-  }
-
-  const updatedLikedBy = data.liked_by.includes(userId)
-    ? data.liked_by
-    : [...data.liked_by, userId];
-
-  const { error: updateError } = await supabase
-    .from("art_tool_designs")
-    .update({ liked_by: updatedLikedBy })
-    .eq("id", designId);
+  const { error: updateError } = logSupabaseDatabaseQuery(
+    updateLikesQuery,
+    "likeDesign",
+  );
 
   if (updateError) {
-    console.error("Error liking design:", updateError);
     throw new Error(updateError.message);
   }
-
-  return true;
 };
 
 // Function for unliking a design
-export const unlikeDesign = async (designId: string, userId: string) => {
-  const { data, error: fetchError } = await supabase
-    .from("art_tool_designs")
-    .select("liked_by")
-    .eq("id", designId)
-    .single();
+export const unlikeDesign = async (
+  design: Design,
+  userId: string,
+): Promise<void> => {
+  const updatedLikedBy = design.liked_by.filter((id: string) => id !== userId);
 
-  if (fetchError) {
-    console.error("Error fetching liked_by array:", fetchError);
-    throw new Error(fetchError.message);
-  }
-
-  const updatedLikedBy = data.liked_by.filter((id: string) => id !== userId);
-
-  const { error: updateError } = await supabase
+  const updateLikesQuery = await supabase
     .from("art_tool_designs")
     .update({ liked_by: updatedLikedBy })
-    .eq("id", designId);
+    .eq("id", design.id);
+
+  const { error: updateError } = logSupabaseDatabaseQuery(
+    updateLikesQuery,
+    "unlikeDesign",
+  );
 
   if (updateError) {
-    console.error("Error unliking design:", updateError);
     throw new Error(updateError.message);
   }
-
-  return true;
 };
-
-export const databaseFetchColors = async () => {
-  const { data, error } = await supabase
-    .from("art_tool_colors")
-    .select("Color, color_sort")
-    .order("color_sort", { ascending: true });
-
-  if (error) {
-    console.error("Error fetching colors:", error);
-    return [];
-  }
-
-  return data;
-};
-
-interface Pixel {
-  id: number;
-  x: number;
-  y: number;
-  color: string;
-  canvas: string;
-}
 
 // Function to save edited pixels
 export const saveEditedPixels = async (
-  canvas: string,
-  pixels: Omit<Pixel, "id">[],
-) => {
-  try {
-    console.log("saveEditedPixels received pixels:", pixels);  // Log received pixels
-
-    // Step 1: Clear existing pixels for the design
-    const { error: deleteError } = await supabase
-      .from("art_tool_pixels")
-      .delete()
-      .eq("canvas", canvas);
-
-    if (deleteError) {
-      console.error("Error deleting existing pixels:", deleteError);
-      throw new Error(deleteError.message);
+  design: Design,
+  pixels: Pixel[],
+): Promise<Design> => {
+  // Get the top left pixel of the design
+  const topLeftPixel = pixels.reduce((acc, curr) => {
+    if (curr.x < acc.x || (curr.x === acc.x && curr.y < acc.y)) {
+      return curr;
     }
+    return acc;
+  }, { x: Infinity, y: Infinity }); // Provide initial value
 
-    // Step 2: Filter out pixels marked as "ClearOnDesign"
-    const filteredPixels = pixels.filter((pixel) => pixel.color !== "ClearOnDesign");
+  // Copy and offset the pixels to the top left corner
+  const pixelsToInsertCopy = pixels.map((pixel) => ({
+    ...pixel,
+    x: pixel.x - topLeftPixel.x,
+    y: pixel.y - topLeftPixel.y,
+  }));
 
-    console.log("Filtered Pixels to save:", filteredPixels);
+  //Update the design with the new pixels
+  const savePixelsQuery = await supabase
+    .from("art_tool_designs")
+    .update({
+      pixels: pixelsToInsertCopy,
+      x: topLeftPixel.x + design.x,
+      y: topLeftPixel.y + design.y,
+    })
+    .eq("id", design.id);
 
-    if (filteredPixels.length === 0) {
-      console.log("No pixels to save after filtering ClearOnDesign.");
-      return true; // No pixels to save, return early
-    }
+  const { error: updateError } = logSupabaseDatabaseQuery(
+    savePixelsQuery,
+    "saveEditedPixels",
+  );
 
-    // Prepare pixels for insertion
-    const pixelsToInsert = filteredPixels.map((pixel) => ({
-      x: pixel.x,
-      y: pixel.y,
-      color: pixel.color,
-      canvas: pixel.canvas,
-    }));
-
-    // Extra debug logging: Check if any pixel still has an 'id'
-    pixelsToInsert.forEach((pixel, index) => {
-      console.log(`Pixel ${index} to insert:`, pixel);
-    });
-
-    // Step 3: Insert the remaining pixels
-    const { error: insertError } = await supabase
-      .from("art_tool_pixels")
-      .insert(pixelsToInsert);
-
-    if (insertError) {
-      console.error("Error inserting pixels:", insertError);
-      throw new Error(insertError.message);
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error saving edited pixels:", error);
-    throw error;
+  if (updateError) {
+    throw new Error(updateError.message);
   }
+
+  // Copy the design with the new pixels
+  const updatedDesign = { ...design, pixels: pixelsToInsertCopy };
+
+  return updatedDesign;
 };
 
-
-
-
-
-
-
-export const uploadThumbnailToSupabase = async (thumbnailBlob: Blob, designId: string) => {
+export const uploaDesignThumbnailToSupabase = async (
+  thumbnailBlob: Blob,
+  design: Design,
+): Promise<void> => {
   const { VITE_SUPABASE_URL } = import.meta.env;
+  const designId = design.id;
+  const oldThumbnailUrl = design.design_thumbnail;
 
-  // Step 1: Fetch the current thumbnail URL from the database
-  const { data: designData, error: designError } = await supabase
-    .from('art_tool_designs')
-    .select('design_thumbnail')
-    .eq('id', designId)
-    .single();
+  const newThumbnailUrl = await uploadThumbnail(thumbnailBlob, design);
 
-  if (designError) {
-    console.error("Error fetching current thumbnail URL:", designError);
-    throw new Error(designError.message);
-  }
+  // Update the thumbnail URL in the database to the cache-busted one
+  await updateDesignThumbnail(designId, newThumbnailUrl);
 
-  const oldThumbnailUrl = designData?.design_thumbnail;
-
-  // Step 2: Upload the new thumbnail to Supabase
-  const { error: uploadError } = await supabase.storage
-    .from('art-tool-thumbnails')
-    .upload(`${designId}.png`, thumbnailBlob, {
-      upsert: true, // Allow overwriting if the file already exists
-      contentType: 'image/png', // Explicitly set the content type
-    });
-
-  if (uploadError) {
-    console.error("Error uploading thumbnail:", uploadError);
-    throw new Error(uploadError.message);
-  }
-
-  // Step 3: Get the public URL of the uploaded image using Supabase SDK
-  const { data: publicUrlData } = supabase
-    .storage
-    .from('art-tool-thumbnails')
-    .getPublicUrl(`${designId}.png`);
-
-    // Generate a cache-busting URL by appending a timestamp
-  const cacheBustedUrl = `${publicUrlData.publicUrl}?t=${new Date().getTime()}`;
-
-  // Step 4: Update the thumbnail URL in the database to the cache-busted one
-  await updateDesignThumbnail(designId, cacheBustedUrl);
-
-  // Step 5: Delete the old thumbnail from Supabase storage if it exists
-  if (oldThumbnailUrl && !oldThumbnailUrl.includes('loading.gif')) {
+  // Delete the old thumbnail from Supabase storage if it exists
+  if (oldThumbnailUrl && !oldThumbnailUrl.includes("loading.gif")) {
     // Extract the file path from the old thumbnail URL
-    const filePath = oldThumbnailUrl.split(`${VITE_SUPABASE_URL}/storage/v1/object/public/art-tool-thumbnails/`)[1];
+    const filePath = oldThumbnailUrl.split(
+      `${VITE_SUPABASE_URL}/storage/v1/object/public/art-tool-thumbnails/`,
+    )[1];
     if (filePath) {
       const { error: deleteError } = await supabase.storage
-        .from('art-tool-thumbnails')
+        .from("art-tool-thumbnails")
         .remove([`${filePath}`]);
 
       if (deleteError) {
-        console.error("Error deleting old thumbnail:", deleteError);
         throw new Error(deleteError.message);
       }
     }
   }
-
-  return cacheBustedUrl; // Return the cache-busted URL
 };
 
 // Update the design with the new thumbnail URL
-export const updateDesignThumbnail = async (designId: string, thumbnailUrl: string) => {
-  const { data, error } = await supabase
+const updateDesignThumbnail = async (
+  designId: number,
+  thumbnailUrl: string,
+): Promise<void> => {
+  const updateThumbnailQuery = await supabase
     .from("art_tool_designs")
     .update({ design_thumbnail: thumbnailUrl })
     .eq("id", designId);
 
+  const { error } = logSupabaseDatabaseQuery(
+    updateThumbnailQuery,
+    "updateDesignThumbnail",
+  );
+
   if (error) {
-    console.error("Error updating design thumbnail URL:", error);
     throw new Error(error.message);
   }
-
-  return data;
 };
 
+export const updateDesignCanvas = async (
+  designId: number,
+  canvasId: number,
+): Promise<void> => {
+  const updateDesignCanvasQuery = await supabase
+    .from("art_tool_designs")
+    .update({ canvas: canvasId })
+    .eq("id", designId);
 
-export const databaseMergeDesignIntoBaseline = async (
-  designId: string,
-  baseline: string,
-) => {
-  try {
-    console.log(`Starting merge for designId: ${designId} into baseline: ${baseline}`);
+  const { error } = logSupabaseDatabaseQuery(
+    updateDesignCanvasQuery,
+    "updateDesignCanvas",
+  );
 
-    // Fetch the design's name from the designs table based on the ID
-    const { data: designData, error: designError } = await supabase
-      .from("art_tool_designs")
-      .select("design_name")
-      .eq("id", designId)
-      .single();
+  if (error) {
+    throw new Error(error.message);
+  }
+};
 
-    if (designError || !designData) {
-      throw new Error(`Error fetching design name: ${designError?.message}`);
+// Function to remove a Supabase channel
+export const removeSupabaseChannel = (subscription: RealtimeChannel) => {
+  supabase.removeChannel(subscription);
+};
+
+// Color-related database functions moved from color-palette-manager.tsx
+export const databaseFetchColors = async (): Promise<Color[]> => {
+  const fetchColorsQuery = await supabase
+    .from("art_tool_colors")
+    .select("Color, color_sort, color_name") // Include color_name
+    .order("color_sort", { ascending: true })
+    .returns<Color[]>();
+
+  const { data } = logSupabaseDatabaseQuery(fetchColorsQuery, "fetchColors");
+
+  return data || [];
+};
+
+export const insertColor = async (
+  color: string,
+  colorName: string,
+  sort: number,
+): Promise<void> => {
+  const insertColorQuery = await supabase.from("art_tool_colors").insert({
+    Color: color,
+    color_name: colorName,
+    color_sort: sort,
+  });
+
+  const { error } = logSupabaseDatabaseQuery(insertColorQuery, "insertColor");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const updateColor = async (
+  color: string,
+  newColor: string,
+  newColorName: string,
+): Promise<void> => {
+  const updateColorQuery = await supabase
+    .from("art_tool_colors")
+    .update({ Color: newColor, color_name: newColorName })
+    .eq("Color", color);
+
+  const { error } = logSupabaseDatabaseQuery(updateColorQuery, "updateColor");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const updateColorSortOrder = async (
+  updatedColors: Color[],
+): Promise<void> => {
+  for (let i = 0; i < updatedColors.length; i++) {
+    const updateColorSortOrderQuery = await supabase
+      .from("art_tool_colors")
+      .update({ color_sort: i + 1 })
+      .eq("Color", updatedColors[i].Color);
+
+    const { error } = logSupabaseDatabaseQuery(
+      updateColorSortOrderQuery,
+      "updateColorSortOrder",
+    );
+
+    if (error) {
+      throw new Error(error.message);
     }
+  }
+};
 
-    const designName = designData.design_name;
-    console.log(`Fetched design name: ${designName}`);
+export const deleteColor = async (color: string): Promise<void> => {
+  const deleteColorQuery = await supabase
+    .from("art_tool_colors")
+    .delete()
+    .eq("Color", color);
 
-    // Fetch the current baseline pixels
-    const { data: baselinePixels, error: fetchBaselineError } = await supabase
-      .from("art_tool_pixels")
-      .select("*")
-      .eq("canvas", baseline);
+  const { error } = logSupabaseDatabaseQuery(deleteColorQuery, "deleteColor");
 
-    if (fetchBaselineError) {
-      console.error(`Error fetching baseline: ${fetchBaselineError.message}`);
-      throw new Error(`Error fetching baseline: ${fetchBaselineError.message}`);
-    }
-
-    console.log(`Baseline pixels fetched:`, baselinePixels);
-
-    // Fetch the selected design's pixels using the design name
-    const { data: designPixels, error: fetchDesignError } = await supabase
-      .from("art_tool_pixels")
-      .select("*")
-      .eq("canvas", designName);
-
-    if (fetchDesignError) {
-      console.error(`Error fetching design pixels: ${fetchDesignError.message}`);
-      throw new Error(`Error fetching design pixels: ${fetchDesignError.message}`);
-    }
-
-    console.log(`Design pixels fetched:`, designPixels);
-
-    // Create a map of the baseline pixels
-    const baselinePixelMap = new Map<string, Pixel>();
-    baselinePixels?.forEach((pixel: Pixel) => {
-      baselinePixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
-    });
-
-    console.log(`Baseline pixel map created.`);
-
-    // Apply merge logic: handle ClearOnMain pixels and merge others
-    designPixels?.forEach((pixel: Pixel) => {
-      if (pixel.color === "ClearOnMain") {
-        // Remove the corresponding pixel in the baseline
-        baselinePixelMap.delete(`${pixel.x}-${pixel.y}`);
-      } else if (pixel.color !== "ClearOnDesign") {
-        // Update the baseline with new pixels (excluding ClearOnDesign)
-        baselinePixelMap.set(`${pixel.x}-${pixel.y}`, { ...pixel, canvas: baseline });
-      }
-    });
-
-    const mergedPixels = Array.from(baselinePixelMap.values());
-    console.log(`Pixels after merge logic applied:`, mergedPixels);
-
-    // Clear existing baseline pixels before inserting
-    const { error: deleteError } = await supabase
-      .from("art_tool_pixels")
-      .delete()
-      .eq("canvas", baseline);
-
-    if (deleteError) {
-      console.error(`Error clearing baseline pixels: ${deleteError.message}`);
-      throw new Error(`Error clearing baseline pixels: ${deleteError.message}`);
-    }
-
-    console.log(`Baseline pixels cleared.`);
-
-    // Prepare pixels for insertion by omitting the 'id' field
-    const pixelsToInsert = mergedPixels.map(({ id, ...rest }) => rest);
-
-    // Insert the merged pixels into the baseline
-    const { error: insertError } = await supabase
-      .from("art_tool_pixels")
-      .insert(pixelsToInsert);
-
-    if (insertError) {
-      console.error(`Error inserting merged pixels: ${insertError.message}`);
-      throw new Error(`Error inserting merged pixels: ${insertError.message}`);
-    }
-
-    console.log(`Merged pixels inserted successfully.`);
-
-    return true;
-  } catch (error) {
-    console.error("Error in databaseMergeDesignIntoBaseline:", error);
-    throw error;
+  if (error) {
+    throw new Error(error.message);
   }
 };

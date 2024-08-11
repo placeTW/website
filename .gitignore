@@ -36,11 +36,12 @@ all_code_dump.txt
 large_relevant_files.txt
 find_large_files.sh
 concat_files.sh
+concat_select_files.sh
+concatenated_code.txt
 
 # Exclude Dev Container Related Files
 .devcontainer/
 .devcontainer-internal.json
 .github/dependabot.yml
 .dockerignore
-concat_select_files.sh
-concatenated_code.txt
+

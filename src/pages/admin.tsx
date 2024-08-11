@@ -4,6 +4,7 @@ import { functionsFetchCanModerate, functionsUpdateUserStatus } from '../api/sup
 import { UserType } from '../types/users';
 import { useTranslation } from 'react-i18next';
 import { useUserContext } from '../context/user-context';
+import ColorPaletteManager from '../component/art_tool/color-palette-manager';
 
 const AdminPage = () => {
   const { t } = useTranslation();
@@ -96,6 +97,9 @@ const AdminPage = () => {
       </Heading>
       {error && <Box mb={4} color="red.500">{error}</Box>}
       {renderTable()}
+      <Box mt={8}>
+        <ColorPaletteManager />
+      </Box>
     </Box>
   );
 };

@@ -1,71 +1,75 @@
-import { FC, useEffect, useState } from "react";
 import {
   Box,
   Button,
   Card,
   CardBody,
+  Flex,
   Heading,
   IconButton,
   Image,
   Text,
   useToast,
-  Flex,
 } from "@chakra-ui/react";
+import { FC, useEffect, useState } from "react";
 import {
+  FaArrowRightFromBracket,
   FaCloudArrowUp,
-  FaCodeMerge,
   FaEye,
   FaEyeSlash,
   FaHeart,
+  FaImage,
+  FaLayerGroup,
   FaPen,
   FaTrash,
-  FaArrowRightFromBracket,
-  FaImage,
 } from "react-icons/fa6";
 import {
-  databaseDeleteLayerAndPixels,
+  databaseDeleteDesign,
   likeDesign,
   unlikeDesign,
-  databaseMergeDesignIntoBaseline,
+  updateDesignCanvas,
 } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
-import { DesignInfo } from "../../types/art-tool";
+import { Canvas, Design } from "../../types/art-tool";
 import ImageModal from "../image-modal";
-import MergePopup from "./merge-popup";
+import SetDesignCanvas from "./set-design-canvas";
 
 interface DesignCardProps {
-  design: DesignInfo;
-  userId: string;
-  userHandle: string;
+  design: Design;
+  canvasName: string;
   isEditing: boolean;
-  onEdit: (designId: string) => boolean;
+  onEdit: (designId: number) => boolean;
   onCancelEdit: () => void;
-  onToggleVisibility: (designName: string, isVisible: boolean) => void;
+  onToggleVisibility: (designId: number, isVisible: boolean) => void;
   isVisible: boolean;
   onSubmitEdit: () => void;
+  onSetCanvas: (designId: number, canvasId: number) => void;
+  onDeleted: () => void;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
   design,
-  userId,
-  userHandle,
+  canvasName,
   isEditing,
   onEdit,
   onCancelEdit,
   onToggleVisibility,
   isVisible,
   onSubmitEdit,
+  onSetCanvas,
+  onDeleted,
 }) => {
-  const { currentUser, rankNames, users } = useUserContext();
+  const { currentUser, rankNames } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
-    currentUser ? design.liked_by.includes(currentUser.user_id) : false
+    currentUser ? design.liked_by.includes(currentUser.user_id) : false,
   );
-  const [isMergePopupOpen, setIsMergePopupOpen] = useState(false);
+  const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
-    setIsLiked(currentUser ? design.liked_by.includes(currentUser.user_id) : false);
+    setIsLiked(
+      currentUser ? design.liked_by.includes(currentUser.user_id) : false,
+    );
   }, [design.liked_by, currentUser]);
 
   const handleImageClick = () => {
@@ -74,7 +78,7 @@ const DesignCard: FC<DesignCardProps> = ({
 
   const handleToggleVisibility = () => {
     const newVisibility = !isVisible;
-    onToggleVisibility(design.design_name, newVisibility);
+    onToggleVisibility(design.id, newVisibility);
   };
 
   const handleLike = async () => {
@@ -82,10 +86,10 @@ const DesignCard: FC<DesignCardProps> = ({
 
     try {
       if (isLiked) {
-        await unlikeDesign(design.id, currentUser.user_id);
+        await unlikeDesign(design, currentUser.user_id);
         setIsLiked(false);
       } else {
-        await likeDesign(design.id, currentUser.user_id);
+        await likeDesign(design, currentUser.user_id);
         setIsLiked(true);
       }
     } catch (error) {
@@ -96,13 +100,13 @@ const DesignCard: FC<DesignCardProps> = ({
         duration: 3000,
         isClosable: true,
       });
-      console.error("Error liking/unliking design:", error);
     }
   };
 
   const handleDelete = async () => {
     try {
-      await databaseDeleteLayerAndPixels(design.design_name);
+      await databaseDeleteDesign(design.id);
+      onDeleted(); // Update the parent
       toast({
         title: "Design deleted.",
         description: `${design.design_name} has been removed successfully.`,
@@ -118,7 +122,6 @@ const DesignCard: FC<DesignCardProps> = ({
         duration: 3000,
         isClosable: true,
       });
-      console.error("Error deleting design:", error);
     }
   };
 
@@ -132,37 +135,35 @@ const DesignCard: FC<DesignCardProps> = ({
     }
   };
 
-  const handleMerge = () => {
-    setIsMergePopupOpen(true);
+  const handleAddToCanvas = () => {
+    setIsSetCanvasPopupOpen(true);
   };
 
-  const handleMergeDecision = async (destination: string) => {
-    setIsMergePopupOpen(false);
+  const handleSetCanvasDecision = async (canvas: Canvas | null) => {
+    setIsSetCanvasPopupOpen(false);
 
-    if (destination === "cancel") {
-      return;
+    if (!canvas) {
+      return; // Cancel if no canvas is selected
     }
 
     try {
-      console.log(`Merging design '${design.design_name}' into baseline '${destination}'.`);
-      const mergeResult = await databaseMergeDesignIntoBaseline(design.id, destination);
-
-      console.log("Merge result:", mergeResult);
+      await updateDesignCanvas(design.id, canvas.id);
+      onSetCanvas(design.id, canvas.id); // Update the parent component
 
       toast({
-        title: "Merge Successful",
-        description: `${design.design_name} has been merged into the ${destination} baseline.`,
+        title: "Set Canvas for Design",
+        description: `${canvas.canvas_name} has been set as the canvas for ${design.design_name}`,
         status: "success",
         duration: 3000,
         isClosable: true,
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      console.error("Error merging design:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
 
       toast({
-        title: "Merge Failed",
-        description: `Failed to merge design: ${errorMessage}`,
+        title: "Error",
+        description: `Failed to add design to canvas: ${errorMessage}`,
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -175,18 +176,12 @@ const DesignCard: FC<DesignCardProps> = ({
     (currentUser.rank === "A" ||
       currentUser.rank === "B" ||
       currentUser.user_id === design.created_by);
-  const isCreator =
-    currentUser && currentUser.user_id === design.created_by;
-  const canMerge =
-    currentUser && (currentUser.rank === "A" || currentUser.rank === "B");
-
-  const user = users.find((u) => u.user_id === userId);
-  const rankName = user ? rankNames[user.rank] : "Unknown";
+  const isCreator = currentUser && currentUser.user_id === design.created_by;
 
   return (
     <>
       <Card
-        bg="white" // Ensure the background of the entire card is white
+        bg="white"
         width="100%"
         maxWidth="4in"
         minWidth="3in"
@@ -224,7 +219,8 @@ const DesignCard: FC<DesignCardProps> = ({
                   justifyContent="center"
                   background="gray.100"
                 >
-                  <FaImage size="50%" color="white" /> {/* Inverted image icon */}
+                  <FaImage size="50%" color="white" />{" "}
+                  {/* Inverted image icon */}
                 </Box>
               }
               height="100%"
@@ -252,17 +248,26 @@ const DesignCard: FC<DesignCardProps> = ({
             justifyContent="space-between"
             p={2}
             width="100%"
-            bg={isEditing ? "blue.100" : "white"} // Only the right side turns blue
+            bg={isEditing ? "blue.100" : "white"}
           >
             <Box>
               <Heading fontSize={"md"}>{design.design_name}</Heading>
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
-                {rankName} {userHandle}
+                {rankNames[design.art_tool_users.rank] ?? "Unknown"}{" "}
+                {design.art_tool_users.handle}
+              </Text>
+              <Text color={"gray.600"} fontWeight={400} fontSize={"sm"}>
+                {canvasName}
               </Text>
             </Box>
             <Box display="flex" justifyContent="flex-end" gap={2}>
               {isCreator && !isEditing && (
-                <IconButton icon={<FaPen />} aria-label="Edit" onClick={handleEditToggle} size="sm" />
+                <IconButton
+                  icon={<FaPen />}
+                  aria-label="Edit"
+                  onClick={handleEditToggle}
+                  size="sm"
+                />
               )}
               {isEditing && (
                 <>
@@ -280,11 +285,19 @@ const DesignCard: FC<DesignCardProps> = ({
                   />
                 </>
               )}
-              {canMerge && (
-                <IconButton icon={<FaCodeMerge />} aria-label="Merge" onClick={handleMerge} size="sm" />
-              )}
+              <IconButton
+                icon={<FaLayerGroup />}
+                aria-label="Add to Canvas"
+                onClick={handleAddToCanvas}
+                size="sm"
+              />
               {isAdminOrCreator && (
-                <IconButton icon={<FaTrash />} aria-label="Delete" onClick={handleDelete} size="sm" />
+                <IconButton
+                  icon={<FaTrash />}
+                  aria-label="Delete"
+                  onClick={handleDelete}
+                  size="sm"
+                />
               )}
             </Box>
           </Flex>
@@ -299,10 +312,10 @@ const DesignCard: FC<DesignCardProps> = ({
         }
         altText={design.design_name}
       />
-      <MergePopup
-        isOpen={isMergePopupOpen}
-        onClose={() => setIsMergePopupOpen(false)}
-        onMerge={handleMergeDecision}
+      <SetDesignCanvas
+        isOpen={isSetCanvasPopupOpen}
+        onClose={() => setIsSetCanvasPopupOpen(false)}
+        onSetCanvas={handleSetCanvasDecision}
       />
     </>
   );

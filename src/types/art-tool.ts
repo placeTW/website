@@ -1,21 +1,52 @@
 // src/types/art-tool.ts
 
-export interface DesignInfo {
-  id: string;
+export enum DesignStatus {
+  DRAFT,
+  SUBMITTED,
+  CURRENT,
+  ARCHIVED,
+}
+
+export interface Design {
+  id: number;
   design_name: string;
   design_thumbnail: string;
   created_by: string;
-  handle: string;
-  rank: string;
+  art_tool_users: {
+    handle: string;
+    rank: string;
+  };
   rank_name: string; // Ensure this property is included
   liked_by: string[];
+  pixels: Pixel[];
+  x: number;
+  y: number;
+  canvas: number;
+  art_tool_canvases: {
+    canvas_name: string;
+  } | null;
+  status: DesignStatus;
 }
 
-
 export interface Pixel {
-  id?: number;
   x: number;
   y: number;
   color: string;
-  canvas: string;
+}
+
+export interface Canvas {
+  id: number;
+  canvas_name: string;
+}
+
+export interface Color {
+  Color: string;
+  color_sort: number;
+  color_name: string;
+}
+
+export interface AlertState {
+  id: number;
+  state: number;
+  message: string;
 }
