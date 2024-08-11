@@ -18,7 +18,7 @@ interface ViewportProps {
   >;
   onCopy?: () => void;
   onPaste?: (x: number, y: number) => void;
-  stageRef: React.RefObject<Konva.Stage>; // Include stageRef in the props
+  stageRef: React.RefObject<Konva.Stage>;
 }
 
 const Viewport: React.FC<ViewportProps> = ({
@@ -31,7 +31,7 @@ const Viewport: React.FC<ViewportProps> = ({
   setSelection,
   onCopy,
   onPaste,
-  stageRef, // Destructure stageRef
+  stageRef,
 }) => {
   const [hoveredPixel, setHoveredPixel] = useState<{
     x: number;
@@ -131,6 +131,10 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   };
 
+  useEffect(() => {
+    console.log("Viewport: pixels updated", pixels);
+  }, [pixels]);
+
   return (
     <div
       className="viewport-container"
@@ -151,7 +155,7 @@ const Viewport: React.FC<ViewportProps> = ({
       <Stage
         width={dimensions.width}
         height={dimensions.height}
-        ref={stageRef} // Use stageRef here
+        ref={stageRef}
         onWheel={(e) => {
           wheelHandler(e);
           handleZoom();
@@ -184,7 +188,7 @@ const Viewport: React.FC<ViewportProps> = ({
               }
               width={(dimensions.width * 5) / zoomLevel}
               height={(dimensions.height * 5) / zoomLevel}
-              fill="#f5f5f5" // A lighter grey shade, halfway between #eeeeee and white
+              fill="#f5f5f5"
             />
           )}
 

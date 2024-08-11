@@ -1,8 +1,12 @@
 import React, { useRef } from 'react';
 import Konva from "konva";
 import { GRID_SIZE } from "../constants";
+import UndoManager from '../../viewport/utils/undo-manager'; // Import UndoManager
 
 Konva.dragButtons = [0, 2];
+
+// Create an instance of UndoManager with a specified limit for undo history
+const undoManager = new UndoManager(10); // Adjust the limit value as needed
 
 export const mouseHandlers = (
   onPixelPaint?: (x: number, y: number) => void,
@@ -20,7 +24,7 @@ export const mouseHandlers = (
   onPaste?: (x: number, y: number) => void,
 ) => {
   const mousePosition = useRef({ x: 0, y: 0 }); // To store the latest mouse position
-  const isMouseLeftDown = useRef(false); // New variable to track the left mouse button state
+  const isMouseLeftDown = useRef(false); // Track the left mouse button state
   const isSelecting = useRef(false); // Track whether we are in selection mode
 
   return {
@@ -28,7 +32,6 @@ export const mouseHandlers = (
       const stage = e.target.getStage();
       if (!stage || !stageRef?.current) return;
 
-      
       // Check if the left mouse button is down (button === 0)
       if (e.evt.button === 0) {
         isMouseLeftDown.current = true; // Set flag when left mouse button is down
@@ -62,7 +65,6 @@ export const mouseHandlers = (
       const stage = e.target.getStage();
       if (!stage || !stageRef?.current) return;
 
-     
       // Check if the left mouse button is released (button === 0)
       if (e.evt.button === 0) {
         isMouseLeftDown.current = false; // Reset flag when left mouse button is released
@@ -114,6 +116,12 @@ export const mouseHandlers = (
       } else if (e.ctrlKey && e.key === "v" && onPaste) {
         // Use the stored mouse position to handle pasting
         onPaste(mousePosition.current.x, mousePosition.current.y); // Handle paste
+      } else if (e.ctrlKey && e.key === "z" && undoManager.hasHistory()) {
+        const previousState = undoManager.undo();
+        if (previousState) {
+          console.log("Undoing state: ", previousState); // Log the state being undone
+          // Perform any additional actions here, like updating the state with the undone pixels
+        }
       }
     },
 
