@@ -13,7 +13,6 @@ export default class UndoManager {
   }
 
   addState(state: UndoState) {
-    console.log("Adding state to history: ", state);
     this.history.push(state);
     if (this.history.length > this.limit) {
       this.history.shift(); // Remove the oldest state if history exceeds limit
@@ -24,7 +23,6 @@ export default class UndoManager {
   undo(): UndoState | null {
     if (this.history.length > 0) {
       const previousState = this.history.pop();
-      console.log("Undoing state: ", previousState);
       this.logStackSize();
       return previousState || null;
     }
@@ -42,6 +40,5 @@ export default class UndoManager {
   }
 
   private logStackSize() {
-    console.log(`Undo stack size: ${this.history.length}`);
   }
 }

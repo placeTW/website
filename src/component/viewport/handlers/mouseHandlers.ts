@@ -119,7 +119,6 @@ export const mouseHandlers = (
       } else if (e.ctrlKey && e.key === "z" && undoManager.hasHistory()) {
         const previousState = undoManager.undo();
         if (previousState) {
-          console.log("Undoing state: ", previousState); // Log the state being undone
           // Perform any additional actions here, like updating the state with the undone pixels
         }
       }

@@ -132,7 +132,6 @@ const Viewport: React.FC<ViewportProps> = ({
   };
 
   useEffect(() => {
-    console.log("Viewport: pixels updated", pixels);
   }, [pixels]);
 
   return (
