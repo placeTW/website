@@ -64,7 +64,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const stageRef = useRef<Konva.Stage>(null);
 
   const undoManager = useRef(new UndoManager(10)).current;
-  const pixelCache = useRef<Map<number, ViewportPixel[]>>(new Map()); // Cache for pixels
+  const pixelCache = useRef<Map<number, ViewportPixel[]>>(new Map());
+  const dragInProgress = useRef(false);
+  const dragPixels = useRef<ViewportPixel[]>([]);
 
   const createCheckerboardPattern = (
     color1: string,
@@ -100,11 +102,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       return [];
     }
 
-    // Check if all layers are already cached
     const cachedLayers = layers.filter((layer) => pixelCache.current.has(layer));
     const layersToFetch = layers.filter((layer) => !cachedLayers.includes(layer));
 
-    // Fetch only the layers that are not cached
     if (layersToFetch.length > 0) {
       const designs = await databaseFetchDesigns();
       const fetchedPixels = await Promise.all(
@@ -117,7 +117,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               y: pixel.y + design.y,
               designId: design.id,
             }));
-            pixelCache.current.set(layer, pixels); // Cache the fetched pixels
+            pixelCache.current.set(layer, pixels);
             return pixels;
           }
           return [];
@@ -129,27 +129,22 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       ].flat();
     }
 
-    // If all layers are cached, return the cached pixels
     return cachedLayers.map((layer) => pixelCache.current.get(layer)!).flat();
   };
 
-  // Fetch pixels whenever visibleLayers change
   useEffect(() => {
     const updatePixels = async () => {
       if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(visibleLayers)) {
         previousVisibleLayers.current = visibleLayers;
         const newPixels = await fetchPixels(visibleLayers);
-        // Only update pixels if they have actually changed
         if (JSON.stringify(newPixels) !== JSON.stringify(pixels)) {
           setPixels(newPixels);
         }
       }
     };
     updatePixels();
-    // Add necessary dependencies
   }, [visibleLayers]);
 
-  // Real-time updates from Supabase
   useEffect(() => {
     const pixelSubscription = supabase
       .channel("realtime-art_tool_designs")
@@ -171,7 +166,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                   }),
                 );
 
-                // Update the cache for the updated design
                 pixelCache.current.set(updatedDesign.id, updatedPixels);
 
                 const pixelMap = new Map<string, ViewportPixel>();
@@ -272,7 +266,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
     if (selection && isEditing && editDesignId) {
       const { x, y, width, height } = selection;
-
       const newPixels: ViewportPixel[] = [];
 
       for (let i = 0; i < width; i++) {
@@ -289,6 +282,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         }
       }
 
+      // Capture the state before applying the color change
       undoManager.addState({ editedPixels: [...editedPixels] });
 
       setEditedPixels((prevEditedPixels) => {
@@ -312,6 +306,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   const handlePixelPaint = (x: number, y: number) => {
     if (!isEditing || !selectedColor || !editDesignId) return;
+
     const newPixel: ViewportPixel = {
       x,
       y,
@@ -319,16 +314,45 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       designId: editDesignId,
     };
 
-    undoManager.addState({ editedPixels: [...editedPixels] });
+    // Add the current state to the undo stack before modifying
+    if (!dragInProgress.current) {
+      undoManager.addState({ editedPixels: [...editedPixels] });
+    }
 
     setEditedPixels((prevEditedPixels) => {
       const updatedPixels = prevEditedPixels.filter(
         (p) => !(p.x === x && p.y === y && p.designId === editDesignId),
       );
       updatedPixels.push(newPixel);
+
       requestAnimationFrame(() => recalculatePixels());
       return updatedPixels;
     });
+
+    if (dragInProgress.current) {
+      dragPixels.current.push(newPixel);
+    }
+  };
+
+  const handleMouseDown = () => {
+    if (isEditing) {
+      dragInProgress.current = true;
+      dragPixels.current = [];
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (isEditing && dragInProgress.current) {
+      if (dragPixels.current.length > 0) {
+        setEditedPixels((prevEditedPixels) => {
+          const finalPixels = [...prevEditedPixels, ...dragPixels.current];
+          return finalPixels;
+        });
+      }
+
+      dragInProgress.current = false;
+      dragPixels.current = [];
+    }
   };
 
   const handleCopy = useCallback(() => {
@@ -341,7 +365,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           pixel.x >= x &&
           pixel.y >= y &&
           pixel.x < x + width &&
-          pixel.y < y + height,
+          pixel.y >= y + height,
       );
 
       const selectedEditedPixels = editedPixels.filter(
@@ -350,7 +374,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           pixel.x >= x &&
           pixel.y >= y &&
           pixel.x < x + width &&
-          pixel.y < y + height,
+          pixel.y >= y + height,
       );
 
       const combinedPixels = [...selectedPixels, ...selectedEditedPixels];
@@ -383,6 +407,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         designId: editDesignId,
       }));
 
+      // Capture the current state before pasting
       undoManager.addState({ editedPixels: [...editedPixels] });
 
       setEditedPixels((prevEditedPixels) => {
@@ -423,9 +448,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     };
 
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [handleCopy, handlePaste, undoManager]);
 
