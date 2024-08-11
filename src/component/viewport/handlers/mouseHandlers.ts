@@ -1,9 +1,9 @@
 import React, { useRef } from 'react';
 import Konva from "konva";
 import { GRID_SIZE } from "../constants";
-import UndoManager from '../../viewport/utils/undo-manager'; // Import UndoManager
+import UndoManager from '../../viewport/utils/undo-manager';
 
-Konva.dragButtons = [0, 2];
+Konva.dragButtons = [0, 2];  // Enable dragging with left (0) and right (2) mouse buttons
 
 // Create an instance of UndoManager with a specified limit for undo history
 const undoManager = new UndoManager(10); // Adjust the limit value as needed
