@@ -64,6 +64,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const stageRef = useRef<Konva.Stage>(null);
 
   const undoManager = useRef(new UndoManager(10)).current;
+  const pixelCache = useRef<Map<number, ViewportPixel[]>>(new Map()); // Cache for pixels
 
   const createCheckerboardPattern = (
     color1: string,
@@ -99,43 +100,56 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       return [];
     }
 
-    const designs = await databaseFetchDesigns();
+    // Check if all layers are already cached
+    const cachedLayers = layers.filter((layer) => pixelCache.current.has(layer));
+    const layersToFetch = layers.filter((layer) => !cachedLayers.includes(layer));
 
-    if (designs) {
-      const allVisiblePixels = await Promise.all(
-        layers.map(async (layer) => {
+    // Fetch only the layers that are not cached
+    if (layersToFetch.length > 0) {
+      const designs = await databaseFetchDesigns();
+      const fetchedPixels = await Promise.all(
+        layersToFetch.map(async (layer) => {
           const design = designs?.find((d) => d.id === layer);
           if (design) {
-            return design.pixels.map((pixel: Pixel) => ({
+            const pixels = design.pixels.map((pixel: Pixel) => ({
               ...pixel,
               x: pixel.x + design.x,
               y: pixel.y + design.y,
               designId: design.id,
             }));
+            pixelCache.current.set(layer, pixels); // Cache the fetched pixels
+            return pixels;
           }
           return [];
         }),
       );
-
-      return allVisiblePixels.flat();
+      return [
+        ...cachedLayers.map((layer) => pixelCache.current.get(layer)!),
+        ...fetchedPixels,
+      ].flat();
     }
-    return [];
+
+    // If all layers are cached, return the cached pixels
+    return cachedLayers.map((layer) => pixelCache.current.get(layer)!).flat();
   };
 
+  // Fetch pixels whenever visibleLayers change
   useEffect(() => {
-    if (
-      JSON.stringify(previousVisibleLayers.current) !==
-      JSON.stringify(visibleLayers)
-    ) {
-      previousVisibleLayers.current = visibleLayers;
-      fetchPixels(visibleLayers).then((newPixels) => {
+    const updatePixels = async () => {
+      if (JSON.stringify(previousVisibleLayers.current) !== JSON.stringify(visibleLayers)) {
+        previousVisibleLayers.current = visibleLayers;
+        const newPixels = await fetchPixels(visibleLayers);
+        // Only update pixels if they have actually changed
         if (JSON.stringify(newPixels) !== JSON.stringify(pixels)) {
           setPixels(newPixels);
         }
-      });
-    }
-  }, [visibleLayers, pixels]);
+      }
+    };
+    updatePixels();
+    // Add necessary dependencies
+  }, [visibleLayers]);
 
+  // Real-time updates from Supabase
   useEffect(() => {
     const pixelSubscription = supabase
       .channel("realtime-art_tool_designs")
@@ -156,6 +170,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                     designId: updatedDesign.id,
                   }),
                 );
+
+                // Update the cache for the updated design
+                pixelCache.current.set(updatedDesign.id, updatedPixels);
 
                 const pixelMap = new Map<string, ViewportPixel>();
                 prevPixels.forEach((pixel) =>
@@ -222,13 +239,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       setPixels(mergedPixels);
       onUpdatePixels(mergedPixels);
     }
-  }, [editedPixels, visibleLayers, onUpdatePixels, pixels]);
+  }, [editedPixels, visibleLayers, onUpdatePixels]);
 
   useEffect(() => {
     if (isEditing) {
       recalculatePixels();
     }
-  }, [editedPixels, isEditing, recalculatePixels]);
+  }, [editedPixels, isEditing]);
 
   useEffect(() => {
     if (!editDesignId) {
@@ -248,7 +265,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       recalculatePixels();
       undoManager.clearHistory();
     }
-  }, [isEditing, recalculatePixels, undoManager]);
+  }, [isEditing]);
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
@@ -374,7 +391,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         return updatedPixels;
       });
     },
-    [copyBuffer, isEditing, editDesignId, recalculatePixels, selection, undoManager],
+    [copyBuffer, isEditing, editDesignId, selection, undoManager],
   );
 
   useEffect(() => {
@@ -410,7 +427,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleCopy, handlePaste, undoManager, recalculatePixels]);
+  }, [handleCopy, handlePaste, undoManager]);
 
   return (
     <Box position="relative" height="100%">
