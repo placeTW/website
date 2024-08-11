@@ -26,6 +26,7 @@ import {
 import { ViewportPixel } from "../viewport/types";
 import { FaRepeat } from "react-icons/fa6";
 import UndoManager from "../viewport/utils/undo-manager";
+import { mouseHandlers } from "../viewport/handlers"; // Import mouse handlers
 
 interface AdvancedViewportProps {
   isEditing: boolean;
@@ -260,6 +261,33 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       undoManager.clearHistory();
     }
   }, [isEditing]);
+
+  // Initialize or refresh event handlers when entering edit mode
+  useEffect(() => {
+    if (isEditing && stageRef.current) {
+      const stage = stageRef.current.getStage();
+
+      // Ensure the stage is draggable for panning
+      stage.draggable(true);
+
+      // Attach necessary event handlers for panning
+      stage.on('contentMousedown', mouseHandlers.handleMouseDown);
+      stage.on('contentMouseup', mouseHandlers.handleMouseUp);
+      stage.on('contentMousemove', mouseHandlers.handleMouseMove);
+
+      // Prevent default context menu on right-click
+      stage.on('contentContextmenu', (e) => {
+        e.evt.preventDefault();
+      });
+
+      // Force a stage redraw to ensure everything is initialized correctly
+      const initialScale = stage.scaleX();
+      stage.scale({ x: initialScale * 1.01, y: initialScale * 1.01 });
+      stage.batchDraw();
+      stage.scale({ x: initialScale, y: initialScale });
+      stage.batchDraw();
+    }
+  }, [isEditing, stageRef.current]);
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
