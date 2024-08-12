@@ -142,8 +142,6 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   };
 
-  useEffect(() => {}, [pixels]);
-
   return (
     <div
       className="viewport-container"
