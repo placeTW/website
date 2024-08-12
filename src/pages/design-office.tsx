@@ -104,82 +104,64 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
-      // Merge edited pixels with existing ones, with edited ones taking priority
-      const existingPixelMap = new Map<string, Pixel>();
-      currentDesign.pixels.forEach((pixel) => {
-        existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
-      });
+        const existingPixelMap = new Map<string, Pixel>();
 
-      editedPixels.forEach((pixel) => {
-        if (pixel.color === CLEAR_ON_DESIGN) {
-          existingPixelMap.delete(
-            `${pixel.x - currentDesign.x}-${pixel.y - currentDesign.y}`,
-          );
-        } else {
-          existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
-            ...pixel,
-            x: pixel.x - currentDesign.x,
-            y: pixel.y - currentDesign.y,
-          });
-        }
-      });
-
-      const mergedPixels = Array.from(existingPixelMap.values()).filter(
-        (pixel) => pixel.color !== CLEAR_ON_DESIGN,
-      );
-
-      // Save filtered pixels to the database
-      try {
-        const updatedDesign = await saveEditedPixels(
-          currentDesign,
-          mergedPixels,
-        );
-        // Update the designs state with the updated design
-        setDesigns((prevDesigns) =>
-          prevDesigns.map((d) =>
-            d.id === updatedDesign.id ? updatedDesign : d,
-          ),
-        );
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: `Failed to save changes: ${
-            (error as Error).message || error
-          }`,
-          status: "error",
-          duration: 3000,
-          isClosable: true,
+        editedPixels.forEach((pixel) => {
+            // Ensure we are only handling the current design
+            if (pixel.designId === editDesignId) { // This check should work now
+                if (pixel.color === CLEAR_ON_DESIGN) {
+                    existingPixelMap.delete(`${pixel.x}-${pixel.y}`);
+                } else {
+                    existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
+                        ...pixel,
+                        x: pixel.x - currentDesign.x,
+                        y: pixel.y - currentDesign.y,
+                    });
+                }
+            }
         });
-        return;
-      }
 
-      // Generate a thumbnail of the current design with filtered pixels
-      const thumbnailBlob = await createThumbnail(mergedPixels);
-      // Update the design thumbnail in the database and Supabase storage
-      await uploaDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
+        const mergedPixels = Array.from(existingPixelMap.values()).filter(
+            (pixel) => pixel.color !== CLEAR_ON_DESIGN,
+        );
 
-      toast({
-        title: "Changes Saved",
-        description: `${currentDesign.design_name} has been updated successfully.`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
+        const updatedDesign = await saveEditedPixels(
+            currentDesign,
+            mergedPixels,
+        );
 
-      // Clear the editedPixels array but stay in edit mode
-      setEditedPixels([]);
+        setDesigns((prevDesigns) =>
+            prevDesigns.map((d) =>
+                d.id === updatedDesign.id ? updatedDesign : d,
+            ),
+        );
+
+        const thumbnailBlob = await createThumbnail(mergedPixels);
+        await uploaDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
+
+        toast({
+            title: "Changes Saved",
+            description: `${currentDesign.design_name} has been updated successfully.`,
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+        });
+
+        // Clear the editedPixels array after submission
+        setEditedPixels([]);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to save changes: ${
-          (error as Error).message || error
-        }`,
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+        toast({
+            title: "Error",
+            description: `Failed to save changes: ${
+                (error as Error).message || error
+            }`,
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+        });
     }
-  };
+};
+
 
   const fetchCanvases = async () => {
     try {

@@ -195,30 +195,30 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     if (!isEditing || !selectedColor || !editDesignId) return;
 
     const newPixel: ViewportPixel = {
-      x,
-      y,
-      color: selectedColor,
-      designId: editDesignId,
+        x,
+        y,
+        color: selectedColor,
+        designId: editDesignId,
     };
 
     if (!dragInProgress.current) {
-      undoManager.addState({ editedPixels: [...editedPixels] });
+        undoManager.addState({ editedPixels: [...editedPixels] });
     }
 
     setEditedPixels((prevEditedPixels) => {
-      const updatedPixels = prevEditedPixels.filter(
-        (p) => !(p.x === x && p.y === y && p.designId === editDesignId)
-      );
-      updatedPixels.push(newPixel);
+        const updatedPixels = prevEditedPixels.filter(
+            (p) => !(p.x === x && p.y === y && p.designId === editDesignId),
+        );
+        updatedPixels.push(newPixel);
 
-      requestAnimationFrame(() => recalculatePixels());
-      return updatedPixels;
+        requestAnimationFrame(() => recalculatePixels());
+        return updatedPixels;
     });
 
     if (dragInProgress.current) {
-      dragPixels.current.push(newPixel);
+        dragPixels.current.push(newPixel);
     }
-  };
+};
 
   const handleCopy = useCallback(() => {
     if (!selection || !pixels || !editDesignId) return;

@@ -32,7 +32,9 @@ export interface Pixel {
   x: number;
   y: number;
   color: string;
+  designId: number; // Add this line
 }
+
 
 export interface Canvas {
   id: number;
