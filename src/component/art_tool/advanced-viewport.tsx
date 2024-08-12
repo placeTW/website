@@ -72,11 +72,11 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   const clearOnDesignPattern = createCheckerboardPattern(
     "#eee",
-    "#fff"
+    "#fff",
   ).toDataURL();
   const clearOnMainPattern = createCheckerboardPattern(
     "#fc7e7e",
-    "#fff"
+    "#fff",
   ).toDataURL();
 
   // Fetch pixels for visible layers and cache them
@@ -84,10 +84,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     if (layers.length === 0) return [];
 
     const cachedLayers = layers.filter((layer) =>
-      pixelCache.current.has(layer)
+      pixelCache.current.has(layer),
     );
     const layersToFetch = layers.filter(
-      (layer) => !cachedLayers.includes(layer)
+      (layer) => !cachedLayers.includes(layer),
     );
 
     if (layersToFetch.length > 0) {
@@ -106,7 +106,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             return pixels;
           }
           return [];
-        })
+        }),
       );
       return [
         ...cachedLayers.map((layer) => pixelCache.current.get(layer)!),
@@ -120,7 +120,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   // Merge newly edited pixels with existing base pixels
   const mergeWithExistingPixels = (
     basePixels: ViewportPixel[],
-    newEditedPixels: ViewportPixel[]
+    newEditedPixels: ViewportPixel[],
   ) => {
     const pixelMap = new Map<string, ViewportPixel>();
 
@@ -181,7 +181,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               p.y >= y &&
               p.y < y + height &&
               p.designId === editDesignId
-            )
+            ),
         );
 
         const finalPixels = [...updatedPixels, ...newPixels];
@@ -195,30 +195,30 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     if (!isEditing || !selectedColor || !editDesignId) return;
 
     const newPixel: ViewportPixel = {
-        x,
-        y,
-        color: selectedColor,
-        designId: editDesignId,
+      x,
+      y,
+      color: selectedColor,
+      designId: editDesignId,
     };
 
     if (!dragInProgress.current) {
-        undoManager.addState({ editedPixels: [...editedPixels] });
+      undoManager.addState({ editedPixels: [...editedPixels] });
     }
 
     setEditedPixels((prevEditedPixels) => {
-        const updatedPixels = prevEditedPixels.filter(
-            (p) => !(p.x === x && p.y === y && p.designId === editDesignId),
-        );
-        updatedPixels.push(newPixel);
+      const updatedPixels = prevEditedPixels.filter(
+        (p) => !(p.x === x && p.y === y && p.designId === editDesignId),
+      );
+      updatedPixels.push(newPixel);
 
-        requestAnimationFrame(() => recalculatePixels());
-        return updatedPixels;
+      requestAnimationFrame(() => recalculatePixels());
+      return updatedPixels;
     });
 
     if (dragInProgress.current) {
-        dragPixels.current.push(newPixel);
+      dragPixels.current.push(newPixel);
     }
-};
+  };
 
   const handleCopy = useCallback(() => {
     if (!selection || !pixels || !editDesignId) return;
@@ -231,12 +231,12 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         pixel.x >= x &&
         pixel.x < x + width &&
         pixel.y >= y &&
-        pixel.y < y + height
+        pixel.y < y + height,
     );
 
     const uniquePixels = new Map<string, ViewportPixel>();
     selectedPixels.forEach((pixel) =>
-      uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel)
+      uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel),
     );
 
     let finalCopiedPixels = Array.from(uniquePixels.values());
@@ -247,7 +247,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       (pixel) => ({
         ...pixel,
         designId: -1,
-      })
+      }),
     );
 
     setCopyBuffer(finalCopiedPixels);
@@ -256,24 +256,23 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const handlePaste = useCallback(
     (pasteX: number, pasteY: number) => {
       if (!isEditing || !editDesignId || copyBuffer.length === 0) return;
-  
+
       // Determine the top-left pixel in the copied selection (including empty pixels)
-      const minX = Math.min(...copyBuffer.map((pixel) => pixel.x));
-      const minY = Math.min(...copyBuffer.map((pixel) => pixel.y));
-  
+      const { x: minX, y: minY } = getTopLeftCoords(copyBuffer);
+
       // Calculate the offset needed to position the top-left pixel under the cursor
       const offsetX = pasteX - minX;
       const offsetY = pasteY - minY;
-  
+
       const pastedPixels = copyBuffer.map((pixel) => ({
         ...pixel,
         x: pixel.x + offsetX,
         y: pixel.y + offsetY,
         designId: editDesignId,
       }));
-  
+
       undoManager.addState({ editedPixels: [...editedPixels] });
-  
+
       setEditedPixels((prevEditedPixels) => {
         const updatedPixels = [...prevEditedPixels, ...pastedPixels];
         requestAnimationFrame(() => recalculatePixels());
@@ -289,7 +288,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       recalculatePixels,
     ],
   );
-  
 
   useEffect(() => {
     const updatePixels = async () => {
@@ -323,7 +321,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                   x: pixel.x + updatedDesign.x,
                   y: pixel.y + updatedDesign.y,
                   designId: updatedDesign.id,
-                })
+                }),
               );
               pixelCache.current.set(updatedDesign.id, updatedPixels);
               setPixels((prevPixels) => {
@@ -331,14 +329,14 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                 prevPixels.forEach((pixel) =>
                   pixelMap.set(
                     `${pixel.x}-${pixel.y}-${pixel.designId}`,
-                    pixel
-                  )
+                    pixel,
+                  ),
                 );
                 updatedPixels.forEach((pixel: ViewportPixel) =>
                   pixelMap.set(
                     `${pixel.x}-${pixel.y}-${pixel.designId}`,
-                    pixel
-                  )
+                    pixel,
+                  ),
                 );
                 const newPixelArray = Array.from(pixelMap.values());
                 return JSON.stringify(newPixelArray) !==
@@ -348,7 +346,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               });
             }
           }
-        }
+        },
       )
       .subscribe();
 
@@ -394,10 +392,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           if (pointer) {
             const scale = stage.scaleX();
             const pasteX = Math.floor(
-              (pointer.x - stage.x()) / (GRID_SIZE * scale)
+              (pointer.x - stage.x()) / (GRID_SIZE * scale),
             );
             const pasteY = Math.floor(
-              (pointer.y - stage.y()) / (GRID_SIZE * scale)
+              (pointer.y - stage.y()) / (GRID_SIZE * scale),
             );
             handlePaste(pasteX, pasteY);
           }
