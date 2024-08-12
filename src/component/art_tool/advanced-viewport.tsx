@@ -256,16 +256,24 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const handlePaste = useCallback(
     (pasteX: number, pasteY: number) => {
       if (!isEditing || !editDesignId || copyBuffer.length === 0) return;
-
+  
+      // Determine the top-left pixel in the copied selection (including empty pixels)
+      const minX = Math.min(...copyBuffer.map((pixel) => pixel.x));
+      const minY = Math.min(...copyBuffer.map((pixel) => pixel.y));
+  
+      // Calculate the offset needed to position the top-left pixel under the cursor
+      const offsetX = pasteX - minX;
+      const offsetY = pasteY - minY;
+  
       const pastedPixels = copyBuffer.map((pixel) => ({
         ...pixel,
-        x: pixel.x + pasteX,
-        y: pixel.y + pasteY,
+        x: pixel.x + offsetX,
+        y: pixel.y + offsetY,
         designId: editDesignId,
       }));
-
+  
       undoManager.addState({ editedPixels: [...editedPixels] });
-
+  
       setEditedPixels((prevEditedPixels) => {
         const updatedPixels = [...prevEditedPixels, ...pastedPixels];
         requestAnimationFrame(() => recalculatePixels());
@@ -279,8 +287,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       undoManager,
       editedPixels,
       recalculatePixels,
-    ]
+    ],
   );
+  
 
   useEffect(() => {
     const updatePixels = async () => {
