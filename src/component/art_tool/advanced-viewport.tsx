@@ -64,7 +64,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const [copyBuffer, setCopyBuffer] = useState<ViewportPixel[]>([]);
 
   const stageRef = useRef<Konva.Stage>(null);
-  const undoManager = useRef(new UndoManager(10)).current;
+  const undoManager = useRef(new UndoManager(100)).current;
   const pixelCache = useRef<Map<number, ViewportPixel[]>>(new Map());
   const dragInProgress = useRef(false);
   const dragPixels = useRef<ViewportPixel[]>([]);

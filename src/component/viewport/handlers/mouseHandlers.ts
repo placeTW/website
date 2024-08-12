@@ -6,7 +6,7 @@ import UndoManager from '../../viewport/utils/undo-manager';
 Konva.dragButtons = [0, 2];  // Enable dragging with left (0) and right (2) mouse buttons
 
 // Create an instance of UndoManager with a specified limit for undo history
-const undoManager = new UndoManager(10); // Adjust the limit value as needed
+const undoManager = new UndoManager(100); // Adjust the limit value as needed
 
 export const mouseHandlers = (
   onPixelPaint?: (x: number, y: number) => void,
