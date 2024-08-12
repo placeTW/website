@@ -142,6 +142,26 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   };
 
+  // Function to filter and merge pixels based on layer order
+  const getMergedPixels = useCallback(() => {
+    const pixelMap = new Map<string, ViewportPixel>();
+
+    layerOrder.forEach((layerId) => {
+      pixels
+        .filter((pixel) => pixel.designId === layerId)
+        .forEach((pixel) => {
+          const key = `${pixel.x}-${pixel.y}`;
+          pixelMap.set(key, pixel);
+        });
+    });
+
+    return Array.from(pixelMap.values());
+  }, [layerOrder, pixels]);
+
+  useEffect(() => {}, [pixels]);
+
+  const mergedPixels = getMergedPixels();
+
   return (
     <div
       className="viewport-container"
@@ -203,7 +223,7 @@ const Viewport: React.FC<ViewportProps> = ({
           {zoomLevel > 0.125
             ? visibleTiles.map((tile) => (
                 <KonvaImage
-                  key={`${tile.x}-${tile.y}`}
+                  key={`tile-${tile.x}-${tile.y}`} // Unique key for each tile
                   image={backgroundImage}
                   x={tile.x * backgroundTileSize}
                   y={tile.y * backgroundTileSize}
@@ -216,11 +236,11 @@ const Viewport: React.FC<ViewportProps> = ({
             : null}
 
           {/* Render ClearOnMain image based on layer visibility */}
-          {pixels.map((pixel) => {
+          {mergedPixels.map((pixel) => {
             if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
               return (
                 <KonvaImage
-                  key={`${pixel.x}-${pixel.y}-${designId}`}
+                  key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`} // Unique key for each pixel
                   image={clearOnMainImage}
                   x={pixel.x * gridSize}
                   y={pixel.y * gridSize}
@@ -237,23 +257,19 @@ const Viewport: React.FC<ViewportProps> = ({
         </Layer>
 
         {/* Render the pixel grid */}
-        {layerOrder.map((layer) => (
-          <Layer key={layer}>
-            {pixels
-              .filter((pixel) => pixel.designId === layer)
-              .map((pixel) => (
-                <Rect
-                  key={`${pixel.x}-${pixel.y}-${designId}`}
-                  x={pixel.x * gridSize}
-                  y={pixel.y * gridSize}
-                  width={gridSize}
-                  height={gridSize}
-                  fill={pixel.color !== CLEAR_ON_MAIN ? pixel.color : undefined}
-                  strokeWidth={0}
-                />
-              ))}
-          </Layer>
-        ))}
+        <Layer>
+          {mergedPixels.map((pixel) => (
+            <Rect
+              key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`} // Unique key for each pixel
+              x={pixel.x * gridSize}
+              y={pixel.y * gridSize}
+              width={gridSize}
+              height={gridSize}
+              fill={pixel.color !== CLEAR_ON_MAIN ? pixel.color : undefined}
+              strokeWidth={0}
+            />
+          ))}
+        </Layer>
 
         {/* Render selection rectangle */}
         {selection && (

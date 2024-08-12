@@ -23,7 +23,7 @@ const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [visibleDesigns, setVisibleDesigns] = useState<Design[]>([]);
   const [colors, setColors] = useState<
-    { Color: string; color_sort: number | null; color_name: string }[]
+    { Color: string; color_sort: number | null; color_name: string }[] // Updated type
   >([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -38,7 +38,6 @@ const DesignOffice: React.FC = () => {
     const data = await databaseFetchDesigns();
     if (data) {
       setDesigns(data);
-      setVisibleDesigns(data);
     }
     setLoading(false);
   };
@@ -47,22 +46,20 @@ const DesignOffice: React.FC = () => {
     try {
       const fetchedColors = await databaseFetchColors();
 
+      // Add color_name to each color object based on your data structure
       const colorsWithNames = fetchedColors.map((color) => ({
         ...color,
-        color_name: color.color_name || "Unnamed",
+        color_name: color.color_name || "Unnamed", // Add color_name or a fallback name
       }));
 
+      // Append the special colors on the client-side
       const specialColors = [
         {
           Color: CLEAR_ON_DESIGN,
           color_sort: null,
           color_name: "Clear on Design",
         },
-        {
-          Color: CLEAR_ON_MAIN,
-          color_sort: null,
-          color_name: "Clear on Main",
-        },
+        { Color: CLEAR_ON_MAIN, color_sort: null, color_name: "Clear on Main" },
       ];
 
       setColors([...colorsWithNames, ...specialColors]);
@@ -79,7 +76,10 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleEditStateChange = (isEditing: boolean, designId: number | null) => {
+  const handleEditStateChange = (
+    isEditing: boolean,
+    designId: number | null,
+  ) => {
     setIsEditing(isEditing);
     setEditDesignId(designId);
   };
@@ -89,9 +89,14 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleUpdatePixels = (pixels: Pixel[]) => {
-    setEditedPixels(pixels);
+    if (pixels && pixels.length > 0) {
+      setEditedPixels(pixels);
+    } else {
+      setEditedPixels([]); // Ensure state is reset if the array is empty or undefined
+    }
   };
 
+  // Function to handle the submission of edited pixels
   const handleSubmitEdit = async () => {
     if (!editDesignId) return;
 
@@ -99,6 +104,7 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
+      // Merge edited pixels with existing ones, with edited ones taking priority
       const existingPixelMap = new Map<string, Pixel>();
       currentDesign.pixels.forEach((pixel) => {
         existingPixelMap.set(`${pixel.x}-${pixel.y}`, pixel);
@@ -107,7 +113,7 @@ const DesignOffice: React.FC = () => {
       editedPixels.forEach((pixel) => {
         if (pixel.color === CLEAR_ON_DESIGN) {
           existingPixelMap.delete(
-            `${pixel.x - currentDesign.x}-${pixel.y - currentDesign.y}`
+            `${pixel.x - currentDesign.x}-${pixel.y - currentDesign.y}`,
           );
         } else {
           existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
@@ -119,16 +125,37 @@ const DesignOffice: React.FC = () => {
       });
 
       const mergedPixels = Array.from(existingPixelMap.values()).filter(
-        (pixel) => pixel.color !== CLEAR_ON_DESIGN
+        (pixel) => pixel.color !== CLEAR_ON_DESIGN,
       );
 
-      const updatedDesign = await saveEditedPixels(currentDesign, mergedPixels);
+      // Save filtered pixels to the database
+      try {
+        const updatedDesign = await saveEditedPixels(
+          currentDesign,
+          mergedPixels,
+        );
+        // Update the designs state with the updated design
+        setDesigns((prevDesigns) =>
+          prevDesigns.map((d) =>
+            d.id === updatedDesign.id ? updatedDesign : d,
+          ),
+        );
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: `Failed to save changes: ${
+            (error as Error).message || error
+          }`,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
 
-      setDesigns((prevDesigns) =>
-        prevDesigns.map((d) => (d.id === updatedDesign.id ? updatedDesign : d))
-      );
-
+      // Generate a thumbnail of the current design with filtered pixels
       const thumbnailBlob = await createThumbnail(mergedPixels);
+      // Update the design thumbnail in the database and Supabase storage
       await uploaDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
 
       toast({
@@ -139,6 +166,7 @@ const DesignOffice: React.FC = () => {
         isClosable: true,
       });
 
+      // Clear the editedPixels array but stay in edit mode
       setEditedPixels([]);
     } catch (error) {
       toast({
@@ -173,19 +201,30 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleSetDesignCanvas = (designId: number, canvasId: number) => {
+    // Update the selectedCanvas state to trigger a re-render of AdvancedViewport
     const updatedCanvas = canvases.find((canvas) => canvas.id === canvasId);
     setSelectedCanvas(updatedCanvas || null);
     console.log(
-      `Design ${designId} set to canvas ${updatedCanvas?.canvas_name}`
+      `Design ${designId} set to canvas ${selectedCanvas?.canvas_name}`,
     );
   };
 
   const handleSetCanvas = (canvas: Canvas | null) => {
-    const canvasDesigns = designs.filter(
-      (design) =>
-        design.canvas === (canvas ? canvas.id : null) ||
-        (isEditing && design.id === editDesignId)
-    );
+    let canvasDesigns: Design[] = [];
+    if (canvas) {
+      canvasDesigns = designs.filter(
+        (design) =>
+          design.canvas === canvas.id ||
+          (isEditing && design.id === editDesignId),
+      );
+    } else {
+      canvasDesigns = designs.filter(
+        (design) =>
+          design.canvas === null || (isEditing && design.id === editDesignId),
+      );
+    }
+
+    console.log(canvasDesigns);
 
     setSelectedCanvas(canvas);
     setVisibleDesigns(canvasDesigns);
@@ -200,7 +239,12 @@ const DesignOffice: React.FC = () => {
 
   const handleOnDeleted = () => {
     setEditDesignId(null);
+    // You can also perform any additional actions needed when a design is deleted
   };
+
+  useEffect(() => {
+    setVisibleDesigns(designs);
+  }, [designs]);
 
   useEffect(() => {
     fetchDesigns();
@@ -214,7 +258,7 @@ const DesignOffice: React.FC = () => {
         { event: "*", schema: "public", table: "art_tool_designs" },
         () => {
           fetchDesigns();
-        }
+        },
       )
       .subscribe();
 
@@ -256,7 +300,7 @@ const DesignOffice: React.FC = () => {
           onVisibilityChange={handleVisibilityChange}
           onSubmitEdit={handleSubmitEdit}
           onSetCanvas={handleSetDesignCanvas}
-          onDeleted={handleOnDeleted}
+          onDeleted={handleOnDeleted} // Add this line to pass onDeleted prop
         />
         <Box h="100px" /> {/* Spacer at the bottom */}
       </Box>
