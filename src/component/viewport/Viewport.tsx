@@ -1,9 +1,13 @@
 import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
-import { mouseHandlers, touchHandlers, wheelHandler } from "./handlers";
-import { useImage } from "./hooks";
 import { CLEAR_ON_MAIN } from "./constants";
+import {
+  useMouseHandlers,
+  useTouchHandlers,
+  useWheelHandler,
+} from "./handlers";
+import { useImage } from "./hooks";
 import { ViewportPixel } from "./types";
 
 interface ViewportProps {
@@ -14,7 +18,12 @@ interface ViewportProps {
   layerOrder: number[];
   selection?: { x: number; y: number; width: number; height: number } | null;
   setSelection?: React.Dispatch<
-    React.SetStateAction<{ x: number; y: number; width: number; height: number } | null>
+    React.SetStateAction<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    } | null>
   >;
   onCopy?: () => void;
   onPaste?: (x: number, y: number) => void;
@@ -47,6 +56,8 @@ const Viewport: React.FC<ViewportProps> = ({
     [],
   );
   const [zoomLevel, setZoomLevel] = useState(1);
+
+  const handleWheel = useWheelHandler;
 
   const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
 
@@ -131,8 +142,7 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   };
 
-  useEffect(() => {
-  }, [pixels]);
+  useEffect(() => {}, [pixels]);
 
   return (
     <div
@@ -149,17 +159,17 @@ const Viewport: React.FC<ViewportProps> = ({
         backgroundColor: "#f0f0f0",
       }}
       ref={divRef}
-      {...touchHandlers(onPixelPaint, isEditing)}
+      {...useTouchHandlers(onPixelPaint, isEditing)}
     >
       <Stage
         width={dimensions.width}
         height={dimensions.height}
         ref={stageRef}
         onWheel={(e) => {
-          wheelHandler(e);
+          handleWheel(e);
           handleZoom();
         }}
-        {...mouseHandlers(
+        {...useMouseHandlers(
           onPixelPaint,
           isEditing,
           stageRef,

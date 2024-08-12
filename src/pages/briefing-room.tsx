@@ -1,7 +1,7 @@
 // briefing-room.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import Viewport from "../component/viewport/Viewport";
+import Viewport from "../component/viewport/viewport";
 import { useAlertContext } from "../context/alert-context";
 import { alertLevels, validAlertLevels } from "../definitions/alert-level";
 import { databaseFetchDesigns } from "../api/supabase/database";

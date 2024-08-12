@@ -1,6 +1,6 @@
 import Konva from "konva";
 
-export const wheelHandler = (e: Konva.KonvaEventObject<WheelEvent>) => {
+export const useWheelHandler = (e: Konva.KonvaEventObject<WheelEvent>) => {
   e.evt.preventDefault();
   const stage = e.target.getStage();
   if (!stage) return;

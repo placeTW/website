@@ -1,3 +1,3 @@
-export * from './touchHandlers';
-export * from './mouseHandlers';
-export * from './wheelHandler';
+export * from './touch-handlers';
+export * from './mouse-handlers';
+export * from './wheel-handler';

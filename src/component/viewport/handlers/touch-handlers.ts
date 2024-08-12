@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { GRID_SIZE } from "../constants";
 
-export const touchHandlers = (
+export const useTouchHandlers = (
   onPixelPaint?: (x: number, y: number) => void,
   isEditing?: boolean,
 ) => ({

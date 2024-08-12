@@ -19,7 +19,7 @@ import {
 } from "../../api/supabase";
 import { Canvas, Design, Pixel } from "../../types/art-tool";
 import { getTopLeftCoords, offsetPixels } from "../../utils/getTopLeftPixel";
-import Viewport from "../viewport/Viewport";
+import Viewport from "../viewport/viewport";
 import {
   CLEAR_ON_DESIGN,
   CLEAR_ON_MAIN,
