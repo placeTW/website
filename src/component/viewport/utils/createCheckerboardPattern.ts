@@ -1,8 +1,8 @@
 export const createCheckerboardPattern = (
   color1: string,
   color2: string,
-  size: number
-): HTMLImageElement => {
+): HTMLCanvasElement => {
+  const size = 20;
   const canvas = document.createElement("canvas");
   canvas.width = size * 2;
   canvas.height = size * 2;
@@ -18,7 +18,5 @@ export const createCheckerboardPattern = (
     ctx.fillRect(0, size, size, size);
   }
 
-  const image = new Image();
-  image.src = canvas.toDataURL();
-  return image;
+  return canvas;
 };
