@@ -186,10 +186,6 @@ const DesignOffice: React.FC = () => {
       const fetchedCanvases = await databaseFetchCanvases();
       if (fetchedCanvases) {
         setCanvases(fetchedCanvases);
-        // Optionally set the first canvas as selected if there are canvases
-        if (fetchedCanvases.length > 0) {
-          setSelectedCanvas(fetchedCanvases[0]);
-        }
       }
     } catch (error) {
       toast({
@@ -238,6 +234,7 @@ const DesignOffice: React.FC = () => {
   const handleResetViewport = () => {
     setVisibleLayers([]);
     setVisibleDesigns(designs);
+    setSelectedCanvas(null);
   };
 
   useEffect(() => {
@@ -251,7 +248,7 @@ const DesignOffice: React.FC = () => {
   useEffect(() => {
     fetchDesigns();
     fetchColors();
-    fetchCanvases(); // Fetch canvases on component mount
+    fetchCanvases();
 
     const subscription = supabase
       .channel("art_tool_designs")
