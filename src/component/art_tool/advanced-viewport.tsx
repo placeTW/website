@@ -18,6 +18,7 @@ import {
   supabase,
 } from "../../api/supabase";
 import { Canvas, Design, Pixel } from "../../types/art-tool";
+import { getTopLeftCoords, offsetPixels } from "../../utils/getTopLeftPixel";
 import Viewport from "../viewport/Viewport";
 import {
   CLEAR_ON_DESIGN,
@@ -217,54 +218,60 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   };
 
   const handleCopy = useCallback(() => {
-    if (selection && pixels && editDesignId) {
-      const { x, y, width, height } = selection;
+    if (!selection || !pixels || !editDesignId) return;
 
-      const selectedPixels = pixels.filter(
-        (pixel) =>
-          pixel.designId === editDesignId &&
-          pixel.x >= x &&
-          pixel.y >= y &&
-          pixel.x < x + width &&
-          pixel.y >= y + height,
-      );
+    const { x, y, width, height } = selection;
 
-      const selectedEditedPixels = editedPixels.filter(
-        (pixel) =>
-          pixel.designId === editDesignId &&
-          pixel.x >= x &&
-          pixel.y >= y &&
-          pixel.x < x + width &&
-          pixel.y >= y + height,
-      );
+    console.log(x, y, width, height);
 
-      const combinedPixels = [...selectedPixels, ...selectedEditedPixels];
+    const selectedPixels = pixels.filter(
+      (pixel) =>
+        pixel.designId === editDesignId &&
+        pixel.x >= x &&
+        pixel.x < x + width &&
+        pixel.y >= y &&
+        pixel.y < y + height,
+    );
 
-      const uniquePixels = new Map<string, ViewportPixel>();
-      combinedPixels.forEach((pixel) =>
-        uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel),
-      );
+    const selectedEditedPixels = editedPixels.filter(
+      (pixel) =>
+        pixel.designId === editDesignId &&
+        pixel.x >= x &&
+        pixel.x < x + width &&
+        pixel.y >= y &&
+        pixel.y < y + height,
+    );
 
-      const finalCopiedPixels = Array.from(uniquePixels.values());
+    const combinedPixels = [...selectedPixels, ...selectedEditedPixels];
 
-      setCopyBuffer(finalCopiedPixels);
-    }
+    const uniquePixels = new Map<string, ViewportPixel>();
+    combinedPixels.forEach((pixel) =>
+      uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel),
+    );
+
+    let finalCopiedPixels = Array.from(uniquePixels.values());
+
+    const topLeftPixel = getTopLeftCoords(finalCopiedPixels);
+
+    finalCopiedPixels = offsetPixels(finalCopiedPixels, topLeftPixel).map(
+      (pixel) => ({
+        ...pixel,
+        designId: -1,
+      }),
+    );
+
+    setCopyBuffer(finalCopiedPixels);
   }, [selection, pixels, editedPixels, editDesignId]);
 
   const handlePaste = useCallback(
     (pasteX: number, pasteY: number) => {
-      if (!isEditing || !editDesignId || copyBuffer.length === 0 || !selection)
-        return;
-
-      const { x: selectionX, y: selectionY } = selection;
-
-      const offsetX = pasteX - selectionX;
-      const offsetY = pasteY - selectionY;
+      console.log(pasteX, pasteY);
+      if (!isEditing || !editDesignId || copyBuffer.length === 0) return;
 
       const pastedPixels = copyBuffer.map((pixel) => ({
         ...pixel,
-        x: pixel.x + offsetX,
-        y: pixel.y + offsetY,
+        x: pixel.x + pasteX,
+        y: pixel.y + pasteY,
         designId: editDesignId,
       }));
 
@@ -275,12 +282,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         requestAnimationFrame(() => recalculatePixels());
         return updatedPixels;
       });
+
+      console.log(editedPixels);
     },
     [
       isEditing,
       editDesignId,
       copyBuffer,
-      selection,
       undoManager,
       editedPixels,
       recalculatePixels,

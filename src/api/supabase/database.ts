@@ -1,5 +1,6 @@
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { AlertState, Canvas, Color, Design, Pixel } from "../../types/art-tool";
+import { getTopLeftCoords, offsetPixels } from "../../utils/getTopLeftPixel";
 import { supabase, uploadThumbnail } from "./index";
 import { logSupabaseDatabaseQuery } from "./logging";
 
@@ -29,7 +30,10 @@ export const databaseFetchCanvases = async (): Promise<Canvas[] | null> => {
     .select("*")
     .returns<Canvas[]>();
 
-  const { data, error } = logSupabaseDatabaseQuery(fetchCanvasQuery, "fetchCanvases");
+  const { data, error } = logSupabaseDatabaseQuery(
+    fetchCanvasQuery,
+    "fetchCanvases",
+  );
 
   if (error) {
     throw new Error(error.message);
@@ -171,27 +175,18 @@ export const saveEditedPixels = async (
   pixels: Pixel[],
 ): Promise<Design> => {
   // Get the top left pixel of the design
-  const topLeftPixel = pixels.reduce((acc, curr) => {
-    if (curr.x < acc.x || (curr.x === acc.x && curr.y < acc.y)) {
-      return curr;
-    }
-    return acc;
-  }, { x: Infinity, y: Infinity }); // Provide initial value
+  const topLeftCoords = getTopLeftCoords(pixels);
 
   // Copy and offset the pixels to the top left corner
-  const pixelsToInsertCopy = pixels.map((pixel) => ({
-    ...pixel,
-    x: pixel.x - topLeftPixel.x,
-    y: pixel.y - topLeftPixel.y,
-  }));
+  const pixelsToInsertCopy = offsetPixels(pixels, topLeftCoords);
 
   //Update the design with the new pixels
   const savePixelsQuery = await supabase
     .from("art_tool_designs")
     .update({
       pixels: pixelsToInsertCopy,
-      x: topLeftPixel.x + design.x,
-      y: topLeftPixel.y + design.y,
+      x: topLeftCoords.x + design.x,
+      y: topLeftCoords.y + design.y,
     })
     .eq("id", design.id);
 
