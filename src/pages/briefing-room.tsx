@@ -1,4 +1,3 @@
-// briefing-room.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Viewport from "../component/viewport/Viewport";
@@ -11,7 +10,7 @@ import { Pixel } from "../types/art-tool";
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
-  const { alertLevel, alertMessage } = useAlertContext();
+  const { alertId, alertMessage } = useAlertContext(); // Updated to use alertId instead of alertLevel
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const stageRef = useRef<Konva.Stage>(null); // Create the stageRef using useRef
 
@@ -47,16 +46,16 @@ const BriefingRoom: React.FC = () => {
 
   return (
     <div>
-      {alertLevel === null ? (
+      {alertId === null ? (
         <p>{t("Loading...")}</p>
-      ) : validAlertLevels.includes(alertLevel) ? (
+      ) : validAlertLevels.includes(alertId) ? (
         <div>
-          <h3>{t(alertLevels.get(alertLevel)?.heading ?? "")}</h3>
-          {!!alertLevels.get(alertLevel)?.subheading && (
-            <p>{t(alertLevels.get(alertLevel)?.subheading ?? "")}</p>
+          <h3>{t(alertLevels.get(alertId)?.heading ?? "")}</h3>
+          {!!alertLevels.get(alertId)?.subheading && (
+            <p>{t(alertLevels.get(alertId)?.subheading ?? "")}</p>
           )}
           {!!alertMessage && <p>{alertMessage}</p>}
-          {alertLevels.get(alertLevel)?.showViewport && (
+          {alertLevels.get(alertId)?.showViewport && (
             <Viewport 
               designId={1}
               pixels={pixels} 
@@ -67,7 +66,7 @@ const BriefingRoom: React.FC = () => {
         </div>
       ) : (
         <p>
-          {t("Invalid alert level:")} {alertLevel}
+          {t("Invalid alert level:")} {alertId}
         </p>
       )}
     </div>
