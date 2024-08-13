@@ -5,6 +5,7 @@ import { UserType } from '../types/users';
 import { useTranslation } from 'react-i18next';
 import { useUserContext } from '../context/user-context';
 import ColorPaletteManager from '../component/art_tool/color-palette-manager';
+import AlertManage from '../component/art_tool/alert-manage';
 
 const AdminPage = () => {
   const { t } = useTranslation();
@@ -30,8 +31,8 @@ const AdminPage = () => {
 
   const updateUserRank = async (userId: string, rank: string) => {
     try {
-      const responseData = await functionsUpdateUserStatus(userId, rank); // Update the user status
-      updateUser(responseData); // Update the context with the new user data
+      const responseData = await functionsUpdateUserStatus(userId, rank);
+      updateUser(responseData);
     } catch (error) {
       console.error('Update user status error:', error);
       setError('Update user status error');
@@ -99,6 +100,9 @@ const AdminPage = () => {
       {renderTable()}
       <Box mt={8}>
         <ColorPaletteManager />
+      </Box>
+      <Box mt={8}>
+        <AlertManage /> {/* Include the new AlertManage component here */}
       </Box>
     </Box>
   );

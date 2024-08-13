@@ -360,3 +360,74 @@ export const deleteColor = async (color: string): Promise<void> => {
     throw new Error(error.message);
   }
 };
+
+
+
+// Fetch all alert levels
+export const databaseFetchAlerts = async (): Promise<AlertState[] | null> => {
+  const fetchAlertsQuery = await supabase
+    .from("art_tool_alert_state")
+    .select("*")
+    .order("alert_id", { ascending: true });
+
+  const { data, error } = logSupabaseDatabaseQuery(fetchAlertsQuery, "fetchAlerts");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+// Update an alert level (name, message, or active status)
+export const databaseUpdateAlert = async (
+  alertId: number,
+  updates: Partial<AlertState>,
+): Promise<void> => {
+  const updateAlertQuery = await supabase
+    .from("art_tool_alert_state")
+    .update(updates)
+    .eq("alert_id", alertId);
+
+  const { error } = logSupabaseDatabaseQuery(updateAlertQuery, "updateAlert");
+
+  if (error) {
+    console.error("Supabase update error:", error); // Log the Supabase error
+    throw new Error(error.message);
+  }
+};
+
+// Set an active alert level and deactivate others
+export const databaseSetActiveAlert = async (
+  activeAlertId: number
+): Promise<void> => {
+  // Deactivate all alerts
+  const deactivateAlertsQuery = await supabase
+    .from("art_tool_alert_state")
+    .update({ Active: false })
+    .neq("alert_id", activeAlertId);
+
+  const { error: deactivateError } = logSupabaseDatabaseQuery(
+    deactivateAlertsQuery,
+    "deactivateAlerts"
+  );
+
+  if (deactivateError) {
+    throw new Error(deactivateError.message);
+  }
+
+  // Activate the selected alert
+  const activateAlertQuery = await supabase
+    .from("art_tool_alert_state")
+    .update({ Active: true })
+    .eq("alert_id", activeAlertId);
+
+  const { error: activateError } = logSupabaseDatabaseQuery(
+    activateAlertQuery,
+    "activateAlert"
+  );
+
+  if (activateError) {
+    throw new Error(activateError.message);
+  }
+};
