@@ -13,6 +13,7 @@ import {
   Button,
   Switch,
   useToast,
+  Heading,
 } from "@chakra-ui/react";
 import { FaEdit, FaSave } from "react-icons/fa";
 import { updateAlertLevel, setActiveAlertLevel } from "../../api/supabase/database";
@@ -96,6 +97,9 @@ const AlertManage: React.FC = () => {
 
   return (
     <Box>
+      <Heading size="md" mb={4}>
+        Manage Alert Levels
+      </Heading>
       <Table variant="simple">
         <Thead>
           <Tr>
