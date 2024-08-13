@@ -48,12 +48,6 @@ export interface Color {
 }
 
 export interface AlertState {
-  id: number;
-  state: number;
-  message: string;
-}
-
-export interface AlertState {
   alert_id: number;   // Unique identifier for each alert
   alert_name: string; // Name of the alert level
   message: string;    // Description of the alert level
