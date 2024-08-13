@@ -1,166 +1,182 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
-  Heading,
-  Input,
-  Textarea,
   Table,
   Tbody,
   Td,
   Th,
   Thead,
   Tr,
-  Switch,
+  Textarea,
+  Input,
+  IconButton,
   Button,
+  Switch,
   useToast,
-} from '@chakra-ui/react';
-import { AlertState } from '../../types/art-tool';
-import { fetchAlertLevels, updateAlertLevel, setActiveAlertLevel } from '../../api/supabase/database';
-import { supabase } from '../../api/supabase'; // Import the Supabase client
+} from "@chakra-ui/react";
+import { FaEdit, FaSave } from "react-icons/fa";
+import { fetchAlertLevels, updateAlertLevel, setActiveAlertLevel } from "../../api/supabase/database";
+import { AlertState } from "../../types/art-tool";
+import { useAlertContext } from "../../context/alert-context";
 
-const AlertManage = () => {
+const AlertManage: React.FC = () => {
+  const { alertLevel, setAlertLevel } = useAlertContext();
   const [alerts, setAlerts] = useState<AlertState[]>([]);
-  const [editedAlertId, setEditedAlertId] = useState<number | null>(null);
-  const [editedFields, setEditedFields] = useState<Partial<AlertState>>({});
-  const [isEditing, setIsEditing] = useState(false);
+  const [editedFields, setEditedFields] = useState<Record<number, Partial<AlertState>>>({});
+  const [editingId, setEditingId] = useState<number | null>(null);
   const toast = useToast();
 
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
         const data = await fetchAlertLevels();
-        setAlerts(data || []);
+        if (data) {
+          setAlerts(data);
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to fetch alert levels",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       } catch (error) {
+        console.error("Error fetching alert levels:", error);
         toast({
-          title: 'Error fetching alerts',
-          description: (error as Error).message,
-          status: 'error',
+          title: "Error",
+          description: "Failed to fetch alert levels",
+          status: "error",
           duration: 3000,
           isClosable: true,
         });
-        console.error('Error during fetchAlertLevels in useEffect:', error);
       }
     };
 
     fetchAlerts();
-
-    const subscription = supabase
-      .channel('public:art_tool_alert_state')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'art_tool_alert_state' },
-        fetchAlerts
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, []);
+  }, [toast]);
 
   const handleInputChange = (alertId: number, field: string, value: any) => {
-    setEditedAlertId(alertId);
     setEditedFields((prevFields) => ({
       ...prevFields,
-      [field]: value,
+      [alertId]: {
+        ...(prevFields[alertId] || {}),
+        [field]: value,
+      },
     }));
-    setIsEditing(true);
   };
 
-  const handleSaveChanges = async () => {
-    if (!editedAlertId) return;
-
-    try {
-      await updateAlertLevel(editedAlertId, editedFields);
-      setIsEditing(false);
-      setEditedAlertId(null);
-      setEditedFields({});
-      toast({
-        title: 'Changes saved',
-        status: 'success',
-        duration: 2000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: `Error saving changes`,
-        description: (error as Error).message,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      console.error(`Error during handleSaveChanges for alert_id ${editedAlertId}:`, error);
+  const handleSave = async (alertId: number) => {
+    if (editedFields[alertId]) {
+      try {
+        await updateAlertLevel(alertId, editedFields[alertId]);
+        setEditingId(null); // Exit editing mode
+        toast({
+          title: "Success",
+          description: "Alert level updated successfully",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } catch (error) {
+        console.error("Error updating alert level:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update alert level",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     }
   };
 
-  const handleSetActiveAlert = async (activeAlertId: number) => {
+  const handleActivateAlert = async (alertId: number) => {
     try {
-      await setActiveAlertLevel(activeAlertId);
-      setAlerts(alerts.map(a => ({ ...a, Active: a.alert_id === activeAlertId })));
-    } catch (error) {
+      await setActiveAlertLevel(alertId);
+      setAlertLevel(alertId);
       toast({
-        title: 'Error setting active alert',
-        description: (error as Error).message,
-        status: 'error',
+        title: "Success",
+        description: "Alert level activated successfully",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
-      console.error(`Error during handleSetActiveAlert for alert_id ${activeAlertId}:`, error);
+    } catch (error) {
+      console.error("Error activating alert level:", error);
+      toast({
+        title: "Error",
+        description: "Failed to activate alert level",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
+  };
+
+  const handleEditClick = (alertId: number) => {
+    setEditingId(alertId);
   };
 
   return (
-    <Box mt={8}>
-      <Heading size="md" mb={4}>
-        Manage Alert Levels
-      </Heading>
+    <Box>
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th width="20%">Alert Name</Th>
-            <Th width="55%">Description</Th>
-            <Th width="15%">Active</Th>
-            <Th width="10%"></Th>
+            <Th>Alert Name</Th>
+            <Th>Description</Th>
+            <Th>Active</Th>
+            <Th>Actions</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {alerts.map(alert => (
+          {alerts.map((alert) => (
             <Tr key={alert.alert_id}>
               <Td>
-                <Input
-                  size="sm"
-                  value={
-                    editedAlertId === alert.alert_id && editedFields.alert_name !== undefined
-                      ? editedFields.alert_name
-                      : alert.alert_name
-                  }
-                  onChange={(e) => handleInputChange(alert.alert_id, 'alert_name', e.target.value)}
+                {editingId === alert.alert_id ? (
+                  <Input
+                    value={editedFields[alert.alert_id]?.alert_name || alert.alert_name}
+                    onChange={(e) =>
+                      handleInputChange(alert.alert_id, "alert_name", e.target.value)
+                    }
+                  />
+                ) : (
+                  alert.alert_name
+                )}
+              </Td>
+              <Td>
+                {editingId === alert.alert_id ? (
+                  <Textarea
+                    value={editedFields[alert.alert_id]?.message || alert.message}
+                    onChange={(e) =>
+                      handleInputChange(alert.alert_id, "message", e.target.value)
+                    }
+                  />
+                ) : (
+                  alert.message
+                )}
+              </Td>
+              <Td>
+                <Switch
+                  isChecked={alert.alert_id === alertLevel}
+                  onChange={() => handleActivateAlert(alert.alert_id)}
                 />
               </Td>
               <Td>
-                <Textarea
-                  value={
-                    editedAlertId === alert.alert_id && editedFields.message !== undefined
-                      ? editedFields.message
-                      : alert.message
-                  }
-                  onChange={(e) => handleInputChange(alert.alert_id, 'message', e.target.value)}
-                  size="sm"
-                  resize="vertical"
-                  fontSize="sm"
-                />
-              </Td>
-              <Td textAlign="center">
-                <Switch
-                  isChecked={alert.Active}
-                  onChange={() => handleSetActiveAlert(alert.alert_id)}
-                />
-              </Td>
-              <Td textAlign="center">
-                {isEditing && editedAlertId === alert.alert_id && (
-                  <Button colorScheme="blue" size="sm" onClick={handleSaveChanges}>
+                {editingId === alert.alert_id ? (
+                  <Button
+                    leftIcon={<FaSave />}
+                    colorScheme="blue"
+                    onClick={() => handleSave(alert.alert_id)}
+                  >
                     Save
                   </Button>
+                ) : (
+                  <IconButton
+                    icon={<FaEdit />}
+                    aria-label="Edit"
+                    onClick={() => handleEditClick(alert.alert_id)}
+                  />
                 )}
               </Td>
             </Tr>
