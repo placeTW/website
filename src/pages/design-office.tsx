@@ -206,8 +206,6 @@ const DesignOffice: React.FC = () => {
       );
     }
 
-    console.log(canvasDesigns);
-
     setSelectedCanvas(canvas);
     setVisibleDesigns(canvasDesigns);
     setVisibleLayers(canvasDesigns.map((design) => design.id));
@@ -238,8 +236,8 @@ const DesignOffice: React.FC = () => {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "art_tool_designs" },
-        () => {
-          fetchDesigns();
+        async () => {
+          await fetchDesigns();
         },
       )
       .subscribe();
