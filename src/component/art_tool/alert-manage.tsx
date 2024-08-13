@@ -15,46 +15,22 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FaEdit, FaSave } from "react-icons/fa";
-import { fetchAlertLevels, updateAlertLevel, setActiveAlertLevel } from "../../api/supabase/database";
+import { updateAlertLevel, setActiveAlertLevel } from "../../api/supabase/database";
 import { AlertState } from "../../types/art-tool";
 import { useAlertContext } from "../../context/alert-context";
 
 const AlertManage: React.FC = () => {
-  const { alertLevel, setAlertLevel } = useAlertContext();
-  const [alerts, setAlerts] = useState<AlertState[]>([]);
+  const { alertId, setActiveAlertId, alertLevels } = useAlertContext();
+  const [alerts, setAlerts] = useState<AlertState[]>(alertLevels);
   const [editedFields, setEditedFields] = useState<Record<number, Partial<AlertState>>>({});
   const [editingId, setEditingId] = useState<number | null>(null);
   const toast = useToast();
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const data = await fetchAlertLevels();
-        if (data) {
-          setAlerts(data);
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to fetch alert levels",
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching alert levels:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch alert levels",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-    };
-
-    fetchAlerts();
-  }, [toast]);
+    // Update the component's state whenever the alert levels change in the context
+    setAlerts(alertLevels);
+    console.log("Context updated alerts:", alertLevels);
+  }, [alertLevels]);
 
   const handleInputChange = (alertId: number, field: string, value: any) => {
     setEditedFields((prevFields) => ({
@@ -94,7 +70,7 @@ const AlertManage: React.FC = () => {
   const handleActivateAlert = async (alertId: number) => {
     try {
       await setActiveAlertLevel(alertId);
-      setAlertLevel(alertId);
+      setActiveAlertId(alertId);
       toast({
         title: "Success",
         description: "Alert level activated successfully",
@@ -158,7 +134,7 @@ const AlertManage: React.FC = () => {
               </Td>
               <Td>
                 <Switch
-                  isChecked={alert.alert_id === alertLevel}
+                  isChecked={alert.alert_id === alertId}
                   onChange={() => handleActivateAlert(alert.alert_id)}
                 />
               </Td>
