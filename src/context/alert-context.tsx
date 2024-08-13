@@ -6,8 +6,8 @@ import {
   useState,
 } from "react";
 import {
-  databaseFetchAlertLevel,
-  databaseUpdateAlertLevel,
+  fetchAlertLevels,
+  setActiveAlertLevel,
   removeSupabaseChannel,
   supabase,
 } from "../api/supabase";
@@ -26,20 +26,44 @@ interface AlertProviderProps {
 }
 
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
-  const [alertLevel, setAlertLevelState] = useState<number | null>(1);
+  const [alertLevel, setAlertLevelState] = useState<number | null>(null);
   const [alertMessage, setAlertMessageState] = useState<string | null>(null);
-  const toast = useToast()
+  const toast = useToast();
 
   useEffect(() => {
     const fetchAlertLevel = async () => {
-      const data = await databaseFetchAlertLevel();
-      if (data) {
-        setAlertLevelState(data.state);
-        setAlertMessageState(data.message);
-      } else {
+      try {
+        const data = await fetchAlertLevels();
+
+        if (data && data.length > 0) {
+          const activeAlert = data.find(alert => alert.Active);
+
+          if (activeAlert) {
+            setAlertLevelState(activeAlert.alert_id);
+            setAlertMessageState(activeAlert.message);
+          } else {
+            toast({
+              title: "No active alert",
+              description: "There is currently no active alert level.",
+              status: "warning",
+              duration: 3000,
+              isClosable: true,
+            });
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: "No alert levels found.",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching alert levels:", error);
         toast({
           title: "Error",
-          description: "Failed to fetch alert level",
+          description: "Failed to fetch alert levels.",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -50,7 +74,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     fetchAlertLevel();
 
     const alertSubscription = supabase
-      .channel("art_tool_alert_state")
+      .channel("public:art_tool_alert_state")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "art_tool_alert_state" },
@@ -63,13 +87,14 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     return () => {
       removeSupabaseChannel(alertSubscription);
     };
-  }, []);
+  }, [toast]);
 
   const setAlertLevel = async (level: number) => {
-    const response = await databaseUpdateAlertLevel(level);
-    if (response) {
+    try {
+      await setActiveAlertLevel(level);
       setAlertLevelState(level);
-    } else {
+    } catch (error) {
+      console.error("Error setting alert level:", error);
       toast({
         title: "Error",
         description: "Failed to update alert level",

@@ -75,40 +75,7 @@ export const databaseFetchDesigns = async (): Promise<Design[] | null> => {
   return data;
 };
 
-export const databaseFetchAlertLevel = async (): Promise<AlertState | null> => {
-  const fetchAlertLevelQuery = await supabase
-    .from("art_tool_alert_state")
-    .select("*")
-    .eq("id", 1)
-    .single<AlertState>();
 
-  const { data } = logSupabaseDatabaseQuery(
-    fetchAlertLevelQuery,
-    "fetchAlertLevel",
-  );
-
-  return data;
-};
-
-export const databaseUpdateAlertLevel = async (
-  level: number,
-): Promise<boolean> => {
-  const updateAlertLevelQuery = await supabase
-    .from("art_tool_alert_state")
-    .update({ state: level })
-    .eq("id", 1);
-
-  const { error } = logSupabaseDatabaseQuery(
-    updateAlertLevelQuery,
-    "updateAlertLevel",
-  );
-
-  if (error) {
-    return false;
-  }
-
-  return true;
-};
 
 export const databaseDeleteDesign = async (designId: number): Promise<void> => {
   const deleteDesignQuery = await supabase
@@ -364,70 +331,77 @@ export const deleteColor = async (color: string): Promise<void> => {
 
 
 // Fetch all alert levels
-export const databaseFetchAlerts = async (): Promise<AlertState[] | null> => {
-  const fetchAlertsQuery = await supabase
-    .from("art_tool_alert_state")
-    .select("*")
-    .order("alert_id", { ascending: true });
 
-  const { data, error } = logSupabaseDatabaseQuery(fetchAlertsQuery, "fetchAlerts");
+export const fetchAlertLevels = async (): Promise<AlertState[] | null> => {
+  try {
+    const fetchAlertsQuery = await supabase
+      .from('art_tool_alert_state')
+      .select('*')
+      .order('alert_id', { ascending: true });
 
-  if (error) {
-    throw new Error(error.message);
+    const { data, error } = logSupabaseDatabaseQuery(fetchAlertsQuery, 'fetchAlertLevels');
+
+    if (error) {
+      console.error('Supabase fetchAlertLevels error:', error.message, error);
+      throw new Error(`fetchAlertLevels: ${error.message}`);
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Error during fetchAlertLevels:', err);
+    throw err;
   }
-
-  return data;
 };
 
-// Update an alert level (name, message, or active status)
-export const databaseUpdateAlert = async (
+export const updateAlertLevel = async (
   alertId: number,
   updates: Partial<AlertState>,
 ): Promise<void> => {
-  const updateAlertQuery = await supabase
-    .from("art_tool_alert_state")
-    .update(updates)
-    .eq("alert_id", alertId);
+  try {
+    const updateAlertQuery = await supabase
+      .from('art_tool_alert_state')
+      .update(updates)
+      .eq('alert_id', alertId);
 
-  const { error } = logSupabaseDatabaseQuery(updateAlertQuery, "updateAlert");
+    const { error } = logSupabaseDatabaseQuery(updateAlertQuery, 'updateAlertLevel');
 
-  if (error) {
-    console.error("Supabase update error:", error); // Log the Supabase error
-    throw new Error(error.message);
+    if (error) {
+      console.error(`Supabase updateAlertLevel error for alert_id ${alertId}:`, error.message, error);
+      throw new Error(`updateAlertLevel: ${error.message}`);
+    }
+  } catch (err) {
+    console.error('Error during updateAlertLevel:', err);
+    throw err;
   }
 };
 
-// Set an active alert level and deactivate others
-export const databaseSetActiveAlert = async (
-  activeAlertId: number
-): Promise<void> => {
-  // Deactivate all alerts
-  const deactivateAlertsQuery = await supabase
-    .from("art_tool_alert_state")
-    .update({ Active: false })
-    .neq("alert_id", activeAlertId);
+export const setActiveAlertLevel = async (activeAlertId: number): Promise<void> => {
+  try {
+    const deactivateAlertsQuery = await supabase
+      .from('art_tool_alert_state')
+      .update({ Active: false })
+      .neq('alert_id', activeAlertId);
 
-  const { error: deactivateError } = logSupabaseDatabaseQuery(
-    deactivateAlertsQuery,
-    "deactivateAlerts"
-  );
+    const { error: deactivateError } = logSupabaseDatabaseQuery(deactivateAlertsQuery, 'deactivateAlerts');
 
-  if (deactivateError) {
-    throw new Error(deactivateError.message);
-  }
+    if (deactivateError) {
+      console.error('Supabase deactivateAlerts error:', deactivateError.message, deactivateError);
+      throw new Error(`deactivateAlerts: ${deactivateError.message}`);
+    }
 
-  // Activate the selected alert
-  const activateAlertQuery = await supabase
-    .from("art_tool_alert_state")
-    .update({ Active: true })
-    .eq("alert_id", activeAlertId);
+    const activateAlertQuery = await supabase
+      .from('art_tool_alert_state')
+      .update({ Active: true })
+      .eq('alert_id', activeAlertId);
 
-  const { error: activateError } = logSupabaseDatabaseQuery(
-    activateAlertQuery,
-    "activateAlert"
-  );
+    const { error: activateError } = logSupabaseDatabaseQuery(activateAlertQuery, 'setActiveAlertLevel');
 
-  if (activateError) {
-    throw new Error(activateError.message);
+    if (activateError) {
+      console.error('Supabase setActiveAlertLevel error:', activateError.message, activateError);
+      throw new Error(`setActiveAlertLevel: ${activateError.message}`);
+    }
+  } catch (err) {
+    console.error('Error during setActiveAlertLevel:', err);
+    throw err;
   }
 };

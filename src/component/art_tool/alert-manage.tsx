@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Heading,
@@ -15,11 +15,8 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { AlertState } from '../../types/art-tool';
-import {
-  databaseFetchAlerts,
-  databaseUpdateAlert,
-  databaseSetActiveAlert,
-} from '../../api/supabase/database';
+import { fetchAlertLevels, updateAlertLevel, setActiveAlertLevel } from '../../api/supabase/database';
+import { supabase } from '../../api/supabase'; // Import the Supabase client
 
 const AlertManage = () => {
   const [alerts, setAlerts] = useState<AlertState[]>([]);
@@ -31,7 +28,7 @@ const AlertManage = () => {
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const data = await databaseFetchAlerts();
+        const data = await fetchAlertLevels();
         setAlerts(data || []);
       } catch (error) {
         toast({
@@ -41,10 +38,24 @@ const AlertManage = () => {
           duration: 3000,
           isClosable: true,
         });
+        console.error('Error during fetchAlertLevels in useEffect:', error);
       }
     };
 
     fetchAlerts();
+
+    const subscription = supabase
+      .channel('public:art_tool_alert_state')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'art_tool_alert_state' },
+        fetchAlerts
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   const handleInputChange = (alertId: number, field: string, value: any) => {
@@ -60,8 +71,7 @@ const AlertManage = () => {
     if (!editedAlertId) return;
 
     try {
-      await databaseUpdateAlert(editedAlertId, editedFields);
-      setAlerts(alerts.map(a => (a.alert_id === editedAlertId ? { ...a, ...editedFields } : a)));
+      await updateAlertLevel(editedAlertId, editedFields);
       setIsEditing(false);
       setEditedAlertId(null);
       setEditedFields({});
@@ -79,12 +89,13 @@ const AlertManage = () => {
         duration: 3000,
         isClosable: true,
       });
+      console.error(`Error during handleSaveChanges for alert_id ${editedAlertId}:`, error);
     }
   };
 
   const handleSetActiveAlert = async (activeAlertId: number) => {
     try {
-      await databaseSetActiveAlert(activeAlertId);
+      await setActiveAlertLevel(activeAlertId);
       setAlerts(alerts.map(a => ({ ...a, Active: a.alert_id === activeAlertId })));
     } catch (error) {
       toast({
@@ -94,6 +105,7 @@ const AlertManage = () => {
         duration: 3000,
         isClosable: true,
       });
+      console.error(`Error during handleSetActiveAlert for alert_id ${activeAlertId}:`, error);
     }
   };
 
@@ -135,7 +147,7 @@ const AlertManage = () => {
                   onChange={(e) => handleInputChange(alert.alert_id, 'message', e.target.value)}
                   size="sm"
                   resize="vertical"
-                  fontSize="sm" // Match font size to the input field
+                  fontSize="sm"
                 />
               </Td>
               <Td textAlign="center">
