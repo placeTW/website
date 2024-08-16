@@ -36,7 +36,6 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const handleAuth = async (provider: Provider) => {
-    console.log(t("Starting authentication with provider:"), provider);
 
     const { data, error } = await authSignInWithOAuth(
       provider,
@@ -49,15 +48,12 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
       return;
     }
 
-    console.log(t("Authentication data:"), data);
-
     // Redirect the user to the OAuth URL
     window.location.href = data.url;
   };
 
   useEffect(() => {
     const checkSession = async () => {
-      console.log("Checking session...");
       const {
         data: { session },
         error,
@@ -70,17 +66,13 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
       }
 
       if (session) {
-        console.log("Session found...");
         try {
           const userData = await functionsFetchOneUser();
-          console.log("Fetched user data:", userData);
 
           if (userData.rank === "F") {
-            console.log("User is banned, signing out...");
             await authSignOut();
             setError(t("Your account has been banned."));
           } else {
-            console.log("User is not banned, closing modal...");
             onClose();
           }
         } catch (fetchError) {
@@ -95,7 +87,6 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
               session.user?.email || "",
               session.user?.user_metadata?.name || session.user?.user_metadata?.full_name || ""
             );
-            console.log("User inserted successfully.");
             onClose();
           } catch (insertError) {
             console.error(t("Error inserting new user into art_tool_users:"), insertError);
@@ -103,7 +94,6 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
           }
         }
       } else {
-        console.log("No active session found, opening auth modal...");
       }
     };
 
@@ -118,7 +108,6 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
         const { data: { session } } = await authGetSession();
         const userId = session?.user?.id;
         if (payload?.payload?.userId === userId) {
-          console.log("User has been banned, signing out...");
           await authSignOut();
           setError(t("Your account has been banned."));
         }

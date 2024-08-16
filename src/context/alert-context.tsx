@@ -69,7 +69,6 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
 
     const updateAlertLevelFromEvent = (payload: any) => {
       const updatedAlert = payload.new as AlertState;
-      console.log("Received event from Supabase:", payload);
       setAlertLevels((prevAlerts) => {
         const updatedAlerts = prevAlerts.map(alert =>
           alert.alert_id === updatedAlert.alert_id ? updatedAlert : alert
@@ -95,7 +94,6 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       .subscribe();
 
     return () => {
-      console.log("Removing Supabase channel subscription");
       removeSupabaseChannel(alertSubscription);
     };
   }, [toast]);

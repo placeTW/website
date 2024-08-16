@@ -18,7 +18,6 @@ const Navbar = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      console.log("Checking session...");
       const { data: { session }, error } = await authGetSession();
 
       if (error) {
@@ -27,17 +26,12 @@ const Navbar = () => {
       }
 
       if (session) {
-        console.log("Session found...");
         try {
           const userData = await functionsFetchOneUser();
-          console.log("Fetched user data:", userData);
-
           if (userData.rank === "F") {
-            console.log("User is banned, signing out...");
             await authSignOut();
             alert(t("Your account has been banned."));
           } else {
-            console.log("User is not banned, closing auth modal...");
             setAuthModalOpen(false);
           }
         } catch (fetchError) {
@@ -52,7 +46,6 @@ const Navbar = () => {
               session.user?.email || "",
               session.user?.user_metadata?.name || session.user?.user_metadata?.full_name || ''
             );
-            console.log("User inserted successfully.");
             setUserInserted(true); // Update state variable
             setAuthModalOpen(false);
           } catch (insertError) {
@@ -61,7 +54,6 @@ const Navbar = () => {
           }
         }
       } else {
-        console.log("No active session found, opening auth modal...");
         setAuthModalOpen(true);
       }
     };

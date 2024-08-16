@@ -32,8 +32,6 @@ export const functionsUpdateNickname = async (handle: string) => {
 export const functionsFetchOneUser = async () => {
   const [userId, access_token] = await functionsGetSessionInfo();
 
-  console.log("Fetching one user with userId", userId);
-
   const response = await fetch(
     `${SUPABASE_FUNCTIONS_URL}/fetch-one-user?user_id=${userId}`,
     {
@@ -142,7 +140,6 @@ export const insertNewUser = async (
   handle: string,
 ) => {
   const [, access_token] = await functionsGetSessionInfo();
-  console.log("Inserting new user with", { user_id, email, handle });
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/insert-new-user`, {
     method: "POST",
@@ -160,7 +157,6 @@ export const insertNewUser = async (
   }
 
   const data = await response.json();
-  console.log("User inserted successfully", data);
 
   return data;
 };

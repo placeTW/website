@@ -37,7 +37,6 @@ const AlertManage: React.FC = () => {
 
   useEffect(() => {
     setAlerts(alertLevels);
-    console.log("Context updated alerts:", alertLevels);
   }, [alertLevels]);
 
   useEffect(() => {

@@ -44,7 +44,6 @@ const GlobalUserStatusListener = ({
       const currentUserData = updatedUsers.find(
         (user: UserType) => user.user_id === currentUserId,
       );
-      console.log("Current user data:", currentUserData);
       setCurrentUser(currentUserData || null);
     } catch (error) {
       console.error(t("Error fetching users:"), error);
@@ -63,9 +62,7 @@ const GlobalUserStatusListener = ({
 
   useEffect(() => {
     const handleUserUpdate = async (updatedUser: UserType) => {
-      console.log("Handling user update:", updatedUser);
       if (updatedUser.rank === "F") {
-        console.log("User is banned, signing out...");
         await authSignOut();
         alert(t("Your account has been banned."));
         setCurrentUser(null);
@@ -106,7 +103,6 @@ const GlobalUserStatusListener = ({
   }, [rankNames, t]);
 
   const updateUser = (updatedUser: UserType) => {
-    console.log("Updating user:", updatedUser);
     setUsers((prevUsers) => {
       const newUsers = prevUsers.map((user: UserType) =>
         user.user_id === updatedUser.user_id ? updatedUser : user,
@@ -123,13 +119,11 @@ const GlobalUserStatusListener = ({
   };
 
   const logoutUser = () => {
-    console.log("Logging out user...");
     setCurrentUser(null);
   };
 
   useEffect(() => {
     if (currentUser && currentUser.rank === "F") {
-      console.log("Detected banned user after sign-in, logging out...");
       authSignOut().then(() => {
         alert(t("Your account has been banned."));
         setCurrentUser(null);
