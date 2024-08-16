@@ -55,16 +55,13 @@ const UserManage: React.FC = () => {
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>{t('User ID')}</Th>
-            <Th>{t('Username')}</Th>
-            <Th>{t('Rank')}</Th>
+            <Th>{t('User ID')}</Th><Th>{t('Username')}</Th><Th>{t('Rank')}</Th>
           </Tr>
         </Thead>
         <Tbody>
           {sortUsers(users).map((user) => (
             <Tr key={user.user_id}>
-              <Td>{user.user_id}</Td>
-              <Td>{user.handle}</Td>
+              <Td>{user.user_id}</Td><Td>{user.handle}</Td>
               <Td>
                 <Select
                   value={user.rank}

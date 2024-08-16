@@ -14,17 +14,23 @@ import {
   Switch,
   useToast,
   Select,
+  Heading,
 } from "@chakra-ui/react";
 import { FaEdit, FaSave } from "react-icons/fa";
-import { updateAlertLevel, setActiveAlertLevel, databaseFetchCanvases } from "../../api/supabase/database";
+import {
+  updateAlertLevel,
+  setActiveAlertLevel,
+  databaseFetchCanvases,
+} from "../../api/supabase/database";
 import { AlertState, Canvas } from "../../types/art-tool";
 import { useAlertContext } from "../../context/alert-context";
-import { Heading } from "@chakra-ui/react"; // Add Heading import
 
 const AlertManage: React.FC = () => {
   const { alertId, setActiveAlertId, alertLevels } = useAlertContext();
   const [alerts, setAlerts] = useState<AlertState[]>(alertLevels);
-  const [editedFields, setEditedFields] = useState<Record<number, Partial<AlertState>>>({});
+  const [editedFields, setEditedFields] = useState<
+    Record<number, Partial<AlertState>>
+  >({});
   const [editingId, setEditingId] = useState<number | null>(null);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const toast = useToast();
@@ -54,7 +60,11 @@ const AlertManage: React.FC = () => {
     fetchCanvases();
   }, [toast]);
 
-  const handleInputChange = (alertId: number, field: string, value: any) => {
+  const handleInputChange = (
+    alertId: number,
+    field: string,
+    value: any
+  ) => {
     setEditedFields((prevFields) => ({
       ...prevFields,
       [alertId]: {
@@ -120,13 +130,13 @@ const AlertManage: React.FC = () => {
     <Box>
       <Heading size="md" mb={4}>
         Alert Management
-      </Heading>  {/* Add heading for the section */}
+      </Heading>
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th width="25%">Alert Name</Th> {/* Adjust column width */}
+            <Th width="25%">Alert Name</Th>
             <Th>Description</Th>
-            <Th width="20%">Canvas</Th> {/* Adjust column width */}
+            <Th width="20%">Canvas</Th>
             <Th width="10%">Active</Th>
             <Th>Actions</Th>
           </Tr>
@@ -137,7 +147,10 @@ const AlertManage: React.FC = () => {
               <Td>
                 {editingId === alert.alert_id ? (
                   <Input
-                    value={editedFields[alert.alert_id]?.alert_name || alert.alert_name}
+                    value={
+                      editedFields[alert.alert_id]?.alert_name ||
+                      alert.alert_name
+                    }
                     onChange={(e) =>
                       handleInputChange(alert.alert_id, "alert_name", e.target.value)
                     }
@@ -149,7 +162,9 @@ const AlertManage: React.FC = () => {
               <Td>
                 {editingId === alert.alert_id ? (
                   <Textarea
-                    value={editedFields[alert.alert_id]?.message || alert.message}
+                    value={
+                      editedFields[alert.alert_id]?.message || alert.message
+                    }
                     onChange={(e) =>
                       handleInputChange(alert.alert_id, "message", e.target.value)
                     }
@@ -161,7 +176,11 @@ const AlertManage: React.FC = () => {
               <Td>
                 {editingId === alert.alert_id ? (
                   <Select
-                    value={editedFields[alert.alert_id]?.canvas_id || alert.canvas_id || ""}
+                    value={
+                      editedFields[alert.alert_id]?.canvas_id ||
+                      alert.canvas_id ||
+                      ""
+                    }
                     onChange={(e) =>
                       handleInputChange(alert.alert_id, "canvas_id", e.target.value)
                     }
@@ -174,7 +193,8 @@ const AlertManage: React.FC = () => {
                     ))}
                   </Select>
                 ) : (
-                  canvases.find((c) => c.id === alert.canvas_id)?.canvas_name || "Unassigned"
+                  canvases.find((c) => c.id === alert.canvas_id)
+                    ?.canvas_name || "Unassigned"
                 )}
               </Td>
               <Td>
