@@ -12,8 +12,7 @@ const BriefingRoom: React.FC = () => {
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const [designs, setDesigns] = useState<Design[]>([]);
-  const [pixels, setPixels] = useState<Pixel[]>([]);
-
+  
   useEffect(() => {
     const fetchCanvasesAndDesigns = async () => {
       if (currentAlertData?.canvas_id) {
@@ -24,7 +23,6 @@ const BriefingRoom: React.FC = () => {
         setSelectedCanvas(selected);
 
         if (selected) {
-          // Fetch all designs and filter them by the selected canvas
           const allDesigns = await databaseFetchDesigns();
           const filteredDesigns = allDesigns?.filter(design => design.canvas === selected.id) || [];
           setDesigns(filteredDesigns);
@@ -36,7 +34,8 @@ const BriefingRoom: React.FC = () => {
   }, [currentAlertData]);
 
   const handleUpdatePixels = (updatedPixels: Pixel[]) => {
-    setPixels(updatedPixels);
+    // You can add any necessary logic here if you need to do something with the updated pixels
+    console.log("Pixels updated:", updatedPixels);
   };
 
   const handleResetViewport = () => {
@@ -59,13 +58,14 @@ const BriefingRoom: React.FC = () => {
                 <AdvancedViewport
                   isEditing={false}
                   editDesignId={null}
-                  visibleLayers={designs.map(design => design.id)} // Pass design IDs as visible layers
+                  visibleLayers={designs.map(design => design.id)}
                   onUpdatePixels={handleUpdatePixels}
-                  colors={[]}  // Colors can be set as needed or omitted
+                  colors={[]} 
                   canvases={canvases}
                   selectedCanvas={selectedCanvas}
                   onSelectCanvas={setSelectedCanvas}
                   onResetViewport={handleResetViewport}
+                  showCanvasButtons={false}  // Hide the canvas buttons in briefing room
                 />
               </Box>
             )}

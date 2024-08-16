@@ -39,6 +39,7 @@ interface AdvancedViewportProps {
   onSelectCanvas: (canvas: Canvas | null) => void;
   selectedCanvas: Canvas | null;
   onResetViewport: () => void;
+  showCanvasButtons?: boolean;  // Add this prop
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -51,6 +52,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   onSelectCanvas,
   selectedCanvas,
   onResetViewport,
+  showCanvasButtons = true,  // Default to true if not provided
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -450,34 +452,36 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   return (
     <Box position="relative" height="100%">
       <Box height="100%">
-        <Flex padding={2}>
-          <Wrap direction="row" spacing={2}>
-            {canvases.map((canvas) => (
-              <WrapItem key={canvas.id}>
-                <Button
-                  onClick={() => onSelectCanvas(canvas)}
-                  colorScheme="teal"
-                  border={
-                    canvas.id === selectedCanvas?.id
-                      ? "2px solid black"
-                      : "1px solid #ccc"
-                  }
-                >
-                  {canvas.canvas_name}
-                </Button>
+        {showCanvasButtons && (  // Conditionally render the canvas buttons
+          <Flex padding={2}>
+            <Wrap direction="row" spacing={2}>
+              {canvases.map((canvas) => (
+                <WrapItem key={canvas.id}>
+                  <Button
+                    onClick={() => onSelectCanvas(canvas)}
+                    colorScheme="teal"
+                    border={
+                      canvas.id === selectedCanvas?.id
+                        ? "2px solid black"
+                        : "1px solid #ccc"
+                    }
+                  >
+                    {canvas.canvas_name}
+                  </Button>
+                </WrapItem>
+              ))}
+              <WrapItem>
+                <Button onClick={() => onSelectCanvas(null)}>Unassigned</Button>
               </WrapItem>
-            ))}
-            <WrapItem>
-              <Button onClick={() => onSelectCanvas(null)}>Unassigned</Button>
-            </WrapItem>
-          </Wrap>
-          <Spacer />
-          <IconButton
-            icon={<FaRepeat />}
-            aria-label="Reset viewport"
-            onClick={onResetViewport}
-          />
-        </Flex>
+            </Wrap>
+            <Spacer />
+            <IconButton
+              icon={<FaRepeat />}
+              aria-label="Reset viewport"
+              onClick={onResetViewport}
+            />
+          </Flex>
+        )}
         <Viewport
           designId={editDesignId}
           pixels={pixels}
