@@ -19,6 +19,7 @@ import { FaEdit, FaSave } from "react-icons/fa";
 import { updateAlertLevel, setActiveAlertLevel, databaseFetchCanvases } from "../../api/supabase/database";
 import { AlertState, Canvas } from "../../types/art-tool";
 import { useAlertContext } from "../../context/alert-context";
+import { Heading } from "@chakra-ui/react"; // Add Heading import
 
 const AlertManage: React.FC = () => {
   const { alertId, setActiveAlertId, alertLevels } = useAlertContext();
@@ -117,13 +118,16 @@ const AlertManage: React.FC = () => {
 
   return (
     <Box>
+      <Heading as="h2" size="lg" mb={4}>
+        Alert Management
+      </Heading>  {/* Add heading for the section */}
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>Alert Name</Th>
+            <Th width="25%">Alert Name</Th> {/* Adjust column width */}
             <Th>Description</Th>
-            <Th>Canvas</Th>
-            <Th>Active</Th>
+            <Th width="20%">Canvas</Th> {/* Adjust column width */}
+            <Th width="10%">Active</Th>
             <Th>Actions</Th>
           </Tr>
         </Thead>
