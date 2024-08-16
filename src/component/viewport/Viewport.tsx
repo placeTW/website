@@ -109,10 +109,6 @@ const Viewport: React.FC<ViewportProps> = ({
           width: entry.contentRect.width,
           height: entry.contentRect.height,
         });
-        console.log("Viewport dimensions set:", {
-          width: entry.contentRect.width,
-          height: entry.contentRect.height,
-        });
       });
     });
     resizeObserver.observe(divRef.current);
@@ -143,7 +139,6 @@ const Viewport: React.FC<ViewportProps> = ({
       }
 
       calculateVisibleTiles();
-      console.log("Zoom level adjusted to:", scale);
     }
   };
 
@@ -160,13 +155,10 @@ const Viewport: React.FC<ViewportProps> = ({
         });
     });
 
-    console.log("Merged pixels:", Array.from(pixelMap.values()));
-
     return Array.from(pixelMap.values());
   }, [layerOrder, pixels]);
 
   useEffect(() => {
-    console.log("Viewport pixels updated:", pixels);
   }, [pixels]);
 
   const mergedPixels = getMergedPixels();

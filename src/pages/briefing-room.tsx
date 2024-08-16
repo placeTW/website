@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAlertContext } from "../context/alert-context";
 import { databaseFetchCanvases, databaseFetchDesigns } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
-import { Canvas, Design, Pixel } from "../types/art-tool";
+import { Canvas, Design } from "../types/art-tool";
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
@@ -12,7 +12,7 @@ const BriefingRoom: React.FC = () => {
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const [designs, setDesigns] = useState<Design[]>([]);
-  
+
   useEffect(() => {
     const fetchCanvasesAndDesigns = async () => {
       if (currentAlertData?.canvas_id) {
@@ -33,9 +33,8 @@ const BriefingRoom: React.FC = () => {
     fetchCanvasesAndDesigns();
   }, [currentAlertData]);
 
-  const handleUpdatePixels = (updatedPixels: Pixel[]) => {
-    // You can add any necessary logic here if you need to do something with the updated pixels
-    console.log("Pixels updated:", updatedPixels);
+  const handleUpdatePixels = () => {
+    // Handle any logic here if needed
   };
 
   const handleResetViewport = () => {
