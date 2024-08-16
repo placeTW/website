@@ -37,12 +37,12 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     const fetchInitialAlertLevels = async () => {
       try {
         const data = await fetchAlertLevels();
-
+    
         if (data && data.length > 0) {
           setAlertLevels(data);
-
-          const activeAlert = data.find(alert => alert.Active);
-
+    
+          const activeAlert = data.find((alert) => alert.Active);
+    
           if (activeAlert) {
             setActiveAlertIdState(activeAlert.alert_id);
             setAlertMessageState(activeAlert.message);
@@ -75,6 +75,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         });
       }
     };
+    
 
     fetchInitialAlertLevels();
 

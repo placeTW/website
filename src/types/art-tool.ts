@@ -52,4 +52,5 @@ export interface AlertState {
   alert_name: string; // Name of the alert level
   message: string;    // Description of the alert level
   Active: boolean;    // Indicates whether this alert level is active
+  canvas_id: number | null; // ID of the associated canvas (nullable)
 }

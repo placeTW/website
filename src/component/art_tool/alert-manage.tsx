@@ -13,10 +13,11 @@ import {
   Button,
   Switch,
   useToast,
+  Select,
 } from "@chakra-ui/react";
 import { FaEdit, FaSave } from "react-icons/fa";
-import { updateAlertLevel, setActiveAlertLevel } from "../../api/supabase/database";
-import { AlertState } from "../../types/art-tool";
+import { updateAlertLevel, setActiveAlertLevel, databaseFetchCanvases } from "../../api/supabase/database";
+import { AlertState, Canvas } from "../../types/art-tool";
 import { useAlertContext } from "../../context/alert-context";
 
 const AlertManage: React.FC = () => {
@@ -24,13 +25,33 @@ const AlertManage: React.FC = () => {
   const [alerts, setAlerts] = useState<AlertState[]>(alertLevels);
   const [editedFields, setEditedFields] = useState<Record<number, Partial<AlertState>>>({});
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [canvases, setCanvases] = useState<Canvas[]>([]);
   const toast = useToast();
 
   useEffect(() => {
-    // Update the component's state whenever the alert levels change in the context
     setAlerts(alertLevels);
     console.log("Context updated alerts:", alertLevels);
   }, [alertLevels]);
+
+  useEffect(() => {
+    const fetchCanvases = async () => {
+      try {
+        const fetchedCanvases = await databaseFetchCanvases();
+        if (fetchedCanvases) {
+          setCanvases(fetchedCanvases);
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch canvases",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    };
+    fetchCanvases();
+  }, [toast]);
 
   const handleInputChange = (alertId: number, field: string, value: any) => {
     setEditedFields((prevFields) => ({
@@ -46,7 +67,7 @@ const AlertManage: React.FC = () => {
     if (editedFields[alertId]) {
       try {
         await updateAlertLevel(alertId, editedFields[alertId]);
-        setEditingId(null); // Exit editing mode
+        setEditingId(null);
         toast({
           title: "Success",
           description: "Alert level updated successfully",
@@ -101,6 +122,7 @@ const AlertManage: React.FC = () => {
           <Tr>
             <Th>Alert Name</Th>
             <Th>Description</Th>
+            <Th>Canvas</Th>
             <Th>Active</Th>
             <Th>Actions</Th>
           </Tr>
@@ -130,6 +152,25 @@ const AlertManage: React.FC = () => {
                   />
                 ) : (
                   alert.message
+                )}
+              </Td>
+              <Td>
+                {editingId === alert.alert_id ? (
+                  <Select
+                    value={editedFields[alert.alert_id]?.canvas_id || alert.canvas_id || ""}
+                    onChange={(e) =>
+                      handleInputChange(alert.alert_id, "canvas_id", e.target.value)
+                    }
+                  >
+                    <option value="">Unassigned</option>
+                    {canvases.map((canvas) => (
+                      <option key={canvas.id} value={canvas.id}>
+                        {canvas.canvas_name}
+                      </option>
+                    ))}
+                  </Select>
+                ) : (
+                  canvases.find((c) => c.id === alert.canvas_id)?.canvas_name || "Unassigned"
                 )}
               </Td>
               <Td>
