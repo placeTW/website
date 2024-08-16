@@ -2,8 +2,9 @@ import { authGetSession, SUPABASE_FUNCTIONS_URL } from ".";
 
 export const functionsGetSessionInfo = async () => {
   const { data: sessionData, error: sessionError } = await authGetSession();
+
   if (sessionError || !sessionData?.session?.user) {
-    throw new Error("Error fetching session: " + sessionError?.message);
+    return [null, null]; // Return null values to indicate no session
   }
 
   return [sessionData.session.user.id, sessionData.session.access_token];
@@ -11,6 +12,10 @@ export const functionsGetSessionInfo = async () => {
 
 export const functionsUpdateNickname = async (handle: string) => {
   const [userId, access_token] = await functionsGetSessionInfo();
+
+  if (!userId || !access_token) {
+    return; // Or handle the lack of a session in another way, if appropriate
+  }
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/update-nickname`, {
     method: "POST",
@@ -31,6 +36,10 @@ export const functionsUpdateNickname = async (handle: string) => {
 
 export const functionsFetchOneUser = async () => {
   const [userId, access_token] = await functionsGetSessionInfo();
+
+  if (!userId || !access_token) {
+    return; // Or handle the lack of a session in another way, if appropriate
+  }
 
   const response = await fetch(
     `${SUPABASE_FUNCTIONS_URL}/fetch-one-user?user_id=${userId}`,
@@ -54,6 +63,10 @@ export const functionsFetchOneUser = async () => {
 export const functionsGetRankName = async () => {
   const [, access_token] = await functionsGetSessionInfo();
 
+  if (!access_token) {
+    return; // Or handle the lack of a session in another way, if appropriate
+  }
+
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/get-rank-name`, {
     method: "GET",
     headers: {
@@ -73,6 +86,10 @@ export const functionsGetRankName = async () => {
 export const functionsFetchUsers = async () => {
   const [, access_token] = await functionsGetSessionInfo();
 
+  if (!access_token) {
+    return; // Or handle the lack of a session in another way, if appropriate
+  }
+
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-users`, {
     method: "POST",
     headers: {
@@ -91,6 +108,10 @@ export const functionsFetchUsers = async () => {
 
 export const functionsFetchCanModerate = async (rank_id: string) => {
   const [, access_token] = await functionsGetSessionInfo();
+
+  if (!access_token) {
+    return; // Or handle the lack of a session in another way, if appropriate
+  }
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-can-moderate`, {
     method: "POST",
@@ -116,6 +137,10 @@ export const functionsUpdateUserStatus = async (
 ) => {
   const [, access_token] = await functionsGetSessionInfo();
 
+  if (!access_token) {
+    return; // Or handle the lack of a session in another way, if appropriate
+  }
+
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/updateUserStatus`, {
     method: "POST",
     headers: {
@@ -140,6 +165,10 @@ export const insertNewUser = async (
   handle: string,
 ) => {
   const [, access_token] = await functionsGetSessionInfo();
+
+  if (!access_token) {
+    return; // Or handle the lack of a session in another way, if appropriate
+  }
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/insert-new-user`, {
     method: "POST",
