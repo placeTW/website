@@ -38,5 +38,12 @@
   "Username": "Username",
   "Welcome": "Welcome",
   "You are about to submit the following translation:": "You are about to submit the following translation.",
-  "Your account has been banned.": "Your account has been banned."
+  "Your account has been banned.": "Your account has been banned.",
+  "Briefing Room": "Briefing Room",
+  "Design Office": "Design Office",
+  "No active alert.": "No active alert.",
+  "Status: Waiting for the next r/Place": "Status: Waiting for the next r/Place",
+  "User Management": "User Management",
+  "languageChanged": "Language changed",
+  "initialized": "Initialized"
 }
