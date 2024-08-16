@@ -19,7 +19,7 @@ import {
   deleteColor,
   insertColor,
   removeSupabaseChannel,
-  updateColor, // Updated import
+  updateColor,
 } from "../../api/supabase/database";
 import { Color } from "../../types/art-tool";
 import ColorRow from "./color-row";
@@ -186,23 +186,26 @@ const ColorPaletteManager = () => {
           ))}
         </Tbody>
       </Table>
-      <Flex mt={4}>
+      <Flex mt={4} justifyContent="space-between" alignItems="center">
         <Input
           placeholder="Enter Hex Code"
           value={newColor}
           onChange={(e) => setNewColor(e.target.value)}
           mr={2}
+          flex="1"
         />
         <Input
           placeholder="Enter Color Name"
           value={newColorName}
           onChange={(e) => setNewColorName(e.target.value)}
           mr={2}
+          flex="1"
         />
         <Button
           onClick={handleAddColor}
           colorScheme="blue"
           leftIcon={<FaPlus />}
+          minWidth="120px" // Ensure the button has enough space for its content
         >
           Add Color
         </Button>
