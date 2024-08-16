@@ -196,6 +196,10 @@ const DesignCard: FC<DesignCardProps> = ({
             flex="none"
             borderRight="1px solid #ccc"
             overflow="hidden"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            backgroundColor="white" // Add a background color to simulate the white bars
           >
             <IconButton
               icon={isVisible ? <FaEye /> : <FaEyeSlash />}
@@ -224,8 +228,8 @@ const DesignCard: FC<DesignCardProps> = ({
                 </Box>
               }
               height="100%"
-              width="120px"
-              objectFit="cover"
+              width="auto"  // Set width to auto to maintain aspect ratio
+              objectFit="contain"  // Ensure the image fits inside the container
               onClick={handleImageClick}
               src={design.design_thumbnail || ""}
             />
