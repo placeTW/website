@@ -109,48 +109,59 @@ const Navbar = () => {
 
   return (
     <Box bg="blue.500" px={4} py={2}>
-      <Flex alignItems="center" maxW="xxl">
+      <Flex alignItems="center" maxW="xxl" justify="space-between">
         <Heading as="h1" size="lg" color="white">
           PlaceTW
         </Heading>
 
-        <Spacer />
+        <Spacer minWidth="40px" />
 
-        <Box>
-          <Link as={RouterLink} to="/briefing-room" color="white" mr={4}>
-            {t("Briefing Room")}
-          </Link>
-          <Link as={RouterLink} to="/design-office" color="white" mr={4}>
-            {t("Design Office")}
-          </Link>
-          <Link as={RouterLink} to="/gallery" color="white" mr={4}>
-            {t("Gallery")}
-          </Link>
+        <Box display="flex" alignItems="center" justifyContent="flex-end">
+          <Box textAlign="center" mr={6}>
+            <Link as={RouterLink} to="/briefing-room" color="white">
+              {t("Briefing Room")}
+            </Link>
+          </Box>
+          <Box textAlign="center" mr={6}>
+            <Link as={RouterLink} to="/design-office" color="white">
+              {t("Design Office")}
+            </Link>
+          </Box>
+          <Box textAlign="center" mr={6}>
+            <Link as={RouterLink} to="/gallery" color="white">
+              {t("Gallery")}
+            </Link>
+          </Box>
           {currentUser &&
             (currentUser.rank === "A" || currentUser.rank === "B") && (
-              <Link as={RouterLink} to="/admin" color="white" mr={4}>
-                {t("Officers")}
-              </Link>
+              <Box textAlign="center" mr={6}>
+                <Link as={RouterLink} to="/admin" color="white">
+                  {t("Officers")}
+                </Link>
+              </Box>
             )}
+          <Box>
+            <LanguageSwitcher />
+          </Box>
         </Box>
 
-        <Box>
-          <LanguageSwitcher />
-        </Box>
-
-        <Box ml={4}>
+        <Box display="flex" alignItems="center" justifyContent="flex-end" ml={6}>
           {currentUser ? (
-            <Flex alignItems="center">
-              <Text color="white" mr={2}>
+            <>
+              <Text color="white" textAlign="center" mr={2}>
                 {t("Welcome")}, {currentUser.rank_name} {currentUser.handle}
               </Text>
-              <Button onClick={onOpen} colorScheme="blue" mr={2}>
-                {t("Edit Username")}
-              </Button>
-              <Button onClick={handleLogout} colorScheme="blue">
-                {t("Logout")}
-              </Button>
-            </Flex>
+              <Box display="flex" flexDirection="column" mr={2}>
+                <Button onClick={onOpen} colorScheme="blue">
+                  {t("Edit Username")}
+                </Button>
+              </Box>
+              <Box display="flex" flexDirection="column">
+                <Button onClick={handleLogout} colorScheme="blue">
+                  {t("Logout")}
+                </Button>
+              </Box>
+            </>
           ) : (
             <Button onClick={handleOpenModal} colorScheme="blue">
               {t("Login")}
