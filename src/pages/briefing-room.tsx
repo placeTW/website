@@ -1,32 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Heading, Box, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import Viewport from "../component/viewport/Viewport";
 import { useAlertContext } from "../context/alert-context";
-import { databaseFetchDesigns, fetchAlertLevels } from "../api/supabase/database";
-import Konva from "konva"; // Ensure Konva is imported
+import { databaseFetchDesigns } from "../api/supabase/database";
+import Konva from "konva";
 import { ViewportPixel } from "../component/viewport/types";
-import { Pixel, AlertState } from "../types/art-tool";
-import { removeSupabaseChannel, supabase } from "../api/supabase";
+import { Pixel } from "../types/art-tool";
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
-  const { alertId } = useAlertContext();
+  const { alertId, currentAlertData } = useAlertContext();
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
-  const [alertData, setAlertData] = useState<AlertState | null>(null);
-  const stageRef = useRef<Konva.Stage>(null); // Create the stageRef using useRef
+  const stageRef = useRef<Konva.Stage>(null);
 
   useEffect(() => {
-    // Fetch the design pixels based on the alert level
     const fetchPixels = async () => {
       const designId = 1; // Replace with the actual design ID or name
       const designs = await databaseFetchDesigns();
       if (!designs) {
-        setPixels([]); // Handle the case where designs are not found
+        setPixels([]);
         return;
       }
 
       const design = designs.find((d) => d.id === designId);
-
       if (design) {
         const designPixels = design.pixels.map((pixel: Pixel) => ({
           ...pixel,
@@ -36,75 +33,40 @@ const BriefingRoom: React.FC = () => {
         }));
         setPixels(designPixels);
       } else {
-        setPixels([]); // Handle the case where the design is not found
+        setPixels([]);
       }
     };
 
     fetchPixels();
-  }, []);
+  }, []); // Only runs on mount
 
-  useEffect(() => {
-    const fetchAlertData = async () => {
-      if (alertId !== null) {
-        try {
-          const alertLevels = await fetchAlertLevels();
-          const currentAlert = alertLevels?.find((alert) => alert.alert_id === alertId);
-          setAlertData(currentAlert || null);
-        } catch (error) {
-          console.error("Error fetching alert data:", error);
-        }
-      }
-    };
-
-    fetchAlertData();
-
-    // Subscribe to real-time updates
-    const subscription = supabase
-      .channel("public:art_tool_alert_state")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_alert_state" },
-        (payload) => {
-          const updatedAlert = payload.new as AlertState;
-          if (updatedAlert.alert_id === alertId) {
-            setAlertData(updatedAlert);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      // Cleanup subscription
-      removeSupabaseChannel(subscription);
-    };
-  }, [alertId]);
-
-  // Provide a default layer order
   const layerOrder = [1]; // Adjust this based on your requirements
 
   return (
-    <div>
+    <Box>
       {alertId === null ? (
-        <p>{t("Loading...")}</p>
-      ) : alertData ? (
-        <div>
-          <h3>{t(alertData.alert_name)}</h3>
-          {!!alertData.message && <p>{alertData.message}</p>}
-          {alertData.Active && (
+        <Text>{t("Loading...")}</Text>
+      ) : currentAlertData ? (
+        <Box>
+          <Heading as="h3" size="lg" mb={4}>
+            {t(`Status: ${currentAlertData.alert_name}`)}
+          </Heading>
+          {!!currentAlertData.message && <Text mb={4}>{currentAlertData.message}</Text>}
+          {currentAlertData.Active && (
             <Viewport 
               designId={1}
               pixels={pixels} 
               layerOrder={layerOrder} 
-              stageRef={stageRef} // Pass the stageRef to Viewport
+              stageRef={stageRef} 
             />
           )}
-        </div>
+        </Box>
       ) : (
-        <p>
+        <Text>
           {t("Invalid alert level:")} {alertId}
-        </p>
+        </Text>
       )}
-    </div>
+    </Box>
   );
 };
 

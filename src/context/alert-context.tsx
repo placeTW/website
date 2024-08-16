@@ -1,16 +1,5 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import {
-  fetchAlertLevels,
-  setActiveAlertLevel,
-  removeSupabaseChannel,
-  supabase,
-} from "../api/supabase";
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { fetchAlertLevels, removeSupabaseChannel, supabase } from "../api/supabase";
 import { useToast } from "@chakra-ui/react";
 import { AlertState } from "../types/art-tool";
 
@@ -19,6 +8,7 @@ interface AlertContextType {
   setActiveAlertId: (id: number) => void;
   alertMessage: string | null;
   alertLevels: AlertState[];
+  currentAlertData: AlertState | null;
 }
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
@@ -31,21 +21,20 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [alertLevels, setAlertLevels] = useState<AlertState[]>([]);
   const [activeAlertId, setActiveAlertIdState] = useState<number | null>(null);
   const [alertMessage, setAlertMessageState] = useState<string | null>(null);
+  const [currentAlertData, setCurrentAlertData] = useState<AlertState | null>(null);
   const toast = useToast();
 
   useEffect(() => {
     const fetchInitialAlertLevels = async () => {
       try {
         const data = await fetchAlertLevels();
-    
         if (data && data.length > 0) {
           setAlertLevels(data);
-    
-          const activeAlert = data.find((alert) => alert.Active);
-    
+          const activeAlert = data.find(alert => alert.Active);
           if (activeAlert) {
             setActiveAlertIdState(activeAlert.alert_id);
             setAlertMessageState(activeAlert.message);
+            setCurrentAlertData(activeAlert);
           } else {
             toast({
               title: "No active alert",
@@ -75,24 +64,21 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         });
       }
     };
-    
 
     fetchInitialAlertLevels();
 
     const updateAlertLevelFromEvent = (payload: any) => {
-      const updatedAlert = payload.new;
+      const updatedAlert = payload.new as AlertState;
       console.log("Received event from Supabase:", payload);
-
       setAlertLevels((prevAlerts) => {
         const updatedAlerts = prevAlerts.map(alert =>
           alert.alert_id === updatedAlert.alert_id ? updatedAlert : alert
         );
-
         if (updatedAlert.Active) {
           setActiveAlertIdState(updatedAlert.alert_id);
           setAlertMessageState(updatedAlert.message);
+          setCurrentAlertData(updatedAlert);
         }
-
         return updatedAlerts;
       });
     };
@@ -104,7 +90,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         { event: "*", schema: "public", table: "art_tool_alert_state" },
         (payload) => {
           updateAlertLevelFromEvent(payload);
-        },
+        }
       )
       .subscribe();
 
@@ -115,23 +101,11 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   }, [toast]);
 
   const setActiveAlertId = async (id: number) => {
-    try {
-      await setActiveAlertLevel(id);
-      setActiveAlertIdState(id);
-    } catch (error) {
-      console.error("Error setting active alert ID:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update alert ID",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
+    setActiveAlertIdState(id);
   };
 
   return (
-    <AlertContext.Provider value={{ alertId: activeAlertId, setActiveAlertId, alertMessage, alertLevels }}>
+    <AlertContext.Provider value={{ alertId: activeAlertId, setActiveAlertId, alertMessage, alertLevels, currentAlertData }}>
       {children}
     </AlertContext.Provider>
   );
