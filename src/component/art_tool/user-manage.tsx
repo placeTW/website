@@ -48,7 +48,7 @@ const UserManage: React.FC = () => {
 
   return (
     <Box>
-      <Heading as="h2" size="lg" mb={4}>
+      <Heading size="md" mb={4}>
         {t('User Management')}
       </Heading>
       {error && <Box mb={4} color="red.500">{error}</Box>}

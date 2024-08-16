@@ -118,7 +118,7 @@ const AlertManage: React.FC = () => {
 
   return (
     <Box>
-      <Heading as="h2" size="lg" mb={4}>
+      <Heading size="md" mb={4}>
         Alert Management
       </Heading>  {/* Add heading for the section */}
       <Table variant="simple">
