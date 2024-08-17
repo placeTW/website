@@ -1,7 +1,7 @@
 import { Design } from "../../types/art-tool";
 import { supabase } from "./index";
 
-const logSupabaseCalls = import.meta.env.LOG_SUPABASE_CALLS ?? false;
+const logSupabaseCalls = import.meta.env.VITE_LOG_SUPABASE_CALLS ?? false;
 
 export const uploadThumbnail = async (
   thumbnailBlob: Blob,
