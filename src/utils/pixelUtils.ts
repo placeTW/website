@@ -1,15 +1,13 @@
 import { Pixel } from "../types/art-tool";
 
-export const getTopLeftCoords = (pixels: Pixel[]) => {
+export const getTopLeftCoords = (pixels: Pixel[]): { x: number; y: number } => {
   return pixels.reduce(
-    (acc, curr) => {
-      if (curr.x < acc.x || (curr.x === acc.x && curr.y < acc.y)) {
-        return curr;
-      }
-      return acc;
-    },
+    (acc, curr) => ({
+      x: Math.min(acc.x, curr.x),
+      y: Math.min(acc.y, curr.y),
+    }),
     { x: Infinity, y: Infinity },
-  ); // Provide initial value
+  );
 };
 
 export const offsetPixels = (

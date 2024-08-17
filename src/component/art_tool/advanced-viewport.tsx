@@ -18,7 +18,7 @@ import {
   supabase,
 } from "../../api/supabase";
 import { Canvas, Design, Pixel } from "../../types/art-tool";
-import { getTopLeftCoords, offsetPixels } from "../../utils/getTopLeftPixel";
+import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
 import Viewport from "../viewport/Viewport";
 import {
   CLEAR_ON_DESIGN,

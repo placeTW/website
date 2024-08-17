@@ -1,6 +1,6 @@
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { AlertState, Canvas, Color, Design, Pixel } from "../../types/art-tool";
-import { getTopLeftCoords, offsetPixels } from "../../utils/getTopLeftPixel";
+import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
 import { deleteThumbnail, supabase, uploadThumbnail } from "./index";
 import { logSupabaseDatabaseQuery } from "./logging";
 

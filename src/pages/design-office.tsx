@@ -102,64 +102,59 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
-        const existingPixelMap = new Map<string, Pixel>();
+      const existingPixelMap = new Map<string, Pixel>();
 
-        editedPixels.forEach((pixel) => {
-            // Ensure we are only handling the current design
-            if (pixel.designId === editDesignId) { // This check should work now
-                if (pixel.color === CLEAR_ON_DESIGN) {
-                    existingPixelMap.delete(`${pixel.x}-${pixel.y}`);
-                } else {
-                    existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
-                        ...pixel,
-                        x: pixel.x - currentDesign.x,
-                        y: pixel.y - currentDesign.y,
-                    });
-                }
-            }
-        });
+      editedPixels.forEach((pixel) => {
+        // Ensure we are only handling the current design
+        if (pixel.designId === editDesignId) {
+          // This check should work now
+          if (pixel.color === CLEAR_ON_DESIGN) {
+            existingPixelMap.delete(`${pixel.x}-${pixel.y}`);
+          } else {
+            existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
+              ...pixel,
+              x: pixel.x - currentDesign.x,
+              y: pixel.y - currentDesign.y,
+            });
+          }
+        }
+      });
 
-        const mergedPixels = Array.from(existingPixelMap.values()).filter(
-            (pixel) => pixel.color !== CLEAR_ON_DESIGN,
-        );
+      const mergedPixels = Array.from(existingPixelMap.values()).filter(
+        (pixel) => pixel.color !== CLEAR_ON_DESIGN,
+      );
 
-        const updatedDesign = await saveEditedPixels(
-            currentDesign,
-            mergedPixels,
-        );
+      const updatedDesign = await saveEditedPixels(currentDesign, mergedPixels);
 
-        setDesigns((prevDesigns) =>
-            prevDesigns.map((d) =>
-                d.id === updatedDesign.id ? updatedDesign : d,
-            ),
-        );
+      setDesigns((prevDesigns) =>
+        prevDesigns.map((d) => (d.id === updatedDesign.id ? updatedDesign : d)),
+      );
 
-        const thumbnailBlob = await createThumbnail(mergedPixels);
-        await uploaDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
+      const thumbnailBlob = await createThumbnail(mergedPixels);
+      await uploaDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
 
-        toast({
-            title: "Changes Saved",
-            description: `${currentDesign.design_name} has been updated successfully.`,
-            status: "success",
-            duration: 3000,
-            isClosable: true,
-        });
+      toast({
+        title: "Changes Saved",
+        description: `${currentDesign.design_name} has been updated successfully.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
 
-        // Clear the editedPixels array after submission
-        setEditedPixels([]);
+      // Clear the editedPixels array after submission
+      setEditedPixels([]);
     } catch (error) {
-        toast({
-            title: "Error",
-            description: `Failed to save changes: ${
-                (error as Error).message || error
-            }`,
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-        });
+      toast({
+        title: "Error",
+        description: `Failed to save changes: ${
+          (error as Error).message || error
+        }`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
-};
-
+  };
 
   const fetchCanvases = async () => {
     try {
