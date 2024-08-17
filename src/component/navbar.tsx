@@ -1,11 +1,35 @@
-import { Box, Button, Flex, Heading, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Spacer, Text, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Input,
+  Link,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Spacer,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { authSignOut, functionsUpdateNickname, insertNewUser, authGetSession, functionsFetchOneUser } from "../api/supabase";
+import {
+  authGetSession,
+  authSignOut,
+  functionsFetchOneUser,
+  functionsUpdateNickname,
+  insertNewUser,
+} from "../api/supabase";
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import LanguageSwitcher from "./language-switcher";
+
+const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
 const Navbar = () => {
   const { currentUser, logoutUser } = useUserContext();
@@ -18,7 +42,10 @@ const Navbar = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session }, error } = await authGetSession();
+      const {
+        data: { session },
+        error,
+      } = await authGetSession();
 
       if (error) {
         console.error(t("Error fetching session:"), error);
@@ -44,12 +71,17 @@ const Navbar = () => {
             await insertNewUser(
               session.user?.id || "",
               session.user?.email || "",
-              session.user?.user_metadata?.name || session.user?.user_metadata?.full_name || ''
+              session.user?.user_metadata?.name ||
+                session.user?.user_metadata?.full_name ||
+                "",
             );
             setUserInserted(true); // Update state variable
             setAuthModalOpen(false);
           } catch (insertError) {
-            console.error(t("Error inserting new user into art_tool_users:"), insertError);
+            console.error(
+              t("Error inserting new user into art_tool_users:"),
+              insertError,
+            );
             // Removed the alert here
           }
         }
@@ -109,16 +141,20 @@ const Navbar = () => {
         <Spacer minWidth="40px" />
 
         <Box display="flex" alignItems="center" justifyContent="flex-end">
-          <Box textAlign="center" mr={6}>
-            <Link as={RouterLink} to="/briefing-room" color="white">
-              {t("Briefing Room")}
-            </Link>
-          </Box>
-          <Box textAlign="center" mr={6}>
-            <Link as={RouterLink} to="/design-office" color="white">
-              {t("Design Office")}
-            </Link>
-          </Box>
+          {enableArtTool && (
+            <>
+              <Box textAlign="center" mr={6}>
+                <Link as={RouterLink} to="/briefing-room" color="white">
+                  {t("Briefing Room")}
+                </Link>
+              </Box>
+              <Box textAlign="center" mr={6}>
+                <Link as={RouterLink} to="/design-office" color="white">
+                  {t("Design Office")}
+                </Link>
+              </Box>
+            </>
+          )}
           <Box textAlign="center" mr={6}>
             <Link as={RouterLink} to="/gallery" color="white">
               {t("Gallery")}
@@ -137,7 +173,12 @@ const Navbar = () => {
           </Box>
         </Box>
 
-        <Box display="flex" alignItems="center" justifyContent="flex-end" ml={6}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="flex-end"
+          ml={6}
+        >
           {currentUser ? (
             <>
               <Text color="white" textAlign="center" mr={2}>
