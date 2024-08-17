@@ -34,3 +34,19 @@ export const uploadThumbnail = async (
 
   return cacheBustedUrl;
 };
+
+
+export const deleteThumbnail = async (designId: number): Promise<void> => {
+  // Delete the thumbnail from Supabase
+  const { error: deleteError } = await supabase.storage
+    .from("art-tool-thumbnails")
+    .remove([`${designId}.png`]);
+
+  if (deleteError) {
+    if (logSupabaseCalls) {
+      console.error(
+        `[SUPABASE ERROR] Failed to delete thumbnail for design ${designId}: ${deleteError.message}`,
+      );
+    }
+  }
+}

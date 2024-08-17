@@ -1,7 +1,7 @@
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { AlertState, Canvas, Color, Design, Pixel } from "../../types/art-tool";
 import { getTopLeftCoords, offsetPixels } from "../../utils/getTopLeftPixel";
-import { supabase, uploadThumbnail } from "./index";
+import { deleteThumbnail, supabase, uploadThumbnail } from "./index";
 import { logSupabaseDatabaseQuery } from "./logging";
 
 // Layers-related functions
@@ -42,22 +42,29 @@ export const databaseFetchCanvases = async (): Promise<Canvas[] | null> => {
   return data;
 };
 
-export const databaseFetchCanvas = async (canvasId: number): Promise<Canvas | null> => {
+export const databaseFetchCanvas = async (
+  canvasId: number,
+): Promise<Canvas | null> => {
   const fetchCanvasQuery = await supabase
     .from("art_tool_canvases")
     .select("*")
     .eq("id", canvasId)
     .single();
 
-  const { data, error } = logSupabaseDatabaseQuery(fetchCanvasQuery, "fetchCanvas");
+  const { data, error } = logSupabaseDatabaseQuery(
+    fetchCanvasQuery,
+    "fetchCanvas",
+  );
 
   if (error) {
     throw new Error(error.message);
   }
 
   return data;
-}
-export const databaseFetchDesigns = async (canvasId?: number): Promise<Design[] | null> => {
+};
+export const databaseFetchDesigns = async (
+  canvasId?: number,
+): Promise<Design[] | null> => {
   let fetchDesignsQuery = supabase
     .from("art_tool_designs")
     .select(
@@ -95,7 +102,6 @@ export const databaseFetchDesigns = async (canvasId?: number): Promise<Design[] 
   return data;
 };
 
-
 export const databaseDeleteDesign = async (designId: number): Promise<void> => {
   const deleteDesignQuery = await supabase
     .from("art_tool_designs")
@@ -103,6 +109,8 @@ export const databaseDeleteDesign = async (designId: number): Promise<void> => {
     .eq("id", designId);
 
   const { error } = logSupabaseDatabaseQuery(deleteDesignQuery, "deleteDesign");
+
+  await deleteThumbnail(designId);
 
   if (error) {
     throw new Error(error.message);
@@ -347,27 +355,28 @@ export const deleteColor = async (color: string): Promise<void> => {
   }
 };
 
-
-
 // Fetch all alert levels
 
 export const fetchAlertLevels = async (): Promise<AlertState[] | null> => {
   try {
     const fetchAlertsQuery = await supabase
-      .from('art_tool_alert_state')
-      .select('*')
-      .order('alert_id', { ascending: true });
+      .from("art_tool_alert_state")
+      .select("*")
+      .order("alert_id", { ascending: true });
 
-    const { data, error } = logSupabaseDatabaseQuery(fetchAlertsQuery, 'fetchAlertLevels');
+    const { data, error } = logSupabaseDatabaseQuery(
+      fetchAlertsQuery,
+      "fetchAlertLevels",
+    );
 
     if (error) {
-      console.error('Supabase fetchAlertLevels error:', error.message, error);
+      console.error("Supabase fetchAlertLevels error:", error.message, error);
       throw new Error(`fetchAlertLevels: ${error.message}`);
     }
 
     return data;
   } catch (err) {
-    console.error('Error during fetchAlertLevels:', err);
+    console.error("Error during fetchAlertLevels:", err);
     throw err;
   }
 };
@@ -378,49 +387,72 @@ export const updateAlertLevel = async (
 ): Promise<void> => {
   try {
     const updateAlertQuery = await supabase
-      .from('art_tool_alert_state')
+      .from("art_tool_alert_state")
       .update(updates)
-      .eq('alert_id', alertId);
+      .eq("alert_id", alertId);
 
-    const { error } = logSupabaseDatabaseQuery(updateAlertQuery, 'updateAlertLevel');
+    const { error } = logSupabaseDatabaseQuery(
+      updateAlertQuery,
+      "updateAlertLevel",
+    );
 
     if (error) {
-      console.error(`Supabase updateAlertLevel error for alert_id ${alertId}:`, error.message, error);
+      console.error(
+        `Supabase updateAlertLevel error for alert_id ${alertId}:`,
+        error.message,
+        error,
+      );
       throw new Error(`updateAlertLevel: ${error.message}`);
     }
   } catch (err) {
-    console.error('Error during updateAlertLevel:', err);
+    console.error("Error during updateAlertLevel:", err);
     throw err;
   }
 };
 
-export const setActiveAlertLevel = async (activeAlertId: number): Promise<void> => {
+export const setActiveAlertLevel = async (
+  activeAlertId: number,
+): Promise<void> => {
   try {
     const deactivateAlertsQuery = await supabase
-      .from('art_tool_alert_state')
+      .from("art_tool_alert_state")
       .update({ Active: false })
-      .neq('alert_id', activeAlertId);
+      .neq("alert_id", activeAlertId);
 
-    const { error: deactivateError } = logSupabaseDatabaseQuery(deactivateAlertsQuery, 'deactivateAlerts');
+    const { error: deactivateError } = logSupabaseDatabaseQuery(
+      deactivateAlertsQuery,
+      "deactivateAlerts",
+    );
 
     if (deactivateError) {
-      console.error('Supabase deactivateAlerts error:', deactivateError.message, deactivateError);
+      console.error(
+        "Supabase deactivateAlerts error:",
+        deactivateError.message,
+        deactivateError,
+      );
       throw new Error(`deactivateAlerts: ${deactivateError.message}`);
     }
 
     const activateAlertQuery = await supabase
-      .from('art_tool_alert_state')
+      .from("art_tool_alert_state")
       .update({ Active: true })
-      .eq('alert_id', activeAlertId);
+      .eq("alert_id", activeAlertId);
 
-    const { error: activateError } = logSupabaseDatabaseQuery(activateAlertQuery, 'setActiveAlertLevel');
+    const { error: activateError } = logSupabaseDatabaseQuery(
+      activateAlertQuery,
+      "setActiveAlertLevel",
+    );
 
     if (activateError) {
-      console.error('Supabase setActiveAlertLevel error:', activateError.message, activateError);
+      console.error(
+        "Supabase setActiveAlertLevel error:",
+        activateError.message,
+        activateError,
+      );
       throw new Error(`setActiveAlertLevel: ${activateError.message}`);
     }
   } catch (err) {
-    console.error('Error during setActiveAlertLevel:', err);
+    console.error("Error during setActiveAlertLevel:", err);
     throw err;
   }
 };
