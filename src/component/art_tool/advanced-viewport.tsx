@@ -10,7 +10,14 @@ import {
   WrapItem,
 } from "@chakra-ui/react";
 import Konva from "konva";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { FaRepeat } from "react-icons/fa6";
 import {
   databaseFetchDesigns,
@@ -36,6 +43,8 @@ interface AdvancedViewportProps {
   editDesignId?: number | null;
   canvases?: Canvas[];
   colors?: { Color: string; color_sort: number | null; color_name: string }[];
+  editedPixels?: Pixel[];
+  setEditedPixels?: Dispatch<SetStateAction<Pixel[]>>;
   onSelectCanvas?: (canvas: Canvas | null) => void;
   onResetViewport?: () => void;
   onUpdatePixels?: (pixels: ViewportPixel[]) => void;
@@ -51,10 +60,11 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   onSelectCanvas,
   selectedCanvas,
   onResetViewport,
+  editedPixels,
+  setEditedPixels,
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [editedPixels, setEditedPixels] = useState<ViewportPixel[]>([]);
   const [selection, setSelection] = useState<{
     x: number;
     y: number;
@@ -142,19 +152,20 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   // Recalculate pixels and update the state
   const recalculatePixels = useCallback(async () => {
     const basePixels = await fetchPixels(visibleLayers);
-    const mergedPixels = mergeWithExistingPixels(basePixels, editedPixels);
+    const mergedPixels = mergeWithExistingPixels(
+      basePixels,
+      editedPixels ?? [],
+    );
     if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
       setPixels(mergedPixels);
-      if (onUpdatePixels) {
-        onUpdatePixels(mergedPixels);
-      }
+      onUpdatePixels?.(mergedPixels);
     }
   }, [editedPixels, visibleLayers, onUpdatePixels, fetchPixels, pixels]);
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
 
-    if (selection && isEditing && editDesignId) {
+    if (selection && isEditing && editDesignId && setEditedPixels) {
       const { x, y, width, height } = selection;
       const newPixels: ViewportPixel[] = [];
 
@@ -172,7 +183,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         }
       }
 
-      undoManager.addState({ editedPixels: [...editedPixels] });
+      undoManager.addState({ editedPixels: [...(editedPixels ?? [])] });
 
       setEditedPixels((prevEditedPixels) => {
         const updatedPixels = prevEditedPixels.filter(
@@ -194,7 +205,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   };
 
   const handlePixelPaint = (x: number, y: number) => {
-    if (!isEditing || !selectedColor || !editDesignId) return;
+    if (!isEditing || !selectedColor || !editDesignId || !setEditedPixels)
+      return;
 
     const newPixel: ViewportPixel = {
       x,
@@ -204,7 +216,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     };
 
     if (!dragInProgress.current) {
-      undoManager.addState({ editedPixels: [...editedPixels] });
+      undoManager.addState({ editedPixels: [...(editedPixels ?? [])] });
     }
 
     setEditedPixels((prevEditedPixels) => {
@@ -257,7 +269,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   const handlePaste = useCallback(
     (pasteX: number, pasteY: number) => {
-      if (!isEditing || !editDesignId || copyBuffer.length === 0) return;
+      if (
+        !isEditing ||
+        !editDesignId ||
+        copyBuffer.length === 0 ||
+        !setEditedPixels
+      )
+        return;
 
       // Determine the top-left pixel in the copied selection (including empty pixels)
       const { x: minX, y: minY } = getTopLeftCoords(copyBuffer);
@@ -273,7 +291,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         designId: editDesignId,
       }));
 
-      undoManager.addState({ editedPixels: [...editedPixels] });
+      undoManager.addState({ editedPixels: [...(editedPixels ?? [])] });
 
       setEditedPixels((prevEditedPixels) => {
         const updatedPixels = [...prevEditedPixels, ...pastedPixels];
@@ -288,6 +306,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       undoManager,
       editedPixels,
       recalculatePixels,
+      setEditedPixels,
     ],
   );
 
@@ -371,7 +390,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   useEffect(() => {
     if (!isEditing) {
-      if (editedPixels.length > 0) {
+      if (editedPixels && editedPixels.length > 0 && setEditedPixels) {
         setEditedPixels([]);
       }
       recalculatePixels();
@@ -381,7 +400,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     if (stageRef.current) {
       stageRef.current.draggable(true);
     }
-  }, [editedPixels.length, isEditing, recalculatePixels, undoManager]);
+  }, [
+    editedPixels,
+    isEditing,
+    recalculatePixels,
+    undoManager,
+    setEditedPixels,
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -404,7 +429,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         }
       } else if (e.ctrlKey && e.key === "z" && undoManager.hasHistory()) {
         const previousState = undoManager.undo();
-        if (previousState) {
+        if (previousState && setEditedPixels) {
           setEditedPixels(previousState.editedPixels);
           requestAnimationFrame(() => recalculatePixels());
         }
@@ -420,7 +445,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
     const handleMouseUp = () => {
       if (isEditing && dragInProgress.current) {
-        if (dragPixels.current.length > 0) {
+        if (dragPixels.current.length > 0 && setEditedPixels) {
           setEditedPixels((prevEditedPixels) => {
             const finalPixels = [...prevEditedPixels, ...dragPixels.current];
             return finalPixels;
@@ -441,7 +466,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleCopy, handlePaste, isEditing, recalculatePixels, undoManager]);
+  }, [handleCopy, handlePaste, isEditing, recalculatePixels, setEditedPixels, undoManager]);
 
   const handleSelectCanvas = (canvas: Canvas | null) => {
     if (onSelectCanvas) {

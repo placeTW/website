@@ -264,6 +264,8 @@ const DesignOffice: React.FC = () => {
           selectedCanvas={selectedCanvas}
           onSelectCanvas={handleSetCanvas}
           onResetViewport={handleResetViewport}
+          editedPixels={editedPixels}
+          setEditedPixels={setEditedPixels}
         />
       </Box>
       <Box overflowY="auto">
