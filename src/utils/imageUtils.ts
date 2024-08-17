@@ -1,54 +1,79 @@
-import { Pixel } from "../types/art-tool"; // Adjust the import path as needed
+import { Pixel } from "../types/art-tool";
 
-export const createThumbnail = async (
-  pixels: Pixel[]
-): Promise<Blob> => {
-  const canvas = document.createElement("canvas");
+const SCALE_FACTOR = 10 as const;
+const THUMBNAIL_MAX_SIZE = 128 as const;
 
-  // Determine the bounding box of the pixels to minimize the thumbnail size
+type Bounds = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
+const getBounds = (pixels: Pixel[]): Bounds => {
   const xCoordinates = pixels.map((pixel) => pixel.x);
   const yCoordinates = pixels.map((pixel) => pixel.y);
 
-  const minX = Math.min(...xCoordinates);
-  const maxX = Math.max(...xCoordinates);
-  const minY = Math.min(...yCoordinates);
-  const maxY = Math.max(...yCoordinates);
+  return {
+    minX: Math.min(...xCoordinates),
+    maxX: Math.max(...xCoordinates),
+    minY: Math.min(...yCoordinates),
+    maxY: Math.max(...yCoordinates),
+  };
+};
 
+const createScaledCanvas = (
+  pixels: Pixel[],
+  bounds: Bounds,
+): HTMLCanvasElement => {
+  const { minX, maxX, minY, maxY } = bounds;
   const width = maxX - minX + 1;
   const height = maxY - minY + 1;
 
-  // Scale factor to increase resolution
-  const scaleFactor = 10; // Scale up by a factor of 10
-  canvas.width = width * scaleFactor;
-  canvas.height = height * scaleFactor;
+  const canvas = document.createElement("canvas");
+  canvas.width = width * SCALE_FACTOR;
+  canvas.height = height * SCALE_FACTOR;
 
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Failed to get 2D context");
 
-  // Fill the canvas with the pixels
   pixels.forEach(({ x, y, color }) => {
-    const scaledX = (x - minX) * scaleFactor;
-    const scaledY = (y - minY) * scaleFactor;
+    const scaledX = (x - minX) * SCALE_FACTOR;
+    const scaledY = (y - minY) * SCALE_FACTOR;
 
     ctx.fillStyle = color;
-    ctx.fillRect(scaledX, scaledY, scaleFactor, scaleFactor);
+    ctx.fillRect(scaledX, scaledY, SCALE_FACTOR, SCALE_FACTOR);
   });
 
-  // Determine the aspect ratio and fit within the thumbnail size
-  const thumbnailMaxSize = 128; // Max size for the longer dimension of the thumbnail
+  return canvas;
+};
 
-  let thumbnailWidth: number;
-  let thumbnailHeight: number;
-
+const getThumbnailDimensions = (
+  width: number,
+  height: number,
+): { thumbnailWidth: number; thumbnailHeight: number } => {
   if (width > height) {
-    thumbnailWidth = thumbnailMaxSize;
-    thumbnailHeight = (height / width) * thumbnailMaxSize;
+    return {
+      thumbnailWidth: THUMBNAIL_MAX_SIZE,
+      thumbnailHeight: (height / width) * THUMBNAIL_MAX_SIZE,
+    };
   } else {
-    thumbnailHeight = thumbnailMaxSize;
-    thumbnailWidth = (width / height) * thumbnailMaxSize;
+    return {
+      thumbnailHeight: THUMBNAIL_MAX_SIZE,
+      thumbnailWidth: (width / height) * THUMBNAIL_MAX_SIZE,
+    };
   }
+};
 
-  // Create the thumbnail canvas
+export const createThumbnail = async (pixels: Pixel[]): Promise<Blob> => {
+  const bounds = getBounds(pixels);
+  const scaledCanvas = createScaledCanvas(pixels, bounds);
+
+  const { thumbnailWidth, thumbnailHeight } = getThumbnailDimensions(
+    bounds.maxX - bounds.minX + 1,
+    bounds.maxY - bounds.minY + 1,
+  );
+
   const thumbnailCanvas = document.createElement("canvas");
   thumbnailCanvas.width = thumbnailWidth;
   thumbnailCanvas.height = thumbnailHeight;
@@ -56,28 +81,24 @@ export const createThumbnail = async (
   const thumbnailCtx = thumbnailCanvas.getContext("2d");
   if (!thumbnailCtx) throw new Error("Failed to get 2D context for thumbnail");
 
-  // Use nearest-neighbor scaling for a sharp result
   thumbnailCtx.imageSmoothingEnabled = false;
   thumbnailCtx.drawImage(
-    canvas,
+    scaledCanvas,
     0,
     0,
-    canvas.width,
-    canvas.height,
+    scaledCanvas.width,
+    scaledCanvas.height,
     0,
     0,
     thumbnailCanvas.width,
-    thumbnailCanvas.height
+    thumbnailCanvas.height,
   );
 
-  // Convert the thumbnail to a Blob
   return new Promise((resolve, reject) => {
     thumbnailCanvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error("Failed to create thumbnail blob"));
-      }
+      blob
+        ? resolve(blob)
+        : reject(new Error("Failed to create thumbnail blob"));
     }, "image/png");
   });
 };
