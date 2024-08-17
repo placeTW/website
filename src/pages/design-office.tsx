@@ -46,13 +46,11 @@ const DesignOffice: React.FC = () => {
     try {
       const fetchedColors = await databaseFetchColors();
 
-      // Add color_name to each color object based on your data structure
       const colorsWithNames = fetchedColors.map((color) => ({
         ...color,
-        color_name: color.color_name || "Unnamed", // Add color_name or a fallback name
+        color_name: color.color_name || "Unnamed",
       }));
 
-      // Append the special colors on the client-side
       const specialColors = [
         {
           Color: CLEAR_ON_DESIGN,

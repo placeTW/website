@@ -42,8 +42,23 @@ export const databaseFetchCanvases = async (): Promise<Canvas[] | null> => {
   return data;
 };
 
-export const databaseFetchDesigns = async (): Promise<Design[] | null> => {
-  const fetchDesignsQuery = await supabase
+export const databaseFetchCanvas = async (canvasId: number): Promise<Canvas | null> => {
+  const fetchCanvasQuery = await supabase
+    .from("art_tool_canvases")
+    .select("*")
+    .eq("id", canvasId)
+    .single();
+
+  const { data, error } = logSupabaseDatabaseQuery(fetchCanvasQuery, "fetchCanvas");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+export const databaseFetchDesigns = async (canvasId?: number): Promise<Design[] | null> => {
+  let fetchDesignsQuery = supabase
     .from("art_tool_designs")
     .select(
       `
@@ -67,14 +82,18 @@ export const databaseFetchDesigns = async (): Promise<Design[] | null> => {
     status
   `,
     )
-    .eq("is_deleted", false)
-    .returns<Design[]>();
+    .eq("is_deleted", false);
 
-  const { data } = logSupabaseDatabaseQuery(fetchDesignsQuery, "fetchDesigns");
+  if (canvasId) {
+    fetchDesignsQuery = fetchDesignsQuery.eq("canvas", canvasId);
+  }
+
+  const fetchDesignsResult = await fetchDesignsQuery.returns<Design[]>();
+
+  const { data } = logSupabaseDatabaseQuery(fetchDesignsResult, "fetchDesigns");
 
   return data;
 };
-
 
 
 export const databaseDeleteDesign = async (designId: number): Promise<void> => {

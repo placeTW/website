@@ -30,16 +30,15 @@ import { createCheckerboardPattern } from "../viewport/utils";
 import UndoManager from "../viewport/utils/undo-manager";
 
 interface AdvancedViewportProps {
-  isEditing: boolean;
-  editDesignId: number | null;
   visibleLayers: number[];
-  onUpdatePixels: (pixels: ViewportPixel[]) => void;
-  colors: { Color: string; color_sort: number | null; color_name: string }[];
-  canvases: Canvas[];
-  onSelectCanvas: (canvas: Canvas | null) => void;
-  selectedCanvas: Canvas | null;
-  onResetViewport: () => void;
-  showCanvasButtons?: boolean;  // Add this prop
+  selectedCanvas?: Canvas | null;
+  isEditing?: boolean;
+  editDesignId?: number | null;
+  canvases?: Canvas[];
+  colors?: { Color: string; color_sort: number | null; color_name: string }[];
+  onSelectCanvas?: (canvas: Canvas | null) => void;
+  onResetViewport?: () => void;
+  onUpdatePixels?: (pixels: ViewportPixel[]) => void;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -52,7 +51,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   onSelectCanvas,
   selectedCanvas,
   onResetViewport,
-  showCanvasButtons = true,  // Default to true if not provided
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -147,7 +145,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     const mergedPixels = mergeWithExistingPixels(basePixels, editedPixels);
     if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
       setPixels(mergedPixels);
-      onUpdatePixels(mergedPixels);
+      if (onUpdatePixels) {
+        onUpdatePixels(mergedPixels);
+      }
     }
   }, [editedPixels, visibleLayers, onUpdatePixels, fetchPixels, pixels]);
 
@@ -443,6 +443,12 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     };
   }, [handleCopy, handlePaste, isEditing, recalculatePixels, undoManager]);
 
+  const handleSelectCanvas = (canvas: Canvas | null) => {
+    if (onSelectCanvas) {
+      onSelectCanvas(canvas);
+    }
+  };
+
   const layerOrder: number[] = [];
   if (editDesignId && isEditing) {
     layerOrder.push(editDesignId);
@@ -452,26 +458,29 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   return (
     <Box position="relative" height="100%">
       <Box height="100%">
-        {showCanvasButtons && (  // Conditionally render the canvas buttons
+        {canvases && (
           <Flex padding={2}>
             <Wrap direction="row" spacing={2}>
-              {canvases.map((canvas) => (
-                <WrapItem key={canvas.id}>
-                  <Button
-                    onClick={() => onSelectCanvas(canvas)}
-                    colorScheme="teal"
-                    border={
-                      canvas.id === selectedCanvas?.id
-                        ? "2px solid black"
-                        : "1px solid #ccc"
-                    }
-                  >
-                    {canvas.canvas_name}
-                  </Button>
-                </WrapItem>
-              ))}
+              {canvases &&
+                canvases.map((canvas) => (
+                  <WrapItem key={canvas.id}>
+                    <Button
+                      onClick={() => handleSelectCanvas(canvas)}
+                      colorScheme="teal"
+                      border={
+                        canvas.id === selectedCanvas?.id
+                          ? "2px solid black"
+                          : "1px solid #ccc"
+                      }
+                    >
+                      {canvas.canvas_name}
+                    </Button>
+                  </WrapItem>
+                ))}
               <WrapItem>
-                <Button onClick={() => onSelectCanvas(null)}>Unassigned</Button>
+                <Button onClick={() => handleSelectCanvas(null)}>
+                  Unassigned
+                </Button>
               </WrapItem>
             </Wrap>
             <Spacer />
@@ -483,6 +492,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           </Flex>
         )}
         <Viewport
+          stageRef={stageRef}
           designId={editDesignId}
           pixels={pixels}
           isEditing={isEditing}
@@ -492,11 +502,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           onPaste={handlePaste}
           selection={selection}
           setSelection={setSelection}
-          stageRef={stageRef}
         />
       </Box>
 
-      {isEditing && (
+      {isEditing && colors && (
         <Box
           position="absolute"
           bottom="10px"

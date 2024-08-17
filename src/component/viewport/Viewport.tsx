@@ -11,11 +11,12 @@ import { useImage } from "./hooks";
 import { ViewportPixel } from "./types";
 
 interface ViewportProps {
-  designId: number | null;
+  stageRef: React.RefObject<Konva.Stage>;
   pixels: ViewportPixel[];
+  layerOrder: number[];
+  designId?: number | null;
   isEditing?: boolean;
   onPixelPaint?: (x: number, y: number) => void;
-  layerOrder: number[];
   selection?: { x: number; y: number; width: number; height: number } | null;
   setSelection?: React.Dispatch<
     React.SetStateAction<{
@@ -27,7 +28,6 @@ interface ViewportProps {
   >;
   onCopy?: () => void;
   onPaste?: (x: number, y: number) => void;
-  stageRef: React.RefObject<Konva.Stage>;
 }
 
 const Viewport: React.FC<ViewportProps> = ({
@@ -59,6 +59,7 @@ const Viewport: React.FC<ViewportProps> = ({
 
   const handleWheel = useWheelHandler;
 
+  // TODO: Have this be configurable
   const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
 
   const calculateVisibleTiles = useCallback(() => {
@@ -158,8 +159,7 @@ const Viewport: React.FC<ViewportProps> = ({
     return Array.from(pixelMap.values());
   }, [layerOrder, pixels]);
 
-  useEffect(() => {
-  }, [pixels]);
+  useEffect(() => {}, [pixels]);
 
   const mergedPixels = getMergedPixels();
 
@@ -224,7 +224,7 @@ const Viewport: React.FC<ViewportProps> = ({
           {zoomLevel > 0.125
             ? visibleTiles.map((tile) => (
                 <KonvaImage
-                  key={`tile-${tile.x}-${tile.y}`} // Unique key for each tile
+                  key={`tile-${tile.x}-${tile.y}`}
                   image={backgroundImage}
                   x={tile.x * backgroundTileSize}
                   y={tile.y * backgroundTileSize}
@@ -241,7 +241,7 @@ const Viewport: React.FC<ViewportProps> = ({
             if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
               return (
                 <KonvaImage
-                  key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`} // Unique key for each pixel
+                  key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
                   image={clearOnMainImage}
                   x={pixel.x * gridSize}
                   y={pixel.y * gridSize}
@@ -261,7 +261,7 @@ const Viewport: React.FC<ViewportProps> = ({
         <Layer>
           {mergedPixels.map((pixel) => (
             <Rect
-              key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`} // Unique key for each pixel
+              key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
               x={pixel.x * gridSize}
               y={pixel.y * gridSize}
               width={gridSize}
