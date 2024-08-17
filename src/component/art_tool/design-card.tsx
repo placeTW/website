@@ -43,7 +43,7 @@ interface DesignCardProps {
   isVisible: boolean;
   onSubmitEdit: () => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
-  onDeleted: () => void;
+  onDeleted: (designId: number) => void;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -106,7 +106,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const handleDelete = async () => {
     try {
       await databaseDeleteDesign(design.id);
-      onDeleted(); // Update the parent
+      onDeleted(design.id); // Update the parent
       toast({
         title: "Design deleted.",
         description: `${design.design_name} has been removed successfully.`,

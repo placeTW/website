@@ -210,9 +210,10 @@ const DesignOffice: React.FC = () => {
     setSelectedCanvas(null);
   };
 
-  const handleOnDeleted = () => {
+  const handleOnDeleted = (designId: number) => {
     setEditDesignId(null);
-    // You can also perform any additional actions needed when a design is deleted
+    // Remove the design's pixels from the viewport
+    setVisibleLayers((prevLayers) => prevLayers.filter((id) => id !== designId));
   };
 
   useEffect(() => {
