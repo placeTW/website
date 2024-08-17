@@ -166,13 +166,26 @@ export const unlikeDesign = async (
 // Function to save edited pixels
 export const saveEditedPixels = async (
   design: Design,
-  pixels: Pixel[],
+  editedPixels: Pixel[],
 ): Promise<Design> => {
+  // Combine the design's pixels with the editedPixels. If a pixel is in both, the edited pixel should replace the design pixel
+  const combinedPixels = [...design.pixels, ...editedPixels].reduce(
+    (acc, pixel) => {
+      const pixelKey = `${pixel.x}-${pixel.y}`;
+      acc[pixelKey] = pixel;
+      return acc;
+    },
+    {} as Record<string, Pixel>,
+  );
+
+  // Make a list of the combined pixels
+  const combinedPixelsList = Object.values(combinedPixels);
+
   // Get the top left pixel of the design
-  const topLeftCoords = getTopLeftCoords(pixels);
+  const topLeftCoords = getTopLeftCoords(combinedPixelsList);
 
   // Copy and offset the pixels to the top left corner
-  const pixelsToInsertCopy = offsetPixels(pixels, topLeftCoords);
+  const pixelsToInsertCopy = offsetPixels(combinedPixelsList, topLeftCoords);
 
   //Update the design with the new pixels
   const savePixelsQuery = await supabase

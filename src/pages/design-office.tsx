@@ -130,7 +130,7 @@ const DesignOffice: React.FC = () => {
         prevDesigns.map((d) => (d.id === updatedDesign.id ? updatedDesign : d)),
       );
 
-      const thumbnailBlob = await createThumbnail(mergedPixels);
+      const thumbnailBlob = await createThumbnail(updatedDesign.pixels);
       await uploaDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
 
       toast({
