@@ -129,18 +129,23 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const mergeWithExistingPixels = (
     basePixels: ViewportPixel[],
     newEditedPixels: ViewportPixel[],
+    visibleLayers: number[],
   ) => {
     const pixelMap = new Map<string, ViewportPixel>();
 
     basePixels.forEach((pixel) => {
-      pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.designId}`, pixel);
+      if (visibleLayers.includes(pixel.designId)) {
+        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.designId}`, pixel);
+      }
     });
 
     newEditedPixels.forEach((pixel) => {
-      if (pixel.color !== CLEAR_ON_DESIGN) {
-        pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.designId}`, pixel);
-      } else {
-        pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.designId}`);
+      if (visibleLayers.includes(pixel.designId)) {
+        if (pixel.color !== CLEAR_ON_DESIGN) {
+          pixelMap.set(`${pixel.x}-${pixel.y}-${pixel.designId}`, pixel);
+        } else {
+          pixelMap.delete(`${pixel.x}-${pixel.y}-${pixel.designId}`);
+        }
       }
     });
 
@@ -153,6 +158,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     const mergedPixels = mergeWithExistingPixels(
       basePixels,
       editedPixels ?? [],
+      visibleLayers,
     );
     if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
       setPixels(mergedPixels);
@@ -257,7 +263,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     finalCopiedPixels = offsetPixels(finalCopiedPixels, topLeftPixel).map(
       (pixel) => ({
         ...pixel,
-        designId: -1,
+        designId: editDesignId,
       }),
     );
 
@@ -314,14 +320,11 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         JSON.stringify(visibleLayers)
       ) {
         previousVisibleLayersRef.current = visibleLayers;
-        const newPixels = await fetchPixels(visibleLayers);
-        if (JSON.stringify(newPixels) !== JSON.stringify(pixels)) {
-          setPixels(newPixels);
-        }
+        await recalculatePixels(); // Use recalculatePixels instead of fetchPixels
       }
     };
     updatePixels();
-  }, [visibleLayers, fetchPixels, pixels]);
+  }, [visibleLayers, recalculatePixels]); // Add recalculatePixels to the dependency array
 
   useEffect(() => {
     const pixelSubscription = supabase

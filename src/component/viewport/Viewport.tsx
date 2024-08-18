@@ -56,6 +56,7 @@ const Viewport: React.FC<ViewportProps> = ({
     [],
   );
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [mergedPixels, setMergedPixels] = useState<ViewportPixel[]>([]);
 
   const handleWheel = useWheelHandler;
 
@@ -143,8 +144,7 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   };
 
-  // Function to filter and merge pixels based on layer order
-  const getMergedPixels = useCallback(() => {
+  useEffect(() => {
     const pixelMap = new Map<string, ViewportPixel>();
 
     layerOrder.forEach((layerId) => {
@@ -156,12 +156,8 @@ const Viewport: React.FC<ViewportProps> = ({
         });
     });
 
-    return Array.from(pixelMap.values());
+    setMergedPixels(Array.from(pixelMap.values()));
   }, [layerOrder, pixels]);
-
-  useEffect(() => {}, [pixels]);
-
-  const mergedPixels = getMergedPixels();
 
   return (
     <div
