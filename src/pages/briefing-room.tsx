@@ -46,7 +46,7 @@ const BriefingRoom: React.FC = () => {
               <Text mb={4}>{currentAlertData.message}</Text>
             )}
           </Box>
-          <Flex flex="1" overflow="hidden">
+          <Flex flex="1" border="1px solid #ccc" overflow="hidden">
             {designs && (
               <Box flex="1" overflow="hidden">
                 <AdvancedViewport
