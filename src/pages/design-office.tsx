@@ -1,5 +1,6 @@
 import { Box, Spinner, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { offsetPixels } from "../utils/pixelUtils";
 import { supabase } from "../api/supabase";
 import {
   databaseFetchCanvases,
@@ -86,14 +87,6 @@ const DesignOffice: React.FC = () => {
     setVisibleLayers(newVisibleLayers);
   };
 
-  const handleUpdatePixels = (pixels: Pixel[]) => {
-    if (pixels && pixels.length > 0) {
-      setEditedPixels(pixels);
-    } else {
-      setEditedPixels([]); // Ensure state is reset if the array is empty or undefined
-    }
-  };
-
   // Function to handle the submission of edited pixels
   const handleSubmitEdit = async () => {
     if (!editDesignId) return;
@@ -102,29 +95,11 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
-      const existingPixelMap = new Map<string, Pixel>();
-
-      editedPixels.forEach((pixel) => {
-        // Ensure we are only handling the current design
-        if (pixel.designId === editDesignId) {
-          // This check should work now
-          if (pixel.color === CLEAR_ON_DESIGN) {
-            existingPixelMap.delete(`${pixel.x}-${pixel.y}`);
-          } else {
-            existingPixelMap.set(`${pixel.x}-${pixel.y}`, {
-              ...pixel,
-              x: pixel.x - currentDesign.x,
-              y: pixel.y - currentDesign.y,
-            });
-          }
-        }
+      const newPixels = offsetPixels(editedPixels, {
+        x: currentDesign.x,
+        y: currentDesign.y,
       });
-
-      const mergedPixels = Array.from(existingPixelMap.values()).filter(
-        (pixel) => pixel.color !== CLEAR_ON_DESIGN,
-      );
-
-      const updatedDesign = await saveEditedPixels(currentDesign, mergedPixels);
+      const updatedDesign = await saveEditedPixels(currentDesign, newPixels);
 
       setDesigns((prevDesigns) =>
         prevDesigns.map((d) => (d.id === updatedDesign.id ? updatedDesign : d)),
@@ -213,7 +188,9 @@ const DesignOffice: React.FC = () => {
   const handleOnDeleted = (designId: number) => {
     setEditDesignId(null);
     // Remove the design's pixels from the viewport
-    setVisibleLayers((prevLayers) => prevLayers.filter((id) => id !== designId));
+    setVisibleLayers((prevLayers) =>
+      prevLayers.filter((id) => id !== designId),
+    );
   };
 
   useEffect(() => {
@@ -258,7 +235,6 @@ const DesignOffice: React.FC = () => {
           isEditing={isEditing}
           editDesignId={editDesignId}
           visibleLayers={visibleLayers}
-          onUpdatePixels={handleUpdatePixels}
           colors={colors}
           canvases={canvases}
           selectedCanvas={selectedCanvas}

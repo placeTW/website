@@ -47,14 +47,12 @@ interface AdvancedViewportProps {
   setEditedPixels?: Dispatch<SetStateAction<Pixel[]>>;
   onSelectCanvas?: (canvas: Canvas | null) => void;
   onResetViewport?: () => void;
-  onUpdatePixels?: (pixels: ViewportPixel[]) => void;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   isEditing,
   editDesignId,
   visibleLayers,
-  onUpdatePixels,
   colors,
   canvases,
   onSelectCanvas,
@@ -158,9 +156,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     );
     if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
       setPixels(mergedPixels);
-      onUpdatePixels?.(mergedPixels);
     }
-  }, [editedPixels, visibleLayers, onUpdatePixels, fetchPixels, pixels]);
+  }, [editedPixels, visibleLayers, fetchPixels, pixels]);
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
@@ -466,7 +463,14 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleCopy, handlePaste, isEditing, recalculatePixels, setEditedPixels, undoManager]);
+  }, [
+    handleCopy,
+    handlePaste,
+    isEditing,
+    recalculatePixels,
+    setEditedPixels,
+    undoManager,
+  ]);
 
   const handleSelectCanvas = (canvas: Canvas | null) => {
     if (onSelectCanvas) {

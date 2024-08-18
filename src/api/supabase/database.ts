@@ -1,4 +1,5 @@
 import { RealtimeChannel } from "@supabase/supabase-js";
+import { CLEAR_ON_DESIGN } from "../../component/viewport/constants";
 import { AlertState, Canvas, Color, Design, Pixel } from "../../types/art-tool";
 import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
 import { deleteThumbnail, supabase, uploadThumbnail } from "./index";
@@ -181,11 +182,17 @@ export const saveEditedPixels = async (
   // Make a list of the combined pixels
   const combinedPixelsList = Object.values(combinedPixels);
 
+  // Remove any pixels that are clear
+  const filteredPixels = combinedPixelsList.filter(
+    (pixel) => pixel.color !== CLEAR_ON_DESIGN,
+  );
+
+
   // Get the top left pixel of the design
-  const topLeftCoords = getTopLeftCoords(combinedPixelsList);
+  const topLeftCoords = getTopLeftCoords(filteredPixels);
 
   // Copy and offset the pixels to the top left corner
-  const pixelsToInsertCopy = offsetPixels(combinedPixelsList, topLeftCoords);
+  const pixelsToInsertCopy = offsetPixels(filteredPixels, topLeftCoords);
 
   //Update the design with the new pixels
   const savePixelsQuery = await supabase
