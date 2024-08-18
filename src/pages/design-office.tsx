@@ -1,6 +1,5 @@
 import { Box, Spinner, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { offsetPixels } from "../utils/pixelUtils";
 import { supabase } from "../api/supabase";
 import {
   databaseFetchCanvases,
@@ -19,6 +18,7 @@ import {
 } from "../component/viewport/constants";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
+import { offsetPixels } from "../utils/pixelUtils";
 
 const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<Design[]>([]);
@@ -81,6 +81,14 @@ const DesignOffice: React.FC = () => {
   ) => {
     setIsEditing(isEditing);
     setEditDesignId(designId);
+    setEditedPixels([]); // Clear the editedPixels array when exiting edit mode
+    // Add the design to the visible layers when entering edit mode
+    if (isEditing && designId) {
+      setVisibleLayers((prevLayers) => [
+        ...prevLayers.filter((id) => id !== designId),
+        designId,
+      ]);
+    }
   };
 
   const handleVisibilityChange = (newVisibleLayers: number[]) => {
