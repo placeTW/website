@@ -1,6 +1,6 @@
 import { PostgrestSingleResponse } from "@supabase/supabase-js";
 
-const logSupabaseCalls = import.meta.env.LOG_SUPABASE_CALLS ?? false;
+const logSupabaseCalls = import.meta.env.VITE_LOG_SUPABASE_CALLS ?? false;
 
 export const logSupabaseDatabaseQuery = <T>(
   query: PostgrestSingleResponse<T>,
