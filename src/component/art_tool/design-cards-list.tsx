@@ -8,7 +8,7 @@ interface DesignCardsListProps {
   visibleLayers: number[];
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
   onVisibilityChange: (visibleLayers: number[]) => void;
-  onSubmitEdit: () => void;
+  onSubmitEdit: (designName: string) => void; // Update the prop type to accept designName
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
   editedPixels: Pixel[]; // Add editedPixels to the props

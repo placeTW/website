@@ -7,7 +7,7 @@ import {
   databaseFetchDesigns,
   removeSupabaseChannel,
   saveEditedPixels,
-  uploaDesignThumbnailToSupabase,
+  uploadDesignThumbnailToSupabase, // Corrected function name
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
@@ -24,13 +24,13 @@ const DesignOffice: React.FC = () => {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [visibleDesigns, setVisibleDesigns] = useState<Design[]>([]);
   const [colors, setColors] = useState<
-    { Color: string; color_sort: number | null; color_name: string }[] // Updated type
+    { Color: string; color_sort: number | null; color_name: string }[] 
   >([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<number | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
-  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
+  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]); // State to track edited pixels
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const toast = useToast();
@@ -82,7 +82,6 @@ const DesignOffice: React.FC = () => {
     setIsEditing(isEditing);
     setEditDesignId(designId);
     setEditedPixels([]); // Clear the editedPixels array when exiting edit mode
-    // Add the design to the visible layers when entering edit mode
     if (isEditing && designId) {
       setVisibleLayers((prevLayers) => [
         ...prevLayers.filter((id) => id !== designId),
@@ -95,8 +94,7 @@ const DesignOffice: React.FC = () => {
     setVisibleLayers(newVisibleLayers);
   };
 
-  // Function to handle the submission of edited pixels
-  const handleSubmitEdit = async () => {
+  const handleSubmitEdit = async (designName: string) => {
     if (!editDesignId) return;
 
     const currentDesign = designs.find((d) => d.id === editDesignId);
@@ -107,24 +105,23 @@ const DesignOffice: React.FC = () => {
         x: currentDesign.x,
         y: currentDesign.y,
       });
-      const updatedDesign = await saveEditedPixels(currentDesign, newPixels);
+      const updatedDesign = await saveEditedPixels(currentDesign, newPixels, designName); // Save the designName
 
       setDesigns((prevDesigns) =>
         prevDesigns.map((d) => (d.id === updatedDesign.id ? updatedDesign : d)),
       );
 
       const thumbnailBlob = await createThumbnail(updatedDesign.pixels);
-      await uploaDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
+      await uploadDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
 
       toast({
         title: "Changes Saved",
-        description: `${currentDesign.design_name} has been updated successfully.`,
+        description: `${designName} has been updated successfully.`,
         status: "success",
         duration: 3000,
         isClosable: true,
       });
 
-      // Clear the editedPixels array after submission
       setEditedPixels([]);
     } catch (error) {
       toast({
@@ -158,10 +155,12 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleSetDesignCanvas = (canvasId: number) => {
-    // Update the selectedCanvas state to trigger a re-render of AdvancedViewport
+  const handleSetDesignCanvas = (designId: number, canvasId: number) => {
     const updatedCanvas = canvases.find((canvas) => canvas.id === canvasId);
     setSelectedCanvas(updatedCanvas || null);
+    console.log(
+      `Design ${designId} set to canvas ${selectedCanvas?.canvas_name}`,
+    );
   };
 
   const handleSetCanvas = (canvas: Canvas | null) => {
@@ -192,7 +191,6 @@ const DesignOffice: React.FC = () => {
 
   const handleOnDeleted = (designId: number) => {
     setEditDesignId(null);
-    // Remove the design's pixels from the viewport
     setVisibleLayers((prevLayers) =>
       prevLayers.filter((id) => id !== designId),
     );
@@ -245,7 +243,7 @@ const DesignOffice: React.FC = () => {
           selectedCanvas={selectedCanvas}
           onSelectCanvas={handleSetCanvas}
           onResetViewport={handleResetViewport}
-          editedPixels={editedPixels}
+          editedPixels={editedPixels} // Pass editedPixels to AdvancedViewport
           setEditedPixels={setEditedPixels}
         />
       </Box>
@@ -255,12 +253,12 @@ const DesignOffice: React.FC = () => {
           visibleLayers={visibleLayers}
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
-          onSubmitEdit={handleSubmitEdit}
+          onSubmitEdit={handleSubmitEdit} // Pass handleSubmitEdit function
           onSetCanvas={handleSetDesignCanvas}
           onDeleted={handleOnDeleted}
-          editedPixels={editedPixels} // Pass editedPixels as a prop
+          editedPixels={editedPixels} // Pass editedPixels to DesignCardsList
         />
-        <Box h="100px" /> {/* Spacer at the bottom */}
+        <Box h="100px" /> 
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
         <CreateDesignButton />

@@ -168,6 +168,7 @@ export const unlikeDesign = async (
 export const saveEditedPixels = async (
   design: Design,
   editedPixels: Pixel[],
+  newName?: string, // Optional parameter for updating the design name
 ): Promise<Design> => {
   // Combine the design's pixels with the editedPixels. If a pixel is in both, the edited pixel should replace the design pixel
   const combinedPixels = [...design.pixels, ...editedPixels].reduce(
@@ -187,21 +188,28 @@ export const saveEditedPixels = async (
     (pixel) => pixel.color !== CLEAR_ON_DESIGN,
   );
 
-
   // Get the top left pixel of the design
   const topLeftCoords = getTopLeftCoords(filteredPixels);
 
   // Copy and offset the pixels to the top left corner
   const pixelsToInsertCopy = offsetPixels(filteredPixels, topLeftCoords);
 
-  //Update the design with the new pixels
+  // Prepare the update object
+  const updateData: Partial<Design> = {
+    pixels: pixelsToInsertCopy,
+    x: topLeftCoords.x + design.x,
+    y: topLeftCoords.y + design.y,
+  };
+
+  // If a new name is provided, add it to the update object
+  if (newName) {
+    updateData.design_name = newName;
+  }
+
+  // Update the design with the new pixels and name (if provided)
   const savePixelsQuery = await supabase
     .from("art_tool_designs")
-    .update({
-      pixels: pixelsToInsertCopy,
-      x: topLeftCoords.x + design.x,
-      y: topLeftCoords.y + design.y,
-    })
+    .update(updateData)
     .eq("id", design.id);
 
   const { error: updateError } = logSupabaseDatabaseQuery(
@@ -213,13 +221,13 @@ export const saveEditedPixels = async (
     throw new Error(updateError.message);
   }
 
-  // Copy the design with the new pixels
-  const updatedDesign = { ...design, pixels: pixelsToInsertCopy };
+  // Copy the design with the new pixels and name (if updated)
+  const updatedDesign = { ...design, ...updateData };
 
   return updatedDesign;
 };
 
-export const uploaDesignThumbnailToSupabase = async (
+export const uploadDesignThumbnailToSupabase = async (
   thumbnailBlob: Blob,
   design: Design,
 ): Promise<void> => {
@@ -476,3 +484,4 @@ export const setActiveAlertLevel = async (
     throw err;
   }
 };
+

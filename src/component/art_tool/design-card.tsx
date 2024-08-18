@@ -7,6 +7,7 @@ import {
   Heading,
   IconButton,
   Image,
+  Input, // Imported Input for editable design name
   Text,
   useToast,
   useDisclosure,
@@ -17,7 +18,7 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
 } from "@chakra-ui/react";
-import { FC, useEffect, useState, useRef } from "react"; 
+import { FC, useEffect, useState, useRef } from "react";
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
@@ -48,7 +49,7 @@ interface DesignCardProps {
   onCancelEdit: () => void;
   onToggleVisibility: (designId: number, isVisible: boolean) => void;
   isVisible: boolean;
-  onSubmitEdit: () => void;
+  onSubmitEdit: (designName: string) => void; // Update to accept designName
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
   editedPixels: Pixel[]; // Receive the editedPixels array as a prop
@@ -65,7 +66,7 @@ const DesignCard: FC<DesignCardProps> = ({
   onSubmitEdit,
   onSetCanvas,
   onDeleted,
-  editedPixels, // Use the editedPixels prop
+  editedPixels,
 }) => {
   const { currentUser, rankNames } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,6 +74,7 @@ const DesignCard: FC<DesignCardProps> = ({
     currentUser ? design.liked_by.includes(currentUser.user_id) : false,
   );
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
+  const [designName, setDesignName] = useState(design.design_name); // State for design name
   const toast = useToast();
 
   const {
@@ -87,7 +89,7 @@ const DesignCard: FC<DesignCardProps> = ({
     onClose: onCloseUnsavedChangesDialog,
   } = useDisclosure();
 
-  const cancelRef = useRef(null); 
+  const cancelRef = useRef(null);
 
   useEffect(() => {
     setIsLiked(
@@ -129,7 +131,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const handleDelete = async () => {
     try {
       await databaseDeleteDesign(design.id);
-      onDeleted(design.id); 
+      onDeleted(design.id);
       toast({
         title: "Design deleted.",
         description: `${design.design_name} has been removed successfully.`,
@@ -231,7 +233,7 @@ const DesignCard: FC<DesignCardProps> = ({
             display="flex"
             justifyContent="center"
             alignItems="center"
-            backgroundColor="white" 
+            backgroundColor="white"
           >
             <IconButton
               icon={isVisible ? <FaEye /> : <FaEyeSlash />}
@@ -259,8 +261,8 @@ const DesignCard: FC<DesignCardProps> = ({
                 </Box>
               }
               height="100%"
-              width="auto" 
-              objectFit="contain" 
+              width="auto"
+              objectFit="contain"
               onClick={handleImageClick}
               src={design.design_thumbnail || ""}
             />
@@ -286,7 +288,16 @@ const DesignCard: FC<DesignCardProps> = ({
             bg={isEditing ? "blue.100" : "white"}
           >
             <Box>
-              <Heading fontSize={"md"}>{design.design_name}</Heading>
+              {isEditing ? (
+                <Input
+                  value={designName}
+                  onChange={(e) => setDesignName(e.target.value)}
+                  fontSize={"md"}
+                  backgroundColor="white" // Set the background color to white
+                />
+              ) : (
+                <Heading fontSize={"md"}>{design.design_name}</Heading>
+              )}
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
                 {rankNames[design.art_tool_users.rank] ?? "Unknown"}{" "}
                 {design.art_tool_users.handle}
@@ -315,7 +326,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   <IconButton
                     icon={<FaCloudArrowUp />}
                     aria-label="Submit"
-                    onClick={onSubmitEdit}
+                    onClick={() => onSubmitEdit(designName)} // Pass designName to the submit function
                     size="sm"
                   />
                 </>
