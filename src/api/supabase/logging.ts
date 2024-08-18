@@ -7,7 +7,10 @@ export const logSupabaseDatabaseQuery = <T>(
   queryName: string,
 ) => {
   if (logSupabaseCalls) {
-    console.log(`[SUPABASE LOG] Executing database query ${queryName}`);
+    const error = new Error();
+    Error.stackTraceLimit = 20; // Increase this limit if you want more stack trace levels
+    const stack = error.stack?.split('\n').slice(2).join('\n'); // Adjust slice to skip more/less lines
+    console.log(`[SUPABASE LOG] Executing database query ${queryName} at ${stack}`);
   }
 
   const { data, error } = query;
