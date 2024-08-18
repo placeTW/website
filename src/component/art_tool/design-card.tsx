@@ -9,8 +9,15 @@ import {
   Image,
   Text,
   useToast,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useRef } from "react"; 
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
@@ -29,7 +36,7 @@ import {
   updateDesignCanvas,
 } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
-import { Canvas, Design } from "../../types/art-tool";
+import { Canvas, Design, Pixel } from "../../types/art-tool";
 import ImageModal from "../image-modal";
 import SetDesignCanvas from "./set-design-canvas";
 
@@ -44,6 +51,7 @@ interface DesignCardProps {
   onSubmitEdit: () => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
+  editedPixels: Pixel[]; // Receive the editedPixels array as a prop
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -57,6 +65,7 @@ const DesignCard: FC<DesignCardProps> = ({
   onSubmitEdit,
   onSetCanvas,
   onDeleted,
+  editedPixels, // Use the editedPixels prop
 }) => {
   const { currentUser, rankNames } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,6 +74,20 @@ const DesignCard: FC<DesignCardProps> = ({
   );
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
   const toast = useToast();
+
+  const {
+    isOpen: isDeleteDialogOpen,
+    onOpen: onOpenDeleteDialog,
+    onClose: onCloseDeleteDialog,
+  } = useDisclosure();
+
+  const {
+    isOpen: isUnsavedChangesDialogOpen,
+    onOpen: onOpenUnsavedChangesDialog,
+    onClose: onCloseUnsavedChangesDialog,
+  } = useDisclosure();
+
+  const cancelRef = useRef(null); 
 
   useEffect(() => {
     setIsLiked(
@@ -106,7 +129,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const handleDelete = async () => {
     try {
       await databaseDeleteDesign(design.id);
-      onDeleted(design.id); // Update the parent
+      onDeleted(design.id); 
       toast({
         title: "Design deleted.",
         description: `${design.design_name} has been removed successfully.`,
@@ -123,16 +146,25 @@ const DesignCard: FC<DesignCardProps> = ({
         isClosable: true,
       });
     }
+    onCloseDeleteDialog();
   };
 
   const handleEditToggle = () => {
     if (isEditing) {
-      onCancelEdit(); // Cancel edit mode
+      if (editedPixels && editedPixels.length > 0) {
+        onOpenUnsavedChangesDialog();
+      } else {
+        onCancelEdit();
+      }
     } else {
       if (onEdit(design.id)) {
-        // Enter edit mode only if allowed
       }
     }
+  };
+
+  const handleConfirmExitEdit = () => {
+    onCancelEdit();
+    onCloseUnsavedChangesDialog();
   };
 
   const handleAddToCanvas = () => {
@@ -143,12 +175,12 @@ const DesignCard: FC<DesignCardProps> = ({
     setIsSetCanvasPopupOpen(false);
 
     if (!canvas) {
-      return; // Cancel if no canvas is selected
+      return;
     }
 
     try {
       await updateDesignCanvas(design.id, canvas.id);
-      onSetCanvas(design.id, canvas.id); // Update the parent component
+      onSetCanvas(design.id, canvas.id);
 
       toast({
         title: "Set Canvas for Design",
@@ -199,7 +231,7 @@ const DesignCard: FC<DesignCardProps> = ({
             display="flex"
             justifyContent="center"
             alignItems="center"
-            backgroundColor="white" // Add a background color to simulate the white bars
+            backgroundColor="white" 
           >
             <IconButton
               icon={isVisible ? <FaEye /> : <FaEyeSlash />}
@@ -224,12 +256,11 @@ const DesignCard: FC<DesignCardProps> = ({
                   background="gray.100"
                 >
                   <FaImage size="50%" color="white" />{" "}
-                  {/* Inverted image icon */}
                 </Box>
               }
               height="100%"
-              width="auto"  // Set width to auto to maintain aspect ratio
-              objectFit="contain"  // Ensure the image fits inside the container
+              width="auto" 
+              objectFit="contain" 
               onClick={handleImageClick}
               src={design.design_thumbnail || ""}
             />
@@ -299,7 +330,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 <IconButton
                   icon={<FaTrash />}
                   aria-label="Delete"
-                  onClick={handleDelete}
+                  onClick={onOpenDeleteDialog}
                   size="sm"
                 />
               )}
@@ -321,6 +352,60 @@ const DesignCard: FC<DesignCardProps> = ({
         onClose={() => setIsSetCanvasPopupOpen(false)}
         onSetCanvas={handleSetCanvasDecision}
       />
+      <AlertDialog
+        isOpen={isDeleteDialogOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onCloseDeleteDialog}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete Design
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to delete this design? This action cannot be
+              undone.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onCloseDeleteDialog}>
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleDelete} ml={3}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+      <AlertDialog
+        isOpen={isUnsavedChangesDialogOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onCloseUnsavedChangesDialog}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Unsaved Changes
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              You have unsaved changes. Are you sure you want to exit without
+              saving?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onCloseUnsavedChangesDialog}>
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleConfirmExitEdit} ml={3}>
+                Exit Without Saving
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 };

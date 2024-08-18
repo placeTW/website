@@ -1,6 +1,6 @@
 import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
-import { Design } from "../../types/art-tool";
+import { Design, Pixel } from "../../types/art-tool";
 import DesignCard from "./design-card";
 
 interface DesignCardsListProps {
@@ -8,9 +8,10 @@ interface DesignCardsListProps {
   visibleLayers: number[];
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
   onVisibilityChange: (visibleLayers: number[]) => void;
-  onSubmitEdit: () => void; // New prop to handle submit from DesignOffice
+  onSubmitEdit: () => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
+  editedPixels: Pixel[]; // Add editedPixels to the props
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -18,9 +19,10 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   visibleLayers,
   onEditStateChange,
   onVisibilityChange,
-  onSubmitEdit, // Destructure the new prop
+  onSubmitEdit,
   onSetCanvas,
   onDeleted,
+  editedPixels, // Destructure the new prop
 }) => {
   const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<
     number | null
@@ -130,6 +132,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             onSubmitEdit={onSubmitEdit} // Pass down the onSubmitEdit function
             onSetCanvas={onSetCanvas}
             onDeleted={handleOnDeleted}
+            editedPixels={editedPixels} // Pass down the editedPixels array
           />
         </Box>
       ))}

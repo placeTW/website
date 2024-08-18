@@ -158,13 +158,10 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleSetDesignCanvas = (designId: number, canvasId: number) => {
+  const handleSetDesignCanvas = (canvasId: number) => {
     // Update the selectedCanvas state to trigger a re-render of AdvancedViewport
     const updatedCanvas = canvases.find((canvas) => canvas.id === canvasId);
     setSelectedCanvas(updatedCanvas || null);
-    console.log(
-      `Design ${designId} set to canvas ${selectedCanvas?.canvas_name}`,
-    );
   };
 
   const handleSetCanvas = (canvas: Canvas | null) => {
@@ -260,7 +257,8 @@ const DesignOffice: React.FC = () => {
           onVisibilityChange={handleVisibilityChange}
           onSubmitEdit={handleSubmitEdit}
           onSetCanvas={handleSetDesignCanvas}
-          onDeleted={handleOnDeleted} // Add this line to pass onDeleted prop
+          onDeleted={handleOnDeleted}
+          editedPixels={editedPixels} // Pass editedPixels as a prop
         />
         <Box h="100px" /> {/* Spacer at the bottom */}
       </Box>
