@@ -7,37 +7,34 @@ import {
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
+import {
+  CLEAR_ON_DESIGN,
+  CLEAR_ON_MAIN,
+} from "../component/viewport/constants";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
 import { offsetPixels } from "../utils/pixelUtils";
 import { useDesignContext } from "../context/design-context";
-import { useColorContext } from "../context/color-context"; // Import useColorContext
+import { useColorContext } from "../context/color-context";
 
 const DesignOffice: React.FC = () => {
-  const { designs = [], canvases = [] } = useDesignContext(); // Get designs and canvases from context, defaulting to empty arrays
-  const { colors } = useColorContext(); // Get colors from ColorContext
-  const [visibleDesigns, setVisibleDesigns] = useState<Design[]>([]);
+  const { designs, canvases } = useDesignContext();
+  const { colors } = useColorContext();
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<number | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
-  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]); // State to track edited pixels
+  const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const toast = useToast();
 
-  useEffect(() => {
-    // Initial setup: set visible designs and layers based on initial data
-    if (designs) {
-      setVisibleDesigns(designs);
-    }
-  }, [designs]);
-
   const handleEditStateChange = (
     isEditing: boolean,
-    designId: number | null,
+    designId: number | null
   ) => {
     setIsEditing(isEditing);
     setEditDesignId(designId);
-    setEditedPixels([]); // Clear the editedPixels array when exiting edit mode
+    setEditedPixels([]);
     if (isEditing && designId) {
       setVisibleLayers((prevLayers) => [
         ...prevLayers.filter((id) => id !== designId),
@@ -64,8 +61,11 @@ const DesignOffice: React.FC = () => {
       const updatedDesign = await saveEditedPixels(
         currentDesign,
         newPixels,
-        designName,
+        designName
       );
+
+      const thumbnailBlob = await createThumbnail(updatedDesign.pixels);
+      await uploadDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
 
       toast({
         title: "Changes Saved",
@@ -74,9 +74,6 @@ const DesignOffice: React.FC = () => {
         duration: 3000,
         isClosable: true,
       });
-
-      const thumbnailBlob = await createThumbnail(updatedDesign.pixels);
-      await uploadDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
 
       setEditedPixels([]);
     } catch (error) {
@@ -92,50 +89,60 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleSetDesignCanvas = (designId: number, canvasId: number) => {
-    const updatedCanvas = canvases?.find((canvas) => canvas.id === canvasId);
-    setSelectedCanvas(updatedCanvas || null);
-    console.log(
-      `Design ${designId} set to canvas ${selectedCanvas?.canvas_name}`,
+  const handleSetCanvas = (designId: number, canvasId: number) => {
+    const updatedDesigns = designs?.map((design) => {
+      if (design.id === designId) {
+        return { ...design, canvas: canvasId };
+      }
+      return design;
+    });
+
+    setSelectedCanvas(
+      canvases?.find((canvas) => canvas.id === canvasId) || null
     );
-  };
 
-  const handleSetCanvas = (canvas: Canvas | null) => {
-    let canvasDesigns: Design[] = [];
-    if (canvas) {
-      canvasDesigns = designs?.filter(
-        (design) =>
-          design.canvas === canvas.id ||
-          (isEditing && design.id === editDesignId),
-      ) || [];
-    } else {
-      canvasDesigns = designs?.filter(
-        (design) =>
-          design.canvas === null || (isEditing && design.id === editDesignId),
-      ) || [];
-    }
-
-    setSelectedCanvas(canvas);
-    setVisibleDesigns(canvasDesigns);
-    setVisibleLayers(canvasDesigns.map((design) => design.id));
+    setVisibleLayers(
+      updatedDesigns
+        ?.filter((design) => design.canvas === canvasId)
+        .map((design) => design.id) || []
+    );
   };
 
   const handleResetViewport = () => {
     setVisibleLayers([]);
-    setVisibleDesigns(designs || []);
     setSelectedCanvas(null);
   };
 
   const handleOnDeleted = (designId: number) => {
     setEditDesignId(null);
     setVisibleLayers((prevLayers) =>
-      prevLayers.filter((id) => id !== designId),
+      prevLayers.filter((id) => id !== designId)
     );
   };
 
-  if (!designs?.length || !colors?.length) {
+  useEffect(() => {
+    if (colors && designs) {
+      setLoading(false);
+    }
+  }, [colors, designs]);
+
+  if (loading) {
     return <Spinner size="xl" />;
   }
+
+  const allColors = [
+    ...(colors || []),
+    {
+      Color: CLEAR_ON_DESIGN,
+      color_sort: null,
+      color_name: "Clear on Design",
+    },
+    {
+      Color: CLEAR_ON_MAIN,
+      color_sort: null,
+      color_name: "Clear on Main",
+    },
+  ];
 
   return (
     <Box
@@ -150,27 +157,29 @@ const DesignOffice: React.FC = () => {
           isEditing={isEditing}
           editDesignId={editDesignId}
           visibleLayers={visibleLayers}
-          colors={colors} // Use colors from context
+          colors={allColors}
           canvases={canvases || []}
           selectedCanvas={selectedCanvas}
-          onSelectCanvas={handleSetCanvas}
+          onSelectCanvas={(canvas) =>
+            handleSetCanvas(editDesignId || 0, canvas?.id || 0)
+          }
           onResetViewport={handleResetViewport}
-          editedPixels={editedPixels} // Pass editedPixels to AdvancedViewport
+          editedPixels={editedPixels}
           setEditedPixels={setEditedPixels}
         />
       </Box>
       <Box overflowY="auto">
         <DesignCardsList
-          designs={visibleDesigns}
+          designs={designs || []}
           visibleLayers={visibleLayers}
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
-          onSubmitEdit={handleSubmitEdit} // Pass handleSubmitEdit function
-          onSetCanvas={handleSetDesignCanvas}
-          onDeleted={handleOnDeleted}
-          editedPixels={editedPixels} // Pass editedPixels to DesignCardsList
+          onSubmitEdit={handleSubmitEdit}
+          onSetCanvas={handleSetCanvas}
+          onDeleted={handleOnDeleted} // Added missing prop
+          editedPixels={editedPixels} // Added missing prop
         />
-        <Box h="100px" /> 
+        <Box h="100px" />
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
         <CreateDesignButton />
