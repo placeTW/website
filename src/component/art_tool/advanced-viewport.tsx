@@ -19,12 +19,8 @@ import React, {
   useState,
 } from "react";
 import { FaRepeat } from "react-icons/fa6";
-import {
-  databaseFetchDesigns,
-  removeSupabaseChannel,
-  supabase,
-} from "../../api/supabase";
-import { Canvas, Design, Pixel } from "../../types/art-tool";
+import { supabase } from "../../api/supabase"; // Ensure this is correctly imported
+import { Design, Canvas, Pixel } from "../../types/art-tool";
 import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
 import Viewport from "../viewport/Viewport";
 import {
@@ -35,6 +31,7 @@ import {
 import { ViewportPixel } from "../viewport/types";
 import { createCheckerboardPattern } from "../viewport/utils";
 import UndoManager from "../viewport/utils/undo-manager";
+import { useDesignContext } from "../../context/design-context"; // Using the DesignContext
 
 interface AdvancedViewportProps {
   visibleLayers: number[];
@@ -87,6 +84,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     "#fff",
   ).toDataURL();
 
+  const { designs } = useDesignContext(); // Get designs from context
+
   // Fetch pixels for visible layers and cache them
   const fetchPixels = useCallback(async (layers: number[]) => {
     if (layers.length === 0) return [];
@@ -99,7 +98,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     );
 
     if (layersToFetch.length > 0) {
-      const designs = await databaseFetchDesigns();
       const fetchedPixels = await Promise.all(
         layersToFetch.map(async (layer) => {
           const design = designs?.find((d) => d.id === layer);
@@ -123,7 +121,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
 
     return cachedLayers.map((layer) => pixelCache.current.get(layer)!).flat();
-  }, []);
+  }, [designs]);
 
   // Merge newly edited pixels with existing base pixels
   const mergeWithExistingPixels = (
@@ -332,7 +330,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "art_tool_designs" },
-        (payload) => {
+        (payload: any) => {
           if (payload.eventType === "UPDATE") {
             const updatedDesign = payload.new as Design;
             if (updatedDesign.pixels) {
@@ -372,9 +370,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       .subscribe();
 
     return () => {
-      removeSupabaseChannel(pixelSubscription);
+      if (pixelSubscription) supabase.removeChannel(pixelSubscription);
     };
-  }, []);
+  }, [designs]);
 
   useEffect(() => {
     if (isEditing) {

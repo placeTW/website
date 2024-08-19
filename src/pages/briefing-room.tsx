@@ -1,38 +1,19 @@
 import { Box, Flex, Heading, Text } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  databaseFetchCanvas,
-  databaseFetchDesigns,
-} from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import { useAlertContext } from "../context/alert-context";
-import { Design } from "../types/art-tool";
+import { useDesignContext } from "../context/design-context"; // Import the DesignContext
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { currentAlertData } = useAlertContext();
-  const [designs, setDesigns] = useState<Design[]>([]);
+  const { designs } = useDesignContext(); // Use only designs from DesignContext
 
   useEffect(() => {
-    const fetchCanvasesAndDesigns = async () => {
-      if (currentAlertData?.canvas_id) {
-        const currentAlertCanvas = await databaseFetchCanvas(
-          currentAlertData.canvas_id,
-        );
-
-        if (currentAlertCanvas) {
-          const canvasDesigns = await databaseFetchDesigns(
-            currentAlertCanvas.id,
-          );
-          setDesigns(canvasDesigns ?? []);
-        }
-      }
-    };
-
-    fetchCanvasesAndDesigns();
+    // Assuming the designs are already being fetched by the DesignProvider
+    // No need to fetch them here again unless you have specific logic to add
   }, [currentAlertData]);
-
 
   return (
     <Flex direction="column" height="100vh">
