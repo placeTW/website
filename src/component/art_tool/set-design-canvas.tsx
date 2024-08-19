@@ -1,4 +1,3 @@
-// add-to-canvas-popup.tsx
 import {
   Button,
   Modal,
@@ -10,11 +9,10 @@ import {
   ModalOverlay,
   Select,
   Text,
-  useToast, // Added import for Text
 } from "@chakra-ui/react";
-import { FC, useEffect, useState } from "react";
-import { databaseFetchCanvases } from "../../api/supabase/database";
+import { FC, useState } from "react";
 import { Canvas } from "../../types/art-tool";
+import { useDesignContext } from "../../context/design-context"; // Import DesignContext
 
 interface SetDesignCanvasProps {
   isOpen: boolean;
@@ -27,36 +25,12 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
   onClose,
   onSetCanvas,
 }) => {
+  const { canvases } = useDesignContext(); // Get canvases from context
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
-  const [canvases, setCanvases] = useState<Canvas[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const toast = useToast();
-
-  useEffect(() => {
-    const fetchCanvases = async () => {
-      try {
-        const fetchedCanvases = await databaseFetchCanvases();
-        if (fetchedCanvases) {
-          setCanvases(fetchedCanvases);
-        }
-        setIsLoading(false);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch canvases",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-    };
-
-    fetchCanvases();
-  }, []);
 
   const handleCanvasChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCanvasId = event.target.value;
-    const selectedCanvas = canvases.find(
+    const selectedCanvas = canvases?.find(
       (canvas) => canvas.id === Number(selectedCanvasId),
     );
 
@@ -75,8 +49,8 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
         <ModalHeader>Set Design Canvas</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {isLoading ? (
-            <Text>Loading canvases...</Text>
+          {canvases?.length === 0 || !canvases ? (
+            <Text>No canvases available</Text>
           ) : (
             <Select
               placeholder="Select a canvas"
