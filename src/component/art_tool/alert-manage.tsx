@@ -20,50 +20,27 @@ import { FaEdit, FaSave } from "react-icons/fa";
 import {
   updateAlertLevel,
   setActiveAlertLevel,
-  databaseFetchCanvases,
 } from "../../api/supabase/database";
-import { AlertState, Canvas } from "../../types/art-tool";
+import { AlertState } from "../../types/art-tool";
 import { useAlertContext } from "../../context/alert-context";
+import { useDesignContext } from "../../context/design-context";
 
 const AlertManage: React.FC = () => {
-  const { alertId, setActiveAlertId, alertLevels } = useAlertContext();
-  const [alerts, setAlerts] = useState<AlertState[]>(alertLevels);
-  const [editedFields, setEditedFields] = useState<
-    Record<number, Partial<AlertState>>
-  >({});
+  const { currentAlertData, setActiveAlertId, alertLevels } = useAlertContext();
+  const { canvases } = useDesignContext();
+  
+  // Provide default empty array if alertLevels is null
+  const [alerts, setAlerts] = useState<AlertState[]>(alertLevels ?? []);
+  const [editedFields, setEditedFields] = useState<Record<number, Partial<AlertState>>>({});
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [canvases, setCanvases] = useState<Canvas[]>([]);
   const toast = useToast();
 
   useEffect(() => {
-    setAlerts(alertLevels);
+    // Ensure alertLevels is non-null before setting state
+    setAlerts(alertLevels ?? []);
   }, [alertLevels]);
 
-  useEffect(() => {
-    const fetchCanvases = async () => {
-      try {
-        const fetchedCanvases = await databaseFetchCanvases();
-        if (fetchedCanvases) {
-          setCanvases(fetchedCanvases);
-        }
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch canvases",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-    };
-    fetchCanvases();
-  }, [toast]);
-
-  const handleInputChange = (
-    alertId: number,
-    field: string,
-    value: any
-  ) => {
+  const handleInputChange = (alertId: number, field: string, value: any) => {
     setEditedFields((prevFields) => ({
       ...prevFields,
       [alertId]: {
@@ -74,9 +51,10 @@ const AlertManage: React.FC = () => {
   };
 
   const handleSave = async (alertId: number) => {
-    if (editedFields[alertId]) {
+    const editedAlert = editedFields[alertId];
+    if (editedAlert) {
       try {
-        await updateAlertLevel(alertId, editedFields[alertId]);
+        await updateAlertLevel(alertId, editedAlert);
         setEditingId(null);
         toast({
           title: "Success",
@@ -146,13 +124,8 @@ const AlertManage: React.FC = () => {
               <Td>
                 {editingId === alert.alert_id ? (
                   <Input
-                    value={
-                      editedFields[alert.alert_id]?.alert_name ||
-                      alert.alert_name
-                    }
-                    onChange={(e) =>
-                      handleInputChange(alert.alert_id, "alert_name", e.target.value)
-                    }
+                    value={editedFields[alert.alert_id]?.alert_name || alert.alert_name}
+                    onChange={(e) => handleInputChange(alert.alert_id, "alert_name", e.target.value)}
                   />
                 ) : (
                   alert.alert_name
@@ -161,12 +134,8 @@ const AlertManage: React.FC = () => {
               <Td>
                 {editingId === alert.alert_id ? (
                   <Textarea
-                    value={
-                      editedFields[alert.alert_id]?.message || alert.message
-                    }
-                    onChange={(e) =>
-                      handleInputChange(alert.alert_id, "message", e.target.value)
-                    }
+                    value={editedFields[alert.alert_id]?.message || alert.message}
+                    onChange={(e) => handleInputChange(alert.alert_id, "message", e.target.value)}
                   />
                 ) : (
                   alert.message
@@ -175,48 +144,33 @@ const AlertManage: React.FC = () => {
               <Td>
                 {editingId === alert.alert_id ? (
                   <Select
-                    value={
-                      editedFields[alert.alert_id]?.canvas_id ||
-                      alert.canvas_id ||
-                      ""
-                    }
-                    onChange={(e) =>
-                      handleInputChange(alert.alert_id, "canvas_id", e.target.value)
-                    }
+                    value={editedFields[alert.alert_id]?.canvas_id ?? alert.canvas_id ?? ""}
+                    onChange={(e) => handleInputChange(alert.alert_id, "canvas_id", e.target.value)}
                   >
                     <option value="">Unassigned</option>
-                    {canvases.map((canvas) => (
+                    {canvases?.map((canvas) => (
                       <option key={canvas.id} value={canvas.id}>
                         {canvas.canvas_name}
                       </option>
                     ))}
                   </Select>
                 ) : (
-                  canvases.find((c) => c.id === alert.canvas_id)
-                    ?.canvas_name || "Unassigned"
+                  canvases?.find((c) => c.id === alert.canvas_id)?.canvas_name || "Unassigned"
                 )}
               </Td>
               <Td>
                 <Switch
-                  isChecked={alert.alert_id === alertId}
+                  isChecked={alert.alert_id === currentAlertData?.alert_id}
                   onChange={() => handleActivateAlert(alert.alert_id)}
                 />
               </Td>
               <Td>
                 {editingId === alert.alert_id ? (
-                  <Button
-                    leftIcon={<FaSave />}
-                    colorScheme="blue"
-                    onClick={() => handleSave(alert.alert_id)}
-                  >
+                  <Button leftIcon={<FaSave />} colorScheme="blue" onClick={() => handleSave(alert.alert_id)}>
                     Save
                   </Button>
                 ) : (
-                  <IconButton
-                    icon={<FaEdit />}
-                    aria-label="Edit"
-                    onClick={() => handleEditClick(alert.alert_id)}
-                  />
+                  <IconButton icon={<FaEdit />} aria-label="Edit" onClick={() => handleEditClick(alert.alert_id)} />
                 )}
               </Td>
             </Tr>
