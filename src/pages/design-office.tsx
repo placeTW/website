@@ -11,7 +11,7 @@ import {
   CLEAR_ON_DESIGN,
   CLEAR_ON_MAIN,
 } from "../component/viewport/constants";
-import { Canvas, Design, Pixel } from "../types/art-tool";
+import { Canvas, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
 import { offsetPixels } from "../utils/pixelUtils";
 import { useDesignContext } from "../context/design-context";

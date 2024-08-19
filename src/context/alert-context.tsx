@@ -1,11 +1,11 @@
-import React, { createContext, useContext, ReactNode, useState } from "react";
-import { fetchAlertLevels } from "../api/supabase";
+import React, { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import { fetchAlertLevels, supabase, removeSupabaseChannel } from "../api/supabase";
 import { AlertState } from "../types/art-tool";
 
 interface AlertContextProps {
   alertLevels: AlertState[] | null;
   currentAlertData: AlertState | null;
-  setActiveAlertId: (id: number) => void; // Added function type
+  setActiveAlertId: (id: number) => void;
 }
 
 // Fetch all alert levels and set the active alert
@@ -53,6 +53,38 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       })));
     }
   };
+
+  // Set up the Supabase subscription with logging
+  useEffect(() => {
+
+    const updateAlertLevelFromEvent = (payload: any) => {
+      
+      const updatedAlert = payload.new as AlertState;
+      setAlertLevels((prevAlerts) => {
+        const updatedAlerts = prevAlerts?.map(alert =>
+          alert.alert_id === updatedAlert.alert_id ? updatedAlert : alert
+        ) || [];
+
+        const activeAlert = updatedAlerts.find(alert => alert.Active) || null;
+        setCurrentAlertData(activeAlert);
+
+        return updatedAlerts;
+      });
+    };
+
+    const alertSubscription = supabase
+      .channel("public:art_tool_alert_state")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "art_tool_alert_state" },
+        updateAlertLevelFromEvent
+      )
+      .subscribe();
+
+    return () => {
+      removeSupabaseChannel(alertSubscription);
+    };
+  }, []);
 
   return (
     <AlertContext.Provider value={{ alertLevels, currentAlertData, setActiveAlertId }}>
