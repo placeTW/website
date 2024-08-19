@@ -3,26 +3,20 @@ import { useEffect, useState } from "react";
 import {
   saveEditedPixels,
   uploadDesignThumbnailToSupabase,
-  databaseFetchColors, // Add this correct import
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignCardsList from "../component/art_tool/design-cards-list";
-import {
-  CLEAR_ON_DESIGN,
-  CLEAR_ON_MAIN,
-} from "../component/viewport/constants";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
 import { offsetPixels } from "../utils/pixelUtils";
-import { useDesignContext } from "../context/design-context"; // Use DesignContext
+import { useDesignContext } from "../context/design-context";
+import { useColorContext } from "../context/color-context"; // Import useColorContext
 
 const DesignOffice: React.FC = () => {
   const { designs = [], canvases = [] } = useDesignContext(); // Get designs and canvases from context, defaulting to empty arrays
+  const { colors } = useColorContext(); // Get colors from ColorContext
   const [visibleDesigns, setVisibleDesigns] = useState<Design[]>([]);
-  const [colors, setColors] = useState<
-    { Color: string; color_sort: number | null; color_name: string }[]
-  >([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editDesignId, setEditDesignId] = useState<number | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
@@ -36,38 +30,6 @@ const DesignOffice: React.FC = () => {
       setVisibleDesigns(designs);
     }
   }, [designs]);
-
-  const fetchColors = async () => {
-    try {
-      const fetchedColors = await databaseFetchColors(); // Ensure this is imported correctly
-
-      const colorsWithNames = fetchedColors.map((color: any) => ({
-        ...color,
-        color_name: color.color_name || "Unnamed",
-      }));
-
-      const specialColors = [
-        {
-          Color: CLEAR_ON_DESIGN,
-          color_sort: null,
-          color_name: "Clear on Design",
-        },
-        { Color: CLEAR_ON_MAIN, color_sort: null, color_name: "Clear on Main" },
-      ];
-
-      setColors([...colorsWithNames, ...specialColors]);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to fetch colors: ${
-          (error as Error).message || error
-        }`,
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
 
   const handleEditStateChange = (
     isEditing: boolean,
@@ -171,11 +133,7 @@ const DesignOffice: React.FC = () => {
     );
   };
 
-  useEffect(() => {
-    fetchColors();
-  }, []);
-
-  if (!designs?.length) {
+  if (!designs?.length || !colors?.length) {
     return <Spinner size="xl" />;
   }
 
@@ -192,7 +150,7 @@ const DesignOffice: React.FC = () => {
           isEditing={isEditing}
           editDesignId={editDesignId}
           visibleLayers={visibleLayers}
-          colors={colors}
+          colors={colors} // Use colors from context
           canvases={canvases || []}
           selectedCanvas={selectedCanvas}
           onSelectCanvas={handleSetCanvas}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState } from "react";
-import { fetchAlertLevels, supabase } from "../api/supabase";
+import { fetchAlertLevels } from "../api/supabase";
 import { AlertState } from "../types/art-tool";
 
 interface AlertContextProps {
