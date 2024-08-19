@@ -43,9 +43,10 @@ export interface Canvas {
 
 export interface Color {
   Color: string;
-  color_sort: number;
+  color_sort: number | null; // Allow color_sort to be null
   color_name: string;
 }
+
 
 export interface AlertState {
   alert_id: number;   // Unique identifier for each alert

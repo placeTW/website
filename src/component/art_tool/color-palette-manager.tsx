@@ -11,49 +11,32 @@ import {
   Tr,
   useToast,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa6";
 import {
-  deleteColor,
   insertColor,
+  deleteColor,
   updateColor,
+  updateColorSortOrder,
 } from "../../api/supabase/database";
-import ColorRow from "./color-row";
 import { useColorContext } from "../../context/color-context";
-import { Color } from "../../types/art-tool"; // Ensure this import is correct
+import ColorRow from "./color-row";
+import { Color } from "../../types/art-tool";
 
 const ColorPaletteManager = () => {
-  const { colors } = useColorContext(); // Updated to remove `updateColorSortOrder`
-  const [newColor, setNewColor] = useState("");
-  const [newColorName, setNewColorName] = useState("");
+  const { colors, setColors } = useColorContext(); // Get colors and setter from context
+  const [newColor, setNewColor] = useState<string>("");
+  const [newColorName, setNewColorName] = useState<string>("");
   const toast = useToast();
 
-  const moveColorUp = async (index: number) => {
-    if (index > 0 && colors) {
-      const updatedColors = [...colors];
-      const temp = updatedColors[index - 1];
-      updatedColors[index - 1] = updatedColors[index];
-      updatedColors[index] = temp;
-
-      // Handle color sort order update here if necessary
-    }
-  };
-
-  const moveColorDown = async (index: number) => {
-    if (index < (colors?.length || 0) - 1 && colors) {
-      const updatedColors = [...colors];
-      const temp = updatedColors[index + 1];
-      updatedColors[index + 1] = updatedColors[index];
-      updatedColors[index] = temp;
-
-      // Handle color sort order update here if necessary
-    }
-  };
+  // Effect hook to log the redraw
+  useEffect(() => {
+  }, [colors]);
 
   const handleAddColor = async () => {
-    if (newColor && newColorName) {
+    if (newColor && newColorName && colors) {
       try {
-        await insertColor(newColor, newColorName, (colors?.length || 0) + 1);
+        await insertColor(newColor, newColorName, colors.length + 1); // Ensure colors is non-null
         setNewColor("");
         setNewColorName("");
       } catch (error) {
@@ -91,12 +74,61 @@ const ColorPaletteManager = () => {
   };
 
   const handleRemoveColor = async (color: string) => {
+    if (colors) {
+      try {
+        await deleteColor(color);
+
+        // Update sort order after deletion
+        const updatedColors = colors.filter((c) => c.Color !== color);
+        await updateColorSortOrder(updatedColors);
+
+        // Update the colors in the context
+        setColors(updatedColors);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: `Failed to delete color: ${
+            (error as Error).message || error
+          }`,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    }
+  };
+
+  const handleMoveColor = async (index: number, direction: "up" | "down") => {
+    if (!colors || index < 0 || index >= colors.length) return;
+
+    const swapWithIndex = direction === "up" ? index - 1 : index + 1;
+
+    if (swapWithIndex < 0 || swapWithIndex >= colors.length) return;
+
+    const updatedColors = [...colors];
+    const currentColor = updatedColors[index];
+    const swapWithColor = updatedColors[swapWithIndex];
+
+    // Swap their sort orders in the list
+    updatedColors[index] = {
+      ...swapWithColor,
+      color_sort: currentColor.color_sort,
+    };
+    updatedColors[swapWithIndex] = {
+      ...currentColor,
+      color_sort: swapWithColor.color_sort,
+    };
+
     try {
-      await deleteColor(color);
+      // Update sort order in the database
+      await updateColorSortOrder(updatedColors);
+
+      // Update the colors in the context
+      setColors(updatedColors);
     } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to delete color: ${
+        description: `Failed to reorder colors: ${
           (error as Error).message || error
         }`,
         status: "error",
@@ -105,6 +137,10 @@ const ColorPaletteManager = () => {
       });
     }
   };
+
+  if (!colors) {
+    return <div>Loading...</div>; // Fallback UI while colors are being fetched
+  }
 
   return (
     <Box>
@@ -122,14 +158,14 @@ const ColorPaletteManager = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {colors?.map((color, index) => (
+          {colors.map((color, index) => (
             <ColorRow
               key={color.Color}
-              color={{ ...color, color_sort: color.color_sort ?? 0 }} // Ensure color_sort is a number
+              color={color}
               index={index}
               totalColors={colors.length}
-              moveColorUp={moveColorUp}
-              moveColorDown={moveColorDown}
+              moveColorUp={() => handleMoveColor(index, "up")}
+              moveColorDown={() => handleMoveColor(index, "down")}
               handleEditColor={handleEditColor}
               handleRemoveColor={handleRemoveColor}
             />

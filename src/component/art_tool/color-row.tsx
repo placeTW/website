@@ -1,5 +1,5 @@
 import { Box, IconButton, Input, Td, Tr } from "@chakra-ui/react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { FaAngleDown, FaAngleUp, FaPen, FaTrash } from "react-icons/fa";
 import { Color } from "../../types/art-tool";
 
@@ -12,7 +12,7 @@ interface ColorRowProps {
   handleEditColor: (
     color: Color,
     newColor: string,
-    newColorName: string,
+    newColorName: string
   ) => void;
   handleRemoveColor: (color: string) => void;
 }
@@ -29,6 +29,12 @@ const ColorRow: FC<ColorRowProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedColor, setEditedColor] = useState(color.Color);
   const [editedColorName, setEditedColorName] = useState(color.color_name);
+
+  // Effect to log changes in props
+  useEffect(() => {
+    setEditedColor(color.Color);
+    setEditedColorName(color.color_name);
+  }, [color]);
 
   const handleSave = () => {
     handleEditColor(color, editedColor, editedColorName);
