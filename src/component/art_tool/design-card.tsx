@@ -7,7 +7,7 @@ import {
   Heading,
   IconButton,
   Image,
-  Input, // Imported Input for editable design name
+  Input,
   Text,
   useToast,
   useDisclosure,
@@ -49,10 +49,10 @@ interface DesignCardProps {
   onCancelEdit: () => void;
   onToggleVisibility: (designId: number, isVisible: boolean) => void;
   isVisible: boolean;
-  onSubmitEdit: (designName: string) => void; // Update to accept designName
+  onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
-  editedPixels: Pixel[]; // Receive the editedPixels array as a prop
+  editedPixels: Pixel[];
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -70,12 +70,11 @@ const DesignCard: FC<DesignCardProps> = ({
 }) => {
   const { currentUser, rankNames } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLiked, setIsLiked] = useState(
-    currentUser ? design.liked_by.includes(currentUser.user_id) : false,
-  );
+  const [isLiked, setIsLiked] = useState(false);
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
-  const [designName, setDesignName] = useState(design.design_name); // State for design name
+  const [designName, setDesignName] = useState(design.design_name);
   const toast = useToast();
+  const cancelRef = useRef(null);
 
   const {
     isOpen: isDeleteDialogOpen,
@@ -89,19 +88,24 @@ const DesignCard: FC<DesignCardProps> = ({
     onClose: onCloseUnsavedChangesDialog,
   } = useDisclosure();
 
-  const cancelRef = useRef(null);
-
+  // Set liked status based on the initial data
   useEffect(() => {
-    setIsLiked(
-      currentUser ? design.liked_by.includes(currentUser.user_id) : false,
-    );
-  }, [design.liked_by, currentUser]);
+    if (currentUser) {
+      const liked = design.liked_by.includes(currentUser.user_id);
+      if (liked !== isLiked) {
+        console.log("[DESIGN CARD] Setting liked status:", liked);
+        setIsLiked(liked);
+      }
+    }
+  }, [design.liked_by, currentUser, isLiked]);
 
   const handleImageClick = () => {
+    console.log("[DESIGN CARD] Image clicked:", design.design_name);
     setIsModalOpen(true);
   };
 
   const handleToggleVisibility = () => {
+    console.log("[DESIGN CARD] Toggle visibility for design:", design.id);
     const newVisibility = !isVisible;
     onToggleVisibility(design.id, newVisibility);
   };
@@ -110,6 +114,7 @@ const DesignCard: FC<DesignCardProps> = ({
     if (!currentUser) return;
 
     try {
+      console.log("[DESIGN CARD] Toggling like for design:", design.id);
       if (isLiked) {
         await unlikeDesign(design, currentUser.user_id);
         setIsLiked(false);
@@ -130,6 +135,7 @@ const DesignCard: FC<DesignCardProps> = ({
 
   const handleDelete = async () => {
     try {
+      console.log("[DESIGN CARD] Deleting design:", design.id);
       await databaseDeleteDesign(design.id);
       onDeleted(design.id);
       toast({
@@ -152,6 +158,7 @@ const DesignCard: FC<DesignCardProps> = ({
   };
 
   const handleEditToggle = () => {
+    console.log("[DESIGN CARD] Toggle edit mode for design:", design.id);
     if (isEditing) {
       if (editedPixels && editedPixels.length > 0) {
         onOpenUnsavedChangesDialog();
@@ -165,15 +172,18 @@ const DesignCard: FC<DesignCardProps> = ({
   };
 
   const handleConfirmExitEdit = () => {
+    console.log("[DESIGN CARD] Confirm exit edit mode");
     onCancelEdit();
     onCloseUnsavedChangesDialog();
   };
 
   const handleAddToCanvas = () => {
+    console.log("[DESIGN CARD] Add design to canvas:", design.id);
     setIsSetCanvasPopupOpen(true);
   };
 
   const handleSetCanvasDecision = async (canvas: Canvas | null) => {
+    console.log("[DESIGN CARD] Canvas set decision:", { canvas });
     setIsSetCanvasPopupOpen(false);
 
     if (!canvas) {
@@ -293,7 +303,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   value={designName}
                   onChange={(e) => setDesignName(e.target.value)}
                   fontSize={"md"}
-                  backgroundColor="white" // Set the background color to white
+                  backgroundColor="white"
                 />
               ) : (
                 <Heading fontSize={"md"}>{design.design_name}</Heading>
@@ -326,7 +336,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   <IconButton
                     icon={<FaCloudArrowUp />}
                     aria-label="Submit"
-                    onClick={() => onSubmitEdit(designName)} // Pass designName to the submit function
+                    onClick={() => onSubmitEdit(designName)}
                     size="sm"
                   />
                 </>
@@ -375,8 +385,7 @@ const DesignCard: FC<DesignCardProps> = ({
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure you want to delete this design? This action cannot be
-              undone.
+              Are you sure you want to delete this design? This action cannot be undone.
             </AlertDialogBody>
 
             <AlertDialogFooter>
@@ -402,8 +411,7 @@ const DesignCard: FC<DesignCardProps> = ({
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              You have unsaved changes. Are you sure you want to exit without
-              saving?
+              You have unsaved changes. Are you sure you want to exit without saving?
             </AlertDialogBody>
 
             <AlertDialogFooter>

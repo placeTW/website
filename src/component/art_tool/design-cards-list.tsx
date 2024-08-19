@@ -8,10 +8,10 @@ interface DesignCardsListProps {
   visibleLayers: number[];
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
   onVisibilityChange: (visibleLayers: number[]) => void;
-  onSubmitEdit: (designName: string) => void; // Update the prop type to accept designName
+  onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
-  editedPixels: Pixel[]; // Add editedPixels to the props
+  editedPixels: Pixel[];
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -22,19 +22,20 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onSubmitEdit,
   onSetCanvas,
   onDeleted,
-  editedPixels, // Destructure the new prop
+  editedPixels,
 }) => {
-  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<
-    number | null
-  >(null);
-  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
-    {},
-  );
+  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<number | null>(null);
+  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>({});
   const toast = useToast();
   const isFirstRender = useRef(true);
   const previousVisibleLayers = useRef<number[]>([]);
 
+  useEffect(() => {
+    console.log("[DESIGN CARDS LIST] Designs list updated:", designs);
+  }, [designs]);
+
   const handleEdit = (designId: number): boolean => {
+    console.log("[DESIGN CARDS LIST] Edit initiated for design:", designId);
     if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
       toast({
         title: "Edit in Progress",
@@ -52,12 +53,17 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   };
 
   const handleCancelEdit = (): boolean => {
+    console.log("[DESIGN CARDS LIST] Edit cancelled");
     setCurrentlyEditingCardId(null);
     onEditStateChange(false, null);
     return true;
   };
 
   const handleToggleVisibility = (designId: number, isVisible: boolean) => {
+    console.log("[DESIGN CARDS LIST] Toggling visibility for design:", {
+      designId,
+      isVisible,
+    });
     setVisibilityMap((prev) => {
       const updated = { ...prev };
 
@@ -72,6 +78,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   };
 
   const handleOnDeleted = (designId: number) => {
+    console.log("[DESIGN CARDS LIST] Design deleted:", designId);
     setVisibilityMap((prev) => {
       const updated = { ...prev };
       delete updated[designId];
@@ -81,7 +88,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     setCurrentlyEditingCardId(null);
 
     onDeleted(designId);
-  }
+  };
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -98,11 +105,13 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
       JSON.stringify(previousVisibleLayers.current)
     ) {
       previousVisibleLayers.current = newVisibleLayers;
+      console.log("[DESIGN CARDS LIST] Visibility layers changed:", newVisibleLayers);
       onVisibilityChange(newVisibleLayers);
     }
   }, [visibilityMap, onVisibilityChange]);
 
   useEffect(() => {
+    console.log("[DESIGN CARDS LIST] Visible layers updated:", visibleLayers);
     const newVisibilityMap: Record<number, boolean> = {};
 
     visibleLayers.forEach((layer) => {
@@ -129,10 +138,10 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             onCancelEdit={handleCancelEdit}
             onToggleVisibility={handleToggleVisibility}
             isVisible={visibilityMap[design.id] ?? false}
-            onSubmitEdit={onSubmitEdit} // Pass down the onSubmitEdit function
+            onSubmitEdit={onSubmitEdit}
             onSetCanvas={onSetCanvas}
             onDeleted={handleOnDeleted}
-            editedPixels={editedPixels} // Pass down the editedPixels array
+            editedPixels={editedPixels}
           />
         </Box>
       ))}

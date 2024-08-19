@@ -28,10 +28,18 @@ const DesignOffice: React.FC = () => {
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const toast = useToast();
 
+  useEffect(() => {
+    console.log("[DESIGN OFFICE] Designs updated:", designs);
+    if (colors && designs) {
+      setLoading(false);
+    }
+  }, [colors, designs]); // Re-render on designs update
+
   const handleEditStateChange = (
     isEditing: boolean,
     designId: number | null
   ) => {
+    console.log("[DESIGN OFFICE] Edit state changed:", { isEditing, designId });
     setIsEditing(isEditing);
     setEditDesignId(designId);
     setEditedPixels([]);
@@ -44,6 +52,7 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleVisibilityChange = (newVisibleLayers: number[]) => {
+    console.log("[DESIGN OFFICE] Visibility layers changed:", newVisibleLayers);
     setVisibleLayers(newVisibleLayers);
   };
 
@@ -54,6 +63,7 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
+      console.log("[DESIGN OFFICE] Submitting edit for design:", currentDesign);
       const newPixels = offsetPixels(editedPixels, {
         x: currentDesign.x,
         y: currentDesign.y,
@@ -90,6 +100,7 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleSetCanvas = (designId: number, canvasId: number) => {
+    console.log("[DESIGN OFFICE] Setting canvas:", { designId, canvasId });
     const updatedDesigns = designs?.map((design) => {
       if (design.id === designId) {
         return { ...design, canvas: canvasId };
@@ -109,22 +120,18 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleResetViewport = () => {
+    console.log("[DESIGN OFFICE] Resetting viewport");
     setVisibleLayers([]);
     setSelectedCanvas(null);
   };
 
   const handleOnDeleted = (designId: number) => {
+    console.log("[DESIGN OFFICE] Design deleted:", designId);
     setEditDesignId(null);
     setVisibleLayers((prevLayers) =>
       prevLayers.filter((id) => id !== designId)
     );
   };
-
-  useEffect(() => {
-    if (colors && designs) {
-      setLoading(false);
-    }
-  }, [colors, designs]);
 
   if (loading) {
     return <Spinner size="xl" />;
@@ -176,8 +183,8 @@ const DesignOffice: React.FC = () => {
           onVisibilityChange={handleVisibilityChange}
           onSubmitEdit={handleSubmitEdit}
           onSetCanvas={handleSetCanvas}
-          onDeleted={handleOnDeleted} // Added missing prop
-          editedPixels={editedPixels} // Added missing prop
+          onDeleted={handleOnDeleted}
+          editedPixels={editedPixels}
         />
         <Box h="100px" />
       </Box>
