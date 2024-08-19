@@ -2,10 +2,6 @@ import React, { createContext, useContext, ReactNode } from "react";
 import { Design, Canvas } from "../types/art-tool";
 import { databaseFetchDesigns, databaseFetchCanvases } from "../api/supabase";
 
-// Utility function to generate a random string ID
-function generateRandomID(length: number = 8): string {
-  return Math.random().toString(36).substr(2, length);
-}
 
 // Fetch all data immediately and make it available to the entire app
 const fetchAllData = async () => {
