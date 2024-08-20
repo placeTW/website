@@ -70,11 +70,12 @@ const DesignCard: FC<DesignCardProps> = ({
 }) => {
   const { currentUser, rankNames } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(
+    currentUser ? design.liked_by?.includes(currentUser.user_id) : false,
+  );
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
-  const [designName, setDesignName] = useState(design.design_name);
+  const [designName, setDesignName] = useState(design.design_name || ""); // Handle missing design_name
   const toast = useToast();
-  const cancelRef = useRef(null);
 
   const {
     isOpen: isDeleteDialogOpen,
@@ -88,24 +89,24 @@ const DesignCard: FC<DesignCardProps> = ({
     onClose: onCloseUnsavedChangesDialog,
   } = useDisclosure();
 
-  // Set liked status based on the initial data
+  const cancelRef = useRef(null);
+
   useEffect(() => {
     if (currentUser) {
-      const liked = design.liked_by.includes(currentUser.user_id);
-      if (liked !== isLiked) {
-        console.log("[DESIGN CARD] Setting liked status:", liked);
-        setIsLiked(liked);
-      }
+      setIsLiked(design.liked_by?.includes(currentUser.user_id) ?? false);
     }
-  }, [design.liked_by, currentUser, isLiked]);
+  }, [design.liked_by, currentUser]);
+
+  useEffect(() => {
+    // Log the design data to catch potential issues
+    console.log("[DESIGN CARD] Rendering with design data:", design);
+  }, [design]);
 
   const handleImageClick = () => {
-    console.log("[DESIGN CARD] Image clicked:", design.design_name);
     setIsModalOpen(true);
   };
 
   const handleToggleVisibility = () => {
-    console.log("[DESIGN CARD] Toggle visibility for design:", design.id);
     const newVisibility = !isVisible;
     onToggleVisibility(design.id, newVisibility);
   };
@@ -114,7 +115,6 @@ const DesignCard: FC<DesignCardProps> = ({
     if (!currentUser) return;
 
     try {
-      console.log("[DESIGN CARD] Toggling like for design:", design.id);
       if (isLiked) {
         await unlikeDesign(design, currentUser.user_id);
         setIsLiked(false);
@@ -135,7 +135,6 @@ const DesignCard: FC<DesignCardProps> = ({
 
   const handleDelete = async () => {
     try {
-      console.log("[DESIGN CARD] Deleting design:", design.id);
       await databaseDeleteDesign(design.id);
       onDeleted(design.id);
       toast({
@@ -158,7 +157,6 @@ const DesignCard: FC<DesignCardProps> = ({
   };
 
   const handleEditToggle = () => {
-    console.log("[DESIGN CARD] Toggle edit mode for design:", design.id);
     if (isEditing) {
       if (editedPixels && editedPixels.length > 0) {
         onOpenUnsavedChangesDialog();
@@ -167,23 +165,21 @@ const DesignCard: FC<DesignCardProps> = ({
       }
     } else {
       if (onEdit(design.id)) {
+        // Noop
       }
     }
   };
 
   const handleConfirmExitEdit = () => {
-    console.log("[DESIGN CARD] Confirm exit edit mode");
     onCancelEdit();
     onCloseUnsavedChangesDialog();
   };
 
   const handleAddToCanvas = () => {
-    console.log("[DESIGN CARD] Add design to canvas:", design.id);
     setIsSetCanvasPopupOpen(true);
   };
 
   const handleSetCanvasDecision = async (canvas: Canvas | null) => {
-    console.log("[DESIGN CARD] Canvas set decision:", { canvas });
     setIsSetCanvasPopupOpen(false);
 
     if (!canvas) {
@@ -221,6 +217,12 @@ const DesignCard: FC<DesignCardProps> = ({
       currentUser.rank === "B" ||
       currentUser.user_id === design.created_by);
   const isCreator = currentUser && currentUser.user_id === design.created_by;
+
+  // Check for required fields
+  if (!design.id || !design.design_name) {
+    console.error("[DESIGN CARD] Missing required design data:", design);
+    return null; // Skip rendering this card
+  }
 
   return (
     <>
@@ -303,14 +305,14 @@ const DesignCard: FC<DesignCardProps> = ({
                   value={designName}
                   onChange={(e) => setDesignName(e.target.value)}
                   fontSize={"md"}
-                  backgroundColor="white"
+                  backgroundColor="white" // Set the background color to white
                 />
               ) : (
                 <Heading fontSize={"md"}>{design.design_name}</Heading>
               )}
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
-                {rankNames[design.art_tool_users.rank] ?? "Unknown"}{" "}
-                {design.art_tool_users.handle}
+                {rankNames[design.art_tool_users?.rank] ?? "Unknown"}{" "}
+                {design.art_tool_users?.handle ?? "Unknown"}
               </Text>
               <Text color={"gray.600"} fontWeight={400} fontSize={"sm"}>
                 {canvasName}
@@ -385,7 +387,8 @@ const DesignCard: FC<DesignCardProps> = ({
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure you want to delete this design? This action cannot be undone.
+              Are you sure you want to delete this design? This action cannot be
+              undone.
             </AlertDialogBody>
 
             <AlertDialogFooter>
@@ -411,7 +414,8 @@ const DesignCard: FC<DesignCardProps> = ({
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              You have unsaved changes. Are you sure you want to exit without saving?
+              You have unsaved changes. Are you sure you want to exit without
+              saving?
             </AlertDialogBody>
 
             <AlertDialogFooter>

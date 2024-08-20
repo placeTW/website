@@ -33,7 +33,7 @@ const DesignOffice: React.FC = () => {
     if (colors && designs) {
       setLoading(false);
     }
-  }, [colors, designs]); // Re-render on designs update
+  }, [colors, designs]);
 
   const handleEditStateChange = (
     isEditing: boolean,

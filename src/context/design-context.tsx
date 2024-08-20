@@ -3,7 +3,7 @@ import { Design, Canvas } from "../types/art-tool";
 import { supabase } from "../api/supabase";
 import { databaseFetchDesigns, databaseFetchCanvases } from "../api/supabase";
 
-// Fetch all data immediately and make it available to the entire app
+// Fetch all data initially and make it available to the entire app
 const fetchAllData = async () => {
   console.log(`[DESIGN-CONTEXT] Fetching all data from database`);
 
@@ -16,6 +16,7 @@ const fetchAllData = async () => {
   };
 };
 
+// Initialize the data
 const initialData = await fetchAllData();
 console.log(`[DESIGN-CONTEXT] Data fetched:`, initialData);
 
@@ -50,6 +51,8 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
   const [canvases, setCanvases] = useState<Canvas[]>(initialData.canvases);
 
   useEffect(() => {
+    console.log("[DESIGN-CONTEXT] Subscribing to real-time design updates");
+
     const designSubscription = supabase
       .channel("public:art_tool_designs")
       .on(
@@ -57,6 +60,12 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
         { event: "*", schema: "public", table: "art_tool_designs" },
         (payload) => {
           const { eventType, new: newDesignData, old: oldDesignData } = payload;
+          console.log("[DESIGN-CONTEXT] Received update event:", eventType, newDesignData, oldDesignData);
+
+          if (!newDesignData || typeof newDesignData !== 'object') {
+            console.error("[DESIGN-CONTEXT] Invalid design data received:", newDesignData);
+            return;
+          }
 
           setDesigns((prevDesigns) => {
             let updatedDesigns = [...prevDesigns];
@@ -76,14 +85,28 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
                 );
                 break;
               default:
+                console.error("[DESIGN-CONTEXT] Unhandled event type:", eventType);
                 break;
             }
 
+            console.log("[DESIGN-CONTEXT] Updated designs array:", updatedDesigns);
             return updatedDesigns;
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("[DESIGN-CONTEXT] Successfully subscribed to design updates");
+        } else if (status === "TIMED_OUT") {
+          console.error("[DESIGN-CONTEXT] Subscription to design updates timed out");
+        } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+          console.error(`[DESIGN-CONTEXT] Subscription error: ${status}`);
+        } else {
+          console.log("[DESIGN-CONTEXT] Subscription status:", status);
+        }
+      });
+
+    console.log("[DESIGN-CONTEXT] Subscribing to real-time canvas updates");
 
     const canvasSubscription = supabase
       .channel("public:art_tool_canvases")
@@ -92,6 +115,12 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
         { event: "*", schema: "public", table: "art_tool_canvases" },
         (payload) => {
           const { eventType, new: newCanvasData, old: oldCanvasData } = payload;
+          console.log("[DESIGN-CONTEXT] Received update event:", eventType, newCanvasData, oldCanvasData);
+
+          if (!newCanvasData || typeof newCanvasData !== 'object') {
+            console.error("[DESIGN-CONTEXT] Invalid canvas data received:", newCanvasData);
+            return;
+          }
 
           setCanvases((prevCanvases) => {
             let updatedCanvases = [...prevCanvases];
@@ -111,20 +140,32 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
                 );
                 break;
               default:
+                console.error("[DESIGN-CONTEXT] Unhandled event type:", eventType);
                 break;
             }
 
+            console.log("[DESIGN-CONTEXT] Updated canvases array:", updatedCanvases);
             return updatedCanvases;
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("[DESIGN-CONTEXT] Successfully subscribed to canvas updates");
+        } else if (status === "TIMED_OUT") {
+          console.error("[DESIGN-CONTEXT] Subscription to canvas updates timed out");
+        } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+          console.error(`[DESIGN-CONTEXT] Subscription error: ${status}`);
+        } else {
+          console.log("[DESIGN-CONTEXT] Subscription status:", status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(designSubscription);
       supabase.removeChannel(canvasSubscription);
     };
-  }, []); // Ensure this useEffect only runs once on mount
+  }, []);
 
   return (
     <DesignContext.Provider value={{ designs, canvases, setDesigns, setCanvases }}>
