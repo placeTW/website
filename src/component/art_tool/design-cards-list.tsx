@@ -79,6 +79,10 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
 
   const handleOnDeleted = (designId: number) => {
     console.log("[DESIGN CARDS LIST] Design deleted:", designId);
+    
+    // Call the parent onDeleted function to update the state in DesignOffice
+    onDeleted(designId);
+
     setVisibilityMap((prev) => {
       const updated = { ...prev };
       delete updated[designId];
@@ -86,8 +90,6 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     });
 
     setCurrentlyEditingCardId(null);
-
-    onDeleted(designId);
   };
 
   useEffect(() => {

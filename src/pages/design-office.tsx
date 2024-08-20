@@ -18,7 +18,7 @@ import { useDesignContext } from "../context/design-context";
 import { useColorContext } from "../context/color-context";
 
 const DesignOffice: React.FC = () => {
-  const { designs, canvases } = useDesignContext();
+  const { designs, canvases, setDesigns } = useDesignContext();
   const { colors } = useColorContext();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -126,7 +126,15 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleOnDeleted = (designId: number) => {
-    console.log("[DESIGN OFFICE] Design deleted:", designId);
+    console.log("[DESIGN OFFICE] Handling design deletion:", designId);
+    
+    // Remove the design from the state
+    setDesigns((prevDesigns) => {
+      const updatedDesigns = prevDesigns.filter((design) => design.id !== designId);
+      console.log("[DESIGN OFFICE] Updated designs array after deletion:", updatedDesigns);
+      return updatedDesigns;
+    });
+
     setEditDesignId(null);
     setVisibleLayers((prevLayers) =>
       prevLayers.filter((id) => id !== designId)
