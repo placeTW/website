@@ -31,11 +31,9 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   const previousVisibleLayers = useRef<number[]>([]);
 
   useEffect(() => {
-    console.log("[DESIGN CARDS LIST] Designs list updated:", designs);
   }, [designs]);
 
   const handleEdit = (designId: number): boolean => {
-    console.log("[DESIGN CARDS LIST] Edit initiated for design:", designId);
     if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
       toast({
         title: "Edit in Progress",
@@ -53,17 +51,12 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   };
 
   const handleCancelEdit = (): boolean => {
-    console.log("[DESIGN CARDS LIST] Edit cancelled");
     setCurrentlyEditingCardId(null);
     onEditStateChange(false, null);
     return true;
   };
 
   const handleToggleVisibility = (designId: number, isVisible: boolean) => {
-    console.log("[DESIGN CARDS LIST] Toggling visibility for design:", {
-      designId,
-      isVisible,
-    });
     setVisibilityMap((prev) => {
       const updated = { ...prev };
 
@@ -78,7 +71,6 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   };
 
   const handleOnDeleted = (designId: number) => {
-    console.log("[DESIGN CARDS LIST] Design deleted:", designId);
     
     // Call the parent onDeleted function to update the state in DesignOffice
     onDeleted(designId);
@@ -107,13 +99,11 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
       JSON.stringify(previousVisibleLayers.current)
     ) {
       previousVisibleLayers.current = newVisibleLayers;
-      console.log("[DESIGN CARDS LIST] Visibility layers changed:", newVisibleLayers);
       onVisibilityChange(newVisibleLayers);
     }
   }, [visibilityMap, onVisibilityChange]);
 
   useEffect(() => {
-    console.log("[DESIGN CARDS LIST] Visible layers updated:", visibleLayers);
     const newVisibilityMap: Record<number, boolean> = {};
 
     visibleLayers.forEach((layer) => {

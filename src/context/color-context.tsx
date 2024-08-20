@@ -26,7 +26,6 @@ const fetchColors = async (): Promise<Color[]> => {
 
 // Initialize the colors
 const initialColors: Color[] = await fetchColors();
-console.log(`[COLOR-CONTEXT] Colors fetched:`, initialColors);
 
 interface ColorContextProps {
   colors: Color[];
@@ -61,7 +60,6 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
         { event: "*", schema: "public", table: "art_tool_colors" },
         (payload) => {
           const { eventType, new: newColorData, old: oldColorData } = payload;
-          console.log(`[COLOR-CONTEXT] Received event:`, payload);
 
           setColors((prevColors) => {
             let updatedColors = [...prevColors];
@@ -99,7 +97,6 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
               (a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)
             );
 
-            console.log(`[COLOR-CONTEXT] Updated colors array:`, updatedColors);
             return updatedColors;
           });
         }

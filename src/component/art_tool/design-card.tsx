@@ -98,8 +98,6 @@ const DesignCard: FC<DesignCardProps> = ({
   }, [design.liked_by, currentUser]);
 
   useEffect(() => {
-    // Log the design data to catch potential issues
-    console.log("[DESIGN CARD] Rendering with design data:", design);
   }, [design]);
 
   const handleImageClick = () => {

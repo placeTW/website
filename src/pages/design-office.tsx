@@ -29,7 +29,6 @@ const DesignOffice: React.FC = () => {
   const toast = useToast();
 
   useEffect(() => {
-    console.log("[DESIGN OFFICE] Designs updated:", designs);
     if (colors && designs) {
       setLoading(false);
     }
@@ -39,7 +38,6 @@ const DesignOffice: React.FC = () => {
     isEditing: boolean,
     designId: number | null
   ) => {
-    console.log("[DESIGN OFFICE] Edit state changed:", { isEditing, designId });
     setIsEditing(isEditing);
     setEditDesignId(designId);
     setEditedPixels([]);
@@ -52,7 +50,6 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleVisibilityChange = (newVisibleLayers: number[]) => {
-    console.log("[DESIGN OFFICE] Visibility layers changed:", newVisibleLayers);
     setVisibleLayers(newVisibleLayers);
   };
 
@@ -63,7 +60,6 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
-      console.log("[DESIGN OFFICE] Submitting edit for design:", currentDesign);
       const newPixels = offsetPixels(editedPixels, {
         x: currentDesign.x,
         y: currentDesign.y,
@@ -100,7 +96,6 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleSetCanvas = (designId: number, canvasId: number) => {
-    console.log("[DESIGN OFFICE] Setting canvas:", { designId, canvasId });
     const updatedDesigns = designs?.map((design) => {
       if (design.id === designId) {
         return { ...design, canvas: canvasId };
@@ -120,18 +115,15 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleResetViewport = () => {
-    console.log("[DESIGN OFFICE] Resetting viewport");
     setVisibleLayers([]);
     setSelectedCanvas(null);
   };
 
   const handleOnDeleted = (designId: number) => {
-    console.log("[DESIGN OFFICE] Handling design deletion:", designId);
     
     // Remove the design from the state
     setDesigns((prevDesigns) => {
       const updatedDesigns = prevDesigns.filter((design) => design.id !== designId);
-      console.log("[DESIGN OFFICE] Updated designs array after deletion:", updatedDesigns);
       return updatedDesigns;
     });
 
