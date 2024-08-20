@@ -16,4 +16,7 @@ export default defineConfig({
   server: {
     hmr: true,
   },
+  build: {
+    target: 'esnext'
+  },
 });
