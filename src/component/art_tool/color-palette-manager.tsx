@@ -11,7 +11,7 @@ import {
   Tr,
   useToast,
 } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import {
   insertColor,
@@ -28,10 +28,6 @@ const ColorPaletteManager = () => {
   const [newColor, setNewColor] = useState<string>("");
   const [newColorName, setNewColorName] = useState<string>("");
   const toast = useToast();
-
-  // Effect hook to log the redraw
-  useEffect(() => {
-  }, [colors]);
 
   const handleAddColor = async () => {
     if (newColor && newColorName && colors) {

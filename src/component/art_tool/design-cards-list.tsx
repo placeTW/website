@@ -30,9 +30,6 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   const isFirstRender = useRef(true);
   const previousVisibleLayers = useRef<number[]>([]);
 
-  useEffect(() => {
-  }, [designs]);
-
   const handleEdit = (designId: number): boolean => {
     if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
       toast({

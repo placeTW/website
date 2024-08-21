@@ -97,9 +97,6 @@ const DesignCard: FC<DesignCardProps> = ({
     }
   }, [design.liked_by, currentUser]);
 
-  useEffect(() => {
-  }, [design]);
-
   const handleImageClick = () => {
     setIsModalOpen(true);
   };

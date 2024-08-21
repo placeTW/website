@@ -1,5 +1,5 @@
 import { Box, Flex, Heading, Text } from "@chakra-ui/react";
-import React, { useEffect } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import { useAlertContext } from "../context/alert-context";
@@ -9,11 +9,6 @@ const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { currentAlertData } = useAlertContext();
   const { designs } = useDesignContext(); // Use only designs from DesignContext
-
-  useEffect(() => {
-    // Assuming the designs are already being fetched by the DesignProvider
-    // No need to fetch them here again unless you have specific logic to add
-  }, [currentAlertData]);
 
   return (
     <Flex direction="column" height="100vh">
