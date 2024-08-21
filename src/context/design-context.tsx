@@ -232,11 +232,12 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
   const subscriptionManager = useRef(SupabaseSubscriptionManager.getInstance());
 
   useEffect(() => {
-    subscriptionManager.current.subscribeToDesignUpdates(setDesigns);
-    subscriptionManager.current.subscribeToCanvasUpdates(setCanvases);
-
+    const currentSubscriptionManager = subscriptionManager.current;
+    currentSubscriptionManager.subscribeToDesignUpdates(setDesigns);
+    currentSubscriptionManager.subscribeToCanvasUpdates(setCanvases);
+  
     return () => {
-      subscriptionManager.current.unsubscribeAll();
+      currentSubscriptionManager.unsubscribeAll();
     };
   }, []);
 
