@@ -1,4 +1,10 @@
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Button,
   Card,
@@ -9,16 +15,10 @@ import {
   Image,
   Input,
   Text,
-  useToast,
   useDisclosure,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
+  useToast,
 } from "@chakra-ui/react";
-import { FC, useEffect, useState, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
@@ -68,7 +68,7 @@ const DesignCard: FC<DesignCardProps> = ({
   onDeleted,
   editedPixels,
 }) => {
-  const { currentUser, rankNames } = useUserContext();
+  const { currentUser } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
     currentUser ? design.liked_by?.includes(currentUser.user_id) : false,
@@ -306,8 +306,8 @@ const DesignCard: FC<DesignCardProps> = ({
                 <Heading fontSize={"md"}>{design.design_name}</Heading>
               )}
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
-                {rankNames[design.art_tool_users?.rank] ?? "Unknown"}{" "}
-                {design.art_tool_users?.handle ?? "Unknown"}
+                {design.rank_name ?? "Unknown"}{" "}
+                {design.user_handle ?? "Unknown"}
               </Text>
               <Text color={"gray.600"} fontWeight={400} fontSize={"sm"}>
                 {canvasName}

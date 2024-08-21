@@ -14,14 +14,14 @@ import {
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import {
-  insertColor,
   deleteColor,
+  insertColor,
   updateColor,
   updateColorSortOrder,
 } from "../../api/supabase/database";
 import { useColorContext } from "../../context/color-context";
-import ColorRow from "./color-row";
 import { Color } from "../../types/art-tool";
+import ColorRow from "./color-row";
 
 const ColorPaletteManager = () => {
   const { colors, setColors } = useColorContext(); // Get colors and setter from context
@@ -38,7 +38,7 @@ const ColorPaletteManager = () => {
       } catch (error) {
         toast({
           title: "Error",
-          description: `Failed to add color: ${
+        description: `Failed to add color: 
             (error as Error).message || error
           }`,
           status: "error",
@@ -52,7 +52,7 @@ const ColorPaletteManager = () => {
   const handleEditColor = async (
     color: Color,
     newColor: string,
-    newColorName: string
+    newColorName: string,
   ) => {
     try {
       await updateColor(color.Color, newColor, newColorName);

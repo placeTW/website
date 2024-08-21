@@ -63,33 +63,13 @@ export const databaseFetchCanvas = async (
 
   return data;
 };
+
 export const databaseFetchDesigns = async (
   canvasId?: number,
 ): Promise<Design[] | null> => {
   let fetchDesignsQuery = supabase
-    .from("art_tool_designs")
-    .select(
-      `
-    id,
-    created_at,
-    design_name,
-    design_thumbnail,
-    liked_by,
-    created_by,
-    art_tool_users:created_by (
-      handle,
-      rank
-    ),
-    pixels,
-    x,
-    y,
-    canvas,
-    art_tool_canvases:canvas (
-      canvas_name
-    ),
-    status
-  `,
-    )
+    .from("vw_art_tool_design_details")
+    .select("*")
     .eq("is_deleted", false);
 
   if (canvasId) {
@@ -102,6 +82,27 @@ export const databaseFetchDesigns = async (
 
   return data;
 };
+
+export const databaseFetchDesign = async (
+  designId: number,
+): Promise<Design | null> => {
+  const fetchDesignQuery = await supabase
+    .from("vw_art_tool_design_details")
+    .select("*")
+    .eq("id", designId)
+    .single();
+
+  const { data, error } = logSupabaseDatabaseQuery(
+    fetchDesignQuery,
+    "fetchDesign",
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
 
 export const databaseDeleteDesign = async (designId: number): Promise<void> => {
   const deleteDesignQuery = await supabase
@@ -484,4 +485,3 @@ export const setActiveAlertLevel = async (
     throw err;
   }
 };
-

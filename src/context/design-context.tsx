@@ -1,3 +1,4 @@
+import { RealtimeChannel } from "@supabase/supabase-js";
 import React, {
   createContext,
   ReactNode,
@@ -8,11 +9,11 @@ import React, {
 } from "react";
 import {
   databaseFetchCanvases,
+  databaseFetchDesign,
   databaseFetchDesigns,
   supabase,
 } from "../api/supabase";
 import { Canvas, Design } from "../types/art-tool";
-import { RealtimeChannel } from "@supabase/supabase-js";
 
 // Singleton class for managing subscriptions
 class SupabaseSubscriptionManager {
@@ -38,33 +39,36 @@ class SupabaseSubscriptionManager {
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "art_tool_designs" },
-          (payload) => {
+          async (payload) => {
             const {
               eventType,
               new: newDesignData,
               old: oldDesignData,
             } = payload;
 
+            if (eventType === "DELETE") {
+              setDesigns((prevDesigns) =>
+                prevDesigns.filter((design) => design.id !== oldDesignData.id),
+              );
+              return;
+            }
+
+            // Fetch the design data
+            const newDesignId = (newDesignData as Design).id;
+            const newDesign =
+              (await databaseFetchDesign(newDesignId)) ??
+              (newDesignData as Design);
+
             setDesigns((prevDesigns) => {
               let updatedDesigns = [...prevDesigns];
 
               switch (eventType) {
                 case "INSERT":
-                  updatedDesigns = [...updatedDesigns, newDesignData as Design];
+                  updatedDesigns = [...updatedDesigns, newDesign];
                   break;
                 case "UPDATE":
                   updatedDesigns = updatedDesigns.map((design) =>
-                    design.id === oldDesignData.id
-                      ? ({
-                          ...design,
-                          ...newDesignData,
-                        } as Design)
-                      : design,
-                  );
-                  break;
-                case "DELETE":
-                  updatedDesigns = updatedDesigns.filter(
-                    (design) => design.id !== oldDesignData.id,
+                    design.id === oldDesignData.id ? newDesign : design,
                   );
                   break;
                 default:
@@ -235,7 +239,7 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
     const currentSubscriptionManager = subscriptionManager.current;
     currentSubscriptionManager.subscribeToDesignUpdates(setDesigns);
     currentSubscriptionManager.subscribeToCanvasUpdates(setCanvases);
-  
+
     return () => {
       currentSubscriptionManager.unsubscribeAll();
     };

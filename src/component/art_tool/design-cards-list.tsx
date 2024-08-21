@@ -121,7 +121,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
         <Box key={design.id}>
           <DesignCard
             design={design}
-            canvasName={design?.art_tool_canvases?.canvas_name ?? ""}
+            canvasName={design?.canvas_name ?? ""}
             isEditing={currentlyEditingCardId === design.id}
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
