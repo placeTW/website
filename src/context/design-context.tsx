@@ -43,7 +43,6 @@ class SupabaseSubscriptionManager {
               new: newDesignData,
               old: oldDesignData,
             } = payload;
-            console.log(newDesignData);
 
             setDesigns((prevDesigns) => {
               let updatedDesigns = [...prevDesigns];
@@ -55,7 +54,10 @@ class SupabaseSubscriptionManager {
                 case "UPDATE":
                   updatedDesigns = updatedDesigns.map((design) =>
                     design.id === oldDesignData.id
-                      ? (newDesignData as Design)
+                      ? ({
+                          ...design,
+                          ...newDesignData,
+                        } as Design)
                       : design,
                   );
                   break;
