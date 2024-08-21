@@ -318,53 +318,21 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   }, [visibleLayers, recalculatePixels]);
 
   useEffect(() => {
-    const pixelSubscription = supabase
-      .channel("realtime-art_tool_designs")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_designs" },
-        (payload: any) => {
-          if (payload.eventType === "UPDATE") {
-            const updatedDesign = payload.new as Design;
-            if (updatedDesign.pixels) {
-              const updatedPixels = updatedDesign.pixels.map(
-                (pixel: Pixel) => ({
-                  ...pixel,
-                  x: pixel.x + updatedDesign.x,
-                  y: pixel.y + updatedDesign.y,
-                  designId: updatedDesign.id,
-                }),
-              );
-              pixelCache.current.set(updatedDesign.id, updatedPixels);
-              setPixels((prevPixels) => {
-                const pixelMap = new Map<string, ViewportPixel>();
-                prevPixels.forEach((pixel) =>
-                  pixelMap.set(
-                    `${pixel.x}-${pixel.y}-${pixel.designId}`,
-                    pixel,
-                  ),
-                );
-                updatedPixels.forEach((pixel: ViewportPixel) =>
-                  pixelMap.set(
-                    `${pixel.x}-${pixel.y}-${pixel.designId}`,
-                    pixel,
-                  ),
-                );
-                const newPixelArray = Array.from(pixelMap.values());
-                return JSON.stringify(newPixelArray) !==
-                  JSON.stringify(prevPixels)
-                  ? newPixelArray
-                  : prevPixels;
-              });
-            }
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      if (pixelSubscription) supabase.removeChannel(pixelSubscription);
+    const updatePixelCache = () => {
+      designs.forEach((design) => {
+        if (design.pixels) {
+          const updatedPixels = design.pixels.map((pixel: Pixel) => ({
+            ...pixel,
+            x: pixel.x + design.x,
+            y: pixel.y + design.y,
+            designId: design.id,
+          }));
+          pixelCache.current.set(design.id, updatedPixels);
+        }
+      });
     };
+
+    updatePixelCache();
   }, [designs]);
 
   useEffect(() => {
