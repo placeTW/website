@@ -12,12 +12,13 @@ import {
   supabase,
 } from "../api/supabase";
 import { Canvas, Design } from "../types/art-tool";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 // Singleton class for managing subscriptions
 class SupabaseSubscriptionManager {
   private static instance: SupabaseSubscriptionManager;
-  private designSubscriptionRef: any = null;
-  private canvasSubscriptionRef: any = null;
+  private designSubscriptionRef: RealtimeChannel | null = null;
+  private canvasSubscriptionRef: RealtimeChannel | null = null;
 
   private constructor() {}
 
