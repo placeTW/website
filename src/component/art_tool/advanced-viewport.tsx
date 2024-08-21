@@ -19,8 +19,7 @@ import React, {
   useState,
 } from "react";
 import { FaRepeat } from "react-icons/fa6";
-import { supabase } from "../../api/supabase";
-import { Design, Canvas, Pixel } from "../../types/art-tool";
+import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import {
   CLEAR_ON_DESIGN,
@@ -72,7 +71,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
   const stageRef = useRef<Konva.Stage>(null);
   const undoManager = useRef(new UndoManager(100)).current;
-  const pixelCache = useRef<Map<number, ViewportPixel[]>>(new Map());
   const dragInProgress = useRef(false);
   const dragPixels = useRef<ViewportPixel[]>([]);
   const previousVisibleLayersRef = useRef<number[]>(visibleLayers);
@@ -92,39 +90,24 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     async (layers: number[]) => {
       if (layers.length === 0) return [];
 
-      const cachedLayers = layers.filter((layer) =>
-        pixelCache.current.has(layer),
-      );
-      const layersToFetch = layers.filter(
-        (layer) => !cachedLayers.includes(layer),
+      const fetchedPixels = await Promise.all(
+        layers.map(async (layer) => {
+          const design = designs?.find((d) => d.id === layer);
+          if (design) {
+            return design.pixels.map((pixel: Pixel) => ({
+              ...pixel,
+              x: pixel.x + design.x,
+              y: pixel.y + design.y,
+              designId: design.id,
+            }));
+          }
+          return [];
+        })
       );
 
-      if (layersToFetch.length > 0) {
-        const fetchedPixels = await Promise.all(
-          layersToFetch.map(async (layer) => {
-            const design = designs?.find((d) => d.id === layer);
-            if (design) {
-              const pixels = design.pixels.map((pixel: Pixel) => ({
-                ...pixel,
-                x: pixel.x + design.x,
-                y: pixel.y + design.y,
-                designId: design.id,
-              }));
-              pixelCache.current.set(layer, pixels);
-              return pixels;
-            }
-            return [];
-          }),
-        );
-        return [
-          ...cachedLayers.map((layer) => pixelCache.current.get(layer)!),
-          ...fetchedPixels,
-        ].flat();
-      }
-
-      return cachedLayers.map((layer) => pixelCache.current.get(layer)!).flat();
+      return fetchedPixels.flat();
     },
-    [designs],
+    [designs]
   );
 
   const mergeWithExistingPixels = (
@@ -316,24 +299,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     };
     updatePixels();
   }, [visibleLayers, recalculatePixels]);
-
-  useEffect(() => {
-    const updatePixelCache = () => {
-      designs.forEach((design) => {
-        if (design.pixels) {
-          const updatedPixels = design.pixels.map((pixel: Pixel) => ({
-            ...pixel,
-            x: pixel.x + design.x,
-            y: pixel.y + design.y,
-            designId: design.id,
-          }));
-          pixelCache.current.set(design.id, updatedPixels);
-        }
-      });
-    };
-
-    updatePixelCache();
-  }, [designs]);
 
   useEffect(() => {
     if (isEditing) {
