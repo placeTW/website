@@ -1,4 +1,10 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { supabase } from "../api/supabase";
 import { databaseFetchColors } from "../api/supabase/database";
 
@@ -11,8 +17,6 @@ interface Color {
 
 // Fetch colors immediately and make them available to the entire app
 const fetchColors = async (): Promise<Color[]> => {
-
-
   const fetchedColors = await databaseFetchColors();
   if (fetchedColors) {
     return fetchedColors.map((color) => ({
@@ -40,7 +44,9 @@ const ColorContext = createContext<ColorContextProps>({
 export const useColorContext = () => {
   const context = useContext(ColorContext);
   if (context === undefined) {
-    throw new Error("useColorContext must be used within a ColorContext.Provider");
+    throw new Error(
+      "useColorContext must be used within a ColorContext.Provider",
+    );
   }
   return context;
 };
@@ -80,12 +86,12 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
                         color_name: newColorData.color_name,
                         color_sort: newColorData.color_sort,
                       }
-                    : color
+                    : color,
                 );
                 break;
               case "DELETE":
                 updatedColors = updatedColors.filter(
-                  (color) => color.Color !== oldColorData.Color
+                  (color) => color.Color !== oldColorData.Color,
                 );
                 break;
               default:
@@ -94,12 +100,12 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
 
             // Ensure colors are sorted by color_sort after every update
             updatedColors.sort(
-              (a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0)
+              (a, b) => (a.color_sort ?? 0) - (b.color_sort ?? 0),
             );
 
             return updatedColors;
           });
-        }
+        },
       )
       .subscribe();
 

@@ -1,7 +1,17 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect, useRef } from "react";
-import { Design, Canvas } from "../types/art-tool";
-import { supabase } from "../api/supabase";
-import { databaseFetchDesigns, databaseFetchCanvases } from "../api/supabase";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  databaseFetchCanvases,
+  databaseFetchDesigns,
+  supabase,
+} from "../api/supabase";
+import { Canvas, Design } from "../types/art-tool";
 
 // Singleton class for managing subscriptions
 class SupabaseSubscriptionManager {
@@ -18,16 +28,22 @@ class SupabaseSubscriptionManager {
     return SupabaseSubscriptionManager.instance;
   }
 
-  public subscribeToDesignUpdates(setDesigns: React.Dispatch<React.SetStateAction<Design[]>>) {
+  public subscribeToDesignUpdates(
+    setDesigns: React.Dispatch<React.SetStateAction<Design[]>>,
+  ) {
     if (!this.designSubscriptionRef) {
-
       this.designSubscriptionRef = supabase
         .channel("public:art_tool_designs")
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "art_tool_designs" },
           (payload) => {
-            const { eventType, new: newDesignData, old: oldDesignData } = payload;
+            const {
+              eventType,
+              new: newDesignData,
+              old: oldDesignData,
+            } = payload;
+            console.log(newDesignData);
 
             setDesigns((prevDesigns) => {
               let updatedDesigns = [...prevDesigns];
@@ -38,75 +54,111 @@ class SupabaseSubscriptionManager {
                   break;
                 case "UPDATE":
                   updatedDesigns = updatedDesigns.map((design) =>
-                    design.id === oldDesignData.id ? (newDesignData as Design) : design
+                    design.id === oldDesignData.id
+                      ? (newDesignData as Design)
+                      : design,
                   );
                   break;
                 case "DELETE":
                   updatedDesigns = updatedDesigns.filter(
-                    (design) => design.id !== oldDesignData.id
+                    (design) => design.id !== oldDesignData.id,
                   );
                   break;
                 default:
-                  console.error("[SUBSCRIPTION-MANAGER] Unhandled event type:", eventType);
+                  console.error(
+                    "[SUBSCRIPTION-MANAGER] Unhandled event type:",
+                    eventType,
+                  );
                   break;
               }
 
               return updatedDesigns;
             });
-          }
+          },
         )
         .subscribe((status) => {
           if (status === "SUBSCRIBED") {
-          } else if (status === "TIMED_OUT" || status === "CLOSED" || status === "CHANNEL_ERROR") {
-            this.handleSubscriptionError(this.subscribeToDesignUpdates.bind(this, setDesigns));
-          } else {
+            // Do nothing
+            return;
+          }
+          if (
+            status === "TIMED_OUT" ||
+            status === "CLOSED" ||
+            status === "CHANNEL_ERROR"
+          ) {
+            this.handleSubscriptionError(
+              this.subscribeToDesignUpdates.bind(this, setDesigns),
+            );
+            return;
           }
         });
     }
   }
 
-  public subscribeToCanvasUpdates(setCanvases: React.Dispatch<React.SetStateAction<Canvas[]>>) {
+  public subscribeToCanvasUpdates(
+    setCanvases: React.Dispatch<React.SetStateAction<Canvas[]>>,
+  ) {
     if (!this.canvasSubscriptionRef) {
-
       this.canvasSubscriptionRef = supabase
         .channel("public:art_tool_canvases")
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "art_tool_canvases" },
           (payload) => {
-            const { eventType, new: newCanvasData, old: oldCanvasData } = payload;
+            const {
+              eventType,
+              new: newCanvasData,
+              old: oldCanvasData,
+            } = payload;
 
             setCanvases((prevCanvases) => {
               let updatedCanvases = [...prevCanvases];
 
               switch (eventType) {
                 case "INSERT":
-                  updatedCanvases = [...updatedCanvases, newCanvasData as Canvas];
+                  updatedCanvases = [
+                    ...updatedCanvases,
+                    newCanvasData as Canvas,
+                  ];
                   break;
                 case "UPDATE":
                   updatedCanvases = updatedCanvases.map((canvas) =>
-                    canvas.id === oldCanvasData.id ? (newCanvasData as Canvas) : canvas
+                    canvas.id === oldCanvasData.id
+                      ? (newCanvasData as Canvas)
+                      : canvas,
                   );
                   break;
                 case "DELETE":
                   updatedCanvases = updatedCanvases.filter(
-                    (canvas) => canvas.id !== oldCanvasData.id
+                    (canvas) => canvas.id !== oldCanvasData.id,
                   );
                   break;
                 default:
-                  console.error("[SUBSCRIPTION-MANAGER] Unhandled event type:", eventType);
+                  console.error(
+                    "[SUBSCRIPTION-MANAGER] Unhandled event type:",
+                    eventType,
+                  );
                   break;
               }
 
               return updatedCanvases;
             });
-          }
+          },
         )
         .subscribe((status) => {
           if (status === "SUBSCRIBED") {
-          } else if (status === "TIMED_OUT" || status === "CLOSED" || status === "CHANNEL_ERROR") {
-            this.handleSubscriptionError(this.subscribeToCanvasUpdates.bind(this, setCanvases));
-          } else {
+            // Do nothing
+            return;
+          }
+          if (
+            status === "TIMED_OUT" ||
+            status === "CLOSED" ||
+            status === "CHANNEL_ERROR"
+          ) {
+            this.handleSubscriptionError(
+              this.subscribeToCanvasUpdates.bind(this, setCanvases),
+            );
+            return;
           }
         });
     }
@@ -131,7 +183,6 @@ class SupabaseSubscriptionManager {
 }
 
 const fetchAllData = async () => {
-
   const fetchedDesigns = await databaseFetchDesigns();
   const fetchedCanvases = await databaseFetchCanvases();
 
@@ -160,7 +211,9 @@ const DesignContext = createContext<DesignContextProps>({
 export const useDesignContext = () => {
   const context = useContext(DesignContext);
   if (context === undefined) {
-    throw new Error("useDesignContext must be used within a DesignContext.Provider");
+    throw new Error(
+      "useDesignContext must be used within a DesignContext.Provider",
+    );
   }
   return context;
 };
@@ -185,7 +238,9 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <DesignContext.Provider value={{ designs, canvases, setDesigns, setCanvases }}>
+    <DesignContext.Provider
+      value={{ designs, canvases, setDesigns, setCanvases }}
+    >
       {children}
     </DesignContext.Provider>
   );
