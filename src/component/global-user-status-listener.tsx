@@ -1,12 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { 
-  authSignOut, 
-  functionsGetRankName, 
-  functionsGetSessionInfo, 
-  supabase, 
-  removeSupabaseChannel, 
-  functionsFetchUsers as supabaseFetchUsers 
+import {
+  authSignOut,
+  functionsGetRankName,
+  functionsGetSessionInfo,
+  functionsFetchUsers as supabaseFetchUsers,
 } from "../api/supabase";
 import { UserContext } from "../context/user-context";
 import { UserType } from "../types/users";
@@ -40,38 +38,6 @@ const GlobalUserStatusListener = ({
     }
   }, [t]);
 
-  const fetchUsers = useCallback(async (rankNames: { [key: string]: string }) => {
-    try {
-      const usersData = await supabaseFetchUsers();
-      if (!usersData) {
-        return;
-      }
-
-      const updatedUsers = usersData.map((user: UserType) => ({
-        ...user,
-        rank_name: rankNames[user.rank] || user.rank,
-      }));
-
-      setUsers(updatedUsers);
-
-      const currentUserIdArray = await functionsGetSessionInfo();
-
-      if (!currentUserIdArray || currentUserIdArray.length === 0) {
-        // No session is found, return early without logging an error
-        return;
-      }
-
-      const currentUserId = currentUserIdArray[0]; // Assuming the first ID in the array is the one you're interested in
-
-      const currentUserData = updatedUsers.find(
-        (user: UserType) => user.user_id === currentUserId,
-      );
-      setCurrentUser(currentUserData || null);
-    } catch (error) {
-      console.error(t("Error fetching users:"), error);
-    }
-  }, [t]);
-
   useEffect(() => {
     const initializeUserStatus = async () => {
       try {
@@ -81,58 +47,60 @@ const GlobalUserStatusListener = ({
           return;
         }
 
-        // Fetch rank names and users only if a session exists
-        await fetchRankNames();
-        fetchUsers(rankNames);
+        // Fetch rank names
+        const rankData = await functionsGetRankName();
+        if (rankData) {
+          const rankNamesMap: { [key: string]: string } = {};
+          rankData.forEach((rank: { rank_id: string; rank_name: string }) => {
+            rankNamesMap[rank.rank_id] = rank.rank_name;
+          });
+          setRankNames(rankNamesMap);
+
+          // Fetch users with the newly fetched rank names
+          await fetchUsers(rankNamesMap);
+        }
       } catch (error) {
-        console.error("Error fetching session:", error);
+        console.error("Error initializing user status:", error);
       }
     };
 
     initializeUserStatus();
-  }, [fetchRankNames, fetchUsers, rankNames]);
+  }, []); // Empty dependency array
 
-  useEffect(() => {
-    const handleUserUpdate = async (updatedUser: UserType) => {
-      if (updatedUser.rank === "F") {
-        await authSignOut();
-        alert(t("Your account has been banned."));
-        setCurrentUser(null);
-      }
-
-      setUsers((prevUsers) => {
-        const newUsers = prevUsers.map((user: UserType) =>
-          user.user_id === updatedUser.user_id ? updatedUser : user,
-        );
-        return newUsers;
-      });
-
-      setCurrentUser((prevCurrentUser) => {
-        if (prevCurrentUser?.user_id === updatedUser.user_id) {
-          return updatedUser.rank === "F" ? null : updatedUser;
+  // Modify the fetchUsers function to accept rankNames as a parameter
+  const fetchUsers = useCallback(
+    async (rankNames: { [key: string]: string }) => {
+      try {
+        const usersData = await supabaseFetchUsers();
+        if (!usersData) {
+          return;
         }
-        return prevCurrentUser;
-      });
-    };
 
-    const channel = supabase
-      .channel("table-db-changes")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "art_tool_users" },
-        (payload) => {
-          const updatedUser = payload.new as UserType;
-          updatedUser.rank_name =
-            rankNames[updatedUser.rank] || updatedUser.rank_name;
-          handleUserUpdate(updatedUser);
-        },
-      )
-      .subscribe();
+        const updatedUsers = usersData.map((user: UserType) => ({
+          ...user,
+          rank_name: rankNames[user.rank] || user.rank,
+        }));
 
-    return () => {
-      removeSupabaseChannel(channel);
-    };
-  }, [rankNames, t]);
+        setUsers(updatedUsers);
+
+        const currentUserIdArray = await functionsGetSessionInfo();
+
+        if (!currentUserIdArray || currentUserIdArray.length === 0) {
+          return;
+        }
+
+        const currentUserId = currentUserIdArray[0];
+
+        const currentUserData = updatedUsers.find(
+          (user: UserType) => user.user_id === currentUserId,
+        );
+        setCurrentUser(currentUserData || null);
+      } catch (error) {
+        console.error(t("Error fetching users:"), error);
+      }
+    },
+    [t],
+  );
 
   const updateUser = (updatedUser: UserType) => {
     setUsers((prevUsers) => {

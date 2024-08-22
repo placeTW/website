@@ -5,6 +5,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Layout from "./component/layout";
 import { AlertProvider } from "./context/alert-context";
+import { DesignProvider } from "./context/design-context";
+import { ColorProvider } from "./context/color-context"; // Import ColorProvider
 import HomePage from "./pages";
 import AdminPage from "./pages/admin";
 import BriefingRoom from "./pages/briefing-room";
@@ -21,22 +23,26 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChakraProvider>
       <AlertProvider>
-        <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/translations" element={<Translations />} />
-              <Route path="/admin" element={<AdminPage />} />
-              {enableArtTool && (
-                <>
-                  <Route path="/briefing-room" element={<BriefingRoom />} />
-                  <Route path="/design-office" element={<DesignOffice />} />
-                </>
-              )}
-            </Routes>
-          </Layout>
-        </BrowserRouter>
+        <DesignProvider>
+          <ColorProvider> {/* Wrap with ColorProvider */}
+            <BrowserRouter>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/gallery" element={<Gallery />} />
+                  <Route path="/translations" element={<Translations />} />
+                  <Route path="/admin" element={<AdminPage />} />
+                  {enableArtTool && (
+                    <>
+                      <Route path="/briefing-room" element={<BriefingRoom />} />
+                      <Route path="/design-office" element={<DesignOffice />} />
+                    </>
+                  )}
+                </Routes>
+              </Layout>
+            </BrowserRouter>
+          </ColorProvider>
+        </DesignProvider>
       </AlertProvider>
     </ChakraProvider>
   </React.StrictMode>,

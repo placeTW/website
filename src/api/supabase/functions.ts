@@ -1,4 +1,5 @@
 import { authGetSession, SUPABASE_FUNCTIONS_URL } from ".";
+import { logSupabaseFetch } from "./logging";
 
 export const functionsGetSessionInfo = async () => {
   const { data: sessionData, error: sessionError } = await authGetSession();
@@ -17,7 +18,7 @@ export const functionsUpdateNickname = async (handle: string) => {
     return; // Or handle the lack of a session in another way, if appropriate
   }
 
-  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/update-nickname`, {
+  const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/update-nickname`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -25,6 +26,8 @@ export const functionsUpdateNickname = async (handle: string) => {
     },
     body: JSON.stringify({ userId, handle }),
   });
+
+  const response = logSupabaseFetch(await promise, "update-nickname");
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -41,7 +44,7 @@ export const functionsFetchOneUser = async () => {
     return; // Or handle the lack of a session in another way, if appropriate
   }
 
-  const response = await fetch(
+  const promise = fetch(
     `${SUPABASE_FUNCTIONS_URL}/fetch-one-user?user_id=${userId}`,
     {
       method: "GET",
@@ -51,6 +54,8 @@ export const functionsFetchOneUser = async () => {
       },
     },
   );
+
+  const response = logSupabaseFetch(await promise, "fetch-one-user");
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -67,13 +72,15 @@ export const functionsGetRankName = async () => {
     return; // Or handle the lack of a session in another way, if appropriate
   }
 
-  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/get-rank-name`, {
+  const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/get-rank-name`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${access_token}`,
     },
   });
+
+  const response = logSupabaseFetch(await promise, "get-rank-name");
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -90,13 +97,15 @@ export const functionsFetchUsers = async () => {
     return; // Or handle the lack of a session in another way, if appropriate
   }
 
-  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-users`, {
+  const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-users`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${access_token}`,
     },
   });
+
+  const response = logSupabaseFetch(await promise, "fetch-users");
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -113,7 +122,7 @@ export const functionsFetchCanModerate = async (rank_id: string) => {
     return; // Or handle the lack of a session in another way, if appropriate
   }
 
-  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-can-moderate`, {
+  const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-can-moderate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -121,6 +130,8 @@ export const functionsFetchCanModerate = async (rank_id: string) => {
     },
     body: JSON.stringify({ rank_id }),
   });
+
+  const response = logSupabaseFetch(await promise, "fetch-can-moderate");
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -141,7 +152,7 @@ export const functionsUpdateUserStatus = async (
     return; // Or handle the lack of a session in another way, if appropriate
   }
 
-  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/updateUserStatus`, {
+  const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/updateUserStatus`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -149,6 +160,8 @@ export const functionsUpdateUserStatus = async (
     },
     body: JSON.stringify({ userId, rank }),
   });
+
+  const response = logSupabaseFetch(await promise, "updateUserStatus");
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -170,7 +183,7 @@ export const insertNewUser = async (
     return; // Or handle the lack of a session in another way, if appropriate
   }
 
-  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/insert-new-user`, {
+  const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/insert-new-user`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -178,6 +191,8 @@ export const insertNewUser = async (
     },
     body: JSON.stringify({ user_id, email, handle }),
   });
+
+  const response = logSupabaseFetch(await promise, "insert-new-user");
 
   if (!response.ok) {
     const errorData = await response.json();

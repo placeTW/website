@@ -19,13 +19,7 @@ import React, {
   useState,
 } from "react";
 import { FaRepeat } from "react-icons/fa6";
-import {
-  databaseFetchDesigns,
-  removeSupabaseChannel,
-  supabase,
-} from "../../api/supabase";
-import { Canvas, Design, Pixel } from "../../types/art-tool";
-import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
+import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import {
   CLEAR_ON_DESIGN,
@@ -35,6 +29,7 @@ import {
 import { ViewportPixel } from "../viewport/types";
 import { createCheckerboardPattern } from "../viewport/utils";
 import UndoManager from "../viewport/utils/undo-manager";
+import { useDesignContext } from "../../context/design-context";
 
 interface AdvancedViewportProps {
   visibleLayers: number[];
@@ -69,11 +64,13 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     width: number;
     height: number;
   } | null>(null);
-  const [copyBuffer, setCopyBuffer] = useState<ViewportPixel[]>([]);
+  const [copyBuffer, setCopyBuffer] = useState<{
+    pixels: ViewportPixel[];
+    selectionTopLeft: { x: number; y: number };
+  } | null>(null);
 
   const stageRef = useRef<Konva.Stage>(null);
   const undoManager = useRef(new UndoManager(100)).current;
-  const pixelCache = useRef<Map<number, ViewportPixel[]>>(new Map());
   const dragInProgress = useRef(false);
   const dragPixels = useRef<ViewportPixel[]>([]);
   const previousVisibleLayersRef = useRef<number[]>(visibleLayers);
@@ -87,45 +84,32 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     "#fff",
   ).toDataURL();
 
-  // Fetch pixels for visible layers and cache them
-  const fetchPixels = useCallback(async (layers: number[]) => {
-    if (layers.length === 0) return [];
+  const { designs } = useDesignContext();
 
-    const cachedLayers = layers.filter((layer) =>
-      pixelCache.current.has(layer),
-    );
-    const layersToFetch = layers.filter(
-      (layer) => !cachedLayers.includes(layer),
-    );
+  const fetchPixels = useCallback(
+    async (layers: number[]) => {
+      if (layers.length === 0) return [];
 
-    if (layersToFetch.length > 0) {
-      const designs = await databaseFetchDesigns();
       const fetchedPixels = await Promise.all(
-        layersToFetch.map(async (layer) => {
+        layers.map(async (layer) => {
           const design = designs?.find((d) => d.id === layer);
           if (design) {
-            const pixels = design.pixels.map((pixel: Pixel) => ({
+            return design.pixels.map((pixel: Pixel) => ({
               ...pixel,
               x: pixel.x + design.x,
               y: pixel.y + design.y,
               designId: design.id,
             }));
-            pixelCache.current.set(layer, pixels);
-            return pixels;
           }
           return [];
-        }),
+        })
       );
-      return [
-        ...cachedLayers.map((layer) => pixelCache.current.get(layer)!),
-        ...fetchedPixels,
-      ].flat();
-    }
 
-    return cachedLayers.map((layer) => pixelCache.current.get(layer)!).flat();
-  }, []);
+      return fetchedPixels.flat();
+    },
+    [designs]
+  );
 
-  // Merge newly edited pixels with existing base pixels
   const mergeWithExistingPixels = (
     basePixels: ViewportPixel[],
     newEditedPixels: ViewportPixel[],
@@ -152,7 +136,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     return Array.from(pixelMap.values());
   };
 
-  // Recalculate pixels and update the state
   const recalculatePixels = useCallback(async () => {
     const basePixels = await fetchPixels(visibleLayers);
     const mergedPixels = mergeWithExistingPixels(
@@ -256,18 +239,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel),
     );
 
-    let finalCopiedPixels = Array.from(uniquePixels.values());
-
-    const topLeftPixel = getTopLeftCoords(finalCopiedPixels);
-
-    finalCopiedPixels = offsetPixels(finalCopiedPixels, topLeftPixel).map(
-      (pixel) => ({
-        ...pixel,
-        designId: editDesignId,
-      }),
-    );
-
-    setCopyBuffer(finalCopiedPixels);
+    setCopyBuffer({
+      pixels: Array.from(uniquePixels.values()),
+      selectionTopLeft: { x, y }, // Store the full selection's top-left corner
+    });
   }, [selection, pixels, editDesignId]);
 
   const handlePaste = useCallback(
@@ -275,19 +250,18 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       if (
         !isEditing ||
         !editDesignId ||
-        copyBuffer.length === 0 ||
+        !copyBuffer ||
+        copyBuffer.pixels.length === 0 ||
         !setEditedPixels
       )
         return;
 
-      // Determine the top-left pixel in the copied selection (including empty pixels)
-      const { x: minX, y: minY } = getTopLeftCoords(copyBuffer);
+      const { x: selectionX, y: selectionY } = copyBuffer.selectionTopLeft;
 
-      // Calculate the offset needed to position the top-left pixel under the cursor
-      const offsetX = pasteX - minX;
-      const offsetY = pasteY - minY;
+      const offsetX = pasteX - selectionX;
+      const offsetY = pasteY - selectionY;
 
-      const pastedPixels = copyBuffer.map((pixel) => ({
+      const pastedPixels = copyBuffer.pixels.map((pixel) => ({
         ...pixel,
         x: pixel.x + offsetX,
         y: pixel.y + offsetY,
@@ -320,61 +294,11 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         JSON.stringify(visibleLayers)
       ) {
         previousVisibleLayersRef.current = visibleLayers;
-        await recalculatePixels(); // Use recalculatePixels instead of fetchPixels
+        await recalculatePixels();
       }
     };
     updatePixels();
-  }, [visibleLayers, recalculatePixels]); // Add recalculatePixels to the dependency array
-
-  useEffect(() => {
-    const pixelSubscription = supabase
-      .channel("realtime-art_tool_designs")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_designs" },
-        (payload) => {
-          if (payload.eventType === "UPDATE") {
-            const updatedDesign = payload.new as Design;
-            if (updatedDesign.pixels) {
-              const updatedPixels = updatedDesign.pixels.map(
-                (pixel: Pixel) => ({
-                  ...pixel,
-                  x: pixel.x + updatedDesign.x,
-                  y: pixel.y + updatedDesign.y,
-                  designId: updatedDesign.id,
-                }),
-              );
-              pixelCache.current.set(updatedDesign.id, updatedPixels);
-              setPixels((prevPixels) => {
-                const pixelMap = new Map<string, ViewportPixel>();
-                prevPixels.forEach((pixel) =>
-                  pixelMap.set(
-                    `${pixel.x}-${pixel.y}-${pixel.designId}`,
-                    pixel,
-                  ),
-                );
-                updatedPixels.forEach((pixel: ViewportPixel) =>
-                  pixelMap.set(
-                    `${pixel.x}-${pixel.y}-${pixel.designId}`,
-                    pixel,
-                  ),
-                );
-                const newPixelArray = Array.from(pixelMap.values());
-                return JSON.stringify(newPixelArray) !==
-                  JSON.stringify(prevPixels)
-                  ? newPixelArray
-                  : prevPixels;
-              });
-            }
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      removeSupabaseChannel(pixelSubscription);
-    };
-  }, []);
+  }, [visibleLayers, recalculatePixels]);
 
   useEffect(() => {
     if (isEditing) {
@@ -511,7 +435,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                 ))}
               <WrapItem>
                 <Button onClick={() => handleSelectCanvas(null)}>
-                  Unassigned
+                  unassigned
                 </Button>
               </WrapItem>
             </Wrap>

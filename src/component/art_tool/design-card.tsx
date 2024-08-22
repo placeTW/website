@@ -1,4 +1,10 @@
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Button,
   Card,
@@ -7,18 +13,12 @@ import {
   Heading,
   IconButton,
   Image,
-  Input, // Imported Input for editable design name
+  Input,
   Text,
-  useToast,
   useDisclosure,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
+  useToast,
 } from "@chakra-ui/react";
-import { FC, useEffect, useState, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
@@ -49,10 +49,10 @@ interface DesignCardProps {
   onCancelEdit: () => void;
   onToggleVisibility: (designId: number, isVisible: boolean) => void;
   isVisible: boolean;
-  onSubmitEdit: (designName: string) => void; // Update to accept designName
+  onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
-  editedPixels: Pixel[]; // Receive the editedPixels array as a prop
+  editedPixels: Pixel[];
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -68,13 +68,13 @@ const DesignCard: FC<DesignCardProps> = ({
   onDeleted,
   editedPixels,
 }) => {
-  const { currentUser, rankNames } = useUserContext();
+  const { currentUser } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
-    currentUser ? design.liked_by.includes(currentUser.user_id) : false,
+    currentUser ? design.liked_by?.includes(currentUser.user_id) : false,
   );
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
-  const [designName, setDesignName] = useState(design.design_name); // State for design name
+  const [designName, setDesignName] = useState(design.design_name || ""); // Handle missing design_name
   const toast = useToast();
 
   const {
@@ -92,9 +92,9 @@ const DesignCard: FC<DesignCardProps> = ({
   const cancelRef = useRef(null);
 
   useEffect(() => {
-    setIsLiked(
-      currentUser ? design.liked_by.includes(currentUser.user_id) : false,
-    );
+    if (currentUser) {
+      setIsLiked(design.liked_by?.includes(currentUser.user_id) ?? false);
+    }
   }, [design.liked_by, currentUser]);
 
   const handleImageClick = () => {
@@ -160,6 +160,7 @@ const DesignCard: FC<DesignCardProps> = ({
       }
     } else {
       if (onEdit(design.id)) {
+        // Noop
       }
     }
   };
@@ -211,6 +212,12 @@ const DesignCard: FC<DesignCardProps> = ({
       currentUser.rank === "B" ||
       currentUser.user_id === design.created_by);
   const isCreator = currentUser && currentUser.user_id === design.created_by;
+
+  // Check for required fields
+  if (!design.id || !design.design_name) {
+    console.error("[DESIGN CARD] Missing required design data:", design);
+    return null; // Skip rendering this card
+  }
 
   return (
     <>
@@ -299,8 +306,8 @@ const DesignCard: FC<DesignCardProps> = ({
                 <Heading fontSize={"md"}>{design.design_name}</Heading>
               )}
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
-                {rankNames[design.art_tool_users.rank] ?? "Unknown"}{" "}
-                {design.art_tool_users.handle}
+                {design.rank_name ?? "Unknown"}{" "}
+                {design.user_handle ?? "Unknown"}
               </Text>
               <Text color={"gray.600"} fontWeight={400} fontSize={"sm"}>
                 {canvasName}
@@ -326,7 +333,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   <IconButton
                     icon={<FaCloudArrowUp />}
                     aria-label="Submit"
-                    onClick={() => onSubmitEdit(designName)} // Pass designName to the submit function
+                    onClick={() => onSubmitEdit(designName)}
                     size="sm"
                   />
                 </>

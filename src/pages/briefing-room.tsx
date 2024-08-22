@@ -1,38 +1,25 @@
 import { Box, Flex, Heading, Text } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  databaseFetchCanvas,
-  databaseFetchDesigns,
-} from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import { useAlertContext } from "../context/alert-context";
-import { Design } from "../types/art-tool";
+import { useDesignContext } from "../context/design-context";
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { currentAlertData } = useAlertContext();
-  const [designs, setDesigns] = useState<Design[]>([]);
+  const { designs } = useDesignContext();
 
-  useEffect(() => {
-    const fetchCanvasesAndDesigns = async () => {
-      if (currentAlertData?.canvas_id) {
-        const currentAlertCanvas = await databaseFetchCanvas(
-          currentAlertData.canvas_id,
-        );
+  // Filter designs based on the active alert level's canvas
+  const filteredDesigns = useMemo(() => {
+    if (!currentAlertData || !currentAlertData.canvas_id) {
+      return [];
+    }
 
-        if (currentAlertCanvas) {
-          const canvasDesigns = await databaseFetchDesigns(
-            currentAlertCanvas.id,
-          );
-          setDesigns(canvasDesigns ?? []);
-        }
-      }
-    };
-
-    fetchCanvasesAndDesigns();
-  }, [currentAlertData]);
-
+    return designs.filter(
+      (design) => design.canvas === currentAlertData.canvas_id
+    );
+  }, [currentAlertData, designs]);
 
   return (
     <Flex direction="column" height="100vh">
@@ -47,11 +34,15 @@ const BriefingRoom: React.FC = () => {
             )}
           </Box>
           <Flex flex="1" border="1px solid #ccc" overflow="hidden">
-            {designs && (
+            {filteredDesigns.length > 0 ? (
               <Box flex="1" overflow="hidden">
                 <AdvancedViewport
-                  visibleLayers={designs.map((design) => design.id)}
+                  visibleLayers={filteredDesigns.map((design) => design.id)}
                 />
+              </Box>
+            ) : (
+              <Box p={4}>
+                <Text>{t("No designs available for the current alert.")}</Text>
               </Box>
             )}
           </Flex>

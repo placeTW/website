@@ -11,97 +11,34 @@ import {
   Tr,
   useToast,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
-import { supabase } from "../../api/supabase";
 import {
-  databaseFetchColors,
   deleteColor,
   insertColor,
-  removeSupabaseChannel,
   updateColor,
+  updateColorSortOrder,
 } from "../../api/supabase/database";
+import { useColorContext } from "../../context/color-context";
 import { Color } from "../../types/art-tool";
 import ColorRow from "./color-row";
 
 const ColorPaletteManager = () => {
-  const [colors, setColors] = useState<Color[]>([]);
-  const [newColor, setNewColor] = useState("");
-  const [newColorName, setNewColorName] = useState("");
+  const { colors, setColors } = useColorContext(); // Get colors and setter from context
+  const [newColor, setNewColor] = useState<string>("");
+  const [newColorName, setNewColorName] = useState<string>("");
   const toast = useToast();
 
-  useEffect(() => {
-    const fetchColors = async () => {
-      const fetchedColors = await databaseFetchColors();
-      setColors(fetchedColors);
-    };
-
-    fetchColors();
-
-    const subscription = supabase
-      .channel("public:art_tool_colors")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_colors" },
-        fetchColors,
-      )
-      .subscribe();
-
-    return () => {
-      removeSupabaseChannel(subscription);
-    };
-  }, []);
-
-  const moveColorUp = async (index: number) => {
-    if (index > 0) {
-      const updatedColors = [...colors];
-      const temp = updatedColors[index - 1];
-      updatedColors[index - 1] = updatedColors[index];
-      updatedColors[index] = temp;
-
-      setColors(updatedColors);
-      await updateColorSortOrder(updatedColors);
-    }
-  };
-
-  const moveColorDown = async (index: number) => {
-    if (index < colors.length - 1) {
-      const updatedColors = [...colors];
-      const temp = updatedColors[index + 1];
-      updatedColors[index + 1] = updatedColors[index];
-      updatedColors[index] = temp;
-
-      setColors(updatedColors);
-      await updateColorSortOrder(updatedColors);
-    }
-  };
-
-  const updateColorSortOrder = async (updatedColors: Color[]) => {
-    try {
-      await updateColorSortOrder(updatedColors);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to update color sort order: ${
-          (error as Error).message || error
-        }`,
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
-
   const handleAddColor = async () => {
-    if (newColor && newColorName) {
+    if (newColor && newColorName && colors) {
       try {
-        await insertColor(newColor, newColorName, colors.length + 1);
+        await insertColor(newColor, newColorName, colors.length + 1); // Ensure colors is non-null
         setNewColor("");
         setNewColorName("");
       } catch (error) {
         toast({
           title: "Error",
-          description: `Failed to add color: ${
+        description: `Failed to add color: 
             (error as Error).message || error
           }`,
           status: "error",
@@ -119,13 +56,6 @@ const ColorPaletteManager = () => {
   ) => {
     try {
       await updateColor(color.Color, newColor, newColorName);
-      setColors(
-        colors.map((c) =>
-          c.Color === color.Color
-            ? { ...c, Color: newColor, color_name: newColorName }
-            : c,
-        ),
-      );
     } catch (error) {
       toast({
         title: "Error",
@@ -140,13 +70,61 @@ const ColorPaletteManager = () => {
   };
 
   const handleRemoveColor = async (color: string) => {
+    if (colors) {
+      try {
+        await deleteColor(color);
+
+        // Update sort order after deletion
+        const updatedColors = colors.filter((c) => c.Color !== color);
+        await updateColorSortOrder(updatedColors);
+
+        // Update the colors in the context
+        setColors(updatedColors);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: `Failed to delete color: ${
+            (error as Error).message || error
+          }`,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    }
+  };
+
+  const handleMoveColor = async (index: number, direction: "up" | "down") => {
+    if (!colors || index < 0 || index >= colors.length) return;
+
+    const swapWithIndex = direction === "up" ? index - 1 : index + 1;
+
+    if (swapWithIndex < 0 || swapWithIndex >= colors.length) return;
+
+    const updatedColors = [...colors];
+    const currentColor = updatedColors[index];
+    const swapWithColor = updatedColors[swapWithIndex];
+
+    // Swap their sort orders in the list
+    updatedColors[index] = {
+      ...swapWithColor,
+      color_sort: currentColor.color_sort,
+    };
+    updatedColors[swapWithIndex] = {
+      ...currentColor,
+      color_sort: swapWithColor.color_sort,
+    };
+
     try {
-      await deleteColor(color);
-      setColors(colors.filter((c) => c.Color !== color));
+      // Update sort order in the database
+      await updateColorSortOrder(updatedColors);
+
+      // Update the colors in the context
+      setColors(updatedColors);
     } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to delete color: ${
+        description: `Failed to reorder colors: ${
           (error as Error).message || error
         }`,
         status: "error",
@@ -155,6 +133,10 @@ const ColorPaletteManager = () => {
       });
     }
   };
+
+  if (!colors) {
+    return <div>Loading...</div>; // Fallback UI while colors are being fetched
+  }
 
   return (
     <Box>
@@ -178,8 +160,8 @@ const ColorPaletteManager = () => {
               color={color}
               index={index}
               totalColors={colors.length}
-              moveColorUp={moveColorUp}
-              moveColorDown={moveColorDown}
+              moveColorUp={() => handleMoveColor(index, "up")}
+              moveColorDown={() => handleMoveColor(index, "down")}
               handleEditColor={handleEditColor}
               handleRemoveColor={handleRemoveColor}
             />
@@ -205,7 +187,7 @@ const ColorPaletteManager = () => {
           onClick={handleAddColor}
           colorScheme="blue"
           leftIcon={<FaPlus />}
-          minWidth="120px" // Ensure the button has enough space for its content
+          minWidth="120px"
         >
           Add Color
         </Button>

@@ -8,10 +8,10 @@ interface DesignCardsListProps {
   visibleLayers: number[];
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
   onVisibilityChange: (visibleLayers: number[]) => void;
-  onSubmitEdit: (designName: string) => void; // Update the prop type to accept designName
+  onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
-  editedPixels: Pixel[]; // Add editedPixels to the props
+  editedPixels: Pixel[];
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -22,14 +22,10 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onSubmitEdit,
   onSetCanvas,
   onDeleted,
-  editedPixels, // Destructure the new prop
+  editedPixels,
 }) => {
-  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<
-    number | null
-  >(null);
-  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
-    {},
-  );
+  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<number | null>(null);
+  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>({});
   const toast = useToast();
   const isFirstRender = useRef(true);
   const previousVisibleLayers = useRef<number[]>([]);
@@ -72,6 +68,10 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   };
 
   const handleOnDeleted = (designId: number) => {
+    
+    // Call the parent onDeleted function to update the state in DesignOffice
+    onDeleted(designId);
+
     setVisibilityMap((prev) => {
       const updated = { ...prev };
       delete updated[designId];
@@ -79,9 +79,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     });
 
     setCurrentlyEditingCardId(null);
-
-    onDeleted(designId);
-  }
+  };
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -123,16 +121,16 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
         <Box key={design.id}>
           <DesignCard
             design={design}
-            canvasName={design?.art_tool_canvases?.canvas_name ?? ""}
+            canvasName={design?.canvas_name ?? ""}
             isEditing={currentlyEditingCardId === design.id}
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
             onToggleVisibility={handleToggleVisibility}
             isVisible={visibilityMap[design.id] ?? false}
-            onSubmitEdit={onSubmitEdit} // Pass down the onSubmitEdit function
+            onSubmitEdit={onSubmitEdit}
             onSetCanvas={onSetCanvas}
             onDeleted={handleOnDeleted}
-            editedPixels={editedPixels} // Pass down the editedPixels array
+            editedPixels={editedPixels}
           />
         </Box>
       ))}
