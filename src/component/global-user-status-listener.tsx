@@ -1,12 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { 
-  authSignOut, 
-  functionsGetRankName, 
-  functionsGetSessionInfo, 
-  supabase, 
-  removeSupabaseChannel, 
-  functionsFetchUsers as supabaseFetchUsers 
+import {
+  authSignOut,
+  functionsGetRankName,
+  functionsGetSessionInfo,
+  removeSupabaseChannel,
+  supabase,
+  functionsFetchUsers as supabaseFetchUsers,
 } from "../api/supabase";
 import { UserContext } from "../context/user-context";
 import { UserType } from "../types/users";
@@ -40,37 +40,40 @@ const GlobalUserStatusListener = ({
     }
   }, [t]);
 
-  const fetchUsers = useCallback(async (rankNames: { [key: string]: string }) => {
-    try {
-      const usersData = await supabaseFetchUsers();
-      if (!usersData) {
-        return;
+  const fetchUsers = useCallback(
+    async (rankNames: { [key: string]: string }) => {
+      try {
+        const usersData = await supabaseFetchUsers();
+        if (!usersData) {
+          return;
+        }
+
+        const updatedUsers = usersData.map((user: UserType) => ({
+          ...user,
+          rank_name: rankNames[user.rank] || user.rank,
+        }));
+
+        setUsers(updatedUsers);
+
+        const currentUserIdArray = await functionsGetSessionInfo();
+
+        if (!currentUserIdArray || currentUserIdArray.length === 0) {
+          // No session is found, return early without logging an error
+          return;
+        }
+
+        const currentUserId = currentUserIdArray[0]; // Assuming the first ID in the array is the one you're interested in
+
+        const currentUserData = updatedUsers.find(
+          (user: UserType) => user.user_id === currentUserId,
+        );
+        setCurrentUser(currentUserData || null);
+      } catch (error) {
+        console.error(t("Error fetching users:"), error);
       }
-
-      const updatedUsers = usersData.map((user: UserType) => ({
-        ...user,
-        rank_name: rankNames[user.rank] || user.rank,
-      }));
-
-      setUsers(updatedUsers);
-
-      const currentUserIdArray = await functionsGetSessionInfo();
-
-      if (!currentUserIdArray || currentUserIdArray.length === 0) {
-        // No session is found, return early without logging an error
-        return;
-      }
-
-      const currentUserId = currentUserIdArray[0]; // Assuming the first ID in the array is the one you're interested in
-
-      const currentUserData = updatedUsers.find(
-        (user: UserType) => user.user_id === currentUserId,
-      );
-      setCurrentUser(currentUserData || null);
-    } catch (error) {
-      console.error(t("Error fetching users:"), error);
-    }
-  }, [t]);
+    },
+    [t],
+  );
 
   useEffect(() => {
     const initializeUserStatus = async () => {
