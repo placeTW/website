@@ -435,7 +435,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
                 ))}
               <WrapItem>
                 <Button onClick={() => handleSelectCanvas(null)}>
-                  Unassigned
+                  unassigned
                 </Button>
               </WrapItem>
             </Wrap>

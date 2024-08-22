@@ -95,7 +95,7 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const handleSetCanvas = (designId: number, canvasId: number) => {
+  const handleSetCanvas = (designId: number, canvasId: number | null) => {
     const updatedDesigns = designs?.map((design) => {
       if (design.id === designId) {
         return { ...design, canvas: canvasId };
@@ -109,7 +109,7 @@ const DesignOffice: React.FC = () => {
 
     setVisibleLayers(
       updatedDesigns
-        ?.filter((design) => design.canvas === canvasId)
+        ?.filter((design) => (canvasId === null ? design.canvas === null : design.canvas === canvasId))
         .map((design) => design.id) || []
     );
   };
@@ -168,7 +168,7 @@ const DesignOffice: React.FC = () => {
           canvases={canvases || []}
           selectedCanvas={selectedCanvas}
           onSelectCanvas={(canvas) =>
-            handleSetCanvas(editDesignId || 0, canvas?.id || 0)
+            handleSetCanvas(editDesignId || 0, canvas?.id || null)
           }
           onResetViewport={handleResetViewport}
           editedPixels={editedPixels}
