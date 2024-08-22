@@ -4,8 +4,6 @@ import {
   authSignOut,
   functionsGetRankName,
   functionsGetSessionInfo,
-  removeSupabaseChannel,
-  supabase,
   functionsFetchUsers as supabaseFetchUsers,
 } from "../api/supabase";
 import { UserContext } from "../context/user-context";
@@ -40,6 +38,36 @@ const GlobalUserStatusListener = ({
     }
   }, [t]);
 
+  useEffect(() => {
+    const initializeUserStatus = async () => {
+      try {
+        const currentUserIdArray = await functionsGetSessionInfo();
+
+        if (!currentUserIdArray || currentUserIdArray[0] === null) {
+          return;
+        }
+
+        // Fetch rank names
+        const rankData = await functionsGetRankName();
+        if (rankData) {
+          const rankNamesMap: { [key: string]: string } = {};
+          rankData.forEach((rank: { rank_id: string; rank_name: string }) => {
+            rankNamesMap[rank.rank_id] = rank.rank_name;
+          });
+          setRankNames(rankNamesMap);
+
+          // Fetch users with the newly fetched rank names
+          await fetchUsers(rankNamesMap);
+        }
+      } catch (error) {
+        console.error("Error initializing user status:", error);
+      }
+    };
+
+    initializeUserStatus();
+  }, []); // Empty dependency array
+
+  // Modify the fetchUsers function to accept rankNames as a parameter
   const fetchUsers = useCallback(
     async (rankNames: { [key: string]: string }) => {
       try {
@@ -58,11 +86,10 @@ const GlobalUserStatusListener = ({
         const currentUserIdArray = await functionsGetSessionInfo();
 
         if (!currentUserIdArray || currentUserIdArray.length === 0) {
-          // No session is found, return early without logging an error
           return;
         }
 
-        const currentUserId = currentUserIdArray[0]; // Assuming the first ID in the array is the one you're interested in
+        const currentUserId = currentUserIdArray[0];
 
         const currentUserData = updatedUsers.find(
           (user: UserType) => user.user_id === currentUserId,
@@ -74,68 +101,6 @@ const GlobalUserStatusListener = ({
     },
     [t],
   );
-
-  useEffect(() => {
-    const initializeUserStatus = async () => {
-      try {
-        const currentUserIdArray = await functionsGetSessionInfo();
-
-        if (!currentUserIdArray || currentUserIdArray[0] === null) {
-          return;
-        }
-
-        // Fetch rank names and users only if a session exists
-        await fetchRankNames();
-        fetchUsers(rankNames);
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      }
-    };
-
-    initializeUserStatus();
-  }, [fetchRankNames, fetchUsers, rankNames]);
-
-  useEffect(() => {
-    const handleUserUpdate = async (updatedUser: UserType) => {
-      if (updatedUser.rank === "F") {
-        await authSignOut();
-        alert(t("Your account has been banned."));
-        setCurrentUser(null);
-      }
-
-      setUsers((prevUsers) => {
-        const newUsers = prevUsers.map((user: UserType) =>
-          user.user_id === updatedUser.user_id ? updatedUser : user,
-        );
-        return newUsers;
-      });
-
-      setCurrentUser((prevCurrentUser) => {
-        if (prevCurrentUser?.user_id === updatedUser.user_id) {
-          return updatedUser.rank === "F" ? null : updatedUser;
-        }
-        return prevCurrentUser;
-      });
-    };
-
-    const channel = supabase
-      .channel("table-db-changes")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "art_tool_users" },
-        (payload) => {
-          const updatedUser = payload.new as UserType;
-          updatedUser.rank_name =
-            rankNames[updatedUser.rank] || updatedUser.rank_name;
-          handleUserUpdate(updatedUser);
-        },
-      )
-      .subscribe();
-
-    return () => {
-      removeSupabaseChannel(channel);
-    };
-  }, [rankNames, t]);
 
   const updateUser = (updatedUser: UserType) => {
     setUsers((prevUsers) => {
