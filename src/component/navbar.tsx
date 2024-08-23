@@ -19,15 +19,17 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
+  authGetSession,
   authSignOut,
+  functionsFetchOneUser,
   functionsUpdateNickname,
   insertNewUser,
-  authGetSession,
-  functionsFetchOneUser,
 } from "../api/supabase";
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import LanguageSwitcher from "./language-switcher";
+
+const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
 const Navbar = () => {
   const { currentUser, logoutUser } = useUserContext();
@@ -40,8 +42,10 @@ const Navbar = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      console.log("Checking session...");
-      const { data: { session }, error } = await authGetSession();
+      const {
+        data: { session },
+        error,
+      } = await authGetSession();
 
       if (error) {
         console.error(t("Error fetching session:"), error);
@@ -49,17 +53,12 @@ const Navbar = () => {
       }
 
       if (session) {
-        console.log("Session found...");
         try {
           const userData = await functionsFetchOneUser();
-          console.log("Fetched user data:", userData);
-
           if (userData.rank === "F") {
-            console.log("User is banned, signing out...");
             await authSignOut();
             alert(t("Your account has been banned."));
           } else {
-            console.log("User is not banned, closing auth modal...");
             setAuthModalOpen(false);
           }
         } catch (fetchError) {
@@ -72,18 +71,21 @@ const Navbar = () => {
             await insertNewUser(
               session.user?.id || "",
               session.user?.email || "",
-              session.user?.user_metadata?.name || session.user?.user_metadata?.full_name || ''
+              session.user?.user_metadata?.name ||
+                session.user?.user_metadata?.full_name ||
+                "",
             );
-            console.log("User inserted successfully.");
             setUserInserted(true); // Update state variable
             setAuthModalOpen(false);
           } catch (insertError) {
-            console.error(t("Error inserting new user into art_tool_users:"), insertError);
+            console.error(
+              t("Error inserting new user into art_tool_users:"),
+              insertError,
+            );
             // Removed the alert here
           }
         }
       } else {
-        console.log("No active session found, opening auth modal...");
         setAuthModalOpen(true);
       }
     };
@@ -131,45 +133,68 @@ const Navbar = () => {
 
   return (
     <Box bg="blue.500" px={4} py={2}>
-      <Flex alignItems="center" maxW="xxl">
+      <Flex alignItems="center" maxW="xxl" justify="space-between">
         <Heading as="h1" size="lg" color="white">
           PlaceTW
         </Heading>
 
-        <Spacer />
+        <Spacer minWidth="40px" />
 
-        <Box>
-          <Link as={RouterLink} to="/" color="white" mr={4}>
-            {t("Home")}
-          </Link>
-          <Link as={RouterLink} to="/gallery" color="white" mr={4}>
-            {t("Gallery")}
-          </Link>
+        <Box display="flex" alignItems="center" justifyContent="flex-end">
+          {enableArtTool && (
+            <>
+              <Box textAlign="center" mr={6}>
+                <Link as={RouterLink} to="/briefing-room" color="white">
+                  {t("Briefing Room")}
+                </Link>
+              </Box>
+              <Box textAlign="center" mr={6}>
+                <Link as={RouterLink} to="/design-office" color="white">
+                  {t("Design Office")}
+                </Link>
+              </Box>
+            </>
+          )}
+          <Box textAlign="center" mr={6}>
+            <Link as={RouterLink} to="/gallery" color="white">
+              {t("Gallery")}
+            </Link>
+          </Box>
           {currentUser &&
             (currentUser.rank === "A" || currentUser.rank === "B") && (
-              <Link as={RouterLink} to="/admin" color="white" mr={4}>
-                {t("Officers")}
-              </Link>
+              <Box textAlign="center" mr={6}>
+                <Link as={RouterLink} to="/admin" color="white">
+                  {t("Officers")}
+                </Link>
+              </Box>
             )}
+          <Box>
+            <LanguageSwitcher />
+          </Box>
         </Box>
 
-        <Box>
-          <LanguageSwitcher />
-        </Box>
-
-        <Box ml={4}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="flex-end"
+          ml={6}
+        >
           {currentUser ? (
-            <Flex alignItems="center">
-              <Text color="white" mr={2}>
+            <>
+              <Text color="white" textAlign="center" mr={2}>
                 {t("Welcome")}, {currentUser.rank_name} {currentUser.handle}
               </Text>
-              <Button onClick={onOpen} colorScheme="blue" mr={2}>
-                {t("Edit Username")}
-              </Button>
-              <Button onClick={handleLogout} colorScheme="blue">
-                {t("Logout")}
-              </Button>
-            </Flex>
+              <Box display="flex" flexDirection="column" mr={2}>
+                <Button onClick={onOpen} colorScheme="blue">
+                  {t("Edit Username")}
+                </Button>
+              </Box>
+              <Box display="flex" flexDirection="column">
+                <Button onClick={handleLogout} colorScheme="blue">
+                  {t("Logout")}
+                </Button>
+              </Box>
+            </>
           ) : (
             <Button onClick={handleOpenModal} colorScheme="blue">
               {t("Login")}

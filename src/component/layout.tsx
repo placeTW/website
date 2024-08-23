@@ -5,7 +5,7 @@ import Navbar from "./navbar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <Box w="100vw">
+    <Box>
       <GlobalUserStatusListener>
         <Navbar />
         <Box p={4}>{children}</Box>

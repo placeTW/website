@@ -1,10 +1,9 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   authSignOut,
   functionsGetRankName,
   functionsGetSessionInfo,
-  supabase,
   functionsFetchUsers as supabaseFetchUsers,
 } from "../api/supabase";
 import { UserContext } from "../context/user-context";
@@ -24,6 +23,10 @@ const GlobalUserStatusListener = ({
     try {
       const rankData = await functionsGetRankName();
 
+      if (!rankData) {
+        return;
+      }
+
       const rankNamesMap: { [key: string]: string } = {};
       rankData.forEach((rank: { rank_id: string; rank_name: string }) => {
         rankNamesMap[rank.rank_id] = rank.rank_name;
@@ -35,84 +38,71 @@ const GlobalUserStatusListener = ({
     }
   }, [t]);
 
-  const fetchUsers = useCallback(async (rankNames: { [key: string]: string }) => {
-    try {
-      const usersData = await supabaseFetchUsers();
-      const updatedUsers = usersData.map((user: UserType) => ({
-        ...user,
-        rank_name: rankNames[user.rank] || user.rank,
-      }));
-
-      setUsers(updatedUsers);
-
-      const [currentUserId] = await functionsGetSessionInfo();
-
-      const currentUserData = updatedUsers.find(
-        (user: UserType) => user.user_id === currentUserId,
-      );
-      console.log("Current user data:", currentUserData);
-      setCurrentUser(currentUserData || null);
-    } catch (error) {
-      console.error(t("Error fetching users:"), error);
-    }
-  }, [t]);
-
   useEffect(() => {
-    fetchRankNames();
-  }, [fetchRankNames]);
+    const initializeUserStatus = async () => {
+      try {
+        const currentUserIdArray = await functionsGetSessionInfo();
 
-  useEffect(() => {
-    if (Object.keys(rankNames).length > 0) {
-      fetchUsers(rankNames);
-    }
-  }, [rankNames, fetchUsers]);
-
-  useEffect(() => {
-    const handleUserUpdate = async (updatedUser: UserType) => {
-      console.log("Handling user update:", updatedUser);
-      if (updatedUser.rank === "F") {
-        console.log("User is banned, signing out...");
-        await authSignOut();
-        alert(t("Your account has been banned."));
-        setCurrentUser(null);
-      }
-
-      setUsers((prevUsers) => {
-        const newUsers = prevUsers.map((user: UserType) =>
-          user.user_id === updatedUser.user_id ? updatedUser : user,
-        );
-        return newUsers;
-      });
-
-      setCurrentUser((prevCurrentUser) => {
-        if (prevCurrentUser?.user_id === updatedUser.user_id) {
-          return updatedUser.rank === "F" ? null : updatedUser;
+        if (!currentUserIdArray || currentUserIdArray[0] === null) {
+          return;
         }
-        return prevCurrentUser;
-      });
+
+        // Fetch rank names
+        const rankData = await functionsGetRankName();
+        if (rankData) {
+          const rankNamesMap: { [key: string]: string } = {};
+          rankData.forEach((rank: { rank_id: string; rank_name: string }) => {
+            rankNamesMap[rank.rank_id] = rank.rank_name;
+          });
+          setRankNames(rankNamesMap);
+
+          // Fetch users with the newly fetched rank names
+          await fetchUsers(rankNamesMap);
+        }
+      } catch (error) {
+        console.error("Error initializing user status:", error);
+      }
     };
 
-    const channel = supabase
-      .channel("table-db-changes")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "art_tool_users" },
-        (payload) => {
-          const updatedUser = payload.new as UserType;
-          updatedUser.rank_name =
-            rankNames[updatedUser.rank] || updatedUser.rank_name;
-          handleUserUpdate(updatedUser);
-        },
-      )
-      .subscribe();
+    initializeUserStatus();
+  }, []); // Empty dependency array
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [rankNames, t]);
+  // Modify the fetchUsers function to accept rankNames as a parameter
+  const fetchUsers = useCallback(
+    async (rankNames: { [key: string]: string }) => {
+      try {
+        const usersData = await supabaseFetchUsers();
+        if (!usersData) {
+          return;
+        }
+
+        const updatedUsers = usersData.map((user: UserType) => ({
+          ...user,
+          rank_name: rankNames[user.rank] || user.rank,
+        }));
+
+        setUsers(updatedUsers);
+
+        const currentUserIdArray = await functionsGetSessionInfo();
+
+        if (!currentUserIdArray || currentUserIdArray.length === 0) {
+          return;
+        }
+
+        const currentUserId = currentUserIdArray[0];
+
+        const currentUserData = updatedUsers.find(
+          (user: UserType) => user.user_id === currentUserId,
+        );
+        setCurrentUser(currentUserData || null);
+      } catch (error) {
+        console.error(t("Error fetching users:"), error);
+      }
+    },
+    [t],
+  );
 
   const updateUser = (updatedUser: UserType) => {
-    console.log("Updating user:", updatedUser);
     setUsers((prevUsers) => {
       const newUsers = prevUsers.map((user: UserType) =>
         user.user_id === updatedUser.user_id ? updatedUser : user,
@@ -129,13 +119,11 @@ const GlobalUserStatusListener = ({
   };
 
   const logoutUser = () => {
-    console.log("Logging out user...");
     setCurrentUser(null);
   };
 
   useEffect(() => {
     if (currentUser && currentUser.rank === "F") {
-      console.log("Detected banned user after sign-in, logging out...");
       authSignOut().then(() => {
         alert(t("Your account has been banned."));
         setCurrentUser(null);
