@@ -61,8 +61,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     // Function to handle logout
     const logoutUser = () => {
         setCurrentUser(null);
-        // Add any additional logout logic, such as clearing session tokens
         logMessage('User logged out.');
+    };
+
+    // Modified setCurrentUser with logging
+    const handleSetCurrentUser = (user: User | null) => {
+        setCurrentUser(user);
+        logMessage(`Current user updated: ${JSON.stringify(user)}`);
     };
 
     useEffect(() => {
@@ -95,7 +100,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
 
     return (
-        <UserContext.Provider value={{ rankNames, users, currentUser, setCurrentUser, logoutUser }}>
+        <UserContext.Provider value={{ rankNames, users, currentUser, setCurrentUser: handleSetCurrentUser, logoutUser }}>
             {children}
         </UserContext.Provider>
     );
