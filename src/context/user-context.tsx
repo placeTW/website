@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { UserType, UserContextProps } from '../types/users'; // Correct import path
-import { authSignOut, functionsGetSessionInfo, functionsGetRankName, functionsFetchUsers as supabaseFetchUsers } from '../api/supabase'; // Ensure correct imports
+import { UserType, UserContextProps } from '../types/users';
+import { authSignOut, functionsGetSessionInfo, functionsGetRankName, functionsFetchUsers as supabaseFetchUsers } from '../api/supabase';
 import { useTranslation } from 'react-i18next';
 
 // Initial context state
@@ -19,10 +19,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [users, setUsers] = useState<UserType[]>([]);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [rankNames, setRankNames] = useState<{ [key: string]: string }>({});
-  const [isInitialized, setIsInitialized] = useState(false); // Flag to check initialization
+  const [hasFetchedRankNames, setHasFetchedRankNames] = useState(false);
+  const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
 
   // Fetch rank names from the server
   const fetchRankNames = useCallback(async () => {
+    if (hasFetchedRankNames) return;
     try {
       const rankData = await functionsGetRankName();
       if (!rankData) return;
@@ -33,13 +35,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       setRankNames(rankNamesMap);
+      setHasFetchedRankNames(true);
     } catch (error) {
       console.error(t("Error fetching rank names:"), error);
     }
-  }, [t]);
+  }, [t, hasFetchedRankNames]);
 
   // Fetch users function
   const fetchUsers = useCallback(async () => {
+    if (hasFetchedUsers) return;
     try {
       const usersData = await supabaseFetchUsers();
       if (!usersData) return;
@@ -51,34 +55,33 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setUsers(updatedUsers);
 
-      const [currentUserId] = await functionsGetSessionInfo();
-      if (!currentUserId) return;
+      const currentUserIdArray = await functionsGetSessionInfo();
+      if (!currentUserIdArray || currentUserIdArray.length === 0) return;
 
+      const currentUserId = currentUserIdArray[0];
       const currentUserData = updatedUsers.find(
         (user: UserType) => user.user_id === currentUserId
       );
       setCurrentUser(currentUserData || null);
+      setHasFetchedUsers(true);
     } catch (error) {
       console.error(t("Error fetching users:"), error);
     }
-  }, [rankNames, t]);
+  }, [rankNames, t, hasFetchedUsers]);
 
   // Initialize user status on mount
   useEffect(() => {
     const initializeUserStatus = async () => {
-      if (isInitialized) return; // Prevent re-initialization
-
       try {
         await fetchRankNames();
         await fetchUsers();
-        setIsInitialized(true); // Mark as initialized
       } catch (error) {
         console.error("Error initializing user status:", error);
       }
     };
 
     initializeUserStatus();
-  }, [fetchRankNames, fetchUsers, isInitialized]); // Added `isInitialized` to the dependency array
+  }, [fetchRankNames, fetchUsers]);
 
   // Function to update user data
   const updateUser = (updatedUser: UserType) => {

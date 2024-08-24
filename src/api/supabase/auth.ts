@@ -1,7 +1,5 @@
 import { AuthChangeEvent, Provider, Session } from "@supabase/supabase-js";
 import { supabase } from ".";
-import { logSupabaseFetch } from "./logging";
-
 const logSupabaseCalls = import.meta.env.VITE_LOG_SUPABASE_CALLS ?? false; // Define the logging flag
 
 export const authGetSession = async () => {
@@ -36,7 +34,7 @@ export const authGetUser = async () => {
 
 export const authSignInWithOAuth = async (
   provider: Provider,
-  redirect: string,
+  redirect: string
 ) => {
   const response = await supabase.auth.signInWithOAuth({
     provider: provider,
@@ -73,10 +71,7 @@ export const authSignOut = async () => {
 };
 
 export const authOnAuthStateChange = (
-  callback: (
-    event: AuthChangeEvent,
-    session: Session | null,
-  ) => void | Promise<void>,
+  callback: (event: AuthChangeEvent, session: Session | null) => void | Promise<void>
 ) => {
   const { data: subscription } = supabase.auth.onAuthStateChange(callback);
 
