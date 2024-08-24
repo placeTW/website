@@ -15,7 +15,7 @@ export const functionsUpdateNickname = async (handle: string) => {
   const [userId, access_token] = await functionsGetSessionInfo();
 
   if (!userId || !access_token) {
-    return; // Or handle the lack of a session in another way, if appropriate
+    return; // Handle the lack of a session appropriately
   }
 
   const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/update-nickname`, {
@@ -41,7 +41,7 @@ export const functionsFetchOneUser = async () => {
   const [userId, access_token] = await functionsGetSessionInfo();
 
   if (!userId || !access_token) {
-    return; // Or handle the lack of a session in another way, if appropriate
+    return; // Handle the lack of a session appropriately
   }
 
   const promise = fetch(
@@ -69,7 +69,7 @@ export const functionsGetRankName = async () => {
   const [, access_token] = await functionsGetSessionInfo();
 
   if (!access_token) {
-    return; // Or handle the lack of a session in another way, if appropriate
+    return; // Handle the lack of a session appropriately
   }
 
   const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/get-rank-name`, {
@@ -94,7 +94,7 @@ export const functionsFetchUsers = async () => {
   const [, access_token] = await functionsGetSessionInfo();
 
   if (!access_token) {
-    return; // Or handle the lack of a session in another way, if appropriate
+    return; // Handle the lack of a session appropriately
   }
 
   const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-users`, {
@@ -119,7 +119,7 @@ export const functionsFetchCanModerate = async (rank_id: string) => {
   const [, access_token] = await functionsGetSessionInfo();
 
   if (!access_token) {
-    return; // Or handle the lack of a session in another way, if appropriate
+    return; // Handle the lack of a session appropriately
   }
 
   const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/fetch-can-moderate`, {
@@ -149,7 +149,7 @@ export const functionsUpdateUserStatus = async (
   const [, access_token] = await functionsGetSessionInfo();
 
   if (!access_token) {
-    return; // Or handle the lack of a session in another way, if appropriate
+    return; // Handle the lack of a session appropriately
   }
 
   const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/updateUserStatus`, {
@@ -180,7 +180,7 @@ export const insertNewUser = async (
   const [, access_token] = await functionsGetSessionInfo();
 
   if (!access_token) {
-    return; // Or handle the lack of a session in another way, if appropriate
+    return; // Handle the lack of a session appropriately
   }
 
   const promise = fetch(`${SUPABASE_FUNCTIONS_URL}/insert-new-user`, {

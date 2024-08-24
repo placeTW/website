@@ -1,28 +1,75 @@
 import { AuthChangeEvent, Provider, Session } from "@supabase/supabase-js";
 import { supabase } from ".";
+import { logSupabaseFetch } from "./logging";
+
+const logSupabaseCalls = import.meta.env.VITE_LOG_SUPABASE_CALLS ?? false; // Define the logging flag
 
 export const authGetSession = async () => {
-  return supabase.auth.getSession();
+  const response = await supabase.auth.getSession();
+
+  if (logSupabaseCalls) {
+    console.log(`[SUPABASE LOG] authGetSession called. Response:`, response);
+  }
+
+  if (response.error) {
+    console.error("Error fetching session:", response.error.message);
+    throw new Error(response.error.message);
+  }
+
+  return response;
 };
 
-export const authGetUser = () => {
-  return supabase.auth.getUser();
+export const authGetUser = async () => {
+  const response = await supabase.auth.getUser();
+
+  if (logSupabaseCalls) {
+    console.log(`[SUPABASE LOG] authGetUser called. Response:`, response);
+  }
+
+  if (response.error) {
+    console.error("Error fetching user:", response.error.message);
+    throw new Error(response.error.message);
+  }
+
+  return response;
 };
 
 export const authSignInWithOAuth = async (
   provider: Provider,
   redirect: string,
 ) => {
-  return supabase.auth.signInWithOAuth({
+  const response = await supabase.auth.signInWithOAuth({
     provider: provider,
     options: {
       redirectTo: redirect,
     },
   });
+
+  if (logSupabaseCalls) {
+    console.log(`[SUPABASE LOG] authSignInWithOAuth called. Response:`, response);
+  }
+
+  if (response.error) {
+    console.error("Error signing in with OAuth:", response.error.message);
+    throw new Error(response.error.message);
+  }
+
+  return response;
 };
 
 export const authSignOut = async () => {
-  return supabase.auth.signOut();
+  const response = await supabase.auth.signOut();
+
+  if (logSupabaseCalls) {
+    console.log(`[SUPABASE LOG] authSignOut called. Response:`, response);
+  }
+
+  if (response.error) {
+    console.error("Error signing out:", response.error.message);
+    throw new Error(response.error.message);
+  }
+
+  return response;
 };
 
 export const authOnAuthStateChange = (
@@ -31,5 +78,11 @@ export const authOnAuthStateChange = (
     session: Session | null,
   ) => void | Promise<void>,
 ) => {
-  return supabase.auth.onAuthStateChange(callback);
+  const { data: subscription } = supabase.auth.onAuthStateChange(callback);
+
+  if (logSupabaseCalls) {
+    console.log(`[SUPABASE LOG] Subscribing to auth state changes.`);
+  }
+
+  return subscription;
 };

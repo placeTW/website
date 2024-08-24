@@ -36,10 +36,9 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const handleAuth = async (provider: Provider) => {
-
     const { data, error } = await authSignInWithOAuth(
       provider,
-      window.location.href,
+      window.location.href
     );
 
     if (error) {
@@ -78,22 +77,28 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
         } catch (fetchError) {
           console.error(
             t("User not found in art_tool_users, attempting to insert user:"),
-            fetchError,
+            fetchError
           );
 
           try {
             await insertNewUser(
               session.user?.id || "",
               session.user?.email || "",
-              session.user?.user_metadata?.name || session.user?.user_metadata?.full_name || ""
+              session.user?.user_metadata?.name ||
+                session.user?.user_metadata?.full_name ||
+                ""
             );
             onClose();
           } catch (insertError) {
-            console.error(t("Error inserting new user into art_tool_users:"), insertError);
+            console.error(
+              t("Error inserting new user into art_tool_users:"),
+              insertError
+            );
             setError(t("Error inserting new user into art_tool_users"));
           }
         }
       } else {
+        // No session is present, handle accordingly if needed
       }
     };
 
@@ -105,7 +110,9 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
     const subscription = supabase
       .channel("bans")
       .on("broadcast", { event: "ban" }, async (payload) => {
-        const { data: { session } } = await authGetSession();
+        const {
+          data: { session },
+        } = await authGetSession();
         const userId = session?.user?.id;
         if (payload?.payload?.userId === userId) {
           await authSignOut();
