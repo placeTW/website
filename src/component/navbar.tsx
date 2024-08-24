@@ -32,13 +32,13 @@ import LanguageSwitcher from "./language-switcher";
 const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
 const Navbar = () => {
-  const { currentUser, logoutUser } = useUserContext();
-  const { t } = useTranslation(); // Initialize the useTranslation hook
+  const { currentUser, logoutUser, setCurrentUser } = useUserContext(); // No TypeScript errors now
+  const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [username, setUsername] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
-  const [userInserted, setUserInserted] = useState(false); // Add state variable
+  const [userInserted, setUserInserted] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -59,6 +59,7 @@ const Navbar = () => {
             await authSignOut();
             alert(t("Your account has been banned."));
           } else {
+            setCurrentUser(userData); // Set currentUser with fetched data
             setAuthModalOpen(false);
           }
         } catch (fetchError) {
@@ -68,21 +69,22 @@ const Navbar = () => {
           );
 
           try {
-            await insertNewUser(
+            const newUser = await insertNewUser(
               session.user?.id || "",
               session.user?.email || "",
               session.user?.user_metadata?.name ||
                 session.user?.user_metadata?.full_name ||
                 "",
             );
-            setUserInserted(true); // Update state variable
+            setCurrentUser(newUser); // Set currentUser with new user data
+            setUserInserted(true);
             setAuthModalOpen(false);
           } catch (insertError) {
             console.error(
               t("Error inserting new user into art_tool_users:"),
               insertError,
             );
-            // Removed the alert here
+            alert(t("Failed to insert user. Please try again later."));
           }
         }
       } else {
@@ -91,7 +93,7 @@ const Navbar = () => {
     };
 
     checkSession();
-  }, [userInserted]); // Add dependency to trigger re-render
+  }, [setCurrentUser, userInserted, t]); // Added setCurrentUser and t as dependencies
 
   useEffect(() => {
     if (currentUser) {
@@ -218,7 +220,7 @@ const Navbar = () => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={handleKeyDown} // Handle Enter key press
+              onKeyDown={handleKeyDown}
             />
           </ModalBody>
           <ModalFooter>

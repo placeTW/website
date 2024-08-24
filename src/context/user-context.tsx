@@ -1,122 +1,102 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { UserType, UserContextProps } from '../types/users';
-import { authSignOut, functionsGetSessionInfo, functionsGetRankName, functionsFetchUsers as supabaseFetchUsers } from '../api/supabase';
-import { useTranslation } from 'react-i18next';
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import { functionsFetchUsers, functionsGetRankName } from '../api/supabase/functions';
 
-// Initial context state
-const UserContext = createContext<UserContextProps>({
-  users: [],
-  currentUser: null,
-  rankNames: {},
-  updateUser: () => {},
-  logoutUser: () => {},
-});
+// Define the User interface for currentUser
+interface User {
+    id: string;
+    handle: string;
+    rank: string;
+    rank_name: string;
+    // Add other properties as necessary
+}
 
-export const useUserContext = () => useContext(UserContext);
+interface UserContextType {
+    rankNames: string[];
+    users: any[];
+    currentUser: User | null; // Include currentUser in the context type
+    setCurrentUser: (user: User | null) => void; // Function to update currentUser
+    logoutUser: () => void; // Function to handle user logout
+}
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { t } = useTranslation();
-  const [users, setUsers] = useState<UserType[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
-  const [rankNames, setRankNames] = useState<{ [key: string]: string }>({});
-  const [hasFetchedRankNames, setHasFetchedRankNames] = useState(false);
-  const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
+const UserContext = createContext<UserContextType | undefined>(undefined);
 
-  // Fetch rank names from the server
-  const fetchRankNames = useCallback(async () => {
-    if (hasFetchedRankNames) return;
-    try {
-      const rankData = await functionsGetRankName();
-      if (!rankData) return;
-
-      const rankNamesMap: { [key: string]: string } = {};
-      rankData.forEach((rank: { rank_id: string; rank_name: string }) => {
-        rankNamesMap[rank.rank_id] = rank.rank_name;
-      });
-
-      setRankNames(rankNamesMap);
-      setHasFetchedRankNames(true);
-    } catch (error) {
-      console.error(t("Error fetching rank names:"), error);
+export const useUserContext = () => {
+    const context = useContext(UserContext);
+    if (!context) {
+        throw new Error('useUserContext must be used within a UserProvider');
     }
-  }, [t, hasFetchedRankNames]);
+    return context;
+};
 
-  // Fetch users function
-  const fetchUsers = useCallback(async () => {
-    if (hasFetchedUsers) return;
-    try {
-      const usersData = await supabaseFetchUsers();
-      if (!usersData) return;
+interface UserProviderProps {
+    children: ReactNode;
+}
 
-      const updatedUsers = usersData.map((user: UserType) => ({
-        ...user,
-        rank_name: rankNames[user.rank] || user.rank,
-      }));
+// Simple function to generate a unique ID without using uuid
+const generateUniqueId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      setUsers(updatedUsers);
+// Function to fetch initial user data
+const fetchInitialUserData = async () => {
+    const rankNames = await functionsGetRankName();
+    const users = await functionsFetchUsers();
+    return { rankNames, users };
+};
 
-      const currentUserIdArray = await functionsGetSessionInfo();
-      if (!currentUserIdArray || currentUserIdArray.length === 0) return;
+// Fetch initial data before creating the context
+const initialDataPromise = fetchInitialUserData();
 
-      const currentUserId = currentUserIdArray[0];
-      const currentUserData = updatedUsers.find(
-        (user: UserType) => user.user_id === currentUserId
-      );
-      setCurrentUser(currentUserData || null);
-      setHasFetchedUsers(true);
-    } catch (error) {
-      console.error(t("Error fetching users:"), error);
-    }
-  }, [rankNames, t, hasFetchedUsers]);
+export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+    const [rankNames, setRankNames] = useState<string[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
+    const [currentUser, setCurrentUser] = useState<User | null>(null); // State for currentUser
+    const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
-  // Initialize user status on mount
-  useEffect(() => {
-    const initializeUserStatus = async () => {
-      try {
-        await fetchRankNames();
-        await fetchUsers();
-      } catch (error) {
-        console.error("Error initializing user status:", error);
-      }
+    const contextId = useRef(generateUniqueId());  // Generate a unique ID for each context instance
+    const initializationRef = useRef(false);  // Ref to track initialization
+
+    const logMessage = (message: string) => {
+        console.log(`[UserContext ${contextId.current}] ${message}`);
     };
 
-    initializeUserStatus();
-  }, [fetchRankNames, fetchUsers]);
-
-  // Function to update user data
-  const updateUser = (updatedUser: UserType) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.user_id === updatedUser.user_id ? updatedUser : user
-      )
-    );
-
-    setCurrentUser((prevCurrentUser) => {
-      if (prevCurrentUser?.user_id === updatedUser.user_id) {
-        return updatedUser;
-      }
-      return prevCurrentUser;
-    });
-  };
-
-  // Function to logout user
-  const logoutUser = () => {
-    setCurrentUser(null);
-  };
-
-  // Handle user rank bans
-  useEffect(() => {
-    if (currentUser && currentUser.rank === "F") {
-      authSignOut().then(() => {
-        alert(t("Your account has been banned."));
+    // Function to handle logout
+    const logoutUser = () => {
         setCurrentUser(null);
-      });
-    }
-  }, [currentUser, t]);
+        // Add any additional logout logic, such as clearing session tokens
+        logMessage('User logged out.');
+    };
 
-  return (
-    <UserContext.Provider value={{ users, currentUser, rankNames, updateUser, logoutUser }}>
-      {children}
-    </UserContext.Provider>
-  );
+    useEffect(() => {
+        const initializeUserData = async () => {
+            if (initializationRef.current) {
+                logMessage('Initialization already completed, skipping...');
+                return;
+            }
+
+            initializationRef.current = true;
+            logMessage('Initializing user data...');
+
+            try {
+                const { rankNames, users } = await initialDataPromise;
+                setRankNames(rankNames);
+                setUsers(users);
+                setIsInitialized(true);
+                logMessage('User data initialized successfully.');
+            } catch (error) {
+                console.error('Error during user data initialization:', error);
+            }
+        };
+
+        initializeUserData();
+    }, []); // Only run once on component mount
+
+    if (!isInitialized) {
+        // Optionally show a loading state while initializing
+        return <div>Loading...</div>;
+    }
+
+    return (
+        <UserContext.Provider value={{ rankNames, users, currentUser, setCurrentUser, logoutUser }}>
+            {children}
+        </UserContext.Provider>
+    );
 };

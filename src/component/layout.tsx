@@ -1,11 +1,12 @@
 // src/component/layout.tsx
 
+import React from "react";
 import { Box } from "@chakra-ui/react";
 import Footer from "./footer";
 import Navbar from "./navbar";
 import { UserProvider } from "../context/user-context"; // Correct import for UserProvider
 
-const Layout = ({ children }: { children: React.ReactNode }) => {
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <UserProvider>
       <Box>
