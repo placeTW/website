@@ -71,10 +71,10 @@ const DesignCard: FC<DesignCardProps> = ({
   const { currentUser } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
-    currentUser ? design.liked_by?.includes(currentUser.user_id) : false,
+    currentUser ? design.liked_by?.includes(currentUser.user_id) : false
   );
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
-  const [designName, setDesignName] = useState(design.design_name || ""); // Handle missing design_name
+  const [designName, setDesignName] = useState(design.design_name || "");
   const toast = useToast();
 
   const {
@@ -159,9 +159,7 @@ const DesignCard: FC<DesignCardProps> = ({
         onCancelEdit();
       }
     } else {
-      if (onEdit(design.id)) {
-        // Noop
-      }
+      onEdit(design.id);
     }
   };
 
@@ -177,14 +175,11 @@ const DesignCard: FC<DesignCardProps> = ({
   const handleSetCanvasDecision = async (canvas: Canvas | null) => {
     setIsSetCanvasPopupOpen(false);
 
-    if (!canvas) {
-      return;
-    }
+    if (!canvas) return;
 
     try {
       await updateDesignCanvas(design.id, canvas.id);
       onSetCanvas(design.id, canvas.id);
-
       toast({
         title: "Set Canvas for Design",
         description: `${canvas.canvas_name} has been set as the canvas for ${design.design_name}`,
@@ -193,12 +188,9 @@ const DesignCard: FC<DesignCardProps> = ({
         isClosable: true,
       });
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
-
       toast({
         title: "Error",
-        description: `Failed to add design to canvas: ${errorMessage}`,
+        description: "Failed to add design to canvas.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -300,7 +292,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   value={designName}
                   onChange={(e) => setDesignName(e.target.value)}
                   fontSize={"md"}
-                  backgroundColor="white" // Set the background color to white
+                  backgroundColor="white"
                 />
               ) : (
                 <Heading fontSize={"md"}>{design.design_name}</Heading>

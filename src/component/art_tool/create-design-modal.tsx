@@ -26,7 +26,7 @@ const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, onClose }) => {
     if (currentUser) {
       const response = await databaseCreateDesign(
         designName,
-        currentUser.user_id,
+        currentUser.user_id
       );
       if (response) {
         onClose();
