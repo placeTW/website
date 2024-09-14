@@ -1,10 +1,20 @@
+// src/component/art_tool/export-canvas.tsx
+
 import React, { useState } from 'react';
 import { Box, Button, Text, useToast } from '@chakra-ui/react';
-import { databaseFetchCanvas, databaseFetchDesigns } from '../../api/supabase/database';
-import { Canvas, Design, Pixel } from '../../types/art-tool';
+import {
+  databaseFetchCanvas,
+  databaseFetchDesigns,
+} from '../../api/supabase/database';
+import { Canvas, Design } from '../../types/art-tool';
 import { supabase } from '../../api/supabase';
-import { getTopLeftCoords, offsetPixels } from '../../utils/pixelUtils';
-import { CLEAR_ON_DESIGN } from '../../component/viewport/constants';
+import { CLEAR_ON_DESIGN } from '../viewport/constants';
+
+interface ExportPixel {
+    x: number;
+    y: number;
+    color: string;
+  }
 
 const ExportCanvas: React.FC = () => {
   const [isExporting, setIsExporting] = useState(false);
@@ -44,12 +54,19 @@ const ExportCanvas: React.FC = () => {
         return;
       }
 
+      // Define an interface for the pixels we will work with
+      interface ExportPixel {
+        x: number;
+        y: number;
+        color: string;
+      }
+
       // Combine all designs' pixels into one array
-      let combinedPixels: Pixel[] = [];
+      let combinedPixels: ExportPixel[] = [];
 
       designs.forEach((design) => {
         // Offset the design's pixels by its x and y coordinates
-        const offsettedPixels = design.pixels.map((pixel) => ({
+        const offsettedPixels: ExportPixel[] = design.pixels.map((pixel) => ({
           x: pixel.x + design.x,
           y: pixel.y + design.y,
           color: pixel.color,
@@ -150,6 +167,25 @@ const ExportCanvas: React.FC = () => {
     } finally {
       setIsExporting(false);
     }
+  };
+
+  // Utility functions for processing pixels
+  // These functions accept ExportPixel[] instead of Pixel[]
+  const getTopLeftCoords = (pixels: ExportPixel[]) => {
+    const minX = Math.min(...pixels.map((pixel) => pixel.x));
+    const minY = Math.min(...pixels.map((pixel) => pixel.y));
+    return { x: minX, y: minY };
+  };
+
+  const offsetPixels = (
+    pixels: ExportPixel[],
+    offset: { x: number; y: number }
+  ) => {
+    return pixels.map((pixel) => ({
+      x: pixel.x - offset.x,
+      y: pixel.y - offset.y,
+      color: pixel.color,
+    }));
   };
 
   return (
