@@ -4,6 +4,63 @@ import { AlertState, Canvas, Color, Design, Pixel } from "../../types/art-tool";
 import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
 import { deleteThumbnail, supabase, uploadThumbnail } from "./index";
 import { logSupabaseDatabaseQuery } from "./logging";
+import { UserType, RankType } from "../../types/users"; // Import your types
+
+
+// Fetch all users
+export const databaseFetchUsers = async (): Promise<UserType[]> => {
+  const fetchUsersQuery = await supabase
+    .from("art_tool_users")
+    .select("*")
+    .returns<UserType[]>();
+
+  const { data, error } = logSupabaseDatabaseQuery(fetchUsersQuery, "fetchUsers");
+
+  if (error) {
+    console.error("Error fetching users:", error.message);
+    throw new Error(error.message);
+  }
+
+  return data || [];
+};
+
+// Fetch all ranks
+export const databaseFetchRanks = async (): Promise<RankType[]> => {
+  const fetchRanksQuery = await supabase
+    .from("art_tool_ranks")
+    .select("*")
+    .returns<RankType[]>();
+
+  const { data, error } = logSupabaseDatabaseQuery(fetchRanksQuery, "fetchRanks");
+
+  if (error) {
+    console.error("Error fetching ranks:", error.message);
+    throw new Error(error.message);
+  }
+
+  return data || [];
+};
+
+// Fetch current user based on user_id
+export const databaseFetchCurrentUser = async (
+  userId: string,
+): Promise<UserType | null> => {
+  const fetchUserQuery = await supabase
+    .from("art_tool_users")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  const { data, error } = logSupabaseDatabaseQuery(fetchUserQuery, "fetchCurrentUser");
+
+  if (error) {
+    console.error("Error fetching current user:", error.message);
+    return null;
+  }
+
+  return data;
+};
+
 
 // Layers-related functions
 export const databaseCreateDesign = async (
