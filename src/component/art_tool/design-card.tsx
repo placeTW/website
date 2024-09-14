@@ -68,7 +68,7 @@ const DesignCard: FC<DesignCardProps> = ({
   onDeleted,
   editedPixels,
 }) => {
-  const { currentUser } = useUserContext();
+  const { currentUser, users, ranks } = useUserContext(); // Import users and ranks from context
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
     currentUser ? design.liked_by?.includes(currentUser.user_id) : false
@@ -205,6 +205,13 @@ const DesignCard: FC<DesignCardProps> = ({
       currentUser.user_id === design.created_by);
   const isCreator = currentUser && currentUser.user_id === design.created_by;
 
+  // Get the creator's user data from the context
+  const creator = users.find((user) => user.user_id === design.created_by);
+
+  // Compute the creator's rank name
+  const creatorRankName =
+    ranks.find((rank) => rank.rank_id === creator?.rank)?.rank_name || "Unknown";
+
   // Check for required fields
   if (!design.id || !design.design_name) {
     console.error("[DESIGN CARD] Missing required design data:", design);
@@ -298,8 +305,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 <Heading fontSize={"md"}>{design.design_name}</Heading>
               )}
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
-                {design.rank_name ?? "Unknown"}{" "}
-                {design.user_handle ?? "Unknown"}
+                {creatorRankName} {creator?.handle ?? "Unknown"}
               </Text>
               <Text color={"gray.600"} fontWeight={400} fontSize={"sm"}>
                 {canvasName}
