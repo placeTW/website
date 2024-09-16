@@ -1,3 +1,5 @@
+// src/component/art_tool/design-card.tsx
+
 import {
   AlertDialog,
   AlertDialogBody,
@@ -15,6 +17,7 @@ import {
   Image,
   Input,
   Text,
+  Tooltip, // Import Tooltip
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
@@ -68,7 +71,7 @@ const DesignCard: FC<DesignCardProps> = ({
   onDeleted,
   editedPixels,
 }) => {
-  const { currentUser, users, ranks } = useUserContext(); // Import users and ranks from context
+  const { currentUser, users, ranks } = useUserContext(); // Import users and ranks
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
     currentUser ? design.liked_by?.includes(currentUser.user_id) : false
@@ -241,18 +244,20 @@ const DesignCard: FC<DesignCardProps> = ({
             alignItems="center"
             backgroundColor="white"
           >
-            <IconButton
-              icon={isVisible ? <FaEye /> : <FaEyeSlash />}
-              aria-label="Toggle Visibility"
-              onClick={handleToggleVisibility}
-              position="absolute"
-              top="5px"
-              left="5px"
-              zIndex={2}
-              size="sm"
-              backgroundColor="rgba(255, 255, 255, 0.8)"
-              _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
-            />
+            <Tooltip label={isVisible ? "Hide Design" : "Show Design"}>
+              <IconButton
+                icon={isVisible ? <FaEye /> : <FaEyeSlash />}
+                aria-label="Toggle Visibility"
+                onClick={handleToggleVisibility}
+                position="absolute"
+                top="5px"
+                left="5px"
+                zIndex={2}
+                size="sm"
+                backgroundColor="rgba(255, 255, 255, 0.8)"
+                _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
+              />
+            </Tooltip>
             <Image
               alt={design.design_name}
               fallback={
@@ -263,7 +268,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   justifyContent="center"
                   background="gray.100"
                 >
-                  <FaImage size="50%" color="white" />{" "}
+                  <FaImage size="50%" color="white" />
                 </Box>
               }
               height="100%"
@@ -272,19 +277,21 @@ const DesignCard: FC<DesignCardProps> = ({
               onClick={handleImageClick}
               src={design.design_thumbnail || ""}
             />
-            <Button
-              leftIcon={<FaHeart color={isLiked ? "red" : "gray"} />}
-              onClick={handleLike}
-              position="absolute"
-              bottom="5px"
-              left="5px"
-              zIndex={2}
-              size="sm"
-              backgroundColor="rgba(255, 255, 255, 0.8)"
-              _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
-            >
-              {design.liked_by.length}
-            </Button>
+            <Tooltip label={isLiked ? "Unlike" : "Like"}>
+              <Button
+                leftIcon={<FaHeart color={isLiked ? "red" : "gray"} />}
+                onClick={handleLike}
+                position="absolute"
+                bottom="5px"
+                left="5px"
+                zIndex={2}
+                size="sm"
+                backgroundColor="rgba(255, 255, 255, 0.8)"
+                _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
+              >
+                {design.liked_by.length}
+              </Button>
+            </Tooltip>
           </Box>
           <Flex
             direction="column"
@@ -313,42 +320,52 @@ const DesignCard: FC<DesignCardProps> = ({
             </Box>
             <Box display="flex" justifyContent="flex-end" gap={2}>
               {isCreator && !isEditing && (
-                <IconButton
-                  icon={<FaPen />}
-                  aria-label="Edit"
-                  onClick={handleEditToggle}
-                  size="sm"
-                />
-              )}
-              {isEditing && (
-                <>
+                <Tooltip label="Edit Design">
                   <IconButton
-                    icon={<FaArrowRightFromBracket />}
-                    aria-label="Cancel"
+                    icon={<FaPen />}
+                    aria-label="Edit"
                     onClick={handleEditToggle}
                     size="sm"
                   />
-                  <IconButton
-                    icon={<FaCloudArrowUp />}
-                    aria-label="Submit"
-                    onClick={() => onSubmitEdit(designName)}
-                    size="sm"
-                  />
+                </Tooltip>
+              )}
+              {isEditing && (
+                <>
+                  <Tooltip label="Cancel Edit">
+                    <IconButton
+                      icon={<FaArrowRightFromBracket />}
+                      aria-label="Cancel"
+                      onClick={handleEditToggle}
+                      size="sm"
+                    />
+                  </Tooltip>
+                  <Tooltip label="Save Changes">
+                    <IconButton
+                      icon={<FaCloudArrowUp />}
+                      aria-label="Submit"
+                      onClick={() => onSubmitEdit(designName)}
+                      size="sm"
+                    />
+                  </Tooltip>
                 </>
               )}
-              <IconButton
-                icon={<FaLayerGroup />}
-                aria-label="Add to Canvas"
-                onClick={handleAddToCanvas}
-                size="sm"
-              />
-              {isAdminOrCreator && (
+              <Tooltip label="Set Canvas">
                 <IconButton
-                  icon={<FaTrash />}
-                  aria-label="Delete"
-                  onClick={onOpenDeleteDialog}
+                  icon={<FaLayerGroup />}
+                  aria-label="Set Canvas"
+                  onClick={handleAddToCanvas}
                   size="sm"
                 />
+              </Tooltip>
+              {isAdminOrCreator && (
+                <Tooltip label="Delete Design">
+                  <IconButton
+                    icon={<FaTrash />}
+                    aria-label="Delete"
+                    onClick={onOpenDeleteDialog}
+                    size="sm"
+                  />
+                </Tooltip>
               )}
             </Box>
           </Flex>
