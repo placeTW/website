@@ -3,7 +3,7 @@ import Konva from "konva";
 import { GRID_SIZE } from "../constants";
 import UndoManager from '../utils/undo-manager';
 
-Konva.dragButtons = [0, 2];  // Enable dragging with left (0) and right (2) mouse buttons
+Konva.dragButtons = [0, 1, 2];  // Enable dragging with left (0) and right (2) mouse buttons
 
 // Create an instance of UndoManager with a specified limit for undo history
 const undoManager = new UndoManager(100); // Adjust the limit value as needed
@@ -24,7 +24,7 @@ export const useMouseHandlers = (
   onPaste?: (x: number, y: number) => void,
 ) => {
   const mousePosition = useRef({ x: 0, y: 0 }); // To store the latest mouse position
-  const isMouseLeftDown = useRef(false); // Track the left mouse button state
+  const isMouseDown = useRef(false); // Track the mouse state
   const isSelecting = useRef(false); // Track whether we are in selection mode
 
   return {
@@ -32,9 +32,14 @@ export const useMouseHandlers = (
       const stage = e.target.getStage();
       if (!stage || !stageRef?.current) return;
 
-      // Check if the left mouse button is down (button === 0)
-      if (e.evt.button === 0) {
-        isMouseLeftDown.current = true; // Set flag when left mouse button is down
+      // Prevent the default action for the middle mouse button (button === 1)
+      if (e.evt.button === 1) {
+        e.evt.preventDefault();
+      }
+
+      // Check if the left or right mouse button is down (button === 0 or 2)
+      if (e.evt.button === 0 || e.evt.button === 2) {
+        isMouseDown.current = true; // Set flag when left mouse button is down
 
         if (isEditing) {
           const pos = stage.getPointerPosition();
@@ -65,9 +70,9 @@ export const useMouseHandlers = (
       const stage = e.target.getStage();
       if (!stage || !stageRef?.current) return;
 
-      // Check if the left mouse button is released (button === 0)
-      if (e.evt.button === 0) {
-        isMouseLeftDown.current = false; // Reset flag when left mouse button is released
+      // Check if the left or right mouse button is released (button === 0 or 2)
+      if (e.evt.button === 0 || e.evt.button === 2) {
+        isMouseDown.current = false; // Reset flag when left mouse button is released
 
         // Stop painting or panning
         stage.container().style.cursor = "default";
@@ -99,12 +104,12 @@ export const useMouseHandlers = (
       if (!isEditing) return;
 
       // Update selection only if the left mouse button is down, Ctrl is held, and we're in selection mode
-      if (isSelecting.current && isMouseLeftDown.current && selection && setSelection) {
+      if (isSelecting.current && isMouseDown.current && selection && setSelection) {
         // Update rectangle selection dimensions based on mouse movement
         const width = x - selection.x + 1;
         const height = y - selection.y + 1;
         setSelection({ ...selection, width, height });
-      } else if (isMouseLeftDown.current && !e.evt.ctrlKey && onPixelPaint) {
+      } else if (isMouseDown.current && !e.evt.ctrlKey && onPixelPaint) {
         // Continue painting if the left mouse button is down, not in selection mode, and isEditing is true
         onPixelPaint(x, y);
       }

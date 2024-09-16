@@ -58,6 +58,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [previousColor, setPreviousColor] = useState<string | null>(null);
   const [selection, setSelection] = useState<{
     x: number;
     y: number;
@@ -360,14 +361,19 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       }
     };
 
-    const handleMouseDown = () => {
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 2 && isEditing && selectedColor) {
+        setPreviousColor(selectedColor);
+        setSelectedColor(CLEAR_ON_DESIGN);
+      }
+
       if (isEditing) {
         dragInProgress.current = true;
         dragPixels.current = [];
       }
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
       if (isEditing && dragInProgress.current) {
         if (dragPixels.current.length > 0 && setEditedPixels) {
           setEditedPixels((prevEditedPixels) => {
@@ -378,6 +384,11 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
         dragInProgress.current = false;
         dragPixels.current = [];
+      }
+
+      if (e.button === 2 && isEditing && previousColor) {
+        setSelectedColor(previousColor);
+        setPreviousColor(null);
       }
     };
 
