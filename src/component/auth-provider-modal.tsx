@@ -8,7 +8,7 @@ import {
   ModalOverlay,
   Stack,
 } from "@chakra-ui/react";
-import { Provider } from "@supabase/supabase-js";
+import { Provider, User } from "@supabase/supabase-js";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -17,8 +17,8 @@ import {
   authSignOut,
   functionsFetchOneUser,
   insertNewUser,
-  supabase,
   removeSupabaseChannel,
+  supabase,
 } from "../api/supabase";
 
 interface AuthProviderModalProps {
@@ -38,7 +38,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
   const handleAuth = async (provider: Provider) => {
     const { data, error } = await authSignInWithOAuth(
       provider,
-      window.location.href
+      window.location.href,
     );
 
     if (error) {
@@ -49,6 +49,17 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
 
     // Redirect the user to the OAuth URL
     window.location.href = data.url;
+  };
+
+  const getHandle = (user: User): string => {
+    // Get the name of the user if discord, otherwise use the email
+    if (user?.app_metadata?.provider === "discord") {
+      return user.user_metadata?.name || user.user_metadata?.full_name;
+    } else {
+      return user.email
+        ? user.email.substring(0, user.email.lastIndexOf("@"))
+        : "";
+    }
   };
 
   useEffect(() => {
@@ -77,22 +88,20 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
         } catch (fetchError) {
           console.error(
             t("User not found in art_tool_users, attempting to insert user:"),
-            fetchError
+            fetchError,
           );
 
           try {
             await insertNewUser(
               session.user?.id || "",
               session.user?.email || "",
-              session.user?.user_metadata?.name ||
-                session.user?.user_metadata?.full_name ||
-                ""
+              getHandle(session.user as User) || "",
             );
             onClose();
           } catch (insertError) {
             console.error(
               t("Error inserting new user into art_tool_users:"),
-              insertError
+              insertError,
             );
             setError(t("Error inserting new user into art_tool_users"));
           }
