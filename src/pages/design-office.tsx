@@ -11,11 +11,11 @@ import {
   CLEAR_ON_DESIGN,
   CLEAR_ON_MAIN,
 } from "../component/viewport/constants";
-import { Canvas, Pixel } from "../types/art-tool";
+import { useColorContext } from "../context/color-context";
+import { useDesignContext } from "../context/design-context";
+import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
 import { offsetPixels } from "../utils/pixelUtils";
-import { useDesignContext } from "../context/design-context";
-import { useColorContext } from "../context/color-context";
 
 const DesignOffice: React.FC = () => {
   const { designs, canvases, setDesigns } = useDesignContext();
@@ -36,7 +36,7 @@ const DesignOffice: React.FC = () => {
 
   const handleEditStateChange = (
     isEditing: boolean,
-    designId: number | null
+    designId: number | null,
   ) => {
     setIsEditing(isEditing);
     setEditDesignId(designId);
@@ -67,7 +67,7 @@ const DesignOffice: React.FC = () => {
       const updatedDesign = await saveEditedPixels(
         currentDesign,
         newPixels,
-        designName
+        designName,
       );
 
       const thumbnailBlob = await createThumbnail(updatedDesign.pixels);
@@ -104,13 +104,17 @@ const DesignOffice: React.FC = () => {
     });
 
     setSelectedCanvas(
-      canvases?.find((canvas) => canvas.id === canvasId) || null
+      canvases?.find((canvas) => canvas.id === canvasId) || null,
     );
 
     setVisibleLayers(
       updatedDesigns
-        ?.filter((design) => (canvasId === null ? design.canvas === null : design.canvas === canvasId))
-        .map((design) => design.id) || []
+        ?.filter((design) =>
+          canvasId === null
+            ? design.canvas === null
+            : design.canvas === canvasId,
+        )
+        .map((design) => design.id) || [],
     );
   };
 
@@ -120,17 +124,22 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleOnDeleted = (designId: number) => {
-    
     // Remove the design from the state
     setDesigns((prevDesigns) => {
-      const updatedDesigns = prevDesigns.filter((design) => design.id !== designId);
+      const updatedDesigns = prevDesigns.filter(
+        (design) => design.id !== designId,
+      );
       return updatedDesigns;
     });
 
     setEditDesignId(null);
     setVisibleLayers((prevLayers) =>
-      prevLayers.filter((id) => id !== designId)
+      prevLayers.filter((id) => id !== designId),
     );
+  };
+
+  const handleCreatedDesign = (design: Design) => {
+    handleEditStateChange(true, design.id);
   };
 
   if (loading) {
@@ -179,6 +188,8 @@ const DesignOffice: React.FC = () => {
         <DesignCardsList
           designs={designs || []}
           visibleLayers={visibleLayers}
+          editDesignId={editDesignId}
+          setEditDesignId={setEditDesignId}
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
           onSubmitEdit={handleSubmitEdit}
@@ -189,7 +200,7 @@ const DesignOffice: React.FC = () => {
         <Box h="100px" />
       </Box>
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
-        <CreateDesignButton />
+        <CreateDesignButton onCreate={handleCreatedDesign} />
       </Box>
     </Box>
   );

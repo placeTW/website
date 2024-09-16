@@ -12,13 +12,15 @@ import {
 import { FC, useState } from "react";
 import { databaseCreateDesign } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
+import { Design } from "../../types/art-tool";
 
 interface CreateDesignModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCreate: (design: Design) => void;
 }
 
-const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, onClose }) => {
+const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, onClose, onCreate }) => {
   const [designName, setDesignName] = useState("");
   const { currentUser } = useUserContext();
 
@@ -28,8 +30,9 @@ const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, onClose }) => {
         designName,
         currentUser.user_id
       );
-      if (response) {
+      if (response && response.length > 0) {
         onClose();
+        onCreate(response[0]);
       }
     }
   };

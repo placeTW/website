@@ -1,11 +1,10 @@
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { CLEAR_ON_DESIGN } from "../../component/viewport/constants";
 import { AlertState, Canvas, Color, Design, Pixel } from "../../types/art-tool";
+import { RankType, UserType } from "../../types/users"; // Import your types
 import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
 import { deleteThumbnail, supabase, uploadThumbnail } from "./index";
 import { logSupabaseDatabaseQuery } from "./logging";
-import { UserType, RankType } from "../../types/users"; // Import your types
-
 
 // Fetch all users
 export const databaseFetchUsers = async (): Promise<UserType[]> => {
@@ -14,7 +13,10 @@ export const databaseFetchUsers = async (): Promise<UserType[]> => {
     .select("*")
     .returns<UserType[]>();
 
-  const { data, error } = logSupabaseDatabaseQuery(fetchUsersQuery, "fetchUsers");
+  const { data, error } = logSupabaseDatabaseQuery(
+    fetchUsersQuery,
+    "fetchUsers",
+  );
 
   if (error) {
     console.error("Error fetching users:", error.message);
@@ -31,7 +33,10 @@ export const databaseFetchRanks = async (): Promise<RankType[]> => {
     .select("*")
     .returns<RankType[]>();
 
-  const { data, error } = logSupabaseDatabaseQuery(fetchRanksQuery, "fetchRanks");
+  const { data, error } = logSupabaseDatabaseQuery(
+    fetchRanksQuery,
+    "fetchRanks",
+  );
 
   if (error) {
     console.error("Error fetching ranks:", error.message);
@@ -51,7 +56,10 @@ export const databaseFetchCurrentUser = async (
     .eq("user_id", userId)
     .single();
 
-  const { data, error } = logSupabaseDatabaseQuery(fetchUserQuery, "fetchCurrentUser");
+  const { data, error } = logSupabaseDatabaseQuery(
+    fetchUserQuery,
+    "fetchCurrentUser",
+  );
 
   if (error) {
     console.error("Error fetching current user:", error.message);
@@ -61,25 +69,29 @@ export const databaseFetchCurrentUser = async (
   return data;
 };
 
-
 // Layers-related functions
 export const databaseCreateDesign = async (
   layerName: string,
   userId: string,
-): Promise<boolean> => {
+): Promise<Design[] | null> => {
   const createDesignQuery = await supabase
     .from("art_tool_designs")
     .insert([
       { design_name: layerName, created_by: userId, pixels: [], x: 0, y: 0 },
-    ]);
+    ])
+    .select()
+    .returns<Design[]>();
 
-  const { error } = logSupabaseDatabaseQuery(createDesignQuery, "createDesign");
+  const { data, error } = logSupabaseDatabaseQuery(
+    createDesignQuery,
+    "createDesign",
+  );
 
   if (error) {
-    return false;
+    return null;
   }
 
-  return true;
+  return data;
 };
 
 export const databaseFetchCanvases = async (): Promise<Canvas[] | null> => {
@@ -159,7 +171,7 @@ export const databaseFetchDesign = async (
   }
 
   return data;
-}
+};
 
 export const databaseDeleteDesign = async (designId: number): Promise<void> => {
   const deleteDesignQuery = await supabase

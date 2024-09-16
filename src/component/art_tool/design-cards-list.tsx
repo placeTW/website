@@ -1,11 +1,13 @@
 import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
-import { FC, useEffect, useRef, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useRef, useState } from "react";
 import { Design, Pixel } from "../../types/art-tool";
 import DesignCard from "./design-card";
 
 interface DesignCardsListProps {
   designs: Design[];
   visibleLayers: number[];
+  editDesignId: number | null;
+  setEditDesignId: Dispatch<SetStateAction<number | null>>;
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
   onVisibilityChange: (visibleLayers: number[]) => void;
   onSubmitEdit: (designName: string) => void;
@@ -17,6 +19,8 @@ interface DesignCardsListProps {
 const DesignCardsList: FC<DesignCardsListProps> = ({
   designs,
   visibleLayers,
+  editDesignId,
+  setEditDesignId,
   onEditStateChange,
   onVisibilityChange,
   onSubmitEdit,
@@ -24,14 +28,13 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onDeleted,
   editedPixels,
 }) => {
-  const [currentlyEditingCardId, setCurrentlyEditingCardId] = useState<number | null>(null);
   const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>({});
   const toast = useToast();
   const isFirstRender = useRef(true);
   const previousVisibleLayers = useRef<number[]>([]);
 
   const handleEdit = (designId: number): boolean => {
-    if (currentlyEditingCardId && currentlyEditingCardId !== designId) {
+    if (editDesignId && editDesignId !== designId) {
       toast({
         title: "Edit in Progress",
         description: "You can only edit one card at a time.",
@@ -42,13 +45,13 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
       return false;
     }
 
-    setCurrentlyEditingCardId(designId);
+    setEditDesignId(designId);
     onEditStateChange(true, designId);
     return true;
   };
 
   const handleCancelEdit = (): boolean => {
-    setCurrentlyEditingCardId(null);
+    setEditDesignId(null);
     onEditStateChange(false, null);
     return true;
   };
@@ -78,7 +81,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
       return updated;
     });
 
-    setCurrentlyEditingCardId(null);
+    setEditDesignId(null);
   };
 
   useEffect(() => {
@@ -122,7 +125,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
           <DesignCard
             design={design}
             canvasName={design?.canvas_name ?? ""}
-            isEditing={currentlyEditingCardId === design.id}
+            isEditing={editDesignId === design.id}
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
             onToggleVisibility={handleToggleVisibility}
