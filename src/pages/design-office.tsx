@@ -1,4 +1,6 @@
-import { Box, Spinner, useToast } from "@chakra-ui/react";
+// src/pages/design-office.tsx
+
+import { Box, Spinner, useToast, IconButton, useMediaQuery } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import {
   saveEditedPixels,
@@ -16,6 +18,7 @@ import { useDesignContext } from "../context/design-context";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
 import { offsetPixels } from "../utils/pixelUtils";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 
 const DesignOffice: React.FC = () => {
   const { designs, canvases, setDesigns } = useDesignContext();
@@ -26,6 +29,8 @@ const DesignOffice: React.FC = () => {
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
+  const [isCardListVisible, setIsCardListVisible] = useState(true); // New state for card list visibility
+  const [isMobile] = useMediaQuery("(max-width: 768px)"); // Media query for mobile devices
   const toast = useToast();
 
   useEffect(() => {
@@ -33,6 +38,11 @@ const DesignOffice: React.FC = () => {
       setLoading(false);
     }
   }, [colors, designs]);
+
+  // Hide card list by default on mobile devices
+  useEffect(() => {
+    setIsCardListVisible(!isMobile);
+  }, [isMobile]);
 
   const handleEditStateChange = (
     isEditing: boolean,
@@ -163,11 +173,12 @@ const DesignOffice: React.FC = () => {
   return (
     <Box
       display="grid"
-      gridTemplateColumns="1fr 350px"
+      gridTemplateColumns={isCardListVisible ? "1fr 350px" : "1fr"}
       height="calc(100vh - 80px)"
       overflow="hidden"
       position="relative"
     >
+      {/* Viewport Section */}
       <Box border="1px solid #ccc" overflow="hidden">
         <AdvancedViewport
           isEditing={isEditing}
@@ -184,21 +195,46 @@ const DesignOffice: React.FC = () => {
           setEditedPixels={setEditedPixels}
         />
       </Box>
-      <Box overflowY="auto">
-        <DesignCardsList
-          designs={designs || []}
-          visibleLayers={visibleLayers}
-          editDesignId={editDesignId}
-          setEditDesignId={setEditDesignId}
-          onEditStateChange={handleEditStateChange}
-          onVisibilityChange={handleVisibilityChange}
-          onSubmitEdit={handleSubmitEdit}
-          onSetCanvas={handleSetCanvas}
-          onDeleted={handleOnDeleted}
-          editedPixels={editedPixels}
+
+      {/* Design Cards List */}
+      {isCardListVisible && (
+        <Box overflowY="auto">
+          <DesignCardsList
+            designs={designs || []}
+            visibleLayers={visibleLayers}
+            editDesignId={editDesignId}
+            setEditDesignId={setEditDesignId}
+            onEditStateChange={handleEditStateChange}
+            onVisibilityChange={handleVisibilityChange}
+            onSubmitEdit={handleSubmitEdit}
+            onSetCanvas={handleSetCanvas}
+            onDeleted={handleOnDeleted}
+            editedPixels={editedPixels}
+          />
+          <Box h="100px" />
+        </Box>
+      )}
+
+      {/* Hide/Show Button */}
+      <Box
+        position="absolute"
+        top="50%"
+        transform="translateY(-50%)"
+        right={isCardListVisible ? "350px" : "0"}
+        zIndex="1000"
+      >
+        <IconButton
+          aria-label={isCardListVisible ? "Hide Panel" : "Show Panel"}
+          icon={isCardListVisible ? <FaAngleRight /> : <FaAngleLeft />}
+          onClick={() => setIsCardListVisible(!isCardListVisible)}
+          size="md"
+          variant="solid"
+          colorScheme="blue"
+          borderRadius="full"
         />
-        <Box h="100px" />
       </Box>
+
+      {/* Create Design Button */}
       <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
         <CreateDesignButton onCreate={handleCreatedDesign} />
       </Box>
