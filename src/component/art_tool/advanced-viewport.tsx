@@ -428,22 +428,21 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         {canvases && (
           <Flex padding={2}>
             <Wrap direction="row" spacing={2}>
-              {canvases &&
-                canvases.map((canvas) => (
-                  <WrapItem key={canvas.id}>
-                    <Button
-                      onClick={() => handleSelectCanvas(canvas)}
-                      colorScheme="teal"
-                      border={
-                        canvas.id === selectedCanvas?.id
-                          ? "2px solid black"
-                          : "1px solid #ccc"
-                      }
-                    >
-                      {canvas.canvas_name}
-                    </Button>
-                  </WrapItem>
-                ))}
+              {canvases.map((canvas) => (
+                <WrapItem key={canvas.id}>
+                  <Button
+                    onClick={() => handleSelectCanvas(canvas)}
+                    colorScheme="teal"
+                    border={
+                      canvas.id === selectedCanvas?.id
+                        ? "2px solid black"
+                        : "1px solid #ccc"
+                    }
+                  >
+                    {canvas.canvas_name}
+                  </Button>
+                </WrapItem>
+              ))}
               <WrapItem>
                 <Button onClick={() => handleSelectCanvas(null)}>
                   unassigned

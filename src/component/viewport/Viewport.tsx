@@ -67,7 +67,7 @@ const Viewport: React.FC<ViewportProps> = ({
   const [stageDraggable, setStageDraggable] = useState(false);
 
   useEffect(() => {
-    setStageDraggable(!isEditing); // Only enable dragging outside of edit mode
+    setStageDraggable(false); // Initially disable dragging; controlled by touch/mouse handlers
   }, [isEditing]);
 
   const calculateVisibleTiles = useCallback(() => {
@@ -166,6 +166,15 @@ const Viewport: React.FC<ViewportProps> = ({
     setMergedPixels(Array.from(pixelMap.values()));
   }, [layerOrder, pixels]);
 
+  // Add event listeners for Stage's drag and transform movements
+  const handleDragMove = () => {
+    calculateVisibleTiles();
+  };
+
+  const handleTransformEnd = () => {
+    calculateVisibleTiles();
+  };
+
   return (
     <div
       className="viewport-container"
@@ -209,6 +218,8 @@ const Viewport: React.FC<ViewportProps> = ({
           stageRef,
         )}
         onDragEnd={handleDragEnd}
+        onDragMove={handleDragMove} // Add drag move handler
+        onTransformEnd={handleTransformEnd} // Add transform end handler
         draggable={stageDraggable}
         touchAction="none" // Prevent default touch actions
       >
