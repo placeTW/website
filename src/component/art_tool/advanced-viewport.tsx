@@ -1,3 +1,5 @@
+// src/component/viewport/advanced-viewport.tsx
+
 import {
   Box,
   Button,
@@ -53,7 +55,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   onSelectCanvas,
   selectedCanvas,
   onResetViewport,
-  editedPixels,
+  editedPixels = [],
   setEditedPixels,
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
@@ -103,12 +105,12 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             }));
           }
           return [];
-        })
+        }),
       );
 
       return fetchedPixels.flat();
     },
-    [designs]
+    [designs],
   );
 
   const mergeWithExistingPixels = (
@@ -321,10 +323,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       recalculatePixels();
       undoManager.clearHistory();
     }
-
-    if (stageRef.current) {
-      stageRef.current.draggable(true);
-    }
   }, [
     editedPixels,
     isEditing,
@@ -408,6 +406,8 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     recalculatePixels,
     setEditedPixels,
     undoManager,
+    selectedColor,
+    previousColor,
   ]);
 
   const handleSelectCanvas = (canvas: Canvas | null) => {
