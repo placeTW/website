@@ -64,10 +64,10 @@ const Viewport: React.FC<ViewportProps> = ({
   // TODO: Have this be configurable
   const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
 
-  const [stageDraggable, setStageDraggable] = useState(!isEditing);
+  const [stageDraggable, setStageDraggable] = useState(false);
 
   useEffect(() => {
-    setStageDraggable(!isEditing);
+    setStageDraggable(!isEditing); // Only enable dragging outside of edit mode
   }, [isEditing]);
 
   const calculateVisibleTiles = useCallback(() => {
@@ -176,7 +176,7 @@ const Viewport: React.FC<ViewportProps> = ({
         alignItems: "center",
         width: "100%",
         height: "100%",
-        cursor: "grab",
+        cursor: isEditing ? "crosshair" : "grab", // Show crosshair when editing
         overflow: "hidden",
         backgroundColor: "#f0f0f0",
       }}
