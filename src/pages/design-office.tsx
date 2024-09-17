@@ -242,7 +242,7 @@ const DesignOffice: React.FC = () => {
           md: "auto",
         }}
         bottom={{
-          base: isCardListVisible ? "50%" : "12px",
+          base: isCardListVisible ? "calc(50% + 28px)" : "28px",
           md: "auto",
         }}
         zIndex="1000"
