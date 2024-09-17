@@ -1,9 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef } from "react";
 import Konva from "konva";
 import { GRID_SIZE } from "../constants";
-import UndoManager from '../utils/undo-manager';
+import UndoManager from "../utils/undo-manager";
 
-Konva.dragButtons = [0, 1, 2];  // Enable dragging with left (0) and right (2) mouse buttons
+Konva.dragButtons = [0, 1, 2]; // Enable dragging with left (0) and right (2) mouse buttons
 
 // Create an instance of UndoManager with a specified limit for undo history
 const undoManager = new UndoManager(100); // Adjust the limit value as needed
@@ -18,10 +18,16 @@ export const useMouseHandlers = (
   coordinatesRef?: React.RefObject<HTMLDivElement>,
   selection?: { x: number; y: number; width: number; height: number } | null,
   setSelection?: React.Dispatch<
-    React.SetStateAction<{ x: number; y: number; width: number; height: number } | null>
+    React.SetStateAction<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    } | null>
   >,
   onCopy?: () => void,
   onPaste?: (x: number, y: number) => void,
+  setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   const mousePosition = useRef({ x: 0, y: 0 }); // To store the latest mouse position
   const isMouseDown = useRef(false); // Track the mouse state
@@ -52,11 +58,11 @@ export const useMouseHandlers = (
               // Start a new rectangle selection
               setSelection({ x, y, width: 0, height: 0 });
               isSelecting.current = true; // Enter selection mode
-              stage.draggable(false); // Disable dragging for selection
+              setStageDraggable && setStageDraggable(false); // Disable dragging for selection
             } else {
               // Start painting
               stage.container().style.cursor = "crosshair";
-              stage.draggable(false); // Disable dragging while painting
+              setStageDraggable && setStageDraggable(false); // Disable dragging while painting
               onPixelPaint && onPixelPaint(x, y);
               // Reset the selection when painting
               setSelection && setSelection(null);
@@ -79,7 +85,7 @@ export const useMouseHandlers = (
         isSelecting.current = false; // Exit selection mode
 
         // Keep the selection in place after mouse up, allowing it to persist
-        stage.draggable(true); // Re-enable dragging after painting or panning
+        setStageDraggable && setStageDraggable(true); // Re-enable dragging after painting or panning
       }
     },
 

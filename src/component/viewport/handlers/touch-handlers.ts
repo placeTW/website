@@ -1,92 +1,122 @@
+// src/component/viewport/handlers/touch-handlers.ts
+
 import Konva from "konva";
 import { GRID_SIZE } from "../constants";
+import React from "react";
 
 export const useTouchHandlers = (
   onPixelPaint?: (x: number, y: number) => void,
   isEditing?: boolean,
-) => ({
-  onTouchStart: (e: React.TouchEvent<HTMLDivElement>) => {
-    const stageContainer = (e.target as Element).closest(".konvajs-content");
-    if (!stageContainer) return;
+  setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
+  stageRef?: React.RefObject<Konva.Stage>,
+) => {
+  const isTouching = React.useRef(false);
 
-    // Check if the first child is a Konva Stage
-    const stage = stageContainer.firstChild;
-    if (stage instanceof Konva.Stage) {
-      if (e.touches.length === 1) {
-        stage.draggable(false);
-      } else if (e.touches.length === 2) {
-        stage.draggable(true);
+  return {
+    onTouchStart: (e: Konva.KonvaEventObject<TouchEvent>) => {
+      const stage = stageRef?.current;
+      if (!stage) return;
+
+      if (e.evt.touches.length === 1 && isEditing) {
+        e.evt.preventDefault();
+        setStageDraggable && setStageDraggable(false); // Disable dragging
+        isTouching.current = true;
+
+        const pos = stage.getPointerPosition();
+        if (!pos) return;
+        const scale = stage.scaleX();
+        const x = Math.floor((pos.x - stage.x()) / (GRID_SIZE * scale));
+        const y = Math.floor((pos.y - stage.y()) / (GRID_SIZE * scale));
+
+        onPixelPaint?.(x, y); // Paint the initial pixel
+      } else if (e.evt.touches.length >= 2) {
+        setStageDraggable && setStageDraggable(true); // Enable dragging
       }
-    }
-  },
-  onTouchMove: (e: React.TouchEvent<HTMLDivElement>) => {
-    const stageContainer = (e.target as Element).closest(".konvajs-content");
-    if (!stageContainer) return;
-    const stage = stageContainer.firstChild;
+    },
 
-    if (!(stage instanceof Konva.Stage)) {
-      return
-    }
+    onTouchMove: (e: Konva.KonvaEventObject<TouchEvent>) => {
+      const stage = stageRef?.current;
+      if (!stage) return;
 
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const dist = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) +
-          Math.pow(touch2.clientY - touch1.clientY, 2),
-      );
+      if (e.evt.touches.length === 1 && isEditing && onPixelPaint && isTouching.current) {
+        e.evt.preventDefault();
+        setStageDraggable && setStageDraggable(false); // Ensure dragging is disabled
 
-      const center = {
-        x: (touch1.clientX + touch2.clientX) / 2,
-        y: (touch1.clientY + touch2.clientY) / 2,
-      };
+        const pos = stage.getPointerPosition();
+        if (!pos) return;
+        const scale = stage.scaleX();
+        const x = Math.floor((pos.x - stage.x()) / (GRID_SIZE * scale));
+        const y = Math.floor((pos.y - stage.y()) / (GRID_SIZE * scale));
 
-      let lastDist = parseFloat(e.currentTarget.dataset.lastDist || "0");
-      let lastCenter = JSON.parse(e.currentTarget.dataset.lastCenter || "{}");
+        onPixelPaint(x, y);
+      } else if (e.evt.touches.length >= 2) {
+        setStageDraggable && setStageDraggable(true); // Ensure dragging is enabled
+        e.evt.preventDefault();
 
-      if (lastDist === 0) {
-        lastDist = dist;
-        lastCenter = center;
-      } else {
-        const scaleBy = dist / lastDist;
-        const oldScale = stage.scaleX();
-        const newScale = oldScale * scaleBy;
+        // Handle zooming (pinch to zoom)
+        const touch1 = e.evt.touches[0];
+        const touch2 = e.evt.touches[1];
 
-        const mousePointTo = {
-          x: (center.x - stage.x()) / oldScale,
-          y: (center.y - stage.y()) / oldScale,
+        const dist = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY,
+        );
+
+        const center = {
+          x: (touch1.clientX + touch2.clientX) / 2,
+          y: (touch1.clientY + touch2.clientY) / 2,
         };
 
-        stage.scale({ x: newScale, y: newScale });
+        let lastDist = parseFloat(stage.attrs['data-lastDist'] || "0");
+        let lastCenter = JSON.parse(stage.attrs['data-lastCenter'] || "{}");
 
-        const dx = center.x - lastCenter.x;
-        const dy = center.y - lastCenter.y;
+        if (lastDist === 0) {
+          lastDist = dist;
+          lastCenter = center;
+        } else {
+          const scaleBy = dist / lastDist;
+          const oldScale = stage.scaleX();
+          const newScale = oldScale * scaleBy;
 
-        const newPos = {
-          x: stage.x() + dx - mousePointTo.x * (newScale - oldScale),
-          y: stage.y() + dy - mousePointTo.y * (newScale - oldScale),
-        };
+          const mousePointTo = {
+            x: (center.x - stage.x()) / oldScale,
+            y: (center.y - stage.y()) / oldScale,
+          };
 
-        stage.position(newPos);
-        stage.batchDraw();
+          stage.scale({ x: newScale, y: newScale });
+
+          const dx = center.x - lastCenter.x;
+          const dy = center.y - lastCenter.y;
+
+          const newPos = {
+            x: stage.x() + dx - mousePointTo.x * (newScale - oldScale),
+            y: stage.y() + dy - mousePointTo.y * (newScale - oldScale),
+          };
+
+          stage.position(newPos);
+          stage.batchDraw();
+        }
+
+        stage.attrs['data-lastDist'] = dist.toString();
+        stage.attrs['data-lastCenter'] = JSON.stringify(center);
+      }
+    },
+
+    onTouchEnd: (e: Konva.KonvaEventObject<TouchEvent>) => {
+      isTouching.current = false;
+      const stage = stageRef?.current;
+      if (stage) {
+        stage.attrs['data-lastDist'] = "0";
+        stage.attrs['data-lastCenter'] = "{}";
       }
 
-      e.currentTarget.dataset.lastDist = dist.toString();
-      e.currentTarget.dataset.lastCenter = JSON.stringify(center);
-    }
-
-    if (e.touches.length === 1 && isEditing && onPixelPaint) {
-      const pointer = stage.getPointerPosition();
-      if (!pointer) return;
-      const scale = stage.scaleX();
-      const x = Math.floor((pointer.x - stage.x()) / (GRID_SIZE * scale));
-      const y = Math.floor((pointer.y - stage.y()) / (GRID_SIZE * scale));
-      onPixelPaint(x, y);
-    }
-  },
-  onTouchEnd: (e: React.TouchEvent<HTMLDivElement>) => {
-    e.currentTarget.dataset.lastDist = "0";
-    e.currentTarget.dataset.lastCenter = "{}";
-  },
-});
+      if (e.evt.touches.length === 0) {
+        // No touches remaining
+        setStageDraggable && setStageDraggable(!isEditing);
+      } else if (e.evt.touches.length === 1 && isEditing) {
+        // One touch remains
+        setStageDraggable && setStageDraggable(false);
+      }
+    },
+  };
+};

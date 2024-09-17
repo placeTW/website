@@ -1,7 +1,9 @@
+// src/component/viewport/Viewport.tsx
+
 import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
-import { CLEAR_ON_MAIN } from "./constants";
+import { CLEAR_ON_MAIN, GRID_SIZE } from "./constants";
 import {
   useMouseHandlers,
   useTouchHandlers,
@@ -51,7 +53,6 @@ const Viewport: React.FC<ViewportProps> = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [backgroundImage] = useImage("/images/background.png");
   const [clearOnMainImage] = useImage("/images/ClearOnMain.png");
-  const gridSize = 40; // Each cell pixel in the image is 40x40 image pixels
   const [visibleTiles, setVisibleTiles] = useState<{ x: number; y: number }[]>(
     [],
   );
@@ -62,6 +63,12 @@ const Viewport: React.FC<ViewportProps> = ({
 
   // TODO: Have this be configurable
   const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
+
+  const [stageDraggable, setStageDraggable] = useState(!isEditing);
+
+  useEffect(() => {
+    setStageDraggable(!isEditing);
+  }, [isEditing]);
 
   const calculateVisibleTiles = useCallback(() => {
     if (!stageRef.current) return;
@@ -174,7 +181,6 @@ const Viewport: React.FC<ViewportProps> = ({
         backgroundColor: "#f0f0f0",
       }}
       ref={divRef}
-      {...useTouchHandlers(onPixelPaint, isEditing)}
     >
       <Stage
         width={dimensions.width}
@@ -194,9 +200,17 @@ const Viewport: React.FC<ViewportProps> = ({
           setSelection,
           onCopy,
           onPaste,
+          setStageDraggable,
+        )}
+        {...useTouchHandlers(
+          onPixelPaint,
+          isEditing,
+          setStageDraggable,
+          stageRef,
         )}
         onDragEnd={handleDragEnd}
-        draggable={!isEditing}
+        draggable={stageDraggable}
+        touchAction="none" // Prevent default touch actions
       >
         <Layer>
           {/* Render grey background if zoom level is low */}
@@ -231,16 +245,18 @@ const Viewport: React.FC<ViewportProps> = ({
                 />
               ))
             : null}
+        </Layer>
 
-          {/* Render ClearOnMain image based on layer visibility */}
+        {/* Render ClearOnMain image based on layer visibility */}
+        <Layer>
           {mergedPixels.map((pixel) => {
             if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
               return (
                 <KonvaImage
                   key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
                   image={clearOnMainImage}
-                  x={pixel.x * gridSize}
-                  y={pixel.y * gridSize}
+                  x={pixel.x * GRID_SIZE}
+                  y={pixel.y * GRID_SIZE}
                   width={clearOnMainImage.width}
                   height={clearOnMainImage.height}
                   perfectDrawEnabled={false}
@@ -258,10 +274,10 @@ const Viewport: React.FC<ViewportProps> = ({
           {mergedPixels.map((pixel) => (
             <Rect
               key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
-              x={pixel.x * gridSize}
-              y={pixel.y * gridSize}
-              width={gridSize}
-              height={gridSize}
+              x={pixel.x * GRID_SIZE}
+              y={pixel.y * GRID_SIZE}
+              width={GRID_SIZE}
+              height={GRID_SIZE}
               fill={pixel.color !== CLEAR_ON_MAIN ? pixel.color : undefined}
               strokeWidth={0}
             />
@@ -272,10 +288,10 @@ const Viewport: React.FC<ViewportProps> = ({
         {selection && (
           <Layer>
             <Rect
-              x={selection.x * gridSize}
-              y={selection.y * gridSize}
-              width={selection.width * gridSize}
-              height={selection.height * gridSize}
+              x={selection.x * GRID_SIZE}
+              y={selection.y * GRID_SIZE}
+              width={selection.width * GRID_SIZE}
+              height={selection.height * GRID_SIZE}
               stroke="blue"
               strokeWidth={2}
               dash={[4, 4]}
