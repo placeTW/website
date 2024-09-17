@@ -1,3 +1,5 @@
+// src/component/auth-provider-modal.tsx
+
 import {
   Button,
   Modal,
@@ -7,8 +9,9 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
+  Text,
 } from "@chakra-ui/react";
-import { Provider, User } from "@supabase/supabase-js";
+import { Provider } from "@supabase/supabase-js";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,10 +19,10 @@ import {
   authSignInWithOAuth,
   authSignOut,
   functionsFetchOneUser,
-  insertNewUser,
-  removeSupabaseChannel,
   supabase,
-} from "../api/supabase";
+} from "../api/supabase"; // Remove insertNewUser
+import { useUserContext } from "../context/user-context";
+
 
 interface AuthProviderModalProps {
   isOpen: boolean;
@@ -34,6 +37,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
+  const { setCurrentUser } = useUserContext(); // Access setCurrentUser
 
   const handleAuth = async (provider: Provider) => {
     const { data, error } = await authSignInWithOAuth(
@@ -49,17 +53,6 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
 
     // Redirect the user to the OAuth URL
     window.location.href = data.url;
-  };
-
-  const getHandle = (user: User): string => {
-    // Get the name of the user if discord, otherwise use the email
-    if (user?.app_metadata?.provider === "discord") {
-      return user.user_metadata?.name || user.user_metadata?.full_name;
-    } else {
-      return user.email
-        ? user.email.substring(0, user.email.lastIndexOf("@"))
-        : "";
-    }
   };
 
   useEffect(() => {
@@ -83,28 +76,17 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
             await authSignOut();
             setError(t("Your account has been banned."));
           } else {
+            setCurrentUser(userData);
             onClose();
           }
         } catch (fetchError) {
           console.error(
-            t("User not found in art_tool_users, attempting to insert user:"),
+            t("User not found in art_tool_users, but handled by UserProvider"),
             fetchError,
           );
-
-          try {
-            await insertNewUser(
-              session.user?.id || "",
-              session.user?.email || "",
-              getHandle(session.user as User) || "",
-            );
-            onClose();
-          } catch (insertError) {
-            console.error(
-              t("Error inserting new user into art_tool_users:"),
-              insertError,
-            );
-            setError(t("Error inserting new user into art_tool_users"));
-          }
+          // No need to call insertNewUser here as it's handled by UserProvider
+          // Just close the modal if UserProvider has handled the insertion
+          onClose();
         }
       } else {
         // No session is present, handle accordingly if needed
@@ -132,9 +114,9 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
 
     // Clean up subscription on unmount
     return () => {
-      removeSupabaseChannel(subscription);
+      supabase.removeChannel(subscription);
     };
-  }, [isOpen, onClose, t]);
+  }, [isOpen, onClose, t, setCurrentUser]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -147,7 +129,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
         </ModalHeader>
         <ModalBody>
           <Stack spacing={4}>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && <Text color="red.500">{error}</Text>}
             <Button onClick={() => handleAuth("google")} colorScheme="blue">
               {authType === "register"
                 ? t("Register with Google")

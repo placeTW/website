@@ -1,3 +1,5 @@
+// src/context/user-context.tsx
+
 import React, {
   createContext,
   useContext,
@@ -14,7 +16,10 @@ import {
   databaseFetchRanks,
   databaseFetchCurrentUser,
   removeSupabaseChannel,
-} from '../api/supabase/database';
+} from "../api/supabase/database";
+import {
+  insertNewUser, // Import the updated insertNewUser
+} from '../api/supabase/functions'; // Adjust the import path if necessary
 
 interface UserContextType {
   users: UserType[];
@@ -71,7 +76,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       }
     };
 
-    // Fetch the current user
+    // Fetch the current user and handle insertion if necessary
     const fetchCurrentUser = async () => {
       try {
         const {
@@ -86,13 +91,42 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
         if (session) {
           const userId = session.user.id;
-          const userData = await databaseFetchCurrentUser(userId);
-          if (userData) {
+          let userData = await databaseFetchCurrentUser(userId);
+
+          if (!userData) {
+            // User not found, insert new user
+            userData = await insertNewUser(
+              userId,
+              session.user.email || '',
+              getHandle(session.user)
+            );
+
+            if (!userData) {
+              console.error('Error inserting new user.');
+              return;
+            }
+          }
+
+          if (userData.rank === 'F') {
+            await supabase.auth.signOut();
+            console.error('User has been banned.');
+          } else {
             setCurrentUser(userData);
           }
         }
       } catch (error) {
         console.error('Error fetching current user:', error);
+      }
+    };
+
+    // Helper function to get handle
+    const getHandle = (user: any): string => {
+      if (user?.app_metadata?.provider === 'discord') {
+        return user.user_metadata?.name || user.user_metadata?.full_name || '';
+      } else {
+        return user.email
+          ? user.email.substring(0, user.email.lastIndexOf('@'))
+          : '';
       }
     };
 
@@ -113,7 +147,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           } else if (payload.eventType === 'UPDATE') {
             setUsers((prevUsers) =>
               prevUsers.map((user) =>
-                user.user_id === payload.old.user_id ? (payload.new as UserType) : user
+                user.user_id === payload.old.user_id
+                  ? (payload.new as UserType)
+                  : user
               )
             );
             // Update currentUser if it matches
@@ -144,7 +180,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           } else if (payload.eventType === 'UPDATE') {
             setRanks((prevRanks) =>
               prevRanks.map((rank) =>
-                rank.rank_id === payload.old.rank_id ? (payload.new as RankType) : rank
+                rank.rank_id === payload.old.rank_id
+                  ? (payload.new as RankType)
+                  : rank
               )
             );
           } else if (payload.eventType === 'DELETE') {

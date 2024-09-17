@@ -1,3 +1,5 @@
+// src/component/navbar.tsx
+
 import {
   Box,
   Button,
@@ -21,14 +23,14 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
   authGetSession,
   authSignOut,
+} from "../api/supabase/auth";
+import {
   functionsFetchOneUser,
   functionsUpdateNickname,
-  insertNewUser,
-} from "../api/supabase";
+} from "../api/supabase/functions"; // Adjust the import path
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import LanguageSwitcher from "./language-switcher";
-import { User } from "@supabase/supabase-js";
 
 const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
@@ -39,18 +41,7 @@ const Navbar = () => {
   const [username, setUsername] = useState<string>(""); // Initialize with an empty string
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
-  const [userInserted, setUserInserted] = useState(false);
-
-  const getHandle = (user: User): string => {
-    // Get the name of the user if discord, otherwise use the email
-    if (user?.app_metadata?.provider === "discord") {
-      return user.user_metadata?.name || user.user_metadata?.full_name;
-    } else {
-      return user.email
-        ? user.email.substring(0, user.email.lastIndexOf("@"))
-        : "";
-    }
-  };
+  const [userInserted] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -75,24 +66,13 @@ const Navbar = () => {
             setAuthModalOpen(false);
           }
         } catch (fetchError) {
-          console.error("User not found in art_tool_users");
-
-          try {
-            const newUser = await insertNewUser(
-              session.user?.id || "",
-              session.user?.email || "",
-              getHandle(session.user as User) || "",
-            );
-            setCurrentUser(newUser);
-            setUserInserted(true);
-            setAuthModalOpen(false);
-          } catch (insertError) {
-            console.error(
-              t("Error inserting new user into art_tool_users:"),
-              insertError,
-            );
-            alert(t("Failed to insert user. Please try again later."));
-          }
+          console.error(
+            "User not found in art_tool_users, but handled by UserProvider",
+            fetchError,
+          );
+          // No need to call insertNewUser here as it's handled by UserProvider
+          // Just close the modal if UserProvider has handled the insertion
+          setAuthModalOpen(false);
         }
       } else {
         setAuthModalOpen(true);
