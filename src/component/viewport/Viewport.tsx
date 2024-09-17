@@ -216,6 +216,7 @@ const Viewport: React.FC<ViewportProps> = ({
           isEditing,
           setStageDraggable,
           stageRef,
+          calculateVisibleTiles, // Pass calculateVisibleTiles to touch handlers
         )}
         onDragEnd={handleDragEnd}
         onDragMove={handleDragMove} // Add drag move handler

@@ -9,6 +9,7 @@ export const useTouchHandlers = (
   isEditing?: boolean,
   setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
   stageRef?: React.RefObject<Konva.Stage>,
+  onTransform?: () => void, // Add this parameter
 ) => {
   const isTouching = React.useRef(false);
   const lastCenter = React.useRef<{ x: number; y: number } | null>(null);
@@ -100,6 +101,9 @@ export const useTouchHandlers = (
 
         lastDist.current = dist;
         lastCenter.current = center;
+
+        // Call onTransform to update visible tiles
+        onTransform && onTransform();
       }
     },
 
@@ -116,6 +120,9 @@ export const useTouchHandlers = (
       } else if (e.evt.touches.length === 1 && isEditing) {
         setStageDraggable && setStageDraggable(false);
       }
+
+      // Ensure the grid updates after touch ends
+      onTransform && onTransform();
     },
   };
 };
