@@ -1,7 +1,15 @@
 // src/pages/design-office.tsx
 
-import { Box, Spinner, useToast, IconButton, useMediaQuery } from "@chakra-ui/react";
+import {
+  Box,
+  IconButton,
+  Spinner,
+  useMediaQuery,
+  useToast,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
   uploadDesignThumbnailToSupabase,
@@ -18,7 +26,6 @@ import { useDesignContext } from "../context/design-context";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
 import { offsetPixels } from "../utils/pixelUtils";
-import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 
 const DesignOffice: React.FC = () => {
   const { designs, canvases, setDesigns } = useDesignContext();
@@ -173,8 +180,11 @@ const DesignOffice: React.FC = () => {
   return (
     <Box
       display="grid"
-      gridTemplateColumns={isCardListVisible ? "1fr 350px" : "1fr"}
-      height="calc(100vh - 80px)"
+      gridTemplateColumns={{
+        base: "1fr",
+        md: isCardListVisible ? "1fr 350px" : "1fr",
+      }}
+      height="calc(100vh - 150px)"
       overflow="hidden"
       position="relative"
     >
@@ -218,14 +228,40 @@ const DesignOffice: React.FC = () => {
       {/* Hide/Show Button */}
       <Box
         position="absolute"
-        top="50%"
+        top={{
+          base: "auto",
+          md: "50%",
+        }}
         transform="translateY(-50%)"
-        right={isCardListVisible ? "350px" : "0"}
+        right={{
+          base: "50%",
+          md: isCardListVisible ? "362px" : "12px",
+        }}
+        left={{
+          base: "50%",
+          md: "auto",
+        }}
+        bottom={{
+          base: isCardListVisible ? "50%" : "12px",
+          md: "auto",
+        }}
         zIndex="1000"
       >
         <IconButton
           aria-label={isCardListVisible ? "Hide Panel" : "Show Panel"}
-          icon={isCardListVisible ? <FaAngleRight /> : <FaAngleLeft />}
+          icon={
+            isMobile ? (
+              isCardListVisible ? (
+                <FaAngleDown />
+              ) : (
+                <FaAngleUp />
+              )
+            ) : isCardListVisible ? (
+              <FaAngleRight />
+            ) : (
+              <FaAngleLeft />
+            )
+          }
           onClick={() => setIsCardListVisible(!isCardListVisible)}
           size="md"
           variant="solid"
@@ -235,9 +271,11 @@ const DesignOffice: React.FC = () => {
       </Box>
 
       {/* Create Design Button */}
-      <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
-        <CreateDesignButton onCreate={handleCreatedDesign} />
-      </Box>
+      {isCardListVisible && (
+        <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
+          <CreateDesignButton onCreate={handleCreatedDesign} />
+        </Box>
+      )}
     </Box>
   );
 };

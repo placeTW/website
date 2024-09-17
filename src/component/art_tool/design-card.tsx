@@ -226,7 +226,6 @@ const DesignCard: FC<DesignCardProps> = ({
       <Card
         bg="white"
         width="100%"
-        maxWidth="4in"
         minWidth="3in"
         position="relative"
         height="130px"
