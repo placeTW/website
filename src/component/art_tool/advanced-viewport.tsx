@@ -365,7 +365,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       }
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
       if (isEditing && dragInProgress.current) {
         if (dragPixels.current.length > 0 && setEditedPixels) {
           setEditedPixels((prevEditedPixels) => {
@@ -373,7 +373,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             return finalPixels;
           });
         }
-
+    
         dragInProgress.current = false;
         dragPixels.current = [];
       }
