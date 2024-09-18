@@ -4,7 +4,6 @@ import {
   Flex,
   Heading,
   Input,
-  Link,
   Menu,
   MenuButton,
   MenuItem,
@@ -19,6 +18,7 @@ import {
   Text,
   useDisclosure,
   IconButton,
+  HStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -149,33 +149,6 @@ const Navbar = () => {
           </Box>
         </Box>
 
-        {/* Mobile dropdown menu for small screens */}
-        <Box display={{ base: "flex", md: "none" }}>
-          <Menu>
-            <MenuButton as={IconButton} icon={<FaBars />} variant="outline" color="white" />
-            <MenuList>
-              {enableArtTool && (
-                <>
-                  <MenuItem as={RouterLink} to="/briefing-room">
-                    {t("Briefing Room")}
-                  </MenuItem>
-                  <MenuItem as={RouterLink} to="/design-office">
-                    {t("Design Office")}
-                  </MenuItem>
-                </>
-              )}
-              <MenuItem as={RouterLink} to="/gallery">
-                {t("Gallery")}
-              </MenuItem>
-              {currentUser && (currentUser.rank === "A" || currentUser.rank === "B") && (
-                <MenuItem as={RouterLink} to="/admin">
-                  {t("Officers")}
-                </MenuItem>
-              )}
-            </MenuList>
-          </Menu>
-        </Box>
-
         {/* Show Welcome Message on Both Mobile and Desktop */}
         <Text
           color="white"
@@ -187,30 +160,8 @@ const Navbar = () => {
           {t("Welcome")}, {userRankName} {currentUser?.handle || ""}
         </Text>
 
-        {/* Desktop Buttons for Edit Username / Logout */}
-        <Box display={{ base: "none", md: "flex" }} alignItems="center" justifyContent="flex-end" ml={6} flexShrink={0}>
-          {currentUser ? (
-            <>
-              <Box display="flex" flexDirection="column" mr={2}>
-                <Button onClick={onOpen} colorScheme="blue">
-                  {t("Edit Username")}
-                </Button>
-              </Box>
-              <Box display="flex" flexDirection="column">
-                <Button onClick={handleLogout} colorScheme="blue">
-                  {t("Logout")}
-                </Button>
-              </Box>
-            </>
-          ) : (
-            <Button onClick={handleOpenModal} colorScheme="blue">
-              {t("Login")}
-            </Button>
-          )}
-        </Box>
-
-        {/* Mobile Icons for Edit Username / Logout */}
-        <Box display={{ base: "flex", md: "none" }} alignItems="center" justifyContent="flex-end" ml={6} flexShrink={0}>
+        {/* Icons for both Mobile and Desktop with even spacing */}
+        <HStack spacing={4} display="flex" alignItems="center" justifyContent="flex-end">
           {currentUser ? (
             <>
               <IconButton
@@ -218,7 +169,6 @@ const Navbar = () => {
                 icon={<FaPen />}
                 onClick={onOpen}
                 colorScheme="blue"
-                mr={2}
               />
               <IconButton
                 aria-label="Logout"
@@ -235,7 +185,34 @@ const Navbar = () => {
               colorScheme="blue"
             />
           )}
-        </Box>
+
+          {/* Mobile dropdown menu for small screens */}
+          <Box display={{ base: "flex", md: "none" }}>
+            <Menu>
+              <MenuButton as={IconButton} icon={<FaBars />} variant="outline" color="white" />
+              <MenuList>
+                {enableArtTool && (
+                  <>
+                    <MenuItem as={RouterLink} to="/briefing-room">
+                      {t("Briefing Room")}
+                    </MenuItem>
+                    <MenuItem as={RouterLink} to="/design-office">
+                      {t("Design Office")}
+                    </MenuItem>
+                  </>
+                )}
+                <MenuItem as={RouterLink} to="/gallery">
+                  {t("Gallery")}
+                </MenuItem>
+                {currentUser && (currentUser.rank === "A" || currentUser.rank === "B") && (
+                  <MenuItem as={RouterLink} to="/admin">
+                    {t("Officers")}
+                  </MenuItem>
+                )}
+              </MenuList>
+            </Menu>
+          </Box>
+        </HStack>
       </Flex>
 
       <AuthProviderModal isOpen={isAuthModalOpen} onClose={handleCloseModal} authType="login" />
