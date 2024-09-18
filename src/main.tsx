@@ -14,6 +14,7 @@ import DesignOffice from "./pages/design-office";
 import Gallery from "./pages/gallery";
 import Translations from "./pages/translations";
 
+import theme from "./theme"; // Import your custom theme
 import "./i18n";
 import "./index.scss";
 
@@ -21,7 +22,8 @@ const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ChakraProvider>
+    {/* Apply the custom theme to ChakraProvider */}
+    <ChakraProvider theme={theme}> 
       <AlertProvider>
         <DesignProvider>
           <ColorProvider> {/* Wrap with ColorProvider */}
@@ -45,5 +47,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </DesignProvider>
       </AlertProvider>
     </ChakraProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
