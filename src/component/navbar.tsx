@@ -4,6 +4,7 @@ import {
   Flex,
   Heading,
   Input,
+  Link,
   Menu,
   MenuButton,
   MenuItem,
@@ -27,7 +28,7 @@ import { functionsFetchOneUser, functionsUpdateNickname } from "../api/supabase/
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import LanguageSwitcher from "./language-switcher";
-import { FaBars } from "react-icons/fa6"; // Import the popular menu icon from react-icons
+import { FaBars, FaPen, FaArrowRightToBracket, FaArrowRightFromBracket } from "react-icons/fa6"; // Import icons
 
 const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
@@ -115,6 +116,7 @@ const Navbar = () => {
 
         <Spacer minWidth="40px" />
 
+        {/* Desktop Navigation */}
         <Box display={{ base: "none", md: "flex" }} alignItems="center" justifyContent="flex-end" flexShrink={0}>
           {enableArtTool && (
             <>
@@ -174,12 +176,21 @@ const Navbar = () => {
           </Menu>
         </Box>
 
-        <Box display="flex" alignItems="center" justifyContent="flex-end" ml={6} flexShrink={0}>
+        {/* Show Welcome Message on Both Mobile and Desktop */}
+        <Text
+          color="white"
+          textAlign="center"
+          mr={2}
+          whiteSpace="nowrap"
+          display={{ base: "block", md: "block" }} // Visible on both mobile and desktop
+        >
+          {t("Welcome")}, {userRankName} {currentUser?.handle || ""}
+        </Text>
+
+        {/* Desktop Buttons for Edit Username / Logout */}
+        <Box display={{ base: "none", md: "flex" }} alignItems="center" justifyContent="flex-end" ml={6} flexShrink={0}>
           {currentUser ? (
             <>
-              <Text color="white" textAlign="center" mr={2} whiteSpace="nowrap">
-                {t("Welcome")}, {userRankName} {currentUser.handle || ""}
-              </Text>
               <Box display="flex" flexDirection="column" mr={2}>
                 <Button onClick={onOpen} colorScheme="blue">
                   {t("Edit Username")}
@@ -195,6 +206,34 @@ const Navbar = () => {
             <Button onClick={handleOpenModal} colorScheme="blue">
               {t("Login")}
             </Button>
+          )}
+        </Box>
+
+        {/* Mobile Icons for Edit Username / Logout */}
+        <Box display={{ base: "flex", md: "none" }} alignItems="center" justifyContent="flex-end" ml={6} flexShrink={0}>
+          {currentUser ? (
+            <>
+              <IconButton
+                aria-label="Edit Username"
+                icon={<FaPen />}
+                onClick={onOpen}
+                colorScheme="blue"
+                mr={2}
+              />
+              <IconButton
+                aria-label="Logout"
+                icon={<FaArrowRightFromBracket />}
+                onClick={handleLogout}
+                colorScheme="blue"
+              />
+            </>
+          ) : (
+            <IconButton
+              aria-label="Login"
+              icon={<FaArrowRightToBracket />}
+              onClick={handleOpenModal}
+              colorScheme="blue"
+            />
           )}
         </Box>
       </Flex>
