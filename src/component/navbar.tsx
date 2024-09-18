@@ -5,6 +5,10 @@ import {
   Heading,
   Input,
   Link,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Modal,
   ModalBody,
   ModalContent,
@@ -14,6 +18,7 @@ import {
   Spacer,
   Text,
   useDisclosure,
+  IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,6 +28,7 @@ import { functionsFetchOneUser, functionsUpdateNickname } from "../api/supabase/
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import LanguageSwitcher from "./language-switcher";
+import { FaBars } from "react-icons/fa6"; // Import the popular menu icon from react-icons
 
 const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
@@ -110,7 +116,7 @@ const Navbar = () => {
 
         <Spacer minWidth="40px" />
 
-        <Box display="flex" alignItems="center" justifyContent="flex-end" flexShrink={0}>
+        <Box display={{ base: "none", md: "flex" }} alignItems="center" justifyContent="flex-end" flexShrink={0}>
           {enableArtTool && (
             <>
               <Box textAlign="center" mr={6}>
@@ -140,6 +146,33 @@ const Navbar = () => {
           <Box>
             <LanguageSwitcher />
           </Box>
+        </Box>
+
+        {/* Mobile dropdown menu for small screens */}
+        <Box display={{ base: "flex", md: "none" }}>
+          <Menu>
+            <MenuButton as={IconButton} icon={<FaBars />} variant="outline" color="white" />
+            <MenuList>
+              {enableArtTool && (
+                <>
+                  <MenuItem as={RouterLink} to="/briefing-room">
+                    {t("Briefing Room")}
+                  </MenuItem>
+                  <MenuItem as={RouterLink} to="/design-office">
+                    {t("Design Office")}
+                  </MenuItem>
+                </>
+              )}
+              <MenuItem as={RouterLink} to="/gallery">
+                {t("Gallery")}
+              </MenuItem>
+              {currentUser && (currentUser.rank === "A" || currentUser.rank === "B") && (
+                <MenuItem as={RouterLink} to="/admin">
+                  {t("Officers")}
+                </MenuItem>
+              )}
+            </MenuList>
+          </Menu>
         </Box>
 
         <Box display="flex" alignItems="center" justifyContent="flex-end" ml={6} flexShrink={0}>
