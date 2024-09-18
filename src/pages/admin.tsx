@@ -6,21 +6,21 @@ import ExportCanvas from '../component/art_tool/export-canvas'; // Import the ne
 
 const AdminPage: React.FC = () => {
   return (
-    <Box p={4}>
-      <Heading as="h2" size="lg" mb={4}>
-        Admin Page
-      </Heading>
-      <UserManage />  {/* Add the UserManage component */}
-      <Box mt={8}>
-        <ColorPaletteManager />
-      </Box>
-      <Box mt={8}>
-        <AlertManage />
-      </Box>
-      <Box mt={8}>
-        <ExportCanvas /> 
-      </Box>
-    </Box>
+<Box p={4} maxW="100vw" overflow="hidden">
+  <Heading as="h2" size="lg" mb={4}>
+    Admin Page
+  </Heading>
+  <UserManage />  {/* Add the UserManage component */}
+  <Box mt={8}>
+    <ColorPaletteManager />
+  </Box>
+  <Box mt={8}>
+    <AlertManage />
+  </Box>
+  <Box mt={8}>
+    <ExportCanvas />
+  </Box>
+</Box>
   );
 };
 

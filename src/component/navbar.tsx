@@ -1,5 +1,3 @@
-// src/component/navbar.tsx
-
 import {
   Box,
   Button,
@@ -20,14 +18,8 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import {
-  authGetSession,
-  authSignOut,
-} from "../api/supabase/auth";
-import {
-  functionsFetchOneUser,
-  functionsUpdateNickname,
-} from "../api/supabase/functions"; // Adjust the import path
+import { authGetSession, authSignOut } from "../api/supabase/auth";
+import { functionsFetchOneUser, functionsUpdateNickname } from "../api/supabase/functions";
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import LanguageSwitcher from "./language-switcher";
@@ -38,23 +30,18 @@ const Navbar = () => {
   const { currentUser, ranks, logoutUser, setCurrentUser } = useUserContext();
   const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-  const [username, setUsername] = useState<string>(""); // Initialize with an empty string
+  const [username, setUsername] = useState<string>("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
   const [userInserted] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
-      const {
-        data: { session },
-        error,
-      } = await authGetSession();
-
+      const { data: { session }, error } = await authGetSession();
       if (error) {
         console.error(t("Error fetching session:"), error);
         return;
       }
-
       if (session) {
         try {
           const userData = await functionsFetchOneUser();
@@ -66,25 +53,19 @@ const Navbar = () => {
             setAuthModalOpen(false);
           }
         } catch (fetchError) {
-          console.error(
-            "User not found in art_tool_users, but handled by UserProvider",
-            fetchError,
-          );
-          // No need to call insertNewUser here as it's handled by UserProvider
-          // Just close the modal if UserProvider has handled the insertion
+          console.error("User not found in art_tool_users, but handled by UserProvider", fetchError);
           setAuthModalOpen(false);
         }
       } else {
         setAuthModalOpen(true);
       }
     };
-
     checkSession();
   }, [setCurrentUser, userInserted, t]);
 
   useEffect(() => {
     if (currentUser) {
-      setUsername(currentUser.handle || ""); // Handle possible null value
+      setUsername(currentUser.handle || "");
     }
   }, [currentUser]);
 
@@ -105,9 +86,7 @@ const Navbar = () => {
       if (!currentUser) {
         return;
       }
-
       await functionsUpdateNickname(username);
-
       onClose();
     } catch (error) {
       console.error(t("Error updating username"), error);
@@ -120,61 +99,53 @@ const Navbar = () => {
     }
   };
 
-  // Compute the user's rank name from the ranks array
-  const userRankName =
-    ranks.find((rank) => rank.rank_id === currentUser?.rank)?.rank_name || "";
+  const userRankName = ranks.find((rank) => rank.rank_id === currentUser?.rank)?.rank_name || "";
 
   return (
-    <Box bg="blue.500" px={4} py={2}>
-      <Flex alignItems="center" maxW="xxl" justify="space-between">
-        <Heading as="h1" size="lg" color="white">
+    <Box bg="blue.500" px={4} py={2} w="100vw" overflow="hidden">
+      <Flex alignItems="center" maxW="100%" justify="space-between" flexShrink={0}>
+        <Heading as="h1" size="lg" color="white" whiteSpace="nowrap">
           PlaceTW
         </Heading>
 
         <Spacer minWidth="40px" />
 
-        <Box display="flex" alignItems="center" justifyContent="flex-end">
+        <Box display="flex" alignItems="center" justifyContent="flex-end" flexShrink={0}>
           {enableArtTool && (
             <>
               <Box textAlign="center" mr={6}>
-                <Link as={RouterLink} to="/briefing-room" color="white">
+                <RouterLink to="/briefing-room" style={{ color: "white" }}>
                   {t("Briefing Room")}
-                </Link>
+                </RouterLink>
               </Box>
               <Box textAlign="center" mr={6}>
-                <Link as={RouterLink} to="/design-office" color="white">
+                <RouterLink to="/design-office" style={{ color: "white" }}>
                   {t("Design Office")}
-                </Link>
+                </RouterLink>
               </Box>
             </>
           )}
           <Box textAlign="center" mr={6}>
-            <Link as={RouterLink} to="/gallery" color="white">
+            <RouterLink to="/gallery" style={{ color: "white" }}>
               {t("Gallery")}
-            </Link>
+            </RouterLink>
           </Box>
-          {currentUser &&
-            (currentUser.rank === "A" || currentUser.rank === "B") && (
-              <Box textAlign="center" mr={6}>
-                <Link as={RouterLink} to="/admin" color="white">
-                  {t("Officers")}
-                </Link>
-              </Box>
-            )}
+          {currentUser && (currentUser.rank === "A" || currentUser.rank === "B") && (
+            <Box textAlign="center" mr={6}>
+              <RouterLink to="/admin" style={{ color: "white" }}>
+                {t("Officers")}
+              </RouterLink>
+            </Box>
+          )}
           <Box>
             <LanguageSwitcher />
           </Box>
         </Box>
 
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="flex-end"
-          ml={6}
-        >
+        <Box display="flex" alignItems="center" justifyContent="flex-end" ml={6} flexShrink={0}>
           {currentUser ? (
             <>
-              <Text color="white" textAlign="center" mr={2}>
+              <Text color="white" textAlign="center" mr={2} whiteSpace="nowrap">
                 {t("Welcome")}, {userRankName} {currentUser.handle || ""}
               </Text>
               <Box display="flex" flexDirection="column" mr={2}>
@@ -196,11 +167,7 @@ const Navbar = () => {
         </Box>
       </Flex>
 
-      <AuthProviderModal
-        isOpen={isAuthModalOpen}
-        onClose={handleCloseModal}
-        authType="login"
-      />
+      <AuthProviderModal isOpen={isAuthModalOpen} onClose={handleCloseModal} authType="login" />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
