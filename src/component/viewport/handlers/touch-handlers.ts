@@ -14,10 +14,8 @@ export const useTouchHandlers = (
   const lastDist = React.useRef<number>(0);
 
   const handlePanning = (e: TouchEvent, stage: Konva.Stage) => {
-    if (e.touches.length !== 2) return;
-
     const touch1 = e.touches[0];
-    const touch2 = e.touches[1];
+    const touch2 = e.touches[1] || touch1;
     const center = {
       x: (touch1.clientX + touch2.clientX) / 2,
       y: (touch1.clientY + touch2.clientY) / 2,
@@ -93,14 +91,19 @@ export const useTouchHandlers = (
       const stage = stageRef?.current;
       if (!stage) return;
 
-      if (e.evt.touches.length === 1 && isEditing) {
-        e.evt.preventDefault();
+      e.evt.preventDefault();
+      isTouching.current = true;
+
+      if (e.evt.touches.length === 2) {
         setStageDraggable?.(false);
-        isTouching.current = true;
-        handlePainting(stage);
-      } else if (e.evt.touches.length === 2) {
-        setStageDraggable?.(true);
         lastDist.current = 0;
+      } else if (e.evt.touches.length === 1) {
+        if (isEditing) {
+          setStageDraggable?.(false);
+          handlePainting(stage);
+        } else {
+          setStageDraggable?.(true);
+        }
       }
     },
 
@@ -108,17 +111,24 @@ export const useTouchHandlers = (
       const stage = stageRef?.current;
       if (!stage) return;
 
-      if (e.evt.touches.length === 1 && isEditing && isTouching.current) {
-        e.evt.preventDefault();
+      e.evt.preventDefault();
+
+      if (e.evt.touches.length === 2) {
         setStageDraggable?.(false);
-        handlePainting(stage);
-      } else if (e.evt.touches.length === 2) {
-        e.evt.preventDefault();
-        setStageDraggable?.(true);
         handlePanning(e.evt, stage);
         handleZooming(e.evt, stage);
         stage.batchDraw();
         onTransform?.();
+      } else if (e.evt.touches.length === 1 && isTouching.current) {
+        if (isEditing) {
+          setStageDraggable?.(false);
+          handlePainting(stage);
+        } else {
+          setStageDraggable?.(true);
+          handlePanning(e.evt, stage);
+          stage.batchDraw();
+          onTransform?.();
+        }
       }
     },
 
@@ -130,13 +140,7 @@ export const useTouchHandlers = (
         lastCenter.current = null;
       }
 
-      if (
-        e.evt.touches.length === 0 ||
-        (e.evt.touches.length === 1 && isEditing)
-      ) {
-        setStageDraggable?.(false);
-      }
-
+      setStageDraggable?.(false);
       onTransform?.();
     },
   };
