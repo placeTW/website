@@ -12,32 +12,20 @@ export const useTouchHandlers = (
   const isTouching = React.useRef(false);
   const lastCenter = React.useRef<{ x: number; y: number } | null>(null);
   const lastDist = React.useRef<number>(0);
-  const lastSingleTouch = React.useRef<{ x: number; y: number } | null>(null);
 
-  const handlePanning = (
-    e: TouchEvent,
-    stage: Konva.Stage,
-    isSingleTouch: boolean,
-  ) => {
-    let center;
-    if (isSingleTouch) {
-      const touch = e.touches[0];
-      center = { x: touch.clientX, y: touch.clientY };
-    } else {
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      center = {
-        x: (touch1.clientX + touch2.clientX) / 2,
-        y: (touch1.clientY + touch2.clientY) / 2,
-      };
-    }
+  const handlePanning = (e: TouchEvent, stage: Konva.Stage) => {
+    if (e.touches.length !== 2) return;
 
-    const lastPos = isSingleTouch
-      ? lastSingleTouch.current
-      : lastCenter.current;
-    if (lastPos) {
-      const dx = center.x - lastPos.x;
-      const dy = center.y - lastPos.y;
+    const touch1 = e.touches[0];
+    const touch2 = e.touches[1];
+    const center = {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2,
+    };
+
+    if (lastCenter.current) {
+      const dx = center.x - lastCenter.current.x;
+      const dy = center.y - lastCenter.current.y;
       const newPos = {
         x: stage.x() + dx,
         y: stage.y() + dy,
@@ -45,17 +33,14 @@ export const useTouchHandlers = (
       stage.position(newPos);
     }
 
-    if (isSingleTouch) {
-      lastSingleTouch.current = center;
-    } else {
-      lastCenter.current = center;
-    }
+    lastCenter.current = center;
   };
 
   const handleZooming = (e: TouchEvent, stage: Konva.Stage) => {
+    if (e.touches.length !== 2) return;
+
     const touch1 = e.touches[0];
     const touch2 = e.touches[1];
-
     const dist = Math.hypot(
       touch2.clientX - touch1.clientX,
       touch2.clientY - touch1.clientY,
@@ -75,14 +60,14 @@ export const useTouchHandlers = (
       y: (touch1.clientY + touch2.clientY) / 2,
     };
 
-    const pointTo = {
+    const mousePointTo = {
       x: (center.x - stage.x()) / oldScale,
       y: (center.y - stage.y()) / oldScale,
     };
 
     const newPos = {
-      x: center.x - pointTo.x * newScale,
-      y: center.y - pointTo.y * newScale,
+      x: center.x - mousePointTo.x * newScale,
+      y: center.y - mousePointTo.y * newScale,
     };
 
     stage.scale({ x: newScale, y: newScale });
@@ -108,24 +93,14 @@ export const useTouchHandlers = (
       const stage = stageRef?.current;
       if (!stage) return;
 
-      if (e.evt.touches.length === 1) {
-        if (isEditing) {
-          e.evt.preventDefault();
-          setStageDraggable?.(false);
-          isTouching.current = true;
-          handlePainting(stage);
-        } else {
-          setStageDraggable?.(true);
-          lastSingleTouch.current = {
-            x: e.evt.touches[0].clientX,
-            y: e.evt.touches[0].clientY,
-          };
-        }
-      } else if (e.evt.touches.length === 2) {
+      if (e.evt.touches.length === 1 && isEditing) {
         e.evt.preventDefault();
+        setStageDraggable?.(false);
+        isTouching.current = true;
+        handlePainting(stage);
+      } else if (e.evt.touches.length === 2) {
         setStageDraggable?.(true);
         lastDist.current = 0;
-        lastCenter.current = null;
       }
     },
 
@@ -133,24 +108,18 @@ export const useTouchHandlers = (
       const stage = stageRef?.current;
       if (!stage) return;
 
-      if (e.evt.touches.length === 1) {
-        if (isEditing && isTouching.current) {
-          e.evt.preventDefault();
-          setStageDraggable?.(false);
-          handlePainting(stage);
-        } else if (!isEditing) {
-          e.evt.preventDefault();
-          handlePanning(e.evt, stage, true);
-        }
+      if (e.evt.touches.length === 1 && isEditing && isTouching.current) {
+        e.evt.preventDefault();
+        setStageDraggable?.(false);
+        handlePainting(stage);
       } else if (e.evt.touches.length === 2) {
         e.evt.preventDefault();
         setStageDraggable?.(true);
-        handlePanning(e.evt, stage, false);
+        handlePanning(e.evt, stage);
         handleZooming(e.evt, stage);
+        stage.batchDraw();
+        onTransform?.();
       }
-
-      stage.batchDraw();
-      onTransform?.();
     },
 
     onTouchEnd: (e: Konva.KonvaEventObject<TouchEvent>) => {
@@ -159,7 +128,6 @@ export const useTouchHandlers = (
       if (stage) {
         lastDist.current = 0;
         lastCenter.current = null;
-        lastSingleTouch.current = null;
       }
 
       if (
