@@ -1,9 +1,11 @@
+// src/component/viewport/handlers/mouse-handlers.ts
+
 import React, { useRef } from "react";
 import Konva from "konva";
 import { GRID_SIZE } from "../constants";
 import UndoManager from "../utils/undo-manager";
 
-Konva.dragButtons = [0, 1, 2]; // Enable dragging with left (0) and right (2) mouse buttons
+Konva.dragButtons = [0, 1, 2]; // Enable dragging with left (0), middle (1), and right (2) mouse buttons
 
 // Create an instance of UndoManager with a specified limit for undo history
 const undoManager = new UndoManager(100); // Adjust the limit value as needed
@@ -61,7 +63,6 @@ export const useMouseHandlers = (
               setStageDraggable && setStageDraggable(false); // Disable dragging for selection
             } else {
               // Start painting
-              stage.container().style.cursor = "crosshair";
               setStageDraggable && setStageDraggable(false); // Disable dragging while painting
               onPixelPaint && onPixelPaint(x, y);
               // Reset the selection when painting
@@ -80,12 +81,13 @@ export const useMouseHandlers = (
       if (e.evt.button === 0 || e.evt.button === 2) {
         isMouseDown.current = false; // Reset flag when left mouse button is released
 
-        // Stop painting or panning
-        stage.container().style.cursor = "default";
         isSelecting.current = false; // Exit selection mode
 
         // Keep the selection in place after mouse up, allowing it to persist
         setStageDraggable && setStageDraggable(true); // Re-enable dragging after painting or panning
+
+        // Set cursor back to crosshair
+        stage.container().style.cursor = "crosshair";
       }
     },
 

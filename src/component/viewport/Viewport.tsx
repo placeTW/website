@@ -1,8 +1,8 @@
 // src/component/viewport/Viewport.tsx
 
-import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
+import Konva from "konva";
 import { CLEAR_ON_MAIN, GRID_SIZE } from "./constants";
 import {
   useMouseHandlers,
@@ -129,10 +129,26 @@ const Viewport: React.FC<ViewportProps> = ({
       const layer = stageRef.current.getLayers()[0];
       const context = layer.getCanvas().getContext();
       context.imageSmoothingEnabled = false;
+
+      // Set default cursor to crosshair
+      stageRef.current.container().style.cursor = "crosshair";
     }
   }, [backgroundImage, stageRef]);
 
+  const handleDragStart = () => {
+    if (stageRef.current) {
+      stageRef.current.container().style.cursor = "grabbing";
+    }
+  };
+
+  const handleDragMove = () => {
+    calculateVisibleTiles();
+  };
+
   const handleDragEnd = () => {
+    if (stageRef.current) {
+      stageRef.current.container().style.cursor = "crosshair";
+    }
     calculateVisibleTiles();
   };
 
@@ -166,15 +182,6 @@ const Viewport: React.FC<ViewportProps> = ({
     setMergedPixels(Array.from(pixelMap.values()));
   }, [layerOrder, pixels]);
 
-  // Add event listeners for Stage's drag and transform movements
-  const handleDragMove = () => {
-    calculateVisibleTiles();
-  };
-
-  const handleTransformEnd = () => {
-    calculateVisibleTiles();
-  };
-
   return (
     <div
       className="viewport-container"
@@ -185,7 +192,6 @@ const Viewport: React.FC<ViewportProps> = ({
         alignItems: "center",
         width: "100%",
         height: "100%",
-        cursor: isEditing ? "crosshair" : "grab", // Show crosshair when editing
         overflow: "hidden",
         backgroundColor: "#f0f0f0",
       }}
@@ -216,11 +222,11 @@ const Viewport: React.FC<ViewportProps> = ({
           isEditing,
           setStageDraggable,
           stageRef,
-          calculateVisibleTiles, // Pass calculateVisibleTiles to touch handlers
+          calculateVisibleTiles,
         )}
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
-        onDragMove={handleDragMove} // Add drag move handler
-        onTransformEnd={handleTransformEnd} // Add transform end handler
         draggable={stageDraggable}
         touchAction="none" // Prevent default touch actions
       >
