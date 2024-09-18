@@ -18,7 +18,7 @@ interface ViewportProps {
   layerOrder: number[];
   designId?: number | null;
   isEditing?: boolean;
-  onPixelPaint?: (x: number, y: number) => void;
+  onPixelPaint?: (x: number, y: number, erase: boolean) => void;
   selection?: { x: number; y: number; width: number; height: number } | null;
   setSelection?: React.Dispatch<
     React.SetStateAction<{

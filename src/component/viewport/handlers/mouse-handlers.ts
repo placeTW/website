@@ -11,7 +11,7 @@ Konva.dragButtons = [0, 1, 2]; // Enable dragging with left (0), middle (1), and
 const undoManager = new UndoManager(100); // Adjust the limit value as needed
 
 export const useMouseHandlers = (
-  onPixelPaint?: (x: number, y: number) => void,
+  onPixelPaint?: (x: number, y: number, erase: boolean) => void,
   isEditing?: boolean,
   stageRef?: React.RefObject<Konva.Stage>,
   setHoveredPixel?: React.Dispatch<
@@ -34,6 +34,7 @@ export const useMouseHandlers = (
   const mousePosition = useRef({ x: 0, y: 0 }); // To store the latest mouse position
   const isMouseDown = useRef(false); // Track the mouse state
   const isSelecting = useRef(false); // Track whether we are in selection mode
+  const isErasing = useRef(false); // Track whether we are in erasing mode
 
   return {
     onMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -51,6 +52,13 @@ export const useMouseHandlers = (
 
         if (isEditing) {
           const pos = stage.getPointerPosition();
+
+          if (e.evt.button === 2) {
+            isErasing.current = true; // Set flag when right mouse button is down
+          } else {
+            isErasing.current = false; // Reset flag when left mouse button is down
+          }
+
           if (pos) {
             const scale = stage.scaleX();
             const x = Math.floor((pos.x - stage.x()) / (GRID_SIZE * scale));
@@ -64,7 +72,7 @@ export const useMouseHandlers = (
             } else {
               // Start painting
               setStageDraggable && setStageDraggable(false); // Disable dragging while painting
-              onPixelPaint && onPixelPaint(x, y);
+              onPixelPaint && onPixelPaint(x, y, isErasing.current);
               // Reset the selection when painting
               setSelection && setSelection(null);
             }
@@ -80,8 +88,8 @@ export const useMouseHandlers = (
       // Check if the left or right mouse button is released (button === 0 or 2)
       if (e.evt.button === 0 || e.evt.button === 2) {
         isMouseDown.current = false; // Reset flag when left mouse button is released
-
         isSelecting.current = false; // Exit selection mode
+        isErasing.current = false; // Reset flag when right mouse button is released
 
         // Keep the selection in place after mouse up, allowing it to persist
         setStageDraggable && setStageDraggable(true); // Re-enable dragging after painting or panning
@@ -119,7 +127,7 @@ export const useMouseHandlers = (
         setSelection({ ...selection, width, height });
       } else if (isMouseDown.current && !e.evt.ctrlKey && onPixelPaint) {
         // Continue painting if the left mouse button is down, not in selection mode, and isEditing is true
-        onPixelPaint(x, y);
+        onPixelPaint(x, y, isErasing.current);
       }
     },
 

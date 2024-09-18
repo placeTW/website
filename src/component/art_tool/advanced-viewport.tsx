@@ -60,7 +60,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 }) => {
   const [pixels, setPixels] = useState<ViewportPixel[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [previousColor, setPreviousColor] = useState<string | null>(null);
   const [selection, setSelection] = useState<{
     x: number;
     y: number;
@@ -193,14 +192,14 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     }
   };
 
-  const handlePixelPaint = (x: number, y: number) => {
+  const handlePixelPaint = (x: number, y: number, erase: boolean) => {
     if (!isEditing || !selectedColor || !editDesignId || !setEditedPixels)
       return;
 
     const newPixel: ViewportPixel = {
       x,
       y,
-      color: selectedColor,
+      color: !erase ? selectedColor : CLEAR_ON_DESIGN,
       designId: editDesignId,
     };
 
@@ -359,12 +358,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       }
     };
 
-    const handleMouseDown = (e: MouseEvent) => {
-      if (e.button === 2 && isEditing && selectedColor) {
-        setPreviousColor(selectedColor);
-        setSelectedColor(CLEAR_ON_DESIGN);
-      }
-
+    const handleMouseDown = () => {
       if (isEditing) {
         dragInProgress.current = true;
         dragPixels.current = [];
@@ -382,11 +376,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
         dragInProgress.current = false;
         dragPixels.current = [];
-      }
-
-      if (e.button === 2 && isEditing && previousColor) {
-        setSelectedColor(previousColor);
-        setPreviousColor(null);
       }
     };
 
@@ -407,7 +396,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     setEditedPixels,
     undoManager,
     selectedColor,
-    previousColor,
   ]);
 
   const handleSelectCanvas = (canvas: Canvas | null) => {

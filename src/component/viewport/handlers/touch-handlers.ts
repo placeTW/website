@@ -3,7 +3,7 @@ import React from "react";
 import { GRID_SIZE } from "../constants";
 
 export const useTouchHandlers = (
-  onPixelPaint?: (x: number, y: number) => void,
+  onPixelPaint?: (x: number, y: number, erase: boolean) => void,
   isEditing?: boolean,
   setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
   stageRef?: React.RefObject<Konva.Stage>,
@@ -83,7 +83,7 @@ export const useTouchHandlers = (
     const x = Math.floor((pos.x - stage.x()) / (GRID_SIZE * scale));
     const y = Math.floor((pos.y - stage.y()) / (GRID_SIZE * scale));
 
-    onPixelPaint(x, y);
+    onPixelPaint(x, y, false);
   };
 
   return {
