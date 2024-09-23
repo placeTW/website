@@ -7,9 +7,10 @@ import {
   Grid,
   IconButton,
   Spacer,
+  Tab,
+  TabList,
+  Tabs,
   Tooltip,
-  Wrap,
-  WrapItem,
 } from "@chakra-ui/react";
 import Konva from "konva";
 import React, {
@@ -21,6 +22,7 @@ import React, {
   useState,
 } from "react";
 import { FaRepeat } from "react-icons/fa6";
+import { useDesignContext } from "../../context/design-context";
 import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import {
@@ -31,7 +33,6 @@ import {
 import { ViewportPixel } from "../viewport/types";
 import { createCheckerboardPattern } from "../viewport/utils";
 import UndoManager from "../viewport/utils/undo-manager";
-import { useDesignContext } from "../../context/design-context";
 
 interface AdvancedViewportProps {
   visibleLayers: number[];
@@ -373,7 +374,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             return finalPixels;
           });
         }
-    
+
         dragInProgress.current = false;
         dragPixels.current = [];
       }
@@ -415,29 +416,15 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       <Box height="100%">
         {canvases && (
           <Flex padding={2}>
-            <Wrap direction="row" spacing={2}>
-              {canvases.map((canvas) => (
-                <WrapItem key={canvas.id}>
-                  <Button
-                    onClick={() => handleSelectCanvas(canvas)}
-                    colorScheme="teal"
-                    border={
-                      canvas.id === selectedCanvas?.id
-                        ? "2px solid black"
-                        : "1px solid #ccc"
-                    }
-                  >
-                    {canvas.canvas_name}
-                  </Button>
-                </WrapItem>
-              ))}
-              <WrapItem>
-                <Button onClick={() => handleSelectCanvas(null)}>
-                  unassigned
-                </Button>
-              </WrapItem>
-            </Wrap>
+            <Tabs onChange={(index) => handleSelectCanvas(canvases[index])}>
+              <TabList>
+                {canvases.map((canvas) => (
+                  <Tab key={canvas.id}>{canvas.canvas_name}</Tab>
+                ))}
+              </TabList>
+            </Tabs>
             <Spacer />
+            <Button marginEnd={2} onClick={() => handleSelectCanvas(null)}>unassigned</Button>
             <IconButton
               icon={<FaRepeat />}
               aria-label="Reset viewport"
