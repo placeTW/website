@@ -416,7 +416,16 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       <Box height="100%">
         {canvases && (
           <Flex padding={2}>
-            <Tabs onChange={(index) => handleSelectCanvas(canvases[index])}>
+            <Tabs
+              defaultIndex={
+                selectedCanvas
+                  ? canvases.findIndex(
+                      (canvas) => canvas.id === selectedCanvas.id,
+                    )
+                  : -1
+              }
+              onChange={(index) => handleSelectCanvas(canvases[index])}
+            >
               <TabList>
                 {canvases.map((canvas) => (
                   <Tab key={canvas.id}>{canvas.canvas_name}</Tab>
@@ -424,7 +433,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               </TabList>
             </Tabs>
             <Spacer />
-            <Button marginEnd={2} onClick={() => handleSelectCanvas(null)}>unassigned</Button>
+            <Button marginEnd={2} onClick={() => handleSelectCanvas(null)}>
+              unassigned
+            </Button>
             <IconButton
               icon={<FaRepeat />}
               aria-label="Reset viewport"
