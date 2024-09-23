@@ -5,7 +5,6 @@ import {
   Button,
   Flex,
   Grid,
-  IconButton,
   Spacer,
   Tab,
   TabList,
@@ -21,7 +20,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { FaRepeat } from "react-icons/fa6";
 import { useDesignContext } from "../../context/design-context";
 import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
@@ -44,7 +42,6 @@ interface AdvancedViewportProps {
   editedPixels?: Pixel[];
   setEditedPixels?: Dispatch<SetStateAction<Pixel[]>>;
   onSelectCanvas?: (canvas: Canvas | null) => void;
-  onResetViewport?: () => void;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
@@ -55,7 +52,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   canvases,
   onSelectCanvas,
   selectedCanvas,
-  onResetViewport,
   editedPixels = [],
   setEditedPixels,
 }) => {
@@ -436,11 +432,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
             <Button marginEnd={2} onClick={() => handleSelectCanvas(null)}>
               unassigned
             </Button>
-            <IconButton
-              icon={<FaRepeat />}
-              aria-label="Reset viewport"
-              onClick={onResetViewport}
-            />
           </Flex>
         )}
         <Viewport

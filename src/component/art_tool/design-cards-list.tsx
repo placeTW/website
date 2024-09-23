@@ -1,5 +1,12 @@
-import { Box, SimpleGrid, useToast } from "@chakra-ui/react";
-import { Dispatch, FC, SetStateAction, useEffect, useRef, useState } from "react";
+import { Box, Flex, useToast } from "@chakra-ui/react";
+import {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Design, Pixel } from "../../types/art-tool";
 import DesignCard from "./design-card";
 
@@ -28,7 +35,9 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onDeleted,
   editedPixels,
 }) => {
-  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>({});
+  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
+    {},
+  );
   const toast = useToast();
   const isFirstRender = useRef(true);
   const previousVisibleLayers = useRef<number[]>([]);
@@ -71,7 +80,6 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   };
 
   const handleOnDeleted = (designId: number) => {
-    
     // Call the parent onDeleted function to update the state in DesignOffice
     onDeleted(designId);
 
@@ -119,7 +127,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   );
 
   return (
-    <SimpleGrid minChildWidth="300px" spacing="20px" m={4}>
+    <Flex direction="column" m={4} gap={4}>
       {sortedDesigns.map((design) => (
         <Box key={design.id}>
           <DesignCard
@@ -137,7 +145,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
           />
         </Box>
       ))}
-    </SimpleGrid>
+    </Flex>
   );
 };
 

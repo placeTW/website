@@ -2,14 +2,17 @@
 
 import {
   Box,
+  Flex,
+  Heading,
   IconButton,
+  Spacer,
   Spinner,
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
-import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
+import { FaAngleLeft, FaAngleRight, FaRepeat } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
   uploadDesignThumbnailToSupabase,
@@ -158,7 +161,6 @@ const DesignOffice: React.FC = () => {
   const handleCreatedDesign = (design: Design) => {
     handleEditStateChange(true, design.id);
   };
-
   if (loading) {
     return <Spinner size="xl" />;
   }
@@ -179,17 +181,19 @@ const DesignOffice: React.FC = () => {
 
   return (
     <Box
-      display="grid"
-      gridTemplateColumns={{
-        base: "1fr",
-        md: isCardListVisible ? "1fr 350px" : "1fr",
-      }}
+      display="flex"
+      flexDirection={isMobile ? "column" : "row"}
       height="calc(100vh - 150px)"
       overflow="hidden"
       position="relative"
     >
       {/* Viewport Section */}
-      <Box border="1px solid #ccc" overflow="hidden">
+      <Box
+        flex={1}
+        border="1px solid #ccc"
+        overflow="hidden"
+        height={isMobile && !isCardListVisible ? "100%" : "auto"}
+      >
         <AdvancedViewport
           isEditing={isEditing}
           editDesignId={editDesignId}
@@ -200,15 +204,34 @@ const DesignOffice: React.FC = () => {
           onSelectCanvas={(canvas) =>
             handleSetCanvas(editDesignId || 0, canvas?.id || null)
           }
-          onResetViewport={handleResetViewport}
           editedPixels={editedPixels}
           setEditedPixels={setEditedPixels}
         />
       </Box>
 
       {/* Design Cards List */}
-      {isCardListVisible && (
-        <Box overflowY="auto">
+      <Box
+        display={isCardListVisible ? "flex" : "none"}
+        flexDirection="column"
+        border="1px solid #ccc"
+        borderLeft={isMobile ? "none" : "1px solid #ccc"}
+        borderTop={isMobile ? "1px solid #ccc" : "none"}
+        width={isMobile ? "100%" : "350px"}
+        height={isMobile ? "50%" : "auto"}
+      >
+        <Box position="sticky" top="0" zIndex="1" bg="white">
+          <Flex padding={4}>
+            <Heading size="md">Designs</Heading>
+            <Spacer />
+            <IconButton
+              icon={<FaRepeat />}
+              aria-label="Reset viewport"
+              onClick={handleResetViewport}
+            />
+          </Flex>
+        </Box>
+
+        <Box overflowY="auto" flex="1">
           <DesignCardsList
             designs={designs || []}
             visibleLayers={visibleLayers}
@@ -221,58 +244,48 @@ const DesignOffice: React.FC = () => {
             onDeleted={handleOnDeleted}
             editedPixels={editedPixels}
           />
-          <Box h="100px" />
+          <Box h="240px" />
         </Box>
-      )}
+      </Box>
 
       {/* Hide/Show Button */}
-      <Box
-        position="absolute"
-        top={{
-          base: "auto",
-          md: "50%",
-        }}
-        transform="translateY(-50%)"
-        right={{
-          base: "50%",
-          md: isCardListVisible ? "362px" : "12px",
-        }}
-        left={{
-          base: "50%",
-          md: "auto",
-        }}
-        bottom={{
-          base: isCardListVisible ? "calc(50% + 28px)" : "28px",
-          md: "auto",
-        }}
-        zIndex="1000"
-      >
-        <IconButton
-          aria-label={isCardListVisible ? "Hide Panel" : "Show Panel"}
-          icon={
-            isMobile ? (
-              isCardListVisible ? (
-                <FaAngleDown />
-              ) : (
-                <FaAngleUp />
-              )
-            ) : isCardListVisible ? (
-              <FaAngleRight />
+      <IconButton
+        aria-label={isCardListVisible ? "Hide Panel" : "Show Panel"}
+        icon={
+          isMobile ? (
+            isCardListVisible ? (
+              <FaAngleDown />
             ) : (
-              <FaAngleLeft />
+              <FaAngleUp />
             )
-          }
-          onClick={() => setIsCardListVisible(!isCardListVisible)}
-          size="md"
-          variant="solid"
-          colorScheme="blue"
-          borderRadius="full"
-        />
-      </Box>
+          ) : isCardListVisible ? (
+            <FaAngleRight />
+          ) : (
+            <FaAngleLeft />
+          )
+        }
+        onClick={() => setIsCardListVisible(!isCardListVisible)}
+        size="md"
+        variant="solid"
+        colorScheme="blue"
+        borderRadius="full"
+        position="absolute"
+        bottom={
+          isMobile ? (isCardListVisible ? "calc(50% + 16px)" : "16px") : "50%"
+        }
+        right={isMobile ? "50%" : isCardListVisible ? "362px" : "16px"}
+        transform={isMobile ? "translateX(50%)" : "translateY(50%)"}
+        zIndex="1000"
+      />
 
       {/* Create Design Button */}
       {isCardListVisible && (
-        <Box position="absolute" bottom="30px" right="30px" zIndex="1000">
+        <Box
+          position="absolute"
+          bottom={isMobile ? "16px" : "30px"}
+          right={isMobile ? "16px" : "30px"}
+          zIndex="1000"
+        >
           <CreateDesignButton onCreate={handleCreatedDesign} />
         </Box>
       )}

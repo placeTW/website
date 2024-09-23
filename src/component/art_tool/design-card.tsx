@@ -74,7 +74,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const { currentUser, users, ranks } = useUserContext(); // Import users and ranks
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
-    currentUser ? design.liked_by?.includes(currentUser.user_id) : false
+    currentUser ? design.liked_by?.includes(currentUser.user_id) : false,
   );
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
   const [designName, setDesignName] = useState(design.design_name || "");
@@ -213,7 +213,8 @@ const DesignCard: FC<DesignCardProps> = ({
 
   // Compute the creator's rank name
   const creatorRankName =
-    ranks.find((rank) => rank.rank_id === creator?.rank)?.rank_name || "Unknown";
+    ranks.find((rank) => rank.rank_id === creator?.rank)?.rank_name ||
+    "Unknown";
 
   // Check for required fields
   if (!design.id || !design.design_name) {
@@ -223,16 +224,10 @@ const DesignCard: FC<DesignCardProps> = ({
 
   return (
     <>
-      <Card
-        bg="white"
-        width="100%"
-        minWidth="3in"
-        position="relative"
-        height="130px"
-      >
+      <Card bg="white" width="100%" position="relative" variant="outline">
         <CardBody display="flex" padding="0">
           <Box
-            height="100%"
+            height="auto"
             width="120px"
             position="relative"
             flex="none"
@@ -271,7 +266,6 @@ const DesignCard: FC<DesignCardProps> = ({
                 </Box>
               }
               height="100%"
-              width="auto"
               objectFit="contain"
               onClick={handleImageClick}
               src={design.design_thumbnail || ""}
