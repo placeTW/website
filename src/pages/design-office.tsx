@@ -244,7 +244,7 @@ const DesignOffice: React.FC = () => {
             onDeleted={handleOnDeleted}
             editedPixels={editedPixels}
           />
-          <Box h="240px" />
+          <Box h="100px" />
         </Box>
       </Box>
 
