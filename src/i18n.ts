@@ -83,6 +83,9 @@ i18n
     },
     load: "languageOnly",
     returnEmptyString: false,
+    backend: {
+      loadPath: `${import.meta.env?.VITE_CODE_SERVER ? '/absproxy/5173' : ''}/locales/{{lng}}/{{ns}}.json`,
+    }
   });
 
 export default i18n;

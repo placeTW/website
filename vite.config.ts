@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
     publicDir: "public",
     server: {
       hmr: true,
+      port: 5173
     },
     build: {
       target: "esnext",
