@@ -27,7 +27,6 @@ import { authGetSession, authSignOut } from "../api/supabase/auth";
 import { functionsFetchOneUser, functionsUpdateNickname } from "../api/supabase/functions";
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
-import LanguageSwitcher from "./language-switcher";
 import { FaBars, FaPen, FaArrowRightToBracket, FaArrowRightFromBracket } from "react-icons/fa6"; // Import icons
 
 const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
