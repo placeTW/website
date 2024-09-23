@@ -1,8 +1,8 @@
-// src/component/viewport/Viewport.tsx
-
+import { Box } from "@chakra-ui/react";
+import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
-import Konva from "konva";
+import { useColorContext } from "../../context/color-context";
 import { CLEAR_ON_MAIN, GRID_SIZE } from "./constants";
 import {
   useMouseHandlers,
@@ -58,45 +58,39 @@ const Viewport: React.FC<ViewportProps> = ({
   );
   const [zoomLevel, setZoomLevel] = useState(1);
   const [mergedPixels, setMergedPixels] = useState<ViewportPixel[]>([]);
-
-  const handleWheel = useWheelHandler;
-
-  // TODO: Have this be configurable
-  const backgroundTileSize = 1000; // Assuming each background image is 1000x1000
-
   const [stageDraggable, setStageDraggable] = useState(false);
+  const { colors } = useColorContext();
+
+  const BACKGROUND_TILE_SIZE = 1000;
+  const MIN_ZOOM_LEVEL = 1 / 128;
 
   useEffect(() => {
-    setStageDraggable(false); // Initially disable dragging; controlled by touch/mouse handlers
+    setStageDraggable(false);
   }, [isEditing]);
 
   const calculateVisibleTiles = useCallback(() => {
     if (!stageRef.current) return;
 
     const stage = stageRef.current;
-    const scale = stage.scaleX(); // Assume uniform scaling (same for X and Y)
-    setZoomLevel(scale); // Update zoom level state
+    const scale = stage.scaleX();
+    setZoomLevel(scale);
 
     if (scale <= 0.125) {
-      // If zoom level is 0.125 or lower, skip tile calculation
-      setVisibleTiles([]); // Clear the visible tiles array
+      setVisibleTiles([]);
       return;
     }
 
     const viewWidth = stage.width() / scale;
     const viewHeight = stage.height() / scale;
-
-    // Adjusted to handle scaling and offset correctly
     const offsetX = -stage.x() / scale;
     const offsetY = -stage.y() / scale;
 
-    // Calculate the range of visible tiles
-    const minX = Math.floor(offsetX / backgroundTileSize);
-    const minY = Math.floor(offsetY / backgroundTileSize);
-    const maxX = Math.ceil((offsetX + viewWidth) / backgroundTileSize);
-    const maxY = Math.ceil((offsetY + viewHeight) / backgroundTileSize);
+    const minX = Math.floor(offsetX / BACKGROUND_TILE_SIZE);
+    const minY = Math.floor(offsetY / BACKGROUND_TILE_SIZE);
+    const maxX = Math.ceil((offsetX + viewWidth) / BACKGROUND_TILE_SIZE);
+    const maxY = Math.ceil((offsetY + viewHeight) / BACKGROUND_TILE_SIZE);
 
-    const newVisibleTiles: { x: number; y: number }[] = [];
+    const newVisibleTiles = [];
     for (let x = minX; x < maxX; x++) {
       for (let y = minY; y < maxY; y++) {
         newVisibleTiles.push({ x, y });
@@ -104,7 +98,7 @@ const Viewport: React.FC<ViewportProps> = ({
     }
 
     setVisibleTiles(newVisibleTiles);
-  }, [backgroundTileSize, stageRef]);
+  }, [BACKGROUND_TILE_SIZE, stageRef]);
 
   useEffect(() => {
     calculateVisibleTiles();
@@ -113,12 +107,12 @@ const Viewport: React.FC<ViewportProps> = ({
   useEffect(() => {
     if (!divRef.current) return;
     const resizeObserver = new ResizeObserver((entries) => {
-      entries.forEach((entry) => {
+      for (const entry of entries) {
         setDimensions({
           width: entry.contentRect.width,
           height: entry.contentRect.height,
         });
-      });
+      }
     });
     resizeObserver.observe(divRef.current);
     return () => resizeObserver.disconnect();
@@ -128,12 +122,25 @@ const Viewport: React.FC<ViewportProps> = ({
     if (stageRef.current) {
       const layer = stageRef.current.getLayers()[0];
       const context = layer.getCanvas().getContext();
-      context.imageSmoothingEnabled = false;
-
-      // Set default cursor to crosshair
+      if (context) {
+        context.imageSmoothingEnabled = false;
+      }
       stageRef.current.container().style.cursor = "crosshair";
     }
   }, [backgroundImage, stageRef]);
+
+  useEffect(() => {
+    const pixelMap = new Map<string, ViewportPixel>();
+
+    for (const layerId of layerOrder) {
+      for (const pixel of pixels.filter((p) => p.designId === layerId)) {
+        const key = `${pixel.x}-${pixel.y}`;
+        pixelMap.set(key, pixel);
+      }
+    }
+
+    setMergedPixels(Array.from(pixelMap.values()));
+  }, [layerOrder, pixels]);
 
   const handleDragStart = () => {
     if (stageRef.current) {
@@ -141,9 +148,7 @@ const Viewport: React.FC<ViewportProps> = ({
     }
   };
 
-  const handleDragMove = () => {
-    calculateVisibleTiles();
-  };
+  const handleDragMove = calculateVisibleTiles;
 
   const handleDragEnd = () => {
     if (stageRef.current) {
@@ -154,33 +159,119 @@ const Viewport: React.FC<ViewportProps> = ({
 
   const handleZoom = () => {
     if (stageRef.current) {
-      let scale = stageRef.current.scaleX(); // Assuming uniform scaling (scaleX = scaleY)
-
-      // Cap the zoom level
-      const minZoomLevel = 1 / 128;
-      if (scale < minZoomLevel) {
-        scale = minZoomLevel;
+      let scale = stageRef.current.scaleX();
+      if (scale < MIN_ZOOM_LEVEL) {
+        scale = MIN_ZOOM_LEVEL;
         stageRef.current.scale({ x: scale, y: scale });
       }
-
       calculateVisibleTiles();
     }
   };
 
-  useEffect(() => {
-    const pixelMap = new Map<string, ViewportPixel>();
+  const getColorForPixel = (x: number, y: number) => {
+    const pixel = mergedPixels.find((p) => p.x === x && p.y === y);
+    if (!pixel) return undefined;
+    return colors.find((c) => c.Color === pixel.color);
+  };
 
-    layerOrder.forEach((layerId) => {
-      pixels
-        .filter((pixel) => pixel.designId === layerId)
-        .forEach((pixel) => {
-          const key = `${pixel.x}-${pixel.y}`;
-          pixelMap.set(key, pixel);
-        });
+  const renderBackgroundTiles = () =>
+    zoomLevel > 0.125
+      ? visibleTiles.map((tile) => (
+          <KonvaImage
+            key={`tile-${tile.x}-${tile.y}`}
+            image={backgroundImage}
+            x={tile.x * BACKGROUND_TILE_SIZE}
+            y={tile.y * BACKGROUND_TILE_SIZE}
+            width={BACKGROUND_TILE_SIZE}
+            height={BACKGROUND_TILE_SIZE}
+            perfectDrawEnabled={false}
+            imageSmoothingEnabled={false}
+          />
+        ))
+      : null;
+
+  const renderClearOnMainPixels = () =>
+    mergedPixels.map((pixel) => {
+      if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
+        return (
+          <KonvaImage
+            key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
+            image={clearOnMainImage}
+            x={pixel.x * GRID_SIZE}
+            y={pixel.y * GRID_SIZE}
+            width={clearOnMainImage.width}
+            height={clearOnMainImage.height}
+            perfectDrawEnabled={false}
+            imageSmoothingEnabled={false}
+            visible={!!designId && layerOrder.includes(designId)}
+          />
+        );
+      }
+      return null;
     });
 
-    setMergedPixels(Array.from(pixelMap.values()));
-  }, [layerOrder, pixels]);
+  const renderPixelGrid = () =>
+    mergedPixels.map((pixel) => (
+      <Rect
+        key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
+        x={pixel.x * GRID_SIZE}
+        y={pixel.y * GRID_SIZE}
+        width={GRID_SIZE}
+        height={GRID_SIZE}
+        fill={pixel.color !== CLEAR_ON_MAIN ? pixel.color : undefined}
+        strokeWidth={0}
+      />
+    ));
+
+  const renderSelectionRect = () =>
+    selection && (
+      <Rect
+        x={selection.x * GRID_SIZE}
+        y={selection.y * GRID_SIZE}
+        width={selection.width * GRID_SIZE}
+        height={selection.height * GRID_SIZE}
+        stroke="blue"
+        strokeWidth={2}
+        dash={[4, 4]}
+      />
+    );
+
+  const renderCoordinates = () =>
+    hoveredPixel && (
+      <div
+        ref={coordinatesRef}
+        style={{
+          position: "absolute",
+          backgroundColor: "white",
+          padding: "2px 4px",
+          border: "1px solid black",
+          borderRadius: "3px",
+          pointerEvents: "none",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "4px",
+        }}
+      >
+        <span>
+          {hoveredPixel.x}, {hoveredPixel.y}
+        </span>
+        {getColorForPixel(hoveredPixel.x, hoveredPixel.y) && (
+          <>
+            <Box
+              h={4}
+              w={4}
+              border="1px solid black"
+              bg={getColorForPixel(hoveredPixel.x, hoveredPixel.y)?.Color}
+            />
+            <span>
+              {getColorForPixel(hoveredPixel.x, hoveredPixel.y)?.color_name}
+            </span>
+          </>
+        )}
+      </div>
+    );
 
   return (
     <div
@@ -202,7 +293,7 @@ const Viewport: React.FC<ViewportProps> = ({
         height={dimensions.height}
         ref={stageRef}
         onWheel={(e) => {
-          handleWheel(e);
+          useWheelHandler(e);
           handleZoom();
         }}
         {...useMouseHandlers(
@@ -228,10 +319,9 @@ const Viewport: React.FC<ViewportProps> = ({
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
         draggable={stageDraggable}
-        touchAction="none" // Prevent default touch actions
+        touchAction="none"
       >
         <Layer>
-          {/* Render grey background if zoom level is low */}
           {zoomLevel <= 0.125 && (
             <Rect
               x={
@@ -247,91 +337,13 @@ const Viewport: React.FC<ViewportProps> = ({
               fill="#f5f5f5"
             />
           )}
-
-          {/* Render background tiles */}
-          {zoomLevel > 0.125
-            ? visibleTiles.map((tile) => (
-                <KonvaImage
-                  key={`tile-${tile.x}-${tile.y}`}
-                  image={backgroundImage}
-                  x={tile.x * backgroundTileSize}
-                  y={tile.y * backgroundTileSize}
-                  width={backgroundTileSize}
-                  height={backgroundTileSize}
-                  perfectDrawEnabled={false}
-                  imageSmoothingEnabled={false}
-                />
-              ))
-            : null}
+          {renderBackgroundTiles()}
         </Layer>
-
-        {/* Render ClearOnMain image based on layer visibility */}
-        <Layer>
-          {mergedPixels.map((pixel) => {
-            if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
-              return (
-                <KonvaImage
-                  key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
-                  image={clearOnMainImage}
-                  x={pixel.x * GRID_SIZE}
-                  y={pixel.y * GRID_SIZE}
-                  width={clearOnMainImage.width}
-                  height={clearOnMainImage.height}
-                  perfectDrawEnabled={false}
-                  imageSmoothingEnabled={false}
-                  visible={!!designId && layerOrder.includes(designId)}
-                />
-              );
-            }
-            return null;
-          })}
-        </Layer>
-
-        {/* Render the pixel grid */}
-        <Layer>
-          {mergedPixels.map((pixel) => (
-            <Rect
-              key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
-              x={pixel.x * GRID_SIZE}
-              y={pixel.y * GRID_SIZE}
-              width={GRID_SIZE}
-              height={GRID_SIZE}
-              fill={pixel.color !== CLEAR_ON_MAIN ? pixel.color : undefined}
-              strokeWidth={0}
-            />
-          ))}
-        </Layer>
-
-        {/* Render selection rectangle */}
-        {selection && (
-          <Layer>
-            <Rect
-              x={selection.x * GRID_SIZE}
-              y={selection.y * GRID_SIZE}
-              width={selection.width * GRID_SIZE}
-              height={selection.height * GRID_SIZE}
-              stroke="blue"
-              strokeWidth={2}
-              dash={[4, 4]}
-            />
-          </Layer>
-        )}
+        <Layer>{renderClearOnMainPixels()}</Layer>
+        <Layer>{renderPixelGrid()}</Layer>
+        <Layer>{renderSelectionRect()}</Layer>
       </Stage>
-      {hoveredPixel && (
-        <div
-          ref={coordinatesRef}
-          style={{
-            position: "absolute",
-            backgroundColor: "white",
-            padding: "2px 4px",
-            border: "1px solid black",
-            borderRadius: "3px",
-            pointerEvents: "none",
-          }}
-        >
-          {hoveredPixel.x}, {hoveredPixel.y}
-        </div>
-      )}
+      {renderCoordinates()}
     </div>
   );
 };
