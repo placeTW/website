@@ -1,5 +1,4 @@
-// src/component/viewport/advanced-viewport.tsx
-
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -12,14 +11,6 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import Konva from "konva";
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
 import { useDesignContext } from "../../context/design-context";
 import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
@@ -40,12 +31,12 @@ interface AdvancedViewportProps {
   canvases?: Canvas[];
   colors?: { Color: string; color_sort: number | null; color_name: string }[];
   editedPixels?: Pixel[];
-  setEditedPixels?: Dispatch<SetStateAction<Pixel[]>>;
+  setEditedPixels?: React.Dispatch<React.SetStateAction<Pixel[]>>;
   onSelectCanvas?: (canvas: Canvas | null) => void;
 }
 
 const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
-  isEditing,
+  isEditing = false,
   editDesignId,
   visibleLayers,
   colors,
@@ -67,6 +58,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     pixels: ViewportPixel[];
     selectionTopLeft: { x: number; y: number };
   } | null>(null);
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number | null>(null);
 
   const stageRef = useRef<Konva.Stage>(null);
   const undoManager = useRef(new UndoManager(100)).current;
@@ -74,45 +66,36 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
   const dragPixels = useRef<ViewportPixel[]>([]);
   const previousVisibleLayersRef = useRef<number[]>(visibleLayers);
 
-  const clearOnDesignPattern = createCheckerboardPattern(
-    "#eee",
-    "#fff",
-  ).toDataURL();
-  const clearOnMainPattern = createCheckerboardPattern(
-    "#fc7e7e",
-    "#fff",
-  ).toDataURL();
+  const clearOnDesignPattern = createCheckerboardPattern("#eee", "#fff").toDataURL();
+  const clearOnMainPattern = createCheckerboardPattern("#fc7e7e", "#fff").toDataURL();
 
   const { designs } = useDesignContext();
 
-  const fetchPixels = useCallback(
-    async (layers: number[]) => {
-      if (layers.length === 0) return [];
+  const fetchPixels = useCallback(async (layers: number[]) => {
+    if (layers.length === 0) return [];
 
-      const fetchedPixels = await Promise.all(
-        layers.map(async (layer) => {
-          const design = designs?.find((d) => d.id === layer);
-          if (design) {
-            return design.pixels.map((pixel: Pixel) => ({
-              ...pixel,
-              x: pixel.x + design.x,
-              y: pixel.y + design.y,
-              designId: design.id,
-            }));
-          }
-          return [];
-        }),
-      );
+    const fetchedPixels = await Promise.all(
+      layers.map(async (layer) => {
+        const design = designs?.find((d) => d.id === layer);
+        if (design) {
+          return design.pixels.map((pixel: Pixel) => ({
+            ...pixel,
+            x: pixel.x + design.x,
+            y: pixel.y + design.y,
+            designId: design.id,
+          }));
+        }
+        return [];
+      })
+    );
 
-      return fetchedPixels.flat();
-    },
-    [designs],
-  );
+    return fetchedPixels.flat();
+  }, [designs]);
 
-  const mergeWithExistingPixels = (
+  const mergeWithExistingPixels = useCallback((
     basePixels: ViewportPixel[],
     newEditedPixels: ViewportPixel[],
-    visibleLayers: number[],
+    visibleLayers: number[]
   ) => {
     const pixelMap = new Map<string, ViewportPixel>();
 
@@ -133,21 +116,21 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     });
 
     return Array.from(pixelMap.values());
-  };
+  }, []);
 
   const recalculatePixels = useCallback(async () => {
     const basePixels = await fetchPixels(visibleLayers);
     const mergedPixels = mergeWithExistingPixels(
       basePixels,
       editedPixels ?? [],
-      visibleLayers,
+      visibleLayers
     );
     if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
       setPixels(mergedPixels);
     }
-  }, [editedPixels, visibleLayers, fetchPixels, pixels]);
+  }, [editedPixels, visibleLayers, fetchPixels, pixels, mergeWithExistingPixels]);
 
-  const handleColorSelect = (color: string) => {
+  const handleColorSelect = useCallback((color: string) => {
     setSelectedColor(color);
 
     if (selection && isEditing && editDesignId && setEditedPixels) {
@@ -179,7 +162,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               p.y >= y &&
               p.y < y + height &&
               p.designId === editDesignId
-            ),
+            )
         );
 
         const finalPixels = [...updatedPixels, ...newPixels];
@@ -187,9 +170,9 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         return finalPixels;
       });
     }
-  };
+  }, [selection, isEditing, editDesignId, setEditedPixels, undoManager, editedPixels, recalculatePixels]);
 
-  const handlePixelPaint = (x: number, y: number, erase: boolean) => {
+  const handlePixelPaint = useCallback((x: number, y: number, erase: boolean) => {
     if (!isEditing || !selectedColor || !editDesignId || !setEditedPixels)
       return;
 
@@ -206,7 +189,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
 
     setEditedPixels((prevEditedPixels) => {
       const updatedPixels = prevEditedPixels.filter(
-        (p) => !(p.x === x && p.y === y && p.designId === editDesignId),
+        (p) => !(p.x === x && p.y === y && p.designId === editDesignId)
       );
       updatedPixels.push(newPixel);
 
@@ -217,7 +200,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     if (dragInProgress.current) {
       dragPixels.current.push(newPixel);
     }
-  };
+  }, [isEditing, selectedColor, editDesignId, setEditedPixels, undoManager, editedPixels, recalculatePixels]);
 
   const handleCopy = useCallback(() => {
     if (!selection || !pixels || !editDesignId) return;
@@ -230,17 +213,17 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         pixel.x >= x &&
         pixel.x < x + width &&
         pixel.y >= y &&
-        pixel.y < y + height,
+        pixel.y < y + height
     );
 
     const uniquePixels = new Map<string, ViewportPixel>();
     selectedPixels.forEach((pixel) =>
-      uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel),
+      uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel)
     );
 
     setCopyBuffer({
       pixels: Array.from(uniquePixels.values()),
-      selectionTopLeft: { x, y }, // Store the full selection's top-left corner
+      selectionTopLeft: { x, y },
     });
   }, [selection, pixels, editDesignId]);
 
@@ -283,8 +266,15 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       editedPixels,
       recalculatePixels,
       setEditedPixels,
-    ],
+    ]
   );
+
+  const handleSelectCanvas = useCallback((canvas: Canvas | null) => {
+    if (onSelectCanvas) {
+      onSelectCanvas(canvas);
+    }
+    setSelectedTabIndex(canvas ? canvases?.findIndex((c) => c.id === canvas.id) ?? null : null);
+  }, [onSelectCanvas, canvases]);
 
   useEffect(() => {
     const updatePixels = async () => {
@@ -319,13 +309,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
       recalculatePixels();
       undoManager.clearHistory();
     }
-  }, [
-    editedPixels,
-    isEditing,
-    recalculatePixels,
-    undoManager,
-    setEditedPixels,
-  ]);
+  }, [editedPixels, isEditing, recalculatePixels, undoManager, setEditedPixels]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -338,10 +322,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
           if (pointer) {
             const scale = stage.scaleX();
             const pasteX = Math.floor(
-              (pointer.x - stage.x()) / (GRID_SIZE * scale),
+              (pointer.x - stage.x()) / (GRID_SIZE * scale)
             );
             const pasteY = Math.floor(
-              (pointer.y - stage.y()) / (GRID_SIZE * scale),
+              (pointer.y - stage.y()) / (GRID_SIZE * scale)
             );
             handlePaste(pasteX, pasteY);
           }
@@ -395,12 +379,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
     selectedColor,
   ]);
 
-  const handleSelectCanvas = (canvas: Canvas | null) => {
-    if (onSelectCanvas) {
-      onSelectCanvas(canvas);
-    }
-  };
-
   const layerOrder: number[] = [];
   if (editDesignId && isEditing) {
     layerOrder.push(editDesignId);
@@ -413,13 +391,7 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
         {canvases && (
           <Flex padding={2}>
             <Tabs
-              defaultIndex={
-                selectedCanvas
-                  ? canvases.findIndex(
-                      (canvas) => canvas.id === selectedCanvas.id,
-                    )
-                  : -1
-              }
+              index={selectedTabIndex !== null ? selectedTabIndex : -1}
               onChange={(index) => handleSelectCanvas(canvases[index])}
             >
               <TabList>
@@ -429,7 +401,10 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               </TabList>
             </Tabs>
             <Spacer />
-            <Button marginEnd={2} onClick={() => handleSelectCanvas(null)}>
+            <Button
+              marginEnd={2}
+              onClick={() => handleSelectCanvas(null)}
+            >
               unassigned
             </Button>
           </Flex>
