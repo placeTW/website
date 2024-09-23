@@ -4,11 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { useColorContext } from "../../context/color-context";
 import { CLEAR_ON_MAIN, GRID_SIZE } from "./constants";
-import {
-  useMouseHandlers,
-  useTouchHandlers,
-  useWheelHandler,
-} from "./handlers";
+import { useMouseHandlers, useTouchHandlers } from "./handlers";
 import { useImage } from "./hooks";
 import { ViewportPixel } from "./types";
 
@@ -35,7 +31,7 @@ interface ViewportProps {
 const Viewport: React.FC<ViewportProps> = ({
   designId,
   pixels,
-  isEditing,
+  isEditing = false,
   onPixelPaint,
   layerOrder,
   selection,
@@ -63,6 +59,7 @@ const Viewport: React.FC<ViewportProps> = ({
 
   const BACKGROUND_TILE_SIZE = 1000;
   const MIN_ZOOM_LEVEL = 1 / 128;
+  const MAX_ZOOM_LEVEL = 16; // New constant for maximum zoom level
 
   useEffect(() => {
     setStageDraggable(false);
@@ -160,12 +157,45 @@ const Viewport: React.FC<ViewportProps> = ({
   const handleZoom = () => {
     if (stageRef.current) {
       let scale = stageRef.current.scaleX();
-      if (scale < MIN_ZOOM_LEVEL) {
-        scale = MIN_ZOOM_LEVEL;
-        stageRef.current.scale({ x: scale, y: scale });
-      }
+
+      // Apply min and max zoom levels
+      scale = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, scale));
+
+      stageRef.current.scale({ x: scale, y: scale });
       calculateVisibleTiles();
     }
+  };
+
+  // Modified wheel handler to incorporate max zoom level
+  const modifiedWheelHandler = (e: Konva.KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+
+    const scaleBy = 1.5;
+    const stage = e.target.getStage();
+    if (!stage) return;
+
+    const oldScale = stage.scaleX();
+    const mousePointTo = {
+      x: stage.getPointerPosition()!.x / oldScale - stage.x() / oldScale,
+      y: stage.getPointerPosition()!.y / oldScale - stage.y() / oldScale,
+    };
+
+    let newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+    // Apply min and max zoom levels
+    newScale = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, newScale));
+
+    stage.scale({ x: newScale, y: newScale });
+
+    const newPos = {
+      x:
+        -(mousePointTo.x - stage.getPointerPosition()!.x / newScale) * newScale,
+      y:
+        -(mousePointTo.y - stage.getPointerPosition()!.y / newScale) * newScale,
+    };
+    stage.position(newPos);
+
+    handleZoom();
   };
 
   const getColorForPixel = (x: number, y: number) => {
@@ -292,10 +322,7 @@ const Viewport: React.FC<ViewportProps> = ({
         width={dimensions.width}
         height={dimensions.height}
         ref={stageRef}
-        onWheel={(e) => {
-          useWheelHandler(e);
-          handleZoom();
-        }}
+        onWheel={modifiedWheelHandler}
         {...useMouseHandlers(
           onPixelPaint,
           isEditing,
