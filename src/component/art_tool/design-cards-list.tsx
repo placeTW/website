@@ -4,7 +4,6 @@ import {
   FC,
   SetStateAction,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { Design, Pixel } from "../../types/art-tool";
@@ -35,12 +34,16 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onDeleted,
   editedPixels,
 }) => {
-  const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
-    {},
-  );
   const toast = useToast();
-  const isFirstRender = useRef(true);
-  const previousVisibleLayers = useRef<number[]>([]);
+  const [visibleDesigns, setVisibleDesigns] = useState<Design[]>([]);
+
+  useEffect(() => {
+    const filteredDesigns = visibleLayers.length === 0
+      ? designs
+      : designs.filter(design => visibleLayers.includes(design.id));
+    const sortedDesigns = filteredDesigns.sort((a, b) => b.liked_by.length - a.liked_by.length);
+    setVisibleDesigns(sortedDesigns);
+  }, [designs, visibleLayers]);
 
   const handleEdit = (designId: number): boolean => {
     if (editDesignId && editDesignId !== designId) {
@@ -66,69 +69,21 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   };
 
   const handleToggleVisibility = (designId: number, isVisible: boolean) => {
-    setVisibilityMap((prev) => {
-      const updated = { ...prev };
-
-      if (isVisible) {
-        updated[designId] = true;
-      } else {
-        delete updated[designId];
-      }
-
-      return updated;
-    });
+    const updatedVisibleLayers = isVisible
+      ? [...visibleLayers, designId]
+      : visibleLayers.filter(id => id !== designId);
+    onVisibilityChange(updatedVisibleLayers);
   };
 
   const handleOnDeleted = (designId: number) => {
-    // Call the parent onDeleted function to update the state in DesignOffice
     onDeleted(designId);
-
-    setVisibilityMap((prev) => {
-      const updated = { ...prev };
-      delete updated[designId];
-      return updated;
-    });
-
+    onVisibilityChange(visibleLayers.filter(id => id !== designId));
     setEditDesignId(null);
   };
 
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    const newVisibleLayers = Object.keys(visibilityMap)
-      .filter((layer) => visibilityMap[Number(layer)])
-      .map(Number);
-
-    if (
-      JSON.stringify(newVisibleLayers) !==
-      JSON.stringify(previousVisibleLayers.current)
-    ) {
-      previousVisibleLayers.current = newVisibleLayers;
-      onVisibilityChange(newVisibleLayers);
-    }
-  }, [visibilityMap, onVisibilityChange]);
-
-  useEffect(() => {
-    const newVisibilityMap: Record<number, boolean> = {};
-
-    visibleLayers.forEach((layer) => {
-      newVisibilityMap[layer] = true;
-    });
-
-    setVisibilityMap(newVisibilityMap);
-  }, [visibleLayers]);
-
-  // Sort designs by the number of likes in descending order
-  const sortedDesigns = [...designs].sort(
-    (a, b) => b.liked_by.length - a.liked_by.length,
-  );
-
   return (
     <Flex direction="column" m={4} gap={4}>
-      {sortedDesigns.map((design) => (
+      {visibleDesigns.map((design) => (
         <Box key={design.id}>
           <DesignCard
             design={design}
@@ -137,7 +92,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
             onToggleVisibility={handleToggleVisibility}
-            isVisible={visibilityMap[design.id] ?? false}
+            isVisible={true}
             onSubmitEdit={onSubmitEdit}
             onSetCanvas={onSetCanvas}
             onDeleted={handleOnDeleted}
