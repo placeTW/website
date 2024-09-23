@@ -144,9 +144,6 @@ const Navbar = () => {
               </RouterLink>
             </Box>
           )}
-          <Box>
-            <LanguageSwitcher />
-          </Box>
         </Box>
 
         {/* Show Welcome Message on Both Mobile and Desktop */}

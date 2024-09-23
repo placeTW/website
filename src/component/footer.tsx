@@ -1,15 +1,12 @@
 import { Box, Flex, IconButton, Link, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { FaDiscord, FaGithub, FaReddit } from "react-icons/fa";
+import LanguageSwitcher from "./language-switcher";
 
 const Footer = () => {
   const { t } = useTranslation();
   return (
-    <Box
-      bg="blue.500"
-      px={4}
-      py={2}
-    >
+    <Box bg="blue.500" px={4} py={2}>
       <Text textAlign="center" color="white" mt={2} fontWeight="bold">
         {t("Join our community today!")}
       </Text>
@@ -44,6 +41,11 @@ const Footer = () => {
             mr={2}
           />
         </Link>
+      </Flex>
+      <Flex alignItems="center" justifyContent="center">
+        <Box width={60}>
+          <LanguageSwitcher />
+        </Box>
       </Flex>
     </Box>
   );
