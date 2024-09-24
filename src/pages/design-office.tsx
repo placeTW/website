@@ -153,6 +153,16 @@ const DesignOffice: React.FC = () => {
     );
   };
 
+  useEffect(() => {
+    if (designs && selectedCanvas) {
+      setVisibleLayers(
+        designs
+          .filter((design) => selectedCanvas.id === design.canvas)
+          .map((design) => design.id) || [],
+      );
+    }
+  }, [designs, selectedCanvas]);
+
   const showAll = () => {
     setVisibleLayers(designs?.filter(
       (design) => selectedCanvas?.id === design.canvas,
