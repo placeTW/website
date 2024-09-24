@@ -133,6 +133,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
           <DesignCard
             design={design}
             isEditing={editDesignId === design.id}
+            inEditMode={!!editDesignId && editDesignId > 0}
             onEdit={handleEdit}
             onCancelEdit={handleCancelEdit}
             onToggleVisibility={handleToggleVisibility}

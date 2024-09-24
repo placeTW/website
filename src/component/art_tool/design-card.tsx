@@ -54,6 +54,7 @@ import SetDesignCanvas from "./set-design-canvas";
 interface DesignCardProps {
   design: Design;
   isEditing: boolean;
+  inEditMode: boolean;
   onEdit: (designId: number) => boolean;
   onCancelEdit: () => void;
   onToggleVisibility: (designId: number, isVisible: boolean) => void;
@@ -67,6 +68,7 @@ interface DesignCardProps {
 const DesignCard: FC<DesignCardProps> = ({
   design,
   isEditing,
+  inEditMode,
   onEdit,
   onCancelEdit,
   onToggleVisibility,
@@ -333,7 +335,7 @@ const DesignCard: FC<DesignCardProps> = ({
               </Text>
             </Box>
             <Box display="flex" justifyContent="flex-end" gap={2}>
-              {isCreator && !isEditing && (
+              {isCreator && !inEditMode && (
                 <Tooltip label="Edit Design">
                   <IconButton
                     icon={<FaPen />}
@@ -366,7 +368,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 </>
               )}
 
-              <Box>
+              {!inEditMode && isAdminOrCreator && (
                 <Menu>
                   <MenuButton
                     as={IconButton}
@@ -377,7 +379,7 @@ const DesignCard: FC<DesignCardProps> = ({
                     zIndex="base"
                   />
                   <MenuList>
-                    {!isEditing && isAdminOrCreator && (
+                    {!isEditing && (
                       <MenuGroup title="Canvas Operations">
                         <MenuItem
                           icon={<FaCopy />}
@@ -393,23 +395,19 @@ const DesignCard: FC<DesignCardProps> = ({
                         </MenuItem>
                       </MenuGroup>
                     )}
-                    {isAdminOrCreator && (
-                      <>
-                        <MenuDivider />
-                        <MenuGroup title="Admin">
-                          <MenuItem
-                            icon={<FaTrash />}
-                            onClick={onOpenDeleteDialog}
-                            color={"red.500"}
-                          >
-                            Delete
-                          </MenuItem>
-                        </MenuGroup>
-                      </>
-                    )}
+                    <MenuDivider />
+                    <MenuGroup title="Admin">
+                      <MenuItem
+                        icon={<FaTrash />}
+                        onClick={onOpenDeleteDialog}
+                        color={"red.500"}
+                      >
+                        Delete
+                      </MenuItem>
+                    </MenuGroup>
                   </MenuList>
                 </Menu>
-              </Box>
+              )}
             </Box>
           </Flex>
         </CardBody>
