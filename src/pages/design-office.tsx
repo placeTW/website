@@ -52,7 +52,7 @@ const DesignOffice: React.FC = () => {
   // Select the first canvas by default
   useEffect(() => {
     if (canvases && canvases.length > 0) {
-      setSelectedCanvas(canvases[0]);
+      selectCanvas(canvases[0].id, designs || []);
     }
   }, [canvases]);
 
@@ -125,17 +125,23 @@ const DesignOffice: React.FC = () => {
   const handleSetCanvas = (designId: number, canvasId: number | null) => {
     const updatedDesigns = designs?.map((design) => {
       if (design.id === designId) {
-        return { ...design, canvas: canvasId };
+        return { ...design, canvas: canvasId } as Design;
       }
       return design;
     });
+
+    selectCanvas(canvasId, updatedDesigns || []);
+  };
+
+
+  const selectCanvas = (canvasId: number | null, designs: Design[]) => {
 
     setSelectedCanvas(
       canvases?.find((canvas) => canvas.id === canvasId) || null,
     );
 
     setVisibleLayers(
-      updatedDesigns
+      designs
         ?.filter((design) =>
           canvasId === null
             ? design.canvas === null
@@ -143,7 +149,7 @@ const DesignOffice: React.FC = () => {
         )
         .map((design) => design.id) || [],
     );
-  };
+  }
 
   const handleResetViewport = () => {
     setVisibleLayers([]);
@@ -240,7 +246,7 @@ const DesignOffice: React.FC = () => {
 
         <Box overflowY="auto" flex="1">
           <DesignCardsList
-            designs={designs || []}
+            designs={designs.filter((design) => selectedCanvas?.id === design.canvas)}
             visibleLayers={visibleLayers}
             editDesignId={editDesignId}
             setEditDesignId={setEditDesignId}
