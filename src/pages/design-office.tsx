@@ -49,6 +49,13 @@ const DesignOffice: React.FC = () => {
     }
   }, [colors, designs]);
 
+  // Select the first canvas by default
+  useEffect(() => {
+    if (canvases && canvases.length > 0) {
+      setSelectedCanvas(canvases[0]);
+    }
+  }, [canvases]);
+
   // Hide card list by default on mobile devices
   useEffect(() => {
     setIsCardListVisible(!isMobile);
