@@ -240,8 +240,7 @@ const DesignOffice: React.FC = () => {
         display={isCardListVisible ? "flex" : "none"}
         flexDirection="column"
         border="1px solid #ccc"
-        borderLeft={isMobile ? "none" : "1px solid #ccc"}
-        borderTop={isMobile ? "1px solid #ccc" : "none"}
+        borderLeft={!isMobile ? "none" : "1px solid #ccc"}
         width={isMobile ? "100%" : "350px"}
         height={isMobile ? "50%" : "auto"}
       >

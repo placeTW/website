@@ -50,7 +50,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
 
   return (
     <>
-      <Box position="sticky" top="0" zIndex="1" bg="white">
+      <Box position="sticky" top="0" zIndex="1" bg="white" borderBottom="1px solid #ccc">
         <Flex
           padding={4}
           paddingTop={{
