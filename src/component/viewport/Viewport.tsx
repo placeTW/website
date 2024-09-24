@@ -342,14 +342,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
 
       // Recalculate visible tiles
       calculateVisibleTiles();
-    }, [
-      stageRef,
-      mergedPixels,
-      GRID_SIZE,
-      PADDING_FACTOR,
-      MAX_ZOOM_LEVEL,
-      calculateVisibleTiles,
-    ]);
+    }, [stageRef, mergedPixels, PADDING_FACTOR, MAX_ZOOM_LEVEL, calculateVisibleTiles]);
 
     React.useImperativeHandle(ref, () => ({
       centerOnDesign,
