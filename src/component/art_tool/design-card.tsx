@@ -88,7 +88,6 @@ const DesignCard: FC<DesignCardProps> = ({
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [designName, setDesignName] = useState(design.design_name || "");
-  const [isSelected, setIsSelected] = useState(false);
   const toast = useToast();
 
   const {
