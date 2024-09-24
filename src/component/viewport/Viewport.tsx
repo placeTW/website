@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import Konva from "konva";
 import React, {
   forwardRef,
@@ -20,6 +20,7 @@ import { useMouseHandlers, useTouchHandlers } from "./handlers";
 import { useImage } from "./hooks";
 import { ViewportHandle, ViewportPixel } from "./types";
 import { roundToNearestPowerOf2 } from "./utils";
+import { useDesignContext } from "../../context/design-context";
 
 interface ViewportProps {
   stageRef: React.RefObject<Konva.Stage>;
@@ -74,6 +75,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     const [mergedPixels, setMergedPixels] = useState<ViewportPixel[]>([]);
     const [stageDraggable, setStageDraggable] = useState(false);
     const { colors } = useColorContext();
+    const { designs } = useDesignContext();
 
     const BACKGROUND_TILE_SIZE = 1000;
     const MIN_ZOOM_LEVEL = 1 / 128;
@@ -416,42 +418,49 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
         />
       );
 
-    const renderCoordinates = () =>
-      hoveredPixel && (
-        <div
+    const renderCoordinates = () => {
+      if (!hoveredPixel) return null;
+
+      const color = getColorForPixel(hoveredPixel.x, hoveredPixel.y);
+      const pixel = mergedPixels.find(
+        (p) => p.x === hoveredPixel.x && p.y === hoveredPixel.y,
+      );
+      const design = designs.find((d) => d.id === pixel?.designId);
+
+      return (
+        <Flex
           ref={coordinatesRef}
-          style={{
-            position: "absolute",
-            backgroundColor: "white",
-            padding: "2px 4px",
-            border: "1px solid black",
-            borderRadius: "3px",
-            pointerEvents: "none",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "4px",
-          }}
+          position="absolute"
+          backgroundColor="white"
+          padding={2}
+          border="1px solid black"
+          borderRadius="3px"
+          pointerEvents="none"
+          display="flex"
+          direction="column"
+          justifyContent="center"
+          alignItems="left"
         >
           <span>
             {hoveredPixel.x}, {hoveredPixel.y}
           </span>
-          {getColorForPixel(hoveredPixel.x, hoveredPixel.y) && (
-            <>
+          {color && (
+            <Flex direction="row" gap={2} alignItems="center">
               <Box
                 h={4}
                 w={4}
                 border="1px solid black"
-                bg={getColorForPixel(hoveredPixel.x, hoveredPixel.y)?.Color}
+                bg={color?.Color}
               />
               <span>
-                {getColorForPixel(hoveredPixel.x, hoveredPixel.y)?.color_name}
+                {color?.color_name}
               </span>
-            </>
+            </Flex>
           )}
-        </div>
+          <b>{design?.design_name}</b>
+        </Flex>
       );
+    };
 
     return (
       <div
