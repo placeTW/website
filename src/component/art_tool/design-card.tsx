@@ -28,7 +28,12 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
-import { FaCopy, FaEllipsisV, FaExchangeAlt } from "react-icons/fa";
+import {
+  FaArrowsAlt,
+  FaCopy,
+  FaEllipsisV,
+  FaExchangeAlt,
+} from "react-icons/fa";
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
@@ -336,16 +341,26 @@ const DesignCard: FC<DesignCardProps> = ({
             </Box>
             <Box display="flex" justifyContent="flex-end" gap={2}>
               {isCreator && !inEditMode && (
-                <Tooltip label="Edit Design">
-                  <IconButton
-                    icon={<FaPen />}
-                    aria-label="Edit"
-                    onClick={handleEditToggle}
-                    size="sm"
-                    colorScheme="blue"
-                    variant="outline"
-                  />
-                </Tooltip>
+                <>
+                  <Tooltip label="Edit Design">
+                    <IconButton
+                      icon={<FaPen />}
+                      aria-label="Edit"
+                      onClick={handleEditToggle}
+                      size="sm"
+                      colorScheme="blue"
+                      variant="outline"
+                    />
+                  </Tooltip>
+                  <Tooltip label="Move Design">
+                    <IconButton
+                      icon={<FaArrowsAlt />}
+                      aria-label="Move"
+                      size="sm"
+                      variant="outline"
+                    />
+                  </Tooltip>
+                </>
               )}
               {isEditing && (
                 <>
