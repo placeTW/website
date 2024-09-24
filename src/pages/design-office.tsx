@@ -108,6 +108,8 @@ const DesignOffice: React.FC = () => {
       });
 
       setEditedPixels([]);
+      setEditDesignId(null);
+      handleEditStateChange(false, null);
     } catch (error) {
       toast({
         title: "Error",

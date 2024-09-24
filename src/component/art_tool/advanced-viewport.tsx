@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { FaExpand } from "react-icons/fa";
 import { useDesignContext } from "../../context/design-context";
 import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
@@ -22,7 +23,6 @@ import {
 import { ViewportHandle, ViewportPixel } from "../viewport/types";
 import { createCheckerboardPattern } from "../viewport/utils";
 import UndoManager from "../viewport/utils/undo-manager";
-import { FaExpand } from "react-icons/fa";
 
 interface AdvancedViewportProps {
   visibleLayers: number[];
@@ -46,7 +46,6 @@ const AdvancedViewport = React.forwardRef<
     ) => void;
     centerOnCanvas: () => void;
   },
-  
   AdvancedViewportProps
 >(
   (
@@ -362,7 +361,7 @@ const AdvancedViewport = React.forwardRef<
       if (viewportRef.current) {
         viewportRef.current.centerOnCanvas();
       }
-    }
+    };
     React.useImperativeHandle(ref, () => ({
       centerOnDesign,
       centerOnCanvas,
@@ -508,10 +507,10 @@ const AdvancedViewport = React.forwardRef<
                 </TabList>
               </Tabs>
               <Spacer />
-              <IconButton 
-              aria-label="Center on Canvas"
-              icon={<FaExpand />} 
-              onClick={centerOnCanvas} 
+              <IconButton
+                aria-label="Center on Canvas"
+                icon={<FaExpand />}
+                onClick={centerOnCanvas}
               />
             </Flex>
           )}
