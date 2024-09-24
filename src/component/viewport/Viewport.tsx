@@ -10,14 +10,15 @@ import React, {
 } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { useColorContext } from "../../context/color-context";
+import {
+  getDimensions,
+  getTopLeftCoords,
+  offsetPixels,
+} from "../../utils/pixelUtils";
 import { CLEAR_ON_MAIN, GRID_SIZE } from "./constants";
 import { useMouseHandlers, useTouchHandlers } from "./handlers";
 import { useImage } from "./hooks";
-import { ViewportPixel } from "./types";
-
-interface ViewportHandle {
-  centerOnDesign: (x: number, y: number, width: number, height: number) => void;
-}
+import { ViewportHandle, ViewportPixel } from "./types";
 
 interface ViewportProps {
   stageRef: React.RefObject<Konva.Stage>;
@@ -266,8 +267,60 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       [stageRef, calculateVisibleTiles, MAX_ZOOM_LEVEL],
     );
 
+    const centerOnCanvas = useCallback(() => {
+      if (!stageRef.current) return;
+
+      const stage = stageRef.current;
+      const stageWidth = stage.width();
+      const stageHeight = stage.height();
+
+      // Find the bounding box of all the pixels
+      const { x: minX, y: minY } = getTopLeftCoords(mergedPixels);
+      const { width: boxWidth, height: boxHeight } = getDimensions(
+        offsetPixels(mergedPixels, { x: minX, y: minY }),
+      );
+
+      // Calculate the dimensions of the bounding box in pixels
+      const boxWidthPx = boxWidth * GRID_SIZE;
+      const boxHeightPx = boxHeight * GRID_SIZE;
+
+      // Calculate the zoom level to fit the bounding box with padding
+      const scaleX = (stageWidth / boxWidthPx) * PADDING_FACTOR;
+      const scaleY = (stageHeight / boxHeightPx) * PADDING_FACTOR;
+      const newScale = Math.min(scaleX, scaleY, MAX_ZOOM_LEVEL);
+
+      // Set the new scale
+      stage.scale({ x: newScale, y: newScale });
+
+      // Calculate the new position to center the bounding box
+      const centerX = minX * GRID_SIZE + (boxWidth * GRID_SIZE) / 2;
+      const centerY = minY * GRID_SIZE + (boxHeight * GRID_SIZE) / 2;
+      const newX = stageWidth / 2 - centerX * newScale;
+      const newY = stageHeight / 2 - centerY * newScale;
+
+      // Set the new position
+      stage.position({ x: newX, y: newY });
+
+      // Update the stage
+      stage.batchDraw();
+
+      // Update the zoom level state
+      setZoomLevel(newScale);
+
+      // Recalculate visible tiles
+      calculateVisibleTiles();
+    }, [
+      stageRef,
+      mergedPixels,
+      GRID_SIZE,
+      PADDING_FACTOR,
+      MAX_ZOOM_LEVEL,
+      calculateVisibleTiles,
+    ]);
+
     React.useImperativeHandle(ref, () => ({
       centerOnDesign,
+      centerOnCanvas,
     }));
 
     const renderBackgroundTiles = () =>

@@ -26,6 +26,7 @@ import { useDesignContext } from "../context/design-context";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
 import { getDimensions, offsetPixels } from "../utils/pixelUtils";
+import { ViewportHandle } from "../component/viewport/types";
 
 const DesignOffice: React.FC = () => {
   const { designs, canvases, setDesigns } = useDesignContext();
@@ -38,9 +39,7 @@ const DesignOffice: React.FC = () => {
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const [isCardListVisible, setIsCardListVisible] = useState(true); // New state for card list visibility
   const [isMobile] = useMediaQuery("(max-width: 768px)"); // Media query for mobile devices
-  const advancedViewportRef = useRef<{
-    centerOnDesign: (x: number, y: number, width: number, height: number) => void
-  }>(null);
+  const advancedViewportRef = useRef<ViewportHandle>(null);
   const toast = useToast();
 
   useEffect(() => {

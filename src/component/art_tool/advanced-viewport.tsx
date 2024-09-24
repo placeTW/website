@@ -2,6 +2,7 @@ import {
   Box,
   Flex,
   Grid,
+  IconButton,
   Spacer,
   Tab,
   TabList,
@@ -18,9 +19,10 @@ import {
   CLEAR_ON_MAIN,
   GRID_SIZE,
 } from "../viewport/constants";
-import { ViewportPixel } from "../viewport/types";
+import { ViewportHandle, ViewportPixel } from "../viewport/types";
 import { createCheckerboardPattern } from "../viewport/utils";
 import UndoManager from "../viewport/utils/undo-manager";
+import { FaExpand } from "react-icons/fa";
 
 interface AdvancedViewportProps {
   visibleLayers: number[];
@@ -32,12 +34,6 @@ interface AdvancedViewportProps {
   editedPixels?: Pixel[];
   setEditedPixels?: React.Dispatch<React.SetStateAction<Pixel[]>>;
   onSelectCanvas?: (canvas: Canvas | null) => void;
-  onCenterDesign?: (
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-  ) => void; // Add this line
 }
 
 const AdvancedViewport = React.forwardRef<
@@ -48,7 +44,9 @@ const AdvancedViewport = React.forwardRef<
       width: number,
       height: number,
     ) => void;
+    centerOnCanvas: () => void;
   },
+  
   AdvancedViewportProps
 >(
   (
@@ -62,7 +60,6 @@ const AdvancedViewport = React.forwardRef<
       selectedCanvas,
       editedPixels = [],
       setEditedPixels,
-      onCenterDesign, // Add this line
     },
     ref,
   ) => {
@@ -92,14 +89,7 @@ const AdvancedViewport = React.forwardRef<
     const dragInProgress = useRef(false);
     const dragPixels = useRef<ViewportPixel[]>([]);
     const previousVisibleLayersRef = useRef<number[]>(visibleLayers);
-    const viewportRef = useRef<{
-      centerOnDesign: (
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-      ) => void;
-    }>(null);
+    const viewportRef = useRef<ViewportHandle>(null);
 
     const clearOnDesignPattern = createCheckerboardPattern(
       "#eee",
@@ -368,8 +358,14 @@ const AdvancedViewport = React.forwardRef<
         viewportRef.current.centerOnDesign(x, y, width, height);
       }
     };
+    const centerOnCanvas = () => {
+      if (viewportRef.current) {
+        viewportRef.current.centerOnCanvas();
+      }
+    }
     React.useImperativeHandle(ref, () => ({
       centerOnDesign,
+      centerOnCanvas,
     }));
 
     useEffect(() => {
@@ -512,6 +508,11 @@ const AdvancedViewport = React.forwardRef<
                 </TabList>
               </Tabs>
               <Spacer />
+              <IconButton 
+              aria-label="Center on Canvas"
+              icon={<FaExpand />} 
+              onClick={centerOnCanvas} 
+              />
             </Flex>
           )}
           <Viewport
