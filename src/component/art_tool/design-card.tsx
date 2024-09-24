@@ -377,7 +377,7 @@ const DesignCard: FC<DesignCardProps> = ({
                     zIndex="base"
                   />
                   <MenuList>
-                    {!isEditing && (
+                    {!isEditing && isAdminOrCreator && (
                       <MenuGroup title="Canvas Operations">
                         <MenuItem
                           icon={<FaCopy />}
