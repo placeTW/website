@@ -22,7 +22,7 @@ export const usePanAndZoom = (
     if (!pointer) return;
 
     const scaleBy = 1.1;
-    const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+    const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
