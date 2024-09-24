@@ -251,7 +251,7 @@ const DesignOffice: React.FC = () => {
         height={isMobile ? "50%" : "auto"}
       >
         <Box position="sticky" top="0" zIndex="1" bg="white">
-          <Flex padding={4}>
+          <Flex padding={4} paddingTop={2} alignItems="center">
             <Heading size="md">Designs</Heading>
             <Spacer />
             <Menu>
