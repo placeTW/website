@@ -21,6 +21,7 @@ interface DesignCardsListProps {
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
   editedPixels: Pixel[];
+  searchQuery: string;
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -34,6 +35,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onSetCanvas,
   onDeleted,
   editedPixels,
+  searchQuery,
 }) => {
   const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
     {},
@@ -121,9 +123,13 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     setVisibilityMap(newVisibilityMap);
   }, [visibleLayers]);
 
-  // Sort designs by the number of likes in descending order
-  const sortedDesigns = [...designs].sort(
-    (a, b) => b.liked_by.length - a.liked_by.length,
+  const filteredDesigns = designs.filter((design) =>
+    design.design_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Sort filtered designs by the number of likes in descending order
+  const sortedDesigns = [...filteredDesigns].sort(
+    (a, b) => b.liked_by.length - a.liked_by.length
   );
 
   return (

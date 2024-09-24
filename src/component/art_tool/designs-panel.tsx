@@ -3,14 +3,17 @@ import {
   Flex,
   Heading,
   IconButton,
+  Input,
+  InputGroup,
+  InputLeftElement,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Spacer,
 } from "@chakra-ui/react";
-import React, { Dispatch, SetStateAction } from "react";
-import { FaEllipsisV, FaEye, FaEyeSlash } from "react-icons/fa";
+import React, { Dispatch, SetStateAction, useState } from "react";
+import { FaEllipsisV, FaEye, FaEyeSlash, FaSearch } from "react-icons/fa";
 import { Design, Pixel } from "../../types/art-tool";
 import DesignCardsList from "./design-cards-list";
 
@@ -43,6 +46,8 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
   showAll,
   hideAll,
 }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
   return (
     <>
       <Box position="sticky" top="0" zIndex="1" bg="white">
@@ -66,6 +71,18 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
             </MenuList>
           </Menu>
         </Flex>
+        <Flex padding={4} paddingTop={2}>
+          <InputGroup>
+            <InputLeftElement pointerEvents="none">
+              <FaSearch color="gray.300" />
+            </InputLeftElement>
+            <Input
+              placeholder="Search designs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </InputGroup>
+        </Flex>
       </Box>
 
       <Box overflowY="auto" flex="1">
@@ -80,6 +97,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
           onSetCanvas={onSetCanvas}
           onDeleted={onDeleted}
           editedPixels={editedPixels}
+          searchQuery={searchQuery}
         />
         <Box h="100px" />
       </Box>
