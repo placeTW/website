@@ -224,7 +224,12 @@ const DesignCard: FC<DesignCardProps> = ({
 
   return (
     <>
-      <Card bg="white" width="100%" position="relative" variant="outline">
+      <Card
+        backgroundColor={isVisible ? "white" : "gray.100"}
+        width="100%"
+        position="relative"
+        variant="outline"
+      >
         <CardBody display="flex" padding="0">
           <Box
             height="auto"
@@ -236,7 +241,6 @@ const DesignCard: FC<DesignCardProps> = ({
             display="flex"
             justifyContent="center"
             alignItems="center"
-            backgroundColor="white"
           >
             <Tooltip label={isVisible ? "Hide Design" : "Show Design"}>
               <IconButton
@@ -250,6 +254,8 @@ const DesignCard: FC<DesignCardProps> = ({
                 size="sm"
                 backgroundColor="rgba(255, 255, 255, 0.8)"
                 _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
+                border="1px"
+                borderColor={isVisible ? "green.500" : "red.500"}
               />
             </Tooltip>
             <Image
@@ -281,6 +287,8 @@ const DesignCard: FC<DesignCardProps> = ({
                 size="sm"
                 backgroundColor="rgba(255, 255, 255, 0.8)"
                 _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
+                border="1px"
+                borderColor={isLiked ? "red.500" : "gray.500"}
               >
                 {design.liked_by.length}
               </Button>
@@ -291,7 +299,7 @@ const DesignCard: FC<DesignCardProps> = ({
             justifyContent="space-between"
             p={2}
             width="100%"
-            bg={isEditing ? "blue.100" : "white"}
+            bg={isEditing ? "blue.100" : isVisible ? "white" : "gray.100"}
           >
             <Box>
               {isEditing ? (
@@ -319,6 +327,8 @@ const DesignCard: FC<DesignCardProps> = ({
                     aria-label="Edit"
                     onClick={handleEditToggle}
                     size="sm"
+                    colorScheme="blue"
+                    variant="outline"
                   />
                 </Tooltip>
               )}
@@ -348,6 +358,8 @@ const DesignCard: FC<DesignCardProps> = ({
                   aria-label="Set Canvas"
                   onClick={handleAddToCanvas}
                   size="sm"
+                  colorScheme="green"
+                  variant="outline"
                 />
               </Tooltip>
               {isAdminOrCreator && (
@@ -357,6 +369,8 @@ const DesignCard: FC<DesignCardProps> = ({
                     aria-label="Delete"
                     onClick={onOpenDeleteDialog}
                     size="sm"
+                    colorScheme="red"
+                    variant="outline"
                   />
                 </Tooltip>
               )}
