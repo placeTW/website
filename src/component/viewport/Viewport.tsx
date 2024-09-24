@@ -170,7 +170,7 @@ const Viewport: React.FC<ViewportProps> = ({
   const modifiedWheelHandler = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
 
-    const scaleBy = 1.5;
+    const scaleBy = 2;
     const stage = e.target.getStage();
     if (!stage) return;
 
