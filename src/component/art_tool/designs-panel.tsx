@@ -51,7 +51,14 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
   return (
     <>
       <Box position="sticky" top="0" zIndex="1" bg="white">
-        <Flex padding={4} paddingTop={2} alignItems="center">
+        <Flex
+          padding={4}
+          paddingTop={{
+            base: 4,
+            md: 2,
+          }}
+          alignItems="center"
+        >
           <Heading size="md">Designs</Heading>
           <Spacer />
           <Menu>
