@@ -28,7 +28,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
-import { FaCopy, FaEllipsisV, FaExchangeAlt } from "react-icons/fa";
+import { FaCompressAlt, FaCopy, FaEllipsisV, FaExchangeAlt } from "react-icons/fa";
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
@@ -57,6 +57,7 @@ interface DesignCardProps {
   inEditMode: boolean;
   onEdit: (designId: number) => boolean;
   onCancelEdit: () => void;
+  onSelect: (designId: number) => void;
   onToggleVisibility: (designId: number, isVisible: boolean) => void;
   isVisible: boolean;
   onSubmitEdit: (designName: string) => void;
@@ -71,6 +72,7 @@ const DesignCard: FC<DesignCardProps> = ({
   inEditMode,
   onEdit,
   onCancelEdit,
+  onSelect,
   onToggleVisibility,
   isVisible,
   onSubmitEdit,
@@ -86,6 +88,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [designName, setDesignName] = useState(design.design_name || "");
+  const [isSelected, setIsSelected] = useState(false);
   const toast = useToast();
 
   const {
@@ -277,6 +280,21 @@ const DesignCard: FC<DesignCardProps> = ({
                 borderColor={isVisible ? "green.500" : "red.500"}
               />
             </Tooltip>
+            <Tooltip label="Center on Design">
+              <IconButton
+                icon={<FaCompressAlt />}
+                aria-label="Center on Design"
+                onClick={() => onSelect(design.id)}
+                position="absolute"
+                top="5px"
+                right="5px"
+                size="sm"
+                backgroundColor="rgba(255, 255, 255, 0.8)"
+                _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
+                border="1px"
+                isDisabled={!isVisible}
+              />
+            </Tooltip>
             <Image
               alt={design.design_name}
               fallback={
@@ -319,7 +337,8 @@ const DesignCard: FC<DesignCardProps> = ({
             width="100%"
             bg={isEditing ? "blue.100" : isVisible ? "white" : "gray.100"}
           >
-            <Box>
+            <Box
+            >
               {isEditing ? (
                 <Input
                   value={designName}

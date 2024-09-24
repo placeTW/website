@@ -20,6 +20,7 @@ interface DesignCardsListProps {
   onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
+  onSelectDesign: (designId: number) => void;
   editedPixels: Pixel[];
   searchQuery: string;
 }
@@ -34,6 +35,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onSubmitEdit,
   onSetCanvas,
   onDeleted,
+  onSelectDesign,
   editedPixels,
   searchQuery,
 }) => {
@@ -148,6 +150,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             onSetCanvas={onSetCanvas}
             onDeleted={handleOnDeleted}
             editedPixels={editedPixels}
+            onSelect={onSelectDesign}
           />
         </Box>
       ))}

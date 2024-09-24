@@ -7,7 +7,7 @@ import {
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
@@ -25,7 +25,7 @@ import { useColorContext } from "../context/color-context";
 import { useDesignContext } from "../context/design-context";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
-import { offsetPixels } from "../utils/pixelUtils";
+import { getDimensions, offsetPixels } from "../utils/pixelUtils";
 
 const DesignOffice: React.FC = () => {
   const { designs, canvases, setDesigns } = useDesignContext();
@@ -38,6 +38,9 @@ const DesignOffice: React.FC = () => {
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const [isCardListVisible, setIsCardListVisible] = useState(true); // New state for card list visibility
   const [isMobile] = useMediaQuery("(max-width: 768px)"); // Media query for mobile devices
+  const advancedViewportRef = useRef<{
+    centerOnDesign: (x: number, y: number, width: number, height: number) => void
+  }>(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -187,6 +190,20 @@ const DesignOffice: React.FC = () => {
     handleEditStateChange(true, design.id);
   };
 
+  const handleSelectDesign = (designId: number) => {
+    const design = designs?.find((d) => d.id === designId);
+    if (!design) return;
+
+    const dimensions = getDimensions(design.pixels);
+
+    advancedViewportRef.current?.centerOnDesign(
+      design.x,
+      design.y,
+      dimensions.width,
+      dimensions.height,
+    );
+  }
+
   if (loading) {
     return <Spinner size="xl" />;
   }
@@ -221,6 +238,7 @@ const DesignOffice: React.FC = () => {
         height={isMobile && !isCardListVisible ? "100%" : "auto"}
       >
         <AdvancedViewport
+          ref={advancedViewportRef}
           isEditing={isEditing}
           editDesignId={editDesignId}
           visibleLayers={visibleLayers}
@@ -259,6 +277,7 @@ const DesignOffice: React.FC = () => {
           editedPixels={editedPixels}
           showAll={showAll}
           hideAll={hideAll}
+          onSelectDesign={handleSelectDesign}
         />
       </Box>
 
