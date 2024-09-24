@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Flex,
   Grid,
   Spacer,
@@ -468,9 +467,6 @@ const AdvancedViewport: React.FC<AdvancedViewportProps> = ({
               </TabList>
             </Tabs>
             <Spacer />
-            <Button marginEnd={2} onClick={() => handleSelectCanvas(null)}>
-              unassigned
-            </Button>
           </Flex>
         )}
         <Viewport
