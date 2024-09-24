@@ -28,16 +28,15 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
-import { FaCompressAlt, FaCopy, FaEllipsisV, FaExchangeAlt } from "react-icons/fa";
+import { FaCompressAlt, FaCopy, FaEllipsisV, FaExchangeAlt, FaSave } from "react-icons/fa";
 import {
-  FaArrowRightFromBracket,
-  FaCloudArrowUp,
   FaEye,
   FaEyeSlash,
   FaHeart,
   FaImage,
   FaPen,
   FaTrash,
+  FaXmark,
 } from "react-icons/fa6";
 import {
   copyDesignCanvas,
@@ -369,7 +368,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 <>
                   <Tooltip label="Cancel Edit">
                     <IconButton
-                      icon={<FaArrowRightFromBracket />}
+                      icon={<FaXmark />}
                       aria-label="Cancel"
                       onClick={handleEditToggle}
                       size="sm"
@@ -377,7 +376,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   </Tooltip>
                   <Tooltip label="Save Changes">
                     <IconButton
-                      icon={<FaCloudArrowUp />}
+                      icon={<FaSave />}
                       aria-label="Submit"
                       onClick={() => onSubmitEdit(designName)}
                       size="sm"
