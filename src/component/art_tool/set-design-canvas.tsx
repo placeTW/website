@@ -11,17 +11,19 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { FC, useState } from "react";
-import { Canvas } from "../../types/art-tool";
 import { useDesignContext } from "../../context/design-context"; // Import DesignContext
+import { Canvas } from "../../types/art-tool";
 
 interface SetDesignCanvasProps {
   isOpen: boolean;
+  copy?: boolean;
   onClose: () => void;
-  onSetCanvas: (canvas: Canvas | null) => void;
+  onSetCanvas: (canvas: Canvas | null, copy: boolean) => void;
 }
 
 const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
   isOpen,
+  copy,
   onClose,
   onSetCanvas,
 }) => {
@@ -38,7 +40,7 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
   };
 
   const handleSetCanvas = () => {
-    onSetCanvas(selectedCanvas || null);
+    onSetCanvas(selectedCanvas || null, copy || false);
     onClose();
   };
 
@@ -46,7 +48,7 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Set Design Canvas</ModalHeader>
+        <ModalHeader>{copy ? "Copy to Canvas" : "Move to Canvas"}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {canvases?.length === 0 || !canvases ? (
@@ -71,7 +73,7 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
             onClick={handleSetCanvas}
             isDisabled={!selectedCanvas?.id}
           >
-            Add
+            {copy ? "Copy" : "Move"}
           </Button>
           <Button variant="ghost" onClick={onClose}>
             Cancel

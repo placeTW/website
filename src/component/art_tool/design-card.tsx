@@ -16,12 +16,19 @@ import {
   IconButton,
   Image,
   Input,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuGroup,
+  MenuItem,
+  MenuList,
   Text,
   Tooltip, // Import Tooltip
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
+import { FaCopy, FaEllipsisV, FaExchangeAlt } from "react-icons/fa";
 import {
   FaArrowRightFromBracket,
   FaCloudArrowUp,
@@ -29,11 +36,11 @@ import {
   FaEyeSlash,
   FaHeart,
   FaImage,
-  FaLayerGroup,
   FaPen,
   FaTrash,
 } from "react-icons/fa6";
 import {
+  copyDesignCanvas,
   databaseDeleteDesign,
   likeDesign,
   unlikeDesign,
@@ -77,6 +84,7 @@ const DesignCard: FC<DesignCardProps> = ({
     currentUser ? design.liked_by?.includes(currentUser.user_id) : false,
   );
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
   const [designName, setDesignName] = useState(design.design_name || "");
   const toast = useToast();
 
@@ -171,18 +179,30 @@ const DesignCard: FC<DesignCardProps> = ({
     onCloseUnsavedChangesDialog();
   };
 
-  const handleAddToCanvas = () => {
+  const handleMoveToCanvas = () => {
+    setIsCopying(false);
     setIsSetCanvasPopupOpen(true);
   };
 
-  const handleSetCanvasDecision = async (canvas: Canvas | null) => {
+  const handleCopyToCanvas = () => {
+    setIsCopying(true);
+    setIsSetCanvasPopupOpen(true);
+  };
+
+  const handleSetCanvasDecision = async (
+    canvas: Canvas | null,
+    copy: boolean,
+  ) => {
     setIsSetCanvasPopupOpen(false);
 
     if (!canvas) return;
 
     try {
-      await updateDesignCanvas(design.id, canvas.id);
-      onSetCanvas(design.id, canvas.id);
+      const returnedDesign = copy
+        ? await copyDesignCanvas(design.id, canvas.id)
+        : await updateDesignCanvas(design.id, canvas.id);
+      onSetCanvas(returnedDesign.id, canvas.id);
+
       toast({
         title: "Set Canvas for Design",
         description: `${canvas.canvas_name} has been set as the canvas for ${design.design_name}`,
@@ -250,7 +270,6 @@ const DesignCard: FC<DesignCardProps> = ({
                 position="absolute"
                 top="5px"
                 left="5px"
-                zIndex={1}
                 size="sm"
                 backgroundColor="rgba(255, 255, 255, 0.8)"
                 _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
@@ -283,7 +302,6 @@ const DesignCard: FC<DesignCardProps> = ({
                 position="absolute"
                 bottom="5px"
                 left="5px"
-                zIndex={1}
                 size="sm"
                 backgroundColor="rgba(255, 255, 255, 0.8)"
                 _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
@@ -352,28 +370,46 @@ const DesignCard: FC<DesignCardProps> = ({
                   </Tooltip>
                 </>
               )}
-              <Tooltip label="Set Canvas">
-                <IconButton
-                  icon={<FaLayerGroup />}
-                  aria-label="Set Canvas"
-                  onClick={handleAddToCanvas}
-                  size="sm"
-                  colorScheme="green"
-                  variant="outline"
-                />
-              </Tooltip>
-              {isAdminOrCreator && (
-                <Tooltip label="Delete Design">
-                  <IconButton
-                    icon={<FaTrash />}
-                    aria-label="Delete"
-                    onClick={onOpenDeleteDialog}
-                    size="sm"
-                    colorScheme="red"
+
+              <Box>
+                <Menu>
+                  <MenuButton
+                    as={IconButton}
+                    aria-label="Options"
+                    icon={<FaEllipsisV />}
                     variant="outline"
+                    size="sm"
+                    zIndex="base"
                   />
-                </Tooltip>
-              )}
+                  <MenuList>
+                    <MenuGroup title="Canvas Operations">
+                      <MenuItem icon={<FaCopy />} onClick={handleCopyToCanvas}>
+                        Copy
+                      </MenuItem>
+                      <MenuItem
+                        icon={<FaExchangeAlt />}
+                        onClick={handleMoveToCanvas}
+                      >
+                        Move
+                      </MenuItem>
+                    </MenuGroup>
+                    {isAdminOrCreator && (
+                      <>
+                        <MenuDivider />
+                        <MenuGroup title="Admin">
+                          <MenuItem
+                            icon={<FaTrash />}
+                            onClick={onOpenDeleteDialog}
+                            color={"red.500"}
+                          >
+                            Delete
+                          </MenuItem>
+                        </MenuGroup>
+                      </>
+                    )}
+                  </MenuList>
+                </Menu>
+              </Box>
             </Box>
           </Flex>
         </CardBody>
@@ -389,6 +425,7 @@ const DesignCard: FC<DesignCardProps> = ({
       />
       <SetDesignCanvas
         isOpen={isSetCanvasPopupOpen}
+        copy={isCopying}
         onClose={() => setIsSetCanvasPopupOpen(false)}
         onSetCanvas={handleSetCanvasDecision}
       />

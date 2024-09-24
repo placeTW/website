@@ -351,13 +351,16 @@ const updateDesignThumbnail = async (
 export const updateDesignCanvas = async (
   designId: number,
   canvasId: number,
-): Promise<void> => {
+): Promise<Design> => {
   const updateDesignCanvasQuery = await supabase
     .from("art_tool_designs")
     .update({ canvas: canvasId })
-    .eq("id", designId);
+    .eq("id", designId)
+    .returns<Design>()
+    .select()
+    .single();
 
-  const { error } = logSupabaseDatabaseQuery(
+  const { data, error } = logSupabaseDatabaseQuery(
     updateDesignCanvasQuery,
     "updateDesignCanvas",
   );
@@ -365,6 +368,46 @@ export const updateDesignCanvas = async (
   if (error) {
     throw new Error(error.message);
   }
+
+  return data;
+};
+
+export const copyDesignCanvas = async (
+  designId: number,
+  canvasId: number,
+): Promise<Design> => {
+  const designToCopy = await databaseFetchDesign(designId);
+
+  if (!designToCopy) {
+    throw new Error("Design not found");
+  }
+
+  const copyDesignCanvasQuery = await supabase
+    .from("art_tool_designs")
+    .insert([
+      {
+        design_name: designToCopy.design_name,
+        canvas: canvasId,
+        created_by: designToCopy.created_by,
+        pixels: designToCopy.pixels,
+        x: designToCopy.x,
+        y: designToCopy.y,
+      },
+    ])
+    .returns<Design>()
+    .select()
+    .single();
+
+  const { data, error } = logSupabaseDatabaseQuery(
+    copyDesignCanvasQuery,
+    "copyDesignCanvas",
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 // Function to remove a Supabase channel
