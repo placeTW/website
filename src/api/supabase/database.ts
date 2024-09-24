@@ -72,7 +72,7 @@ export const databaseFetchCurrentUser = async (
 // Layers-related functions
 export const databaseCreateDesign = async (
   layerName: string,
-  canvasId: number | null,
+  canvasId: number | undefined,
   userId: string,
 ): Promise<Design | null> => {
   const createDesignQuery = await supabase

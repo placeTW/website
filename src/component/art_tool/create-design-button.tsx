@@ -5,7 +5,7 @@ import CreateDesignModal from "./create-design-modal";
 import { Design } from "../../types/art-tool";
 
 interface CreateDesignButtonProps {
-  canvasId: number | null;
+  canvasId: number | undefined;
   onCreate: (design: Design) => void;
 }
 

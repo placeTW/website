@@ -16,7 +16,7 @@ import { Design } from "../../types/art-tool";
 
 interface CreateDesignModalProps {
   isOpen: boolean;
-  canvasId: number | null; 
+  canvasId: number | undefined; 
   onClose: () => void;
   onCreate: (design: Design) => void;
 }
