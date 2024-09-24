@@ -19,6 +19,7 @@ import { CLEAR_ON_MAIN, GRID_SIZE } from "./constants";
 import { useMouseHandlers, useTouchHandlers } from "./handlers";
 import { useImage } from "./hooks";
 import { ViewportHandle, ViewportPixel } from "./types";
+import { roundToNearestPowerOf2 } from "./utils";
 
 interface ViewportProps {
   stageRef: React.RefObject<Konva.Stage>;
@@ -179,12 +180,14 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
         // Apply min and max zoom levels
         scale = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, scale));
 
+        // Round the zoom scale to the nearest power of 2
+        scale = roundToNearestPowerOf2(scale);
+
         stageRef.current.scale({ x: scale, y: scale });
         calculateVisibleTiles();
       }
     };
 
-    // Modified wheel handler to incorporate max zoom level
     const modifiedWheelHandler = (e: Konva.KonvaEventObject<WheelEvent>) => {
       e.evt.preventDefault();
 
@@ -202,6 +205,9 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
 
       // Apply min and max zoom levels
       newScale = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, newScale));
+
+      // Round the new scale to the nearest power of 2
+      newScale = roundToNearestPowerOf2(newScale);
 
       stage.scale({ x: newScale, y: newScale });
 
@@ -224,6 +230,21 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       return colors.find((c) => c.Color === pixel.color);
     };
 
+    const calculateZoomLevel = (
+      stageWidth: number,
+      stageHeight: number,
+      contentWidthPx: number,
+      contentHeightPx: number,
+      PADDING_FACTOR: number,
+      MAX_ZOOM_LEVEL: number,
+    ) => {
+      const scaleX = (stageWidth / contentWidthPx) * PADDING_FACTOR;
+      const scaleY = (stageHeight / contentHeightPx) * PADDING_FACTOR;
+      const rawZoomLevel = Math.min(scaleX, scaleY, MAX_ZOOM_LEVEL);
+
+      return roundToNearestPowerOf2(rawZoomLevel);
+    };
+
     const centerOnDesign = useCallback(
       (x: number, y: number, width: number, height: number) => {
         if (!stageRef.current) return;
@@ -237,9 +258,14 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
         const designHeightPx = height * GRID_SIZE;
 
         // Calculate the zoom level to fit the design with padding
-        const scaleX = (stageWidth / designWidthPx) * PADDING_FACTOR;
-        const scaleY = (stageHeight / designHeightPx) * PADDING_FACTOR;
-        const newScale = Math.min(scaleX, scaleY, MAX_ZOOM_LEVEL);
+        const newScale = calculateZoomLevel(
+          stageWidth,
+          stageHeight,
+          designWidthPx,
+          designHeightPx,
+          PADDING_FACTOR,
+          MAX_ZOOM_LEVEL,
+        );
 
         // Set the new scale
         stage.scale({ x: newScale, y: newScale });
@@ -285,9 +311,14 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       const boxHeightPx = boxHeight * GRID_SIZE;
 
       // Calculate the zoom level to fit the bounding box with padding
-      const scaleX = (stageWidth / boxWidthPx) * PADDING_FACTOR;
-      const scaleY = (stageHeight / boxHeightPx) * PADDING_FACTOR;
-      const newScale = Math.min(scaleX, scaleY, MAX_ZOOM_LEVEL);
+      const newScale = calculateZoomLevel(
+        stageWidth,
+        stageHeight,
+        boxWidthPx,
+        boxHeightPx,
+        PADDING_FACTOR,
+        MAX_ZOOM_LEVEL,
+      );
 
       // Set the new scale
       stage.scale({ x: newScale, y: newScale });
