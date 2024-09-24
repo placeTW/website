@@ -382,17 +382,22 @@ const DesignCard: FC<DesignCardProps> = ({
                     zIndex="base"
                   />
                   <MenuList>
-                    <MenuGroup title="Canvas Operations">
-                      <MenuItem icon={<FaCopy />} onClick={handleCopyToCanvas}>
-                        Copy
-                      </MenuItem>
-                      <MenuItem
-                        icon={<FaExchangeAlt />}
-                        onClick={handleMoveToCanvas}
-                      >
-                        Move
-                      </MenuItem>
-                    </MenuGroup>
+                    {!isEditing && (
+                      <MenuGroup title="Canvas Operations">
+                        <MenuItem
+                          icon={<FaCopy />}
+                          onClick={handleCopyToCanvas}
+                        >
+                          Copy
+                        </MenuItem>
+                        <MenuItem
+                          icon={<FaExchangeAlt />}
+                          onClick={handleMoveToCanvas}
+                        >
+                          Move
+                        </MenuItem>
+                      </MenuGroup>
+                    )}
                     {isAdminOrCreator && (
                       <>
                         <MenuDivider />
