@@ -16,11 +16,12 @@ import { Design } from "../../types/art-tool";
 
 interface CreateDesignModalProps {
   isOpen: boolean;
+  canvasId: number | null; 
   onClose: () => void;
   onCreate: (design: Design) => void;
 }
 
-const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, onClose, onCreate }) => {
+const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, canvasId, onClose, onCreate }) => {
   const [designName, setDesignName] = useState("");
   const { currentUser } = useUserContext();
 
@@ -28,11 +29,12 @@ const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, onClose, onCrea
     if (currentUser) {
       const response = await databaseCreateDesign(
         designName,
+        canvasId,
         currentUser.user_id
       );
-      if (response && response.length > 0) {
+      if (response) {
         onClose();
-        onCreate(response[0]);
+        onCreate(response);
       }
     }
   };

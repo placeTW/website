@@ -5,10 +5,11 @@ import CreateDesignModal from "./create-design-modal";
 import { Design } from "../../types/art-tool";
 
 interface CreateDesignButtonProps {
+  canvasId: number | null;
   onCreate: (design: Design) => void;
 }
 
-const CreateDesignButton: FC<CreateDesignButtonProps> = ({ onCreate }) => {
+const CreateDesignButton: FC<CreateDesignButtonProps> = ({ canvasId, onCreate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -34,7 +35,7 @@ const CreateDesignButton: FC<CreateDesignButtonProps> = ({ onCreate }) => {
           New Design
         </Button>
       </Box>
-      <CreateDesignModal isOpen={isModalOpen} onClose={handleCloseModal} onCreate={onCreate} />
+      <CreateDesignModal isOpen={isModalOpen} canvasId={canvasId} onClose={handleCloseModal} onCreate={onCreate} />
     </>
   );
 };

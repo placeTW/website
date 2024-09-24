@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FaAngleDown, FaAngleUp, FaEllipsisV, FaEye, FaEyeSlash } from "react-icons/fa";
-import { FaAngleLeft, FaAngleRight, FaRepeat } from "react-icons/fa6"; // Import icons
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
   uploadDesignThumbnailToSupabase,
@@ -181,6 +181,7 @@ const DesignOffice: React.FC = () => {
   const handleCreatedDesign = (design: Design) => {
     handleEditStateChange(true, design.id);
   };
+
   if (loading) {
     return <Spinner size="xl" />;
   }
@@ -265,7 +266,7 @@ const DesignOffice: React.FC = () => {
         <Box overflowY="auto" flex="1">
           <DesignCardsList
             designs={designs.filter(
-              (design) => selectedCanvas?.id === design.canvas,
+              (design) => selectedCanvas?.id === design.canvas || !design.canvas,
             )}
             visibleLayers={visibleLayers}
             editDesignId={editDesignId}
@@ -319,7 +320,7 @@ const DesignOffice: React.FC = () => {
           right={isMobile ? "16px" : "30px"}
           zIndex="1000"
         >
-          <CreateDesignButton onCreate={handleCreatedDesign} />
+          <CreateDesignButton onCreate={handleCreatedDesign} canvasId={selectedCanvas?.id} />
         </Box>
       )}
     </Box>

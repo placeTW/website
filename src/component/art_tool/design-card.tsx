@@ -53,7 +53,6 @@ import SetDesignCanvas from "./set-design-canvas";
 
 interface DesignCardProps {
   design: Design;
-  canvasName: string;
   isEditing: boolean;
   onEdit: (designId: number) => boolean;
   onCancelEdit: () => void;
@@ -67,7 +66,6 @@ interface DesignCardProps {
 
 const DesignCard: FC<DesignCardProps> = ({
   design,
-  canvasName,
   isEditing,
   onEdit,
   onCancelEdit,

@@ -72,15 +72,24 @@ export const databaseFetchCurrentUser = async (
 // Layers-related functions
 export const databaseCreateDesign = async (
   layerName: string,
+  canvasId: number | null,
   userId: string,
-): Promise<Design[] | null> => {
+): Promise<Design | null> => {
   const createDesignQuery = await supabase
     .from("art_tool_designs")
     .insert([
-      { design_name: layerName, created_by: userId, pixels: [], x: 0, y: 0 },
+      {
+        design_name: layerName,
+        canvas: canvasId,
+        created_by: userId,
+        pixels: [],
+        x: 0,
+        y: 0,
+      },
     ])
+    .returns<Design>()
     .select()
-    .returns<Design[]>();
+    .single();
 
   const { data, error } = logSupabaseDatabaseQuery(
     createDesignQuery,

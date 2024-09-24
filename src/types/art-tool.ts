@@ -18,7 +18,7 @@ export interface Design {
   pixels: Pixel[];
   x: number;
   y: number;
-  canvas: number;
+  canvas?: number;
   canvas_name: string;
   status: DesignStatus;
 }
