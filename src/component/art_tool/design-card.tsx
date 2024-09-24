@@ -333,9 +333,6 @@ const DesignCard: FC<DesignCardProps> = ({
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
                 {creatorRankName} {creator?.handle ?? "Unknown"}
               </Text>
-              <Text color={"gray.600"} fontWeight={400} fontSize={"sm"}>
-                {canvasName}
-              </Text>
             </Box>
             <Box display="flex" justifyContent="flex-end" gap={2}>
               {isCreator && !isEditing && (
@@ -377,7 +374,7 @@ const DesignCard: FC<DesignCardProps> = ({
                     as={IconButton}
                     aria-label="Options"
                     icon={<FaEllipsisV />}
-                    variant="outline"
+                    variant={isEditing ? "solid" : "outline"}
                     size="sm"
                     zIndex="base"
                   />
@@ -388,13 +385,13 @@ const DesignCard: FC<DesignCardProps> = ({
                           icon={<FaCopy />}
                           onClick={handleCopyToCanvas}
                         >
-                          Copy
+                          Copy to Canvas
                         </MenuItem>
                         <MenuItem
                           icon={<FaExchangeAlt />}
                           onClick={handleMoveToCanvas}
                         >
-                          Move
+                          Move to Canvas
                         </MenuItem>
                       </MenuGroup>
                     )}
