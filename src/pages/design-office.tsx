@@ -5,13 +5,17 @@ import {
   Flex,
   Heading,
   IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Spacer,
   Spinner,
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { FaAngleDown, FaAngleUp } from "react-icons/fa";
+import { FaAngleDown, FaAngleUp, FaEllipsisV, FaEye, FaEyeSlash } from "react-icons/fa";
 import { FaAngleLeft, FaAngleRight, FaRepeat } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
@@ -133,9 +137,7 @@ const DesignOffice: React.FC = () => {
     selectCanvas(canvasId, updatedDesigns || []);
   };
 
-
   const selectCanvas = (canvasId: number | null, designs: Design[]) => {
-
     setSelectedCanvas(
       canvases?.find((canvas) => canvas.id === canvasId) || null,
     );
@@ -149,12 +151,17 @@ const DesignOffice: React.FC = () => {
         )
         .map((design) => design.id) || [],
     );
+  };
+
+  const showAll = () => {
+    setVisibleLayers(designs?.filter(
+      (design) => selectedCanvas?.id === design.canvas,
+    ).map((design) => design.id) || []);
   }
 
-  const handleResetViewport = () => {
+  const hideAll = () => {
     setVisibleLayers([]);
-    setSelectedCanvas(null);
-  };
+  }
 
   const handleOnDeleted = (designId: number) => {
     // Remove the design from the state
@@ -236,17 +243,30 @@ const DesignOffice: React.FC = () => {
           <Flex padding={4}>
             <Heading size="md">Designs</Heading>
             <Spacer />
-            <IconButton
-              icon={<FaRepeat />}
-              aria-label="Reset viewport"
-              onClick={handleResetViewport}
-            />
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                aria-label="Options"
+                icon={<FaEllipsisV />}
+                variant="outline"
+              />
+              <MenuList>
+                <MenuItem icon={<FaEye />} onClick={showAll}>
+                  Show All
+                </MenuItem>
+                <MenuItem icon={<FaEyeSlash />} onClick={hideAll}>
+                  Hide All
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </Flex>
         </Box>
 
         <Box overflowY="auto" flex="1">
           <DesignCardsList
-            designs={designs.filter((design) => selectedCanvas?.id === design.canvas)}
+            designs={designs.filter(
+              (design) => selectedCanvas?.id === design.canvas,
+            )}
             visibleLayers={visibleLayers}
             editDesignId={editDesignId}
             setEditDesignId={setEditDesignId}
