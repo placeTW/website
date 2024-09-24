@@ -2,20 +2,13 @@
 
 import {
   Box,
-  Flex,
-  Heading,
   IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Spacer,
   Spinner,
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { FaAngleDown, FaAngleUp, FaEllipsisV, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
@@ -23,7 +16,7 @@ import {
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
-import DesignCardsList from "../component/art_tool/design-cards-list";
+import DesignsPanel from "../component/art_tool/designs-panel";
 import {
   CLEAR_ON_DESIGN,
   CLEAR_ON_MAIN,
@@ -164,14 +157,16 @@ const DesignOffice: React.FC = () => {
   }, [designs, selectedCanvas]);
 
   const showAll = () => {
-    setVisibleLayers(designs?.filter(
-      (design) => selectedCanvas?.id === design.canvas,
-    ).map((design) => design.id) || []);
-  }
+    setVisibleLayers(
+      designs
+        ?.filter((design) => selectedCanvas?.id === design.canvas)
+        .map((design) => design.id) || [],
+    );
+  };
 
   const hideAll = () => {
     setVisibleLayers([]);
-  }
+  };
 
   const handleOnDeleted = (designId: number) => {
     // Remove the design from the state
@@ -250,46 +245,22 @@ const DesignOffice: React.FC = () => {
         width={isMobile ? "100%" : "350px"}
         height={isMobile ? "50%" : "auto"}
       >
-        <Box position="sticky" top="0" zIndex="1" bg="white">
-          <Flex padding={4} paddingTop={2} alignItems="center">
-            <Heading size="md">Designs</Heading>
-            <Spacer />
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                aria-label="Options"
-                icon={<FaEllipsisV />}
-                variant="outline"
-              />
-              <MenuList>
-                <MenuItem icon={<FaEye />} onClick={showAll}>
-                  Show All
-                </MenuItem>
-                <MenuItem icon={<FaEyeSlash />} onClick={hideAll}>
-                  Hide All
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </Flex>
-        </Box>
-
-        <Box overflowY="auto" flex="1">
-          <DesignCardsList
-            designs={designs.filter(
-              (design) => selectedCanvas?.id === design.canvas || !design.canvas,
-            )}
-            visibleLayers={visibleLayers}
-            editDesignId={editDesignId}
-            setEditDesignId={setEditDesignId}
-            onEditStateChange={handleEditStateChange}
-            onVisibilityChange={handleVisibilityChange}
-            onSubmitEdit={handleSubmitEdit}
-            onSetCanvas={handleSetCanvas}
-            onDeleted={handleOnDeleted}
-            editedPixels={editedPixels}
-          />
-          <Box h="100px" />
-        </Box>
+        <DesignsPanel
+          designs={designs.filter(
+            (design) => selectedCanvas?.id === design.canvas || !design.canvas,
+          )}
+          visibleLayers={visibleLayers}
+          editDesignId={editDesignId}
+          setEditDesignId={setEditDesignId}
+          onEditStateChange={handleEditStateChange}
+          onVisibilityChange={handleVisibilityChange}
+          onSubmitEdit={handleSubmitEdit}
+          onSetCanvas={handleSetCanvas}
+          onDeleted={handleOnDeleted}
+          editedPixels={editedPixels}
+          showAll={showAll}
+          hideAll={hideAll}
+        />
       </Box>
 
       {/* Hide/Show Button */}
@@ -330,7 +301,10 @@ const DesignOffice: React.FC = () => {
           right={isMobile ? "16px" : "30px"}
           zIndex="1000"
         >
-          <CreateDesignButton onCreate={handleCreatedDesign} canvasId={selectedCanvas?.id} />
+          <CreateDesignButton
+            onCreate={handleCreatedDesign}
+            canvasId={selectedCanvas?.id}
+          />
         </Box>
       )}
     </Box>
