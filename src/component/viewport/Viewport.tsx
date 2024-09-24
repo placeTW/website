@@ -59,7 +59,7 @@ const Viewport: React.FC<ViewportProps> = ({
 
   const BACKGROUND_TILE_SIZE = 1000;
   const MIN_ZOOM_LEVEL = 1 / 128;
-  const MAX_ZOOM_LEVEL = 16; // New constant for maximum zoom level
+  const MAX_ZOOM_LEVEL = 8;
 
   useEffect(() => {
     setStageDraggable(false);
