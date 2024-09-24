@@ -145,21 +145,19 @@ const Navbar = () => {
           )}
         </Box>
 
-        {/* Show Welcome Message on Both Mobile and Desktop */}
-        <Text
-          color="white"
-          textAlign="center"
-          mr={2}
-          whiteSpace="nowrap"
-          display={{ base: "block", md: "block" }} // Visible on both mobile and desktop
-        >
-          {t("Welcome")}, {userRankName} {currentUser?.handle || ""}
-        </Text>
-
         {/* Icons for both Mobile and Desktop with even spacing */}
         <HStack spacing={4} display="flex" alignItems="center" justifyContent="flex-end">
           {currentUser ? (
             <>
+              <Text
+                color="white"
+                textAlign="center"
+                mr={2}
+                whiteSpace="nowrap"
+                display="block"
+              >
+                {t("Welcome")}, {userRankName} {currentUser?.handle || ""}
+              </Text>
               <IconButton
                 aria-label="Edit Username"
                 icon={<FaPen />}
