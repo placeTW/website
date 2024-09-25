@@ -28,12 +28,13 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
-import { FaCompressAlt, FaCopy, FaEllipsisV, FaExchangeAlt, FaSave } from "react-icons/fa";
+import { FaCopy, FaEllipsisV, FaExchangeAlt, FaSave } from "react-icons/fa";
 import {
   FaEye,
   FaEyeSlash,
   FaHeart,
   FaImage,
+  FaMaximize,
   FaPen,
   FaTrash,
   FaXmark,
@@ -280,7 +281,7 @@ const DesignCard: FC<DesignCardProps> = ({
             </Tooltip>
             <Tooltip label="Center on Design">
               <IconButton
-                icon={<FaCompressAlt />}
+                icon={<FaMaximize />}
                 aria-label="Center on Design"
                 onClick={() => onSelect(design.id)}
                 position="absolute"
