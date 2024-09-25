@@ -30,11 +30,11 @@ import {
 import { FC, useEffect, useRef, useState } from "react";
 import { FaCopy, FaEllipsisV, FaExchangeAlt, FaSave } from "react-icons/fa";
 import {
+  FaArrowsLeftRightToLine,
   FaEye,
   FaEyeSlash,
   FaHeart,
   FaImage,
-  FaMaximize,
   FaPen,
   FaTrash,
   FaXmark,
@@ -281,7 +281,7 @@ const DesignCard: FC<DesignCardProps> = ({
             </Tooltip>
             <Tooltip label="Center on Design">
               <IconButton
-                icon={<FaMaximize />}
+                icon={<FaArrowsLeftRightToLine />}
                 aria-label="Center on Design"
                 onClick={() => onSelect(design.id)}
                 position="absolute"
@@ -336,8 +336,7 @@ const DesignCard: FC<DesignCardProps> = ({
             width="100%"
             bg={isEditing ? "blue.100" : isVisible ? "white" : "gray.100"}
           >
-            <Box
-            >
+            <Box>
               {isEditing ? (
                 <Input
                   value={designName}
