@@ -307,7 +307,14 @@ export const saveEditedPixels = async (
   return updatedDesign;
 };
 
-export const uploadDesignThumbnailToSupabase = async (
+export const createThumbnailForDesign = async (
+  design: Design,
+): Promise<void> => {
+  const thumbnailBlob = await createThumbnail(design.pixels);
+  await uploadDesignThumbnailToSupabase(thumbnailBlob, design);
+}
+
+const uploadDesignThumbnailToSupabase = async (
   thumbnailBlob: Blob,
   design: Design,
 ): Promise<void> => {
@@ -413,9 +420,7 @@ export const copyDesignCanvas = async (
     "copyDesignCanvas",
   );
 
-
-  const thumbnailBlob = await createThumbnail(data.pixels);
-  await uploadDesignThumbnailToSupabase(thumbnailBlob, data);
+  await createThumbnailForDesign(data);
 
   if (error) {
     throw new Error(error.message);

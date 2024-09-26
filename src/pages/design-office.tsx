@@ -10,7 +10,7 @@ import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
-  uploadDesignThumbnailToSupabase,
+  createThumbnailForDesign
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
@@ -20,7 +20,6 @@ import { ViewportHandle } from "../component/viewport/types";
 import { useColorContext } from "../context/color-context";
 import { useDesignContext } from "../context/design-context";
 import { Canvas, Design, Pixel } from "../types/art-tool";
-import { createThumbnail } from "../utils/imageUtils";
 import { getDimensions, offsetPixels } from "../utils/pixelUtils";
 
 const DesignOffice: React.FC = () => {
@@ -92,8 +91,7 @@ const DesignOffice: React.FC = () => {
         designName,
       );
 
-      const thumbnailBlob = await createThumbnail(updatedDesign.pixels);
-      await uploadDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
+      await createThumbnailForDesign(updatedDesign);
 
       toast({
         title: "Changes Saved",
