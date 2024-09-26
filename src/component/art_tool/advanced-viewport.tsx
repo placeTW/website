@@ -15,11 +15,7 @@ import { FaExpand } from "react-icons/fa";
 import { useDesignContext } from "../../context/design-context";
 import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
-import {
-  CLEAR_ON_DESIGN,
-  CLEAR_ON_MAIN,
-  GRID_SIZE,
-} from "../viewport/constants";
+import { CLEAR_ON_DESIGN, GRID_SIZE } from "../viewport/constants";
 import { ViewportHandle, ViewportPixel } from "../viewport/types";
 import { createCheckerboardPattern } from "../viewport/utils";
 import UndoManager from "../viewport/utils/undo-manager";
@@ -92,10 +88,6 @@ const AdvancedViewport = React.forwardRef<
 
     const clearOnDesignPattern = createCheckerboardPattern(
       "#eee",
-      "#fff",
-    ).toDataURL();
-    const clearOnMainPattern = createCheckerboardPattern(
-      "#fc7e7e",
       "#fff",
     ).toDataURL();
 
@@ -545,8 +537,6 @@ const AdvancedViewport = React.forwardRef<
                     bg={
                       color.Color === CLEAR_ON_DESIGN
                         ? `url(${clearOnDesignPattern})`
-                        : color.Color === CLEAR_ON_MAIN
-                        ? `url(${clearOnMainPattern})`
                         : color.Color
                     }
                     border={

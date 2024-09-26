@@ -17,16 +17,13 @@ import {
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignsPanel from "../component/art_tool/designs-panel";
-import {
-  CLEAR_ON_DESIGN,
-  CLEAR_ON_MAIN,
-} from "../component/viewport/constants";
+import { CLEAR_ON_DESIGN } from "../component/viewport/constants";
+import { ViewportHandle } from "../component/viewport/types";
 import { useColorContext } from "../context/color-context";
 import { useDesignContext } from "../context/design-context";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { createThumbnail } from "../utils/imageUtils";
 import { getDimensions, offsetPixels } from "../utils/pixelUtils";
-import { ViewportHandle } from "../component/viewport/types";
 
 const DesignOffice: React.FC = () => {
   const { designs, canvases, setDesigns } = useDesignContext();
@@ -203,7 +200,7 @@ const DesignOffice: React.FC = () => {
       dimensions.width,
       dimensions.height,
     );
-  }
+  };
 
   if (loading) {
     return <Spinner size="xl" />;
@@ -215,11 +212,6 @@ const DesignOffice: React.FC = () => {
       Color: CLEAR_ON_DESIGN,
       color_sort: null,
       color_name: "Clear on Design",
-    },
-    {
-      Color: CLEAR_ON_MAIN,
-      color_sort: null,
-      color_name: "Clear on Main",
     },
   ];
 

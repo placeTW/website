@@ -16,7 +16,7 @@ import {
   getTopLeftCoords,
   offsetPixels,
 } from "../../utils/pixelUtils";
-import { CLEAR_ON_MAIN, GRID_SIZE } from "./constants";
+import { GRID_SIZE } from "./constants";
 import { useMouseHandlers, useTouchHandlers } from "./handlers";
 import { useImage } from "./hooks";
 import { ViewportHandle, ViewportPixel } from "./types";
@@ -46,7 +46,7 @@ interface ViewportProps {
 const Viewport = forwardRef<ViewportHandle, ViewportProps>(
   (
     {
-      designId,
+      // designId,
       pixels,
       isEditing = false,
       onPixelPaint,
@@ -67,7 +67,6 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     const divRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [backgroundImage] = useImage("/images/background.png");
-    const [clearOnMainImage] = useImage("/images/ClearOnMain.png");
     const [visibleTiles, setVisibleTiles] = useState<
       { x: number; y: number }[]
     >([]);
@@ -356,33 +355,6 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
           ))
         : null;
 
-    const renderClearOnMainPixels = () => {
-      const clearOnMainPixels: JSX.Element[] = [];
-
-      pixelMap.forEach((pixelsAtCoordinate, key) => {
-        const [x, y] = key.split("-").map(Number);
-        const pixel = pixelsAtCoordinate.find((p) => p.color === CLEAR_ON_MAIN);
-
-        if (pixel && clearOnMainImage) {
-          clearOnMainPixels.push(
-            <KonvaImage
-              key={`clear-on-main-${x}-${y}-${pixel.designId}`}
-              image={clearOnMainImage}
-              x={x * GRID_SIZE}
-              y={y * GRID_SIZE}
-              width={clearOnMainImage.width}
-              height={clearOnMainImage.height}
-              perfectDrawEnabled={false}
-              imageSmoothingEnabled={false}
-              visible={!!designId && layerOrder.includes(designId)}
-            />,
-          );
-        }
-      });
-
-      return clearOnMainPixels;
-    };
-
     const renderPixelGrid = () => {
       const renderedPixels: JSX.Element[] = [];
 
@@ -390,7 +362,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
         const [x, y] = key.split("-").map(Number);
         const color = getColorForPixel(x, y);
 
-        if (color && color.Color !== CLEAR_ON_MAIN) {
+        if (color) {
           renderedPixels.push(
             <Rect
               key={`pixel-${x}-${y}`}
@@ -466,7 +438,8 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
                       bg={pixelColor?.Color || "transparent"}
                     />
                     <Text fontSize="sm">
-                      {design?.design_name || "Unknown Design"} by {design?.user_handle || "Unknown User"}
+                      {design?.design_name || "Unknown Design"} by{" "}
+                      {design?.user_handle || "Unknown User"}
                     </Text>
                   </Flex>
                 );
@@ -540,7 +513,6 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
             )}
             {renderBackgroundTiles()}
           </Layer>
-          <Layer>{renderClearOnMainPixels()}</Layer>
           <Layer>{renderPixelGrid()}</Layer>
           <Layer>{renderSelectionRect()}</Layer>
         </Stage>
