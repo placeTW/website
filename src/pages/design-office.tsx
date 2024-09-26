@@ -286,7 +286,7 @@ const DesignOffice: React.FC = () => {
           editedPixels={editedPixels}
           showAll={showAll}
           hideAll={hideAll}
-          onSelectDesign={handleSelectDesign} // Pass to DesignCardsList
+          onSelectDesign={handleSelectDesign}
         />
       </Box>
 
