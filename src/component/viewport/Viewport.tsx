@@ -466,7 +466,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
                       bg={pixelColor?.Color || "transparent"}
                     />
                     <Text fontSize="sm">
-                      {design?.design_name || "Unknown Design"} by {design?.user_handle}
+                      {design?.design_name || "Unknown Design"} by {design?.user_handle || "Unknown User"}
                     </Text>
                   </Flex>
                 );
