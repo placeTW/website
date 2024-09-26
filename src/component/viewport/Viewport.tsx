@@ -21,6 +21,7 @@ import { useMouseHandlers, useTouchHandlers } from "./handlers";
 import { useImage } from "./hooks";
 import { ViewportHandle, ViewportPixel } from "./types";
 import { roundToNearestPowerOf2 } from "./utils";
+import ViewportContextMenu, { ContextMenuDesign } from "./ViewportContextMenu";
 
 interface ViewportProps {
   stageRef: React.RefObject<Konva.Stage>;
@@ -40,6 +41,7 @@ interface ViewportProps {
   >;
   onCopy?: () => void;
   onPaste?: (x: number, y: number) => void;
+  onDesignSelect?: (designId: number) => void;
   ref?: Ref<ViewportHandle>;
 }
 
@@ -55,6 +57,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       setSelection,
       onCopy,
       onPaste,
+      onDesignSelect,
       stageRef,
     },
     ref,
@@ -77,6 +80,15 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     const [stageDraggable, setStageDraggable] = useState(false);
     const { colors } = useColorContext();
     const { designs } = useDesignContext();
+    const [contextMenu, setContextMenu] = useState<{
+      isOpen: boolean;
+      position: { x: number; y: number };
+      designs: ContextMenuDesign[];
+    }>({
+      isOpen: false,
+      position: { x: 0, y: 0 },
+      designs: [],
+    });
 
     const BACKGROUND_TILE_SIZE = 1000;
     const MIN_ZOOM_LEVEL = 1 / 128;
@@ -91,7 +103,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       const newPixelMap = new Map<string, ViewportPixel[]>();
 
       for (const pixel of pixels) {
-        const key = `${pixel.x}-${pixel.y}`;
+        const key = `${pixel.x} - ${pixel.y}`;
         if (!newPixelMap.has(key)) {
           newPixelMap.set(key, []);
         }
@@ -220,7 +232,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     };
 
     const getColorForPixel = (x: number, y: number) => {
-      const key = `${x}-${y}`;
+      const key = `${x} - ${y}`;
       const pixelsAtCoordinate = pixelMap.get(key);
 
       if (!pixelsAtCoordinate || pixelsAtCoordinate.length === 0) {
@@ -235,6 +247,38 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       }
 
       return undefined;
+    };
+    
+    const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
+      e.evt.preventDefault();
+      if (!stageRef.current || !hoveredPixel) return;
+
+      const key = `${hoveredPixel.x} - ${hoveredPixel.y}`;
+
+      const pixelsAtCoordinate = pixelMap.get(key) || [];
+      const designsAtPixel = pixelsAtCoordinate.map((pixel) => {
+        const design = designs.find((d) => d.id === pixel.designId);
+        const color = colors.find((c) => c.Color === pixel.color);
+        return {
+          ...design,
+          id: pixel.designId,
+          design_name: design?.design_name || "Unknown Design",
+          user_handle: design?.user_handle || "Unknown User",
+          color: color?.Color || "#000000",
+        } as ContextMenuDesign;
+      });
+
+      if (designsAtPixel.length === 0) return;
+
+      setContextMenu({
+        isOpen: true,
+        position: { x: e.evt.clientX, y: e.evt.clientY },
+        designs: designsAtPixel,
+      });
+    };
+
+    const closeContextMenu = () => {
+      setContextMenu((prev) => ({ ...prev, isOpen: false }));
     };
 
     const calculateZoomLevel = (
@@ -343,7 +387,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       zoomLevel > 0.125
         ? visibleTiles.map((tile) => (
             <KonvaImage
-              key={`tile-${tile.x}-${tile.y}`}
+              key={`tile-${tile.x} - ${tile.y}`}
               image={backgroundImage}
               x={tile.x * BACKGROUND_TILE_SIZE}
               y={tile.y * BACKGROUND_TILE_SIZE}
@@ -359,13 +403,13 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       const renderedPixels: JSX.Element[] = [];
 
       pixelMap.forEach((_, key) => {
-        const [x, y] = key.split("-").map(Number);
+        const [x, y] = key.split(" - ").map(Number);
         const color = getColorForPixel(x, y);
 
         if (color) {
           renderedPixels.push(
             <Rect
-              key={`pixel-${x}-${y}`}
+              key={`pixel-${x} - ${y}`}
               x={x * GRID_SIZE}
               y={y * GRID_SIZE}
               width={GRID_SIZE}
@@ -396,8 +440,6 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     const renderCoordinates = () => {
       if (!hoveredPixel) return null;
 
-      const key = `${hoveredPixel.x}-${hoveredPixel.y}`;
-      const pixelsAtCoordinate = pixelMap.get(key) || [];
       const color = getColorForPixel(hoveredPixel.x, hoveredPixel.y);
 
       return (
@@ -422,29 +464,6 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
               <Box h={4} w={4} border="1px solid black" bg={color.Color} />
               <Text>{color.color_name}</Text>
             </Flex>
-          )}
-          {pixelsAtCoordinate.length > 0 && (
-            <>
-              <Text fontWeight="bold">Designs at this pixel:</Text>
-              {pixelsAtCoordinate.map((pixel, index) => {
-                const design = designs.find((d) => d.id === pixel.designId);
-                const pixelColor = colors.find((c) => c.Color === pixel.color);
-                return (
-                  <Flex key={index} direction="row" gap={2} alignItems="center">
-                    <Box
-                      h={3}
-                      w={3}
-                      border="1px solid black"
-                      bg={pixelColor?.Color || "transparent"}
-                    />
-                    <Text fontSize="sm">
-                      {design?.design_name || "Unknown Design"} by{" "}
-                      {design?.user_handle || "Unknown User"}
-                    </Text>
-                  </Flex>
-                );
-              })}
-            </>
           )}
         </Flex>
       );
@@ -494,6 +513,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
           onDragEnd={handleDragEnd}
           draggable={stageDraggable}
           touchAction="none"
+          onContextMenu={handleContextMenu}
         >
           <Layer>
             {zoomLevel <= 0.125 && (
@@ -517,6 +537,16 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
           <Layer>{renderSelectionRect()}</Layer>
         </Stage>
         {renderCoordinates()}
+        <ViewportContextMenu
+          isOpen={contextMenu.isOpen}
+          onClose={closeContextMenu}
+          position={contextMenu.position}
+          designs={contextMenu.designs}
+          onDesignSelect={(designId: number) => {
+            onDesignSelect?.(designId); // Call onDesignSelect prop when a design is selected
+            closeContextMenu();
+          }}
+        />
       </div>
     );
   },

@@ -52,7 +52,13 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
 
   return (
     <>
-      <Box position="sticky" top="0" zIndex="1" bg="white" borderBottom="1px solid #ccc">
+      <Box
+        position="sticky"
+        top="0"
+        zIndex="1"
+        bg="white"
+        borderBottom="1px solid #ccc"
+      >
         <Flex
           padding={4}
           paddingTop={{
@@ -94,7 +100,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
         </Flex>
       </Box>
 
-      <Box overflowY="auto" flex="1">
+      <Box overflowY="auto" flex="1" id="designs-panel" height="100%">
         <DesignCardsList
           designs={designs}
           visibleLayers={visibleLayers}

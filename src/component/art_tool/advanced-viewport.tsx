@@ -30,6 +30,7 @@ interface AdvancedViewportProps {
   editedPixels?: Pixel[];
   setEditedPixels?: React.Dispatch<React.SetStateAction<Pixel[]>>;
   onSelectCanvas?: (canvas: Canvas | null) => void;
+  onDesignSelect?: (designId: number) => void; // Add prop for design selection
 }
 
 const AdvancedViewport = React.forwardRef<
@@ -55,6 +56,7 @@ const AdvancedViewport = React.forwardRef<
       selectedCanvas,
       editedPixels = [],
       setEditedPixels,
+      onDesignSelect, // Destructure this prop
     },
     ref,
   ) => {
@@ -518,6 +520,7 @@ const AdvancedViewport = React.forwardRef<
             onPaste={handlePaste}
             selection={selection}
             setSelection={setSelection}
+            onDesignSelect={onDesignSelect} // Pass down onDesignSelect prop
           />
         </Box>
         {isEditing && colors && (

@@ -1,5 +1,3 @@
-// src/pages/design-office.tsx
-
 import {
   Box,
   IconButton,
@@ -37,6 +35,7 @@ const DesignOffice: React.FC = () => {
   const [isCardListVisible, setIsCardListVisible] = useState(true); // New state for card list visibility
   const [isMobile] = useMediaQuery("(max-width: 768px)"); // Media query for mobile devices
   const advancedViewportRef = useRef<ViewportHandle>(null);
+  const designCardsListRef = useRef<HTMLDivElement>(null); // Add a ref for DesignCardsList
   const toast = useToast();
 
   useEffect(() => {
@@ -191,15 +190,30 @@ const DesignOffice: React.FC = () => {
   const handleSelectDesign = (designId: number) => {
     const design = designs?.find((d) => d.id === designId);
     if (!design) return;
-
+  
     const dimensions = getDimensions(design.pixels);
-
+  
     advancedViewportRef.current?.centerOnDesign(
       design.x,
       design.y,
       dimensions.width,
       dimensions.height,
     );
+  
+    const designsPanel = document.getElementById("designs-panel");
+    if (designsPanel) {
+      const designCard = designsPanel.querySelector(`#design-card-${designId}`);
+      if (designCard) {
+        const designCardTop = designCard.getBoundingClientRect().top;
+        const panelTop = designsPanel.getBoundingClientRect().top;
+        const scrollOffset = designCardTop - panelTop + designsPanel.scrollTop;
+  
+        designsPanel.scrollTo({
+          top: scrollOffset,
+          behavior: "smooth",
+        });
+      }
+    }
   };
 
   if (loading) {
@@ -243,6 +257,7 @@ const DesignOffice: React.FC = () => {
           }
           editedPixels={editedPixels}
           setEditedPixels={setEditedPixels}
+          onDesignSelect={handleSelectDesign} // Pass the handler to AdvancedViewport
         />
       </Box>
 
@@ -254,6 +269,7 @@ const DesignOffice: React.FC = () => {
         borderLeft={!isMobile ? "none" : "1px solid #ccc"}
         width={isMobile ? "100%" : "350px"}
         height={isMobile ? "50%" : "auto"}
+        ref={designCardsListRef} // Add the ref to the container
       >
         <DesignsPanel
           designs={designs.filter(
@@ -270,7 +286,7 @@ const DesignOffice: React.FC = () => {
           editedPixels={editedPixels}
           showAll={showAll}
           hideAll={hideAll}
-          onSelectDesign={handleSelectDesign}
+          onSelectDesign={handleSelectDesign} // Pass to DesignCardsList
         />
       </Box>
 
