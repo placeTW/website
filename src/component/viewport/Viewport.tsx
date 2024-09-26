@@ -1,4 +1,4 @@
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import Konva from "konva";
 import React, {
   forwardRef,
@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { useColorContext } from "../../context/color-context";
+import { useDesignContext } from "../../context/design-context";
 import {
   getDimensions,
   getTopLeftCoords,
@@ -20,7 +21,6 @@ import { useMouseHandlers, useTouchHandlers } from "./handlers";
 import { useImage } from "./hooks";
 import { ViewportHandle, ViewportPixel } from "./types";
 import { roundToNearestPowerOf2 } from "./utils";
-import { useDesignContext } from "../../context/design-context";
 
 interface ViewportProps {
   stageRef: React.RefObject<Konva.Stage>;
@@ -40,7 +40,7 @@ interface ViewportProps {
   >;
   onCopy?: () => void;
   onPaste?: (x: number, y: number) => void;
-  ref?: Ref<ViewportHandle>; // Add this line to include the ref prop
+  ref?: Ref<ViewportHandle>;
 }
 
 const Viewport = forwardRef<ViewportHandle, ViewportProps>(
@@ -72,7 +72,9 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       { x: number; y: number }[]
     >([]);
     const [zoomLevel, setZoomLevel] = useState(1);
-    const [mergedPixels, setMergedPixels] = useState<ViewportPixel[]>([]);
+    const [pixelMap, setPixelMap] = useState<Map<string, ViewportPixel[]>>(
+      new Map(),
+    );
     const [stageDraggable, setStageDraggable] = useState(false);
     const { colors } = useColorContext();
     const { designs } = useDesignContext();
@@ -85,6 +87,20 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     useEffect(() => {
       setStageDraggable(false);
     }, [isEditing]);
+
+    useEffect(() => {
+      const newPixelMap = new Map<string, ViewportPixel[]>();
+
+      for (const pixel of pixels) {
+        const key = `${pixel.x}-${pixel.y}`;
+        if (!newPixelMap.has(key)) {
+          newPixelMap.set(key, []);
+        }
+        newPixelMap.get(key)!.push(pixel);
+      }
+
+      setPixelMap(newPixelMap);
+    }, [pixels]);
 
     const calculateVisibleTiles = useCallback(() => {
       if (!stageRef.current) return;
@@ -147,19 +163,6 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       }
     }, [backgroundImage, stageRef]);
 
-    useEffect(() => {
-      const pixelMap = new Map<string, ViewportPixel>();
-
-      for (const layerId of layerOrder) {
-        for (const pixel of pixels.filter((p) => p.designId === layerId)) {
-          const key = `${pixel.x}-${pixel.y}`;
-          pixelMap.set(key, pixel);
-        }
-      }
-
-      setMergedPixels(Array.from(pixelMap.values()));
-    }, [layerOrder, pixels]);
-
     const handleDragStart = () => {
       if (stageRef.current) {
         stageRef.current.container().style.cursor = "grabbing";
@@ -178,13 +181,8 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     const handleZoom = () => {
       if (stageRef.current) {
         let scale = stageRef.current.scaleX();
-
-        // Apply min and max zoom levels
         scale = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, scale));
-
-        // Round the zoom scale to the nearest power of 2
         scale = roundToNearestPowerOf2(scale);
-
         stageRef.current.scale({ x: scale, y: scale });
         calculateVisibleTiles();
       }
@@ -204,11 +202,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       };
 
       let newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
-      // Apply min and max zoom levels
       newScale = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, newScale));
-
-      // Round the new scale to the nearest power of 2
       newScale = roundToNearestPowerOf2(newScale);
 
       stage.scale({ x: newScale, y: newScale });
@@ -227,9 +221,21 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     };
 
     const getColorForPixel = (x: number, y: number) => {
-      const pixel = mergedPixels.find((p) => p.x === x && p.y === y);
-      if (!pixel) return undefined;
-      return colors.find((c) => c.Color === pixel.color);
+      const key = `${x}-${y}`;
+      const pixelsAtCoordinate = pixelMap.get(key);
+
+      if (!pixelsAtCoordinate || pixelsAtCoordinate.length === 0) {
+        return undefined;
+      }
+
+      for (const layerId of layerOrder) {
+        const pixel = pixelsAtCoordinate.find((p) => p.designId === layerId);
+        if (pixel) {
+          return colors.find((c) => c.Color === pixel.color);
+        }
+      }
+
+      return undefined;
     };
 
     const calculateZoomLevel = (
@@ -255,11 +261,9 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
         const stageWidth = stage.width();
         const stageHeight = stage.height();
 
-        // Calculate the design dimensions in pixels
         const designWidthPx = width * GRID_SIZE;
         const designHeightPx = height * GRID_SIZE;
 
-        // Calculate the zoom level to fit the design with padding
         const newScale = calculateZoomLevel(
           stageWidth,
           stageHeight,
@@ -269,27 +273,18 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
           MAX_ZOOM_LEVEL,
         );
 
-        // Set the new scale
         stage.scale({ x: newScale, y: newScale });
 
-        // Calculate the center position of the design
         const centerX = x + width / 2;
         const centerY = y + height / 2;
 
-        // Calculate the new position to center the design
         const newX = stageWidth / 2 - centerX * GRID_SIZE * newScale;
         const newY = stageHeight / 2 - centerY * GRID_SIZE * newScale;
 
-        // Set the new position
         stage.position({ x: newX, y: newY });
-
-        // Update the stage
         stage.batchDraw();
 
-        // Update the zoom level state
         setZoomLevel(newScale);
-
-        // Recalculate visible tiles
         calculateVisibleTiles();
       },
       [stageRef, calculateVisibleTiles, MAX_ZOOM_LEVEL],
@@ -302,17 +297,15 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       const stageWidth = stage.width();
       const stageHeight = stage.height();
 
-      // Find the bounding box of all the pixels
-      const { x: minX, y: minY } = getTopLeftCoords(mergedPixels);
+      const allPixels = Array.from(pixelMap.values()).flat();
+      const { x: minX, y: minY } = getTopLeftCoords(allPixels);
       const { width: boxWidth, height: boxHeight } = getDimensions(
-        offsetPixels(mergedPixels, { x: minX, y: minY }),
+        offsetPixels(allPixels, { x: minX, y: minY }),
       );
 
-      // Calculate the dimensions of the bounding box in pixels
       const boxWidthPx = boxWidth * GRID_SIZE;
       const boxHeightPx = boxHeight * GRID_SIZE;
 
-      // Calculate the zoom level to fit the bounding box with padding
       const newScale = calculateZoomLevel(
         stageWidth,
         stageHeight,
@@ -322,27 +315,25 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
         MAX_ZOOM_LEVEL,
       );
 
-      // Set the new scale
       stage.scale({ x: newScale, y: newScale });
 
-      // Calculate the new position to center the bounding box
       const centerX = minX * GRID_SIZE + (boxWidth * GRID_SIZE) / 2;
       const centerY = minY * GRID_SIZE + (boxHeight * GRID_SIZE) / 2;
       const newX = stageWidth / 2 - centerX * newScale;
       const newY = stageHeight / 2 - centerY * newScale;
 
-      // Set the new position
       stage.position({ x: newX, y: newY });
-
-      // Update the stage
       stage.batchDraw();
 
-      // Update the zoom level state
       setZoomLevel(newScale);
-
-      // Recalculate visible tiles
       calculateVisibleTiles();
-    }, [stageRef, mergedPixels, PADDING_FACTOR, MAX_ZOOM_LEVEL, calculateVisibleTiles]);
+    }, [
+      stageRef,
+      pixelMap,
+      PADDING_FACTOR,
+      MAX_ZOOM_LEVEL,
+      calculateVisibleTiles,
+    ]);
 
     React.useImperativeHandle(ref, () => ({
       centerOnDesign,
@@ -365,38 +356,57 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
           ))
         : null;
 
-    const renderClearOnMainPixels = () =>
-      mergedPixels.map((pixel) => {
-        if (pixel.color === CLEAR_ON_MAIN && clearOnMainImage) {
-          return (
+    const renderClearOnMainPixels = () => {
+      const clearOnMainPixels: JSX.Element[] = [];
+
+      pixelMap.forEach((pixelsAtCoordinate, key) => {
+        const [x, y] = key.split("-").map(Number);
+        const pixel = pixelsAtCoordinate.find((p) => p.color === CLEAR_ON_MAIN);
+
+        if (pixel && clearOnMainImage) {
+          clearOnMainPixels.push(
             <KonvaImage
-              key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
+              key={`clear-on-main-${x}-${y}-${pixel.designId}`}
               image={clearOnMainImage}
-              x={pixel.x * GRID_SIZE}
-              y={pixel.y * GRID_SIZE}
+              x={x * GRID_SIZE}
+              y={y * GRID_SIZE}
               width={clearOnMainImage.width}
               height={clearOnMainImage.height}
               perfectDrawEnabled={false}
               imageSmoothingEnabled={false}
               visible={!!designId && layerOrder.includes(designId)}
-            />
+            />,
           );
         }
-        return null;
       });
 
-    const renderPixelGrid = () =>
-      mergedPixels.map((pixel) => (
-        <Rect
-          key={`pixel-${pixel.x}-${pixel.y}-${pixel.designId}`}
-          x={pixel.x * GRID_SIZE}
-          y={pixel.y * GRID_SIZE}
-          width={GRID_SIZE}
-          height={GRID_SIZE}
-          fill={pixel.color !== CLEAR_ON_MAIN ? pixel.color : undefined}
-          strokeWidth={0}
-        />
-      ));
+      return clearOnMainPixels;
+    };
+
+    const renderPixelGrid = () => {
+      const renderedPixels: JSX.Element[] = [];
+
+      pixelMap.forEach((_, key) => {
+        const [x, y] = key.split("-").map(Number);
+        const color = getColorForPixel(x, y);
+
+        if (color && color.Color !== CLEAR_ON_MAIN) {
+          renderedPixels.push(
+            <Rect
+              key={`pixel-${x}-${y}`}
+              x={x * GRID_SIZE}
+              y={y * GRID_SIZE}
+              width={GRID_SIZE}
+              height={GRID_SIZE}
+              fill={color.Color}
+              strokeWidth={0}
+            />,
+          );
+        }
+      });
+
+      return renderedPixels;
+    };
 
     const renderSelectionRect = () =>
       selection && (
@@ -414,11 +424,9 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     const renderCoordinates = () => {
       if (!hoveredPixel) return null;
 
+      const key = `${hoveredPixel.x}-${hoveredPixel.y}`;
+      const pixelsAtCoordinate = pixelMap.get(key) || [];
       const color = getColorForPixel(hoveredPixel.x, hoveredPixel.y);
-      const pixel = mergedPixels.find(
-        (p) => p.x === hoveredPixel.x && p.y === hoveredPixel.y,
-      );
-      const design = designs.find((d) => d.id === pixel?.designId);
 
       return (
         <Flex
@@ -434,23 +442,37 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
           justifyContent="center"
           alignItems="left"
         >
-          <span>
-            {hoveredPixel.x}, {hoveredPixel.y}
-          </span>
+          <Text fontWeight="bold">
+            Coordinates: {hoveredPixel.x}, {hoveredPixel.y}
+          </Text>
           {color && (
             <Flex direction="row" gap={2} alignItems="center">
-              <Box
-                h={4}
-                w={4}
-                border="1px solid black"
-                bg={color?.Color}
-              />
-              <span>
-                {color?.color_name}
-              </span>
+              <Box h={4} w={4} border="1px solid black" bg={color.Color} />
+              <Text>{color.color_name}</Text>
             </Flex>
           )}
-          <b>{design?.design_name}</b>
+          {pixelsAtCoordinate.length > 0 && (
+            <>
+              <Text fontWeight="bold">Designs at this pixel:</Text>
+              {pixelsAtCoordinate.map((pixel, index) => {
+                const design = designs.find((d) => d.id === pixel.designId);
+                const pixelColor = colors.find((c) => c.Color === pixel.color);
+                return (
+                  <Flex key={index} direction="row" gap={2} alignItems="center">
+                    <Box
+                      h={3}
+                      w={3}
+                      border="1px solid black"
+                      bg={pixelColor?.Color || "transparent"}
+                    />
+                    <Text fontSize="sm">
+                      {design?.design_name || "Unknown Design"} by {design?.user_handle}
+                    </Text>
+                  </Flex>
+                );
+              })}
+            </>
+          )}
         </Flex>
       );
     };
