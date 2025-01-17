@@ -1,0 +1,125 @@
+{
+  "capoo": {
+    "title": "BugCat Capoo",
+    "blurb": "Popul\u0101rs t\u0113ls, ko rad\u012bjis Taiv\u0101nas m\u0101kslinieks Yara.",
+    "desc": "Komiksu t\u0113ls, kas l\u012bdzin\u0101s apa\u013c\u012bgam, zilam ka\u0137im ar se\u0161\u0101m k\u0101j\u0101m. Vi\u0146\u0161 ir galvenais varonis t\u012bmek\u013ca komiks\u0101, kas atrodams Facebook, Instagram, komiksu video Youtube un uz uzl\u012bm\u0113m LINE un citos soci\u0101lajos medijos. Vi\u0146u rad\u012bja Taiv\u0101nas m\u0101kslinieks Yara 2014. gad\u0101 un kop\u0161 t\u0101 laika vi\u0146\u0161 ir k\u013cuvis par kult\u016bras fenomenu Taiv\u0101n\u0101. Pateicoties Capoo popularit\u0101tei ir radies pla\u0161s pre\u010du un atrakciju kl\u0101sts, s\u0101kot ar dr\u0113b\u0113m un pl\u012b\u0161a rota\u013cliet\u0101m un beidzot ar veikalu un kafejn\u012bcu Taid\u017eun\u0101. Taipej\u0101 ir ar\u012b veikali\u0146\u0161 ar Capoo tematiku. ",
+    "links": [
+      "https://www.instagram.com/bugcat_capoo/?hl=en",
+      "https://www.youtube.com/@BugCatCapoo",
+      "https://www.webtoons.com/zh-hant/local/maomaochongkapo/list?title_no=394",
+      "https://store.line.me/stickershop/author/24287/en"
+    ]
+  },
+  "chip": {
+    "title": "Druk\u0101t\u0101s sh\u0113mas plate",
+    "blurb": "Druk\u0101t\u0101s sh\u0113mas plate ar mikroprocesoriem",
+    "desc": "A printed circuit board with microprocessors. One of Taiwan's largest and most important industries is the production of semiconductors.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Printed_circuit_board"
+    ]
+  },
+  "taipei_101": {
+    "title": "Taipei 101",
+    "blurb": "Ikoniska \u0113ka galvaspils\u0113tas sird\u012b.",
+    "desc": "Augst\u0101k\u0101 \u0113ka Taiv\u0101n\u0101, un agr\u0101k ar\u012b augst\u0101k\u0101 \u0113ka pasaul\u0113. T\u0101 atrodas galvaspils\u0113t\u0101 Taipej\u0101 un ir popul\u0101rs gan viet\u0113jo iedz\u012bvot\u0101ju, gan t\u016bristu galam\u0113r\u0137is. Taj\u0101 atrodas augstas klases veikali, restor\u0101ni un skatu tornis. T\u0101 ir Taiv\u0101nas liel\u0101k\u0101 Jaungada vakara ugu\u0146o\u0161anas vieta, un t\u0101 ir labi savienota ar Taipejas finan\u0161u rajonu.",
+    "links": [
+      "https://www.taipei-101.com.tw/",
+      "https://eng.taiwan.net.tw/m1.aspx?sNo=0002090&id=3469",
+      "https://en.wikipedia.org/wiki/Taipei_101"
+    ]
+  },
+  "tw_flag": {
+    "title": "Taiv\u0101nas karogs",
+    "blurb": "Taiv\u0101nas valsts karogs",
+    "desc": "Taiv\u0101nas ofici\u0101lais karogs. Starptautiski paz\u012bstams ar\u012b k\u0101 'Zilas debesis, balta saule' karogs, un tas ir starptautiski paz\u012bstams k\u0101 Taiv\u0101nas simbols. Karogs ir saist\u012bts ar\u012b ar \u0136\u012bnas Republikas vald\u012bbu un t\u0101s dibin\u0101\u0161anas partiju Kuomintang (KMT), un da\u017ek\u0101rt ir pretrunu avots valsts iek\u0161ien\u0113, \u0146emot v\u0113r\u0101 t\u0101s v\u0113sturi. Neraugoties uz to, liel\u0101k\u0101 da\u013ca Taiv\u0101nas iedz\u012bvot\u0101ju \u0101rzem\u0113s to parasti izmanto k\u0101 identifik\u0101cijas simbolu. \u0160o karogu var atrast ar\u012b uz vis\u0101m valsts vald\u012bbas \u0113k\u0101m, v\u0113stniec\u012bb\u0101m \u0101rvalst\u012bs un tiem, kas v\u0113las liel\u0101ku Taiv\u0101nas starptautisko atzin\u012bbu, jo \u012bpa\u0161i t\u0101p\u0113c, ka Taiv\u0101nas komandas liel\u0101kaj\u0101 da\u013c\u0101 starptautisku pas\u0101kumu nevar start\u0113t ar \u0161o karogu (vai pat ar nosaukumu 'Taiv\u0101na').",
+    "links": [
+      "https://en.mofa.gov.tw/"
+    ]
+  },
+  "formosan_bear": {
+    "title": "Formozas melnais l\u0101cis",
+    "blurb": "Taiv\u0101nas nacion\u0101lais simbols",
+    "desc": "Formozas melnais l\u0101cis ir end\u0113misks Taiv\u0101nas l\u0101cis. T\u0101p\u0113c tos uzskata par Taiv\u0101nas nacion\u0101lo simbolu. Tie ir slaveni ar saviem rakstur\u012bgajiem baltajiem V veida kakliem, un tie ir liel\u0101kie sauszemes dz\u012bvnieki Taiv\u0101n\u0101. Taipejas pils\u0113tas talismans ir l\u0101cis v\u0101rd\u0101 Bravo.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Formosan_black_bear",
+      "https://bravo.travel.taipei/en"
+    ]
+  },
+  "boba_tea_bear": {
+    "title": "Burbu\u013ct\u0113ja",
+    "blurb": "Popul\u0101rs Taiv\u0101nas dz\u0113riens",
+    "desc": "Burbu\u013ct\u0113ja ir slavens Taiv\u0101nas izcelsmes dz\u0113riens. Kop\u0161 t\u0101 laika tas ir izplat\u012bjies vis\u0101 pasaul\u0113 un k\u013cuvis par popul\u0101ru dz\u0113rienu.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Bubble_tea"
+    ]
+  },
+  "tw_magpie": {
+    "title": "Taiv\u0101nas zil\u0101 \u017eagata",
+    "blurb": "Slavens un sv\u0113ts Taiv\u0101nas putns",
+    "desc": "Taiv\u0101nas zil\u0101 \u017eagata ir end\u0113misks Taiv\u0101nas putns. T\u0101 ir slavena ar savu draudz\u012bgumu pret cilv\u0113kiem, \u012bpatn\u0113jo izskatu un attiec\u012bb\u0101m ar Taiv\u0101nas aborig\u0113nu cilt\u012bm, no kur\u0101m da\u017eas \u0161o putnu uzskata par sv\u0113tu.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Taiwan_blue_magpie"
+    ]
+  },
+  "heart_baltics": {
+    "title": "Baltijas draudz\u012bbas sirds",
+    "blurb": "Sirds ar Taiv\u0101nas un Baltijas valstu karogiem",
+    "desc": "Sirds, kas simboliz\u0113 savien\u012bbu un draudz\u012bbu ar Baltijas valst\u012bm. Sirdis r/place parasti tiek izmantotas, lai apz\u012bm\u0113tu cie\u0161as attiec\u012bbas starp kaimi\u0146u m\u0101kslas kopien\u0101m.",
+    "links": []
+  },
+  "heart_bretons": {
+    "title": "Breta\u0146as draudz\u012bbas sirds",
+    "blurb": "Sirds ar Taiv\u0101nas un Breta\u0146as karogiem",
+    "desc": "Sirds, kas simboliz\u0113 savien\u012bbu un draudz\u012bbu ar Breta\u0146as bretonie\u0161iem. Sirdis r/place parasti tiek izmantotas, lai apz\u012bm\u0113tu cie\u0161as attiec\u012bbas starp kaimi\u0146u m\u0101kslas kopien\u0101m.",
+    "links": []
+  },
+  "lt_pengiun_boba": {
+    "title": "Lietuvie\u0161u pingv\u012bns dzer burbu\u013ct\u0113ju",
+    "blurb": "Atsvaidzino\u0161s simbols draudz\u012bbai starp Baltijas un Taiv\u0101nas kopien\u0101m",
+    "desc": "Lietuvas pingv\u012bns dzer burbu\u013ct\u0113ju virs Taiv\u0101nas m\u0101kslas. Kad audekls papla\u0161in\u0101j\u0101s vertik\u0101li zem eso\u0161\u0101s m\u0101kslas, Taiv\u0101nas un Baltijas valstu komandas skr\u0113ja, lai ie\u0146emtu vietu zem to s\u0101kotn\u0113j\u0101m poz\u012bcij\u0101m, uzz\u012bm\u0113jot attiec\u012bgi Taipei 101 un valstu karogus. Rezult\u0101t\u0101 tika piepras\u012bta liela vertik\u0101l\u0101 telpa. Tad Baltijas komanda piekrita atv\u0113l\u0113t vietu zem Lietuvas (un v\u0113l\u0101k Igaunijas) da\u013c\u0101m Taiv\u0101nai. K\u0101 draudz\u012bbas simbols Lietuvas pingv\u012bnam tiek dota dzert Taiv\u0101nas slaven\u0101 burbu\u013ct\u0113ja.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Bubble_tea"
+    ]
+  },
+  "indep_flag": {
+    "title": "Taiv\u0101nas neatkar\u012bbas karogs",
+    "blurb": "Taiv\u0101nas neatkar\u012bbas kust\u012bbas karogs",
+    "desc": "Taiv\u0101nas neatkar\u012bbas karogs ir karogs, kas saist\u012bts ar Taiv\u0101nas nacion\u0101lismu un br\u012bv\u012bbu jeb v\u0113lmi Taiv\u0101nas iedz\u012bvot\u0101jiem b\u016bt neatkar\u012bgiem no \u0136\u012bnas. \u0160im karogam ir tr\u012bs vertik\u0101las za\u013cas, baltas un za\u013cas kr\u0101sas joslas, un t\u0101 centr\u0101 ir att\u0113lota Taiv\u0101na un apk\u0101rt\u0113j\u0101s salas. Taiv\u0101nas neatkar\u012bbas kust\u012bbas past\u0101v jau kop\u0161 1680. gadiem, kad Cjinu vald\u012b\u0161anas laik\u0101 izplat\u012bta k\u013cuva fr\u0101ze 'Ik p\u0113c trim gadiem sacel\u0161an\u0101s, ik p\u0113c pieciem gadiem dumpis'. Lai gan daudzi nov\u0113rot\u0101ji nor\u0101da, ka Taiv\u0101na jau ir neatkar\u012bga un suver\u0113na valsts, \u0161o karogu parasti izmanto ar\u012b, lai salied\u0113tu tos, kas kritiz\u0113 Kuomintanga (KMT) r\u012bc\u012bbu, jo \u012bpa\u0161i kara st\u0101vok\u013ca laik\u0101. Karogs ar\u012b simboliz\u0113 kust\u012bbu par Taiv\u0101nas liel\u0101ku starptautisku atz\u012b\u0161anu un Taiv\u0101nas suverenit\u0101tes apdraud\u0113juma izbeig\u0161anu. Taiv\u0101nas neatkar\u012bbas kust\u012bbas kop\u012bg\u0101 himna ir 'Taiv\u0101na - Formoza', jo \u012bpa\u0161i t\u0101s pirmais pants.",
+    "links": [
+      "https://en.wikipedia.org/wiki/Taiwan_independence_movement",
+      "https://en.wikipedia.org/wiki/Taiwan_the_Formosa"
+    ]
+  },
+  "tw_beer": {
+    "title": "Taiv\u0101nas alus",
+    "blurb": "Slavens Taiv\u0101nas dz\u0113riens",
+    "desc": "Taiv\u0101nas alus ir viens no slaven\u0101kajiem un atpaz\u012bstam\u0101kajiem Taiv\u0101nas dz\u0113rieniem, kas bie\u017ei atrodams gan b\u0101ros, gan veikalos.",
+    "links": [
+      "https://www.twbeer.com.tw/aboutEN"
+    ]
+  },
+  "apple_cider": {
+    "title": "Taiv\u0101nas \u0101bolu sidrs",
+    "blurb": "Taiv\u0101n\u0101 izplat\u012bts dz\u0113riens",
+    "desc": "\u0160o gar\u0161\u012bgo un l\u0113to dz\u0113rienu var ieg\u0101d\u0101ties veikalos un tirdzniec\u012bbas autom\u0101tos vis\u0101 Taiv\u0101n\u0101.",
+    "links": []
+  },
+  "tatung_rice_cooker": {
+    "title": "Tatung r\u012bsu pl\u012bts",
+    "blurb": "Simboliska r\u012bsu pl\u012bts",
+    "desc": "Taiv\u0101nas r\u012bsu pl\u012bts no z\u012bmola Tatung ir Taiv\u0101nas simboliska gatavo\u0161anas ier\u012bce, kas paz\u012bstama ar savu iztur\u012bbu un tika ieviesta 1960. gad\u0101. Pat \u0101rzem\u0113s taiv\u0101nie\u0161i dar\u012bs visu iesp\u0113jamo, lai ieg\u016bto \u0161o z\u012bmolu r\u012bsu gatavo\u0161anai.",
+    "links": [
+      "https://taiwantoday.tw/news.php?unit=8,29,32,45&post=12699",
+      "https://www.tatung.com/en/products/index/513"
+    ]
+  },
+  "tsmc_logo": {
+    "title": "TSMC logotips",
+    "blurb": "Taiv\u0101nas pusvad\u012bt\u0101ju ra\u017eo\u0161anas uz\u0146\u0113mums",
+    "desc": "Taiwan Semiconductor Manufacturing Company Limited (TSMC) ir viens no ietekm\u012bg\u0101kajiem pusvad\u012bt\u0101ju ra\u017eo\u0161anas uz\u0146\u0113mumiem pasaul\u0113. T\u0101 galven\u0101 m\u012btne atrodas Hsin\u010du, Taiv\u0101n\u0101, valsts tehnolo\u0123iju centr\u0101. Tas un t\u0101 Taiv\u0101nas partneri ra\u017eo 92 % pasaules modern\u0101ko pusvad\u012bt\u0101ju.",
+    "links": [
+      "https://www.tsmc.com/english",
+      "https://en.wikipedia.org/wiki/TSMC"
+    ]
+  }
+}

@@ -13,4 +13,7 @@ export default defineConfig({
     },
   },
   publicDir: 'public',
+  build: {
+    target: 'esnext'
+  },
 });
