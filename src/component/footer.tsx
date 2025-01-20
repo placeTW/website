@@ -1,6 +1,7 @@
-import { Box, Flex, Link, IconButton, Text } from "@chakra-ui/react";
-import { FaGithub, FaReddit, FaDiscord } from "react-icons/fa";
+import { Box, Flex, IconButton, Link, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { FaDiscord, FaGithub, FaReddit } from "react-icons/fa";
+import LanguageSwitcher from "./language-switcher";
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -40,6 +41,11 @@ const Footer = () => {
             mr={2}
           />
         </Link>
+      </Flex>
+      <Flex alignItems="center" justifyContent="center">
+        <Box width={60}>
+          <LanguageSwitcher />
+        </Box>
       </Flex>
     </Box>
   );
