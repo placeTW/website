@@ -1,10 +1,10 @@
 import { Box, SimpleGrid } from "@chakra-ui/react";
-import { ArtInfo } from "../types/art";
-import ArtCard from "./art-card";
 import { FC } from "react";
+import { GalleryArtInfo } from "../../types/gallery";
+import GalleryArtCard from "./gallery-art-card";
 
 interface ArtCardsProp {
-  artPieces: ArtInfo[];
+  artPieces: GalleryArtInfo[];
 }
 
 const ArtCardsGrid: FC<ArtCardsProp> = ({ artPieces }) => {
@@ -12,7 +12,7 @@ const ArtCardsGrid: FC<ArtCardsProp> = ({ artPieces }) => {
     <SimpleGrid minChildWidth="300px" spacing="40px" m={2}>
       {artPieces.map((artPiece) => (
         <Box key={artPiece.art_id}>
-          <ArtCard artPiece={artPiece} />
+          <GalleryArtCard artPiece={artPiece} />
         </Box>
       ))}
     </SimpleGrid>

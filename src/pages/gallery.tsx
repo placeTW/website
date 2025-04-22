@@ -1,15 +1,15 @@
 import { Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import ArtCardsGrid from "../component/art-cards-grid";
-import { ArtInfo } from "../types/art";
+import ArtCardsGrid from "../component/gallery/gallery-art-cards-grid";
+import { GalleryArtInfo } from "../types/gallery";
 
 const Gallery = () => {
   const { i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
-  const [artPieces, setArtPieces] = useState<ArtInfo[]>([]);
+  const [artPieces, setArtPieces] = useState<GalleryArtInfo[]>([]);
 
-  const updateArtPieces = (artPieces: ArtInfo[]) => {
+  const updateArtPieces = (artPieces: GalleryArtInfo[]) => {
     setArtPieces(artPieces);
     setLoading(false);
   };
@@ -23,9 +23,12 @@ const Gallery = () => {
           throw new Error(`Failed to fetch the json ${jsonPath}`);
         }
         const data = await response.json();
-        const artPiecesList: ArtInfo[] = Object.keys(
-          data
-        ).map((key) => ({ ...data[key], art_id: key }));
+        const artPiecesList: GalleryArtInfo[] = Object.keys(data).map(
+          (key) => ({
+            ...data[key],
+            art_id: key,
+          }),
+        );
         updateArtPieces(artPiecesList);
       } catch (error) {
         console.error(`Error fetching the json: ${error}`);
