@@ -265,7 +265,7 @@ const DesignOffice: React.FC = () => {
         flexDirection="column"
         border="1px solid #ccc"
         borderLeft={!isMobile ? "none" : "1px solid #ccc"}
-        width={isMobile ? "100%" : "350px"}
+        width={isMobile ? "100%" : "25rem"}
         height={isMobile ? "50%" : "auto"}
         ref={designCardsListRef} // Add the ref to the container
       >
@@ -311,9 +311,9 @@ const DesignOffice: React.FC = () => {
         borderRadius="full"
         position="absolute"
         bottom={
-          isMobile ? (isCardListVisible ? "calc(50% + 16px)" : "16px") : "50%"
+          isMobile ? (isCardListVisible ? "calc(50% + 1rem)" : "1rem") : "50%"
         }
-        right={isMobile ? "50%" : isCardListVisible ? "362px" : "16px"}
+        right={isMobile ? "50%" : isCardListVisible ? "26rem" : "1rem"}
         transform={isMobile ? "translateX(50%)" : "translateY(50%)"}
         zIndex="1000"
       />
@@ -322,8 +322,8 @@ const DesignOffice: React.FC = () => {
       {isCardListVisible && (
         <Box
           position="absolute"
-          bottom={isMobile ? "16px" : "30px"}
-          right={isMobile ? "16px" : "30px"}
+          bottom={isMobile ? "1rem" : "2rem"}
+          right={isMobile ? "1rem" : "2rem"}
           zIndex="1000"
         >
           <CreateDesignButton
