@@ -21,6 +21,7 @@ import { useColorContext } from "../context/color-context";
 import { useDesignContext } from "../context/design-context";
 import { Canvas, Design, Pixel } from "../types/art-tool";
 import { getDimensions, offsetPixels } from "../utils/pixelUtils";
+import { useUserContext } from "../context/user-context";
 
 const DesignOffice: React.FC = () => {
   const { designs, canvases, setDesigns } = useDesignContext();
@@ -36,6 +37,7 @@ const DesignOffice: React.FC = () => {
   const advancedViewportRef = useRef<ViewportHandle>(null);
   const designCardsListRef = useRef<HTMLDivElement>(null); // Add a ref for DesignCardsList
   const toast = useToast();
+  const {currentUser} = useUserContext();
 
   useEffect(() => {
     if (colors && designs) {
@@ -182,6 +184,9 @@ const DesignOffice: React.FC = () => {
   };
 
   const handleCreatedDesign = (design: Design) => {
+    if (!currentUser || !["A", "B"].includes(currentUser.rank)) {
+      throw new Error("User is not allowed to create a design");
+    }
     handleEditStateChange(true, design.id);
   };
 
@@ -319,7 +324,7 @@ const DesignOffice: React.FC = () => {
       />
 
       {/* Create Design Button */}
-      {isCardListVisible && (
+      {isCardListVisible && (!!currentUser && ["A", "B"].includes(currentUser.rank)) && (
         <Box
           position="absolute"
           bottom={isMobile ? "1rem" : "2rem"}

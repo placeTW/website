@@ -133,7 +133,7 @@ const Navbar = () => {
               </Box>
             </>
           )}
-          {currentUser && (currentUser.rank === "A" || currentUser.rank === "B") && (
+          {currentUser && ["A", "B"].includes(currentUser.rank) && (
             <Box textAlign="center" mr={6}>
               <RouterLink to="/admin" style={{ color: "white" }}>
                 {t("Officers")}
@@ -195,7 +195,7 @@ const Navbar = () => {
                 <MenuItem as={RouterLink} to="/gallery">
                   {t("Gallery")}
                 </MenuItem>
-                {currentUser && (currentUser.rank === "A" || currentUser.rank === "B") && (
+                {currentUser && ["A", "B"].includes(currentUser.rank) && (
                   <MenuItem as={RouterLink} to="/admin">
                     {t("Officers")}
                   </MenuItem>

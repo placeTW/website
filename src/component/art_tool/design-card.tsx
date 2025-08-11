@@ -142,6 +142,9 @@ const DesignCard: FC<DesignCardProps> = ({
   };
 
   const handleDelete = async () => {
+    if (!isAdminOrCreator) {
+      throw new Error("User not allowed to delete design")
+    }
     try {
       await databaseDeleteDesign(design.id);
       onDeleted(design.id);
@@ -223,12 +226,8 @@ const DesignCard: FC<DesignCardProps> = ({
     }
   };
 
-  const isAdminOrCreator =
-    currentUser &&
-    (currentUser.rank === "A" ||
-      currentUser.rank === "B" ||
-      currentUser.user_id === design.created_by);
-  const isCreator = currentUser && currentUser.user_id === design.created_by;
+  const isAdminOrCreator = !!currentUser && (["A", "B"].includes(currentUser.rank) || currentUser.user_id === design.created_by);
+  const isCreator = !!currentUser && currentUser.user_id === design.created_by;
 
   // Get the creator's user data from the context
   const creator = users.find((user) => user.user_id === design.created_by);
