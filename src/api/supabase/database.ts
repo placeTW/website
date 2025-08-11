@@ -5,6 +5,7 @@ import { RankType, UserType } from "../../types/users"; // Import your types
 import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
 import { deleteThumbnail, supabase, uploadThumbnail } from "./index";
 import { logSupabaseDatabaseQuery } from "./logging";
+import { createThumbnail } from "../../utils/imageUtils";
 
 // Fetch all users
 export const databaseFetchUsers = async (): Promise<UserType[]> => {
@@ -306,7 +307,14 @@ export const saveEditedPixels = async (
   return updatedDesign;
 };
 
-export const uploadDesignThumbnailToSupabase = async (
+export const createThumbnailForDesign = async (
+  design: Design,
+): Promise<void> => {
+  const thumbnailBlob = await createThumbnail(design.pixels);
+  await uploadDesignThumbnailToSupabase(thumbnailBlob, design);
+}
+
+const uploadDesignThumbnailToSupabase = async (
   thumbnailBlob: Blob,
   design: Design,
 ): Promise<void> => {
@@ -411,6 +419,8 @@ export const copyDesignCanvas = async (
     copyDesignCanvasQuery,
     "copyDesignCanvas",
   );
+
+  await createThumbnailForDesign(data);
 
   if (error) {
     throw new Error(error.message);

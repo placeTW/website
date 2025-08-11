@@ -20,6 +20,7 @@ interface DesignCardsListProps {
   onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
+  onSelectDesign: (designId: number) => void;
   editedPixels: Pixel[];
   searchQuery: string;
 }
@@ -34,6 +35,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onSubmitEdit,
   onSetCanvas,
   onDeleted,
+  onSelectDesign,
   editedPixels,
   searchQuery,
 }) => {
@@ -43,6 +45,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   const toast = useToast();
   const isFirstRender = useRef(true);
   const previousVisibleLayers = useRef<number[]>([]);
+  const cardRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   const handleEdit = (designId: number): boolean => {
     if (editDesignId && editDesignId !== designId) {
@@ -124,18 +127,22 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   }, [visibleLayers]);
 
   const filteredDesigns = designs.filter((design) =>
-    design.design_name.toLowerCase().includes(searchQuery.toLowerCase())
+    design.design_name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Sort filtered designs by the number of likes in descending order
   const sortedDesigns = [...filteredDesigns].sort(
-    (a, b) => b.liked_by.length - a.liked_by.length
+    (a, b) => b.liked_by.length - a.liked_by.length,
   );
 
   return (
     <Flex direction="column" m={4} gap={4}>
       {sortedDesigns.map((design) => (
-        <Box key={design.id}>
+        <Box
+          key={design.id}
+          id={`design-card-${design.id}`} // Add an id to each design card
+          ref={(el) => (cardRefs.current[design.id] = el)} // Add a ref
+        >
           <DesignCard
             design={design}
             isEditing={editDesignId === design.id}
@@ -148,6 +155,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             onSetCanvas={onSetCanvas}
             onDeleted={handleOnDeleted}
             editedPixels={editedPixels}
+            onSelect={onSelectDesign}
           />
         </Box>
       ))}

@@ -32,17 +32,17 @@ import {
   FaArrowsAlt,
   FaCopy,
   FaEllipsisV,
-  FaExchangeAlt,
+  FaExchangeAlt, FaSave,
 } from "react-icons/fa";
 import {
-  FaArrowRightFromBracket,
-  FaCloudArrowUp,
+  FaArrowsLeftRightToLine,
   FaEye,
   FaEyeSlash,
   FaHeart,
   FaImage,
   FaPen,
   FaTrash,
+  FaXmark,
 } from "react-icons/fa6";
 import {
   copyDesignCanvas,
@@ -62,6 +62,7 @@ interface DesignCardProps {
   inEditMode: boolean;
   onEdit: (designId: number) => boolean;
   onCancelEdit: () => void;
+  onSelect: (designId: number) => void;
   onToggleVisibility: (designId: number, isVisible: boolean) => void;
   isVisible: boolean;
   onSubmitEdit: (designName: string) => void;
@@ -76,6 +77,7 @@ const DesignCard: FC<DesignCardProps> = ({
   inEditMode,
   onEdit,
   onCancelEdit,
+  onSelect,
   onToggleVisibility,
   isVisible,
   onSubmitEdit,
@@ -282,6 +284,21 @@ const DesignCard: FC<DesignCardProps> = ({
                 borderColor={isVisible ? "green.500" : "red.500"}
               />
             </Tooltip>
+            <Tooltip label="Center on Design">
+              <IconButton
+                icon={<FaArrowsLeftRightToLine />}
+                aria-label="Center on Design"
+                onClick={() => onSelect(design.id)}
+                position="absolute"
+                top="5px"
+                right="5px"
+                size="sm"
+                backgroundColor="rgba(255, 255, 255, 0.8)"
+                _hover={{ backgroundColor: "rgba(255, 255, 255, 1)" }}
+                border="1px"
+                isDisabled={!isVisible}
+              />
+            </Tooltip>
             <Image
               alt={design.design_name}
               fallback={
@@ -366,7 +383,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 <>
                   <Tooltip label="Cancel Edit">
                     <IconButton
-                      icon={<FaArrowRightFromBracket />}
+                      icon={<FaXmark />}
                       aria-label="Cancel"
                       onClick={handleEditToggle}
                       size="sm"
@@ -374,7 +391,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   </Tooltip>
                   <Tooltip label="Save Changes">
                     <IconButton
-                      icon={<FaCloudArrowUp />}
+                      icon={<FaSave />}
                       aria-label="Submit"
                       onClick={() => onSubmitEdit(designName)}
                       size="sm"

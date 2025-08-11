@@ -20,3 +20,13 @@ export const offsetPixels = (
     y: pixel.y - offset.y,
   }));
 };
+
+export const getDimensions = (pixels: Pixel[]): { width: number; height: number } => {
+  return pixels.reduce(
+    (acc, curr) => ({
+      width: Math.max(acc.width, curr.x),
+      height: Math.max(acc.height, curr.y),
+    }),
+    { width: 0, height: 0 },
+  );
+}

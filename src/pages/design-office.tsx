@@ -1,5 +1,3 @@
-// src/pages/design-office.tsx
-
 import {
   Box,
   IconButton,
@@ -7,25 +5,22 @@ import {
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
-  uploadDesignThumbnailToSupabase,
+  createThumbnailForDesign
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignsPanel from "../component/art_tool/designs-panel";
-import {
-  CLEAR_ON_DESIGN,
-  CLEAR_ON_MAIN,
-} from "../component/viewport/constants";
+import { CLEAR_ON_DESIGN } from "../component/viewport/constants";
+import { ViewportHandle } from "../component/viewport/types";
 import { useColorContext } from "../context/color-context";
 import { useDesignContext } from "../context/design-context";
 import { Canvas, Design, Pixel } from "../types/art-tool";
-import { createThumbnail } from "../utils/imageUtils";
-import { offsetPixels } from "../utils/pixelUtils";
+import { getDimensions, offsetPixels } from "../utils/pixelUtils";
 
 const DesignOffice: React.FC = () => {
   const { designs, canvases, setDesigns } = useDesignContext();
@@ -38,6 +33,8 @@ const DesignOffice: React.FC = () => {
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
   const [isCardListVisible, setIsCardListVisible] = useState(true); // New state for card list visibility
   const [isMobile] = useMediaQuery("(max-width: 768px)"); // Media query for mobile devices
+  const advancedViewportRef = useRef<ViewportHandle>(null);
+  const designCardsListRef = useRef<HTMLDivElement>(null); // Add a ref for DesignCardsList
   const toast = useToast();
 
   useEffect(() => {
@@ -94,8 +91,7 @@ const DesignOffice: React.FC = () => {
         designName,
       );
 
-      const thumbnailBlob = await createThumbnail(updatedDesign.pixels);
-      await uploadDesignThumbnailToSupabase(thumbnailBlob, currentDesign);
+      await createThumbnailForDesign(updatedDesign);
 
       toast({
         title: "Changes Saved",
@@ -106,6 +102,8 @@ const DesignOffice: React.FC = () => {
       });
 
       setEditedPixels([]);
+      setEditDesignId(null);
+      handleEditStateChange(false, null);
     } catch (error) {
       toast({
         title: "Error",
@@ -187,6 +185,35 @@ const DesignOffice: React.FC = () => {
     handleEditStateChange(true, design.id);
   };
 
+  const handleSelectDesign = (designId: number) => {
+    const design = designs?.find((d) => d.id === designId);
+    if (!design) return;
+  
+    const dimensions = getDimensions(design.pixels);
+  
+    advancedViewportRef.current?.centerOnDesign(
+      design.x,
+      design.y,
+      dimensions.width,
+      dimensions.height,
+    );
+  
+    const designsPanel = document.getElementById("designs-panel");
+    if (designsPanel) {
+      const designCard = designsPanel.querySelector(`#design-card-${designId}`);
+      if (designCard) {
+        const designCardTop = designCard.getBoundingClientRect().top;
+        const panelTop = designsPanel.getBoundingClientRect().top;
+        const scrollOffset = designCardTop - panelTop + designsPanel.scrollTop;
+  
+        designsPanel.scrollTo({
+          top: scrollOffset,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
   if (loading) {
     return <Spinner size="xl" />;
   }
@@ -197,11 +224,6 @@ const DesignOffice: React.FC = () => {
       Color: CLEAR_ON_DESIGN,
       color_sort: null,
       color_name: "Clear on Design",
-    },
-    {
-      Color: CLEAR_ON_MAIN,
-      color_sort: null,
-      color_name: "Clear on Main",
     },
   ];
 
@@ -221,6 +243,7 @@ const DesignOffice: React.FC = () => {
         height={isMobile && !isCardListVisible ? "100%" : "auto"}
       >
         <AdvancedViewport
+          ref={advancedViewportRef}
           isEditing={isEditing}
           editDesignId={editDesignId}
           visibleLayers={visibleLayers}
@@ -232,6 +255,7 @@ const DesignOffice: React.FC = () => {
           }
           editedPixels={editedPixels}
           setEditedPixels={setEditedPixels}
+          onDesignSelect={handleSelectDesign} // Pass the handler to AdvancedViewport
         />
       </Box>
 
@@ -243,6 +267,7 @@ const DesignOffice: React.FC = () => {
         borderLeft={!isMobile ? "none" : "1px solid #ccc"}
         width={isMobile ? "100%" : "350px"}
         height={isMobile ? "50%" : "auto"}
+        ref={designCardsListRef} // Add the ref to the container
       >
         <DesignsPanel
           designs={designs.filter(
@@ -259,6 +284,7 @@ const DesignOffice: React.FC = () => {
           editedPixels={editedPixels}
           showAll={showAll}
           hideAll={hideAll}
+          onSelectDesign={handleSelectDesign}
         />
       </Box>
 

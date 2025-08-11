@@ -109,9 +109,11 @@ const Navbar = () => {
   return (
     <Box bg="blue.500" px={4} py={2} w="100vw" overflow="hidden">
       <Flex alignItems="center" maxW="100%" justify="space-between" flexShrink={0}>
-        <Heading as="h1" size="lg" color="white" whiteSpace="nowrap">
-          PlaceTW
-        </Heading>
+        <RouterLink to="/">
+          <Heading as="h1" size="lg" color="white" whiteSpace="nowrap">
+            PlaceTW
+          </Heading>
+        </RouterLink>
 
         <Spacer minWidth="40px" />
 
@@ -131,11 +133,6 @@ const Navbar = () => {
               </Box>
             </>
           )}
-          <Box textAlign="center" mr={6}>
-            <RouterLink to="/gallery" style={{ color: "white" }}>
-              {t("Gallery")}
-            </RouterLink>
-          </Box>
           {currentUser && (currentUser.rank === "A" || currentUser.rank === "B") && (
             <Box textAlign="center" mr={6}>
               <RouterLink to="/admin" style={{ color: "white" }}>
