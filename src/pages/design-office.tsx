@@ -270,7 +270,7 @@ const DesignOffice: React.FC = () => {
         flexDirection="column"
         border="1px solid #ccc"
         borderLeft={!isMobile ? "none" : "1px solid #ccc"}
-        width={isMobile ? "100%" : "25rem"}
+        width={isMobile ? "100%" : "27rem"}
         height={isMobile ? "50%" : "auto"}
         ref={designCardsListRef} // Add the ref to the container
       >
@@ -318,7 +318,7 @@ const DesignOffice: React.FC = () => {
         bottom={
           isMobile ? (isCardListVisible ? "calc(50% + 1rem)" : "1rem") : "50%"
         }
-        right={isMobile ? "50%" : isCardListVisible ? "26rem" : "1rem"}
+        right={isMobile ? "50%" : isCardListVisible ? "28rem" : "1rem"}
         transform={isMobile ? "translateX(50%)" : "translateY(50%)"}
         zIndex="1000"
       />

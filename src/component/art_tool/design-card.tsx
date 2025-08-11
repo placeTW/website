@@ -248,6 +248,7 @@ const DesignCard: FC<DesignCardProps> = ({
       <Card
         backgroundColor={isVisible ? "white" : "gray.100"}
         width="100%"
+        minHeight="8rem"
         position="relative"
         variant="outline"
       >
