@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
+import Gallery from "./gallery";
 
 const HomePage = () => {
-  const { t } = useTranslation();
-  return <div>{t("lorem ipsum")}</div>;
+  return <Gallery />
 };
 
 export default HomePage;
