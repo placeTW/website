@@ -107,7 +107,7 @@ const Navbar = () => {
   const userRankName = ranks.find((rank) => rank.rank_id === currentUser?.rank)?.rank_name || "";
 
   return (
-    <Box bg="blue.500" px={4} py={2} w="100vw" overflow="hidden">
+    <Box bg="blue.500" px={4} py={2} w="100%" overflow="hidden">
       <Flex alignItems="center" maxW="100%" justify="space-between" flexShrink={0}>
         <RouterLink to="/">
           <Heading as="h1" size="lg" color="white" whiteSpace="nowrap">
