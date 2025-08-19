@@ -238,7 +238,7 @@ const DesignCard: FC<DesignCardProps> = ({
     "Unknown";
 
   // Check for required fields
-  if (!design.id || !design.design_name) {
+  if (!design.id) {
     console.error("[DESIGN CARD] Missing required design data:", design);
     return null; // Skip rendering this card
   }
@@ -295,7 +295,7 @@ const DesignCard: FC<DesignCardProps> = ({
               />
             </Tooltip>
             <Image
-              alt={design.design_name}
+              alt={design.design_name ?? "(Untitled artwork)"}
               fallback={
                 <Box
                   height="100%"
@@ -345,7 +345,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   backgroundColor="white"
                 />
               ) : (
-                <Heading fontSize={"md"}>{design.design_name}</Heading>
+                <Heading fontSize={"md"}>{design.design_name || "(Untitled Artwork)"}</Heading>
               )}
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
                 {creatorRankName} {creator?.handle ?? "Unknown"}
