@@ -151,6 +151,12 @@ const DesignOffice: React.FC = () => {
   };
 
   useEffect(() => {
+    const canvas = canvasesMap!.get(selectedCanvas.id);
+    if (!canvas) return;
+    setSelectedCanvas(canvas)
+  }, [canvasesMap])
+
+  useEffect(() => {
     if (canvasDesignsMap && selectedCanvas) {
       showAll();
     }
