@@ -21,8 +21,8 @@ import { createCheckerboardPattern } from "../viewport/utils";
 import UndoManager from "../viewport/utils/undo-manager";
 
 interface AdvancedViewportProps {
-  visibleLayers: number[];
-  selectedCanvas?: Canvas | null;
+  visibleLayers: Set<number>;
+  selectedCanvas: Canvas;
   isEditing?: boolean;
   editDesignId?: number | null;
   canvases?: Canvas[];
@@ -30,7 +30,7 @@ interface AdvancedViewportProps {
   editedPixels?: Pixel[];
   setEditedPixels?: React.Dispatch<React.SetStateAction<Pixel[]>>;
   onSelectCanvas?: (canvas: Canvas | null) => void;
-  onDesignSelect?: (designId: number) => void; // Add prop for design selection
+  onDesignSelect?: (designId: number) => void;
 }
 
 const AdvancedViewport = React.forwardRef<
@@ -56,7 +56,7 @@ const AdvancedViewport = React.forwardRef<
       selectedCanvas,
       editedPixels = [],
       setEditedPixels,
-      onDesignSelect, // Destructure this prop
+      onDesignSelect,
     },
     ref,
   ) => {
@@ -80,12 +80,13 @@ const AdvancedViewport = React.forwardRef<
         return null;
       },
     );
+    const [layerOrder, setLayerOrder] = useState<number[]>([])
 
     const stageRef = useRef<Konva.Stage>(null);
     const undoManager = useRef(new UndoManager(100)).current;
     const dragInProgress = useRef(false);
     const dragPixels = useRef<ViewportPixel[]>([]);
-    const previousVisibleLayersRef = useRef<number[]>(visibleLayers);
+    const previousVisibleLayersRef = useRef<Set<number>>(visibleLayers);
     const viewportRef = useRef<ViewportHandle>(null);
 
     const clearOnDesignPattern = createCheckerboardPattern(
@@ -149,11 +150,11 @@ const AdvancedViewport = React.forwardRef<
     );
 
     const recalculatePixels = useCallback(async () => {
-      const basePixels = await fetchPixels(visibleLayers);
+      const basePixels = await fetchPixels([...visibleLayers]);
       const mergedPixels = mergeWithExistingPixels(
         basePixels,
         editedPixels ?? [],
-        visibleLayers,
+        [...visibleLayers],
       );
       if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
         setPixels(mergedPixels);
@@ -479,11 +480,17 @@ const AdvancedViewport = React.forwardRef<
       selectedColor,
     ]);
 
-    const layerOrder: number[] = [];
-    if (editDesignId && isEditing) {
-      layerOrder.push(editDesignId);
-    }
-    layerOrder.push(...visibleLayers.filter((layer) => layer !== editDesignId));
+    useEffect(() => {
+      const order: Set<number> = new Set();
+      if (editDesignId && isEditing) {
+        order.add(editDesignId);
+      }
+      selectedCanvas.layer_order.filter(i => visibleLayers.has(i)).forEach(i => order.add(i));
+      designs.filter(d => visibleLayers.has(d.id)).forEach(i => order.add(i.id));
+
+      setLayerOrder([...order]);
+      recalculatePixels();
+    }, [editDesignId, isEditing, selectedCanvas, visibleLayers, recalculatePixels])
 
     return (
       <Box position="relative" height="100%">

@@ -34,6 +34,7 @@ export interface Pixel {
 export interface Canvas {
   id: number;
   canvas_name: string;
+  layer_order: number[]
 }
 
 export interface Color {

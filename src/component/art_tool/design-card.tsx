@@ -38,6 +38,8 @@ import {
   FaPen,
   FaTrash,
   FaXmark,
+  FaArrowUp,
+  FaArrowDown,
 } from "react-icons/fa6";
 import {
   copyDesignCanvas,
@@ -63,6 +65,8 @@ interface DesignCardProps {
   onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
+  onMoveDesignUp: (designId: number) => void;
+  onMoveDesignDown: (designId: number) => void;
   editedPixels: Pixel[];
 }
 
@@ -78,6 +82,8 @@ const DesignCard: FC<DesignCardProps> = ({
   onSubmitEdit,
   onSetCanvas,
   onDeleted,
+  onMoveDesignUp,
+  onMoveDesignDown,
   editedPixels,
 }) => {
   const { currentUser, users, ranks } = useUserContext(); // Import users and ranks
@@ -351,81 +357,101 @@ const DesignCard: FC<DesignCardProps> = ({
                 {creatorRankName} {creator?.handle ?? "Unknown"}
               </Text>
             </Box>
-            <Box display="flex" justifyContent="flex-end" gap={2}>
-              {isCreator && !inEditMode && (
-                <Tooltip label="Edit Design">
-                  <IconButton
-                    icon={<FaPen />}
-                    aria-label="Edit"
-                    onClick={handleEditToggle}
-                    size="sm"
-                    colorScheme="blue"
-                    variant="outline"
-                  />
-                </Tooltip>
-              )}
-              {isEditing && (
-                <>
-                  <Tooltip label="Cancel Edit">
+            <Flex direction="row" justifyContent="space-between">
+              <Flex gap={2}>
+                <IconButton
+                  icon={<FaArrowUp />}
+                  variant="outline"
+                  aria-label="Move Design Up in Order"
+                  onClick={() => onMoveDesignUp(design.id)}
+                  size="sm"
+                  isDisabled={!isVisible}
+                />
+                <IconButton
+                  icon={<FaArrowDown />}
+                  variant="outline"
+                  aria-label="Move Design Down in Order"
+                  onClick={() => onMoveDesignDown(design.id)}
+                  size="sm"
+                  isDisabled={!isVisible}
+                />
+              </Flex>
+              <Flex gap={2}>
+                {isCreator && !inEditMode && (
+                  <Tooltip label="Edit Design">
                     <IconButton
-                      icon={<FaXmark />}
-                      aria-label="Cancel"
+                      icon={<FaPen />}
+                      aria-label="Edit"
                       onClick={handleEditToggle}
                       size="sm"
+                      colorScheme="blue"
+                      variant="outline"
                     />
                   </Tooltip>
-                  <Tooltip label="Save Changes">
-                    <IconButton
-                      icon={<FaSave />}
-                      aria-label="Submit"
-                      onClick={() => onSubmitEdit(designName)}
-                      size="sm"
-                    />
-                  </Tooltip>
-                </>
-              )}
+                )}
+                {isEditing && (
+                  <>
+                    <Tooltip label="Cancel Edit">
+                      <IconButton
+                        icon={<FaXmark />}
+                        aria-label="Cancel"
+                        onClick={handleEditToggle}
+                        size="sm"
+                      />
+                    </Tooltip>
+                    <Tooltip label="Save Changes">
+                      <IconButton
+                        icon={<FaSave />}
+                        aria-label="Submit"
+                        onClick={() => onSubmitEdit(designName)}
+                        size="sm"
+                      />
+                    </Tooltip>
+                  </>
+                )}
 
-              {!inEditMode && isAdminOrCreator && (
-                <Menu>
-                  <MenuButton
-                    as={IconButton}
-                    aria-label="Options"
-                    icon={<FaEllipsisV />}
-                    variant={isEditing ? "solid" : "outline"}
-                    size="sm"
-                    zIndex="base"
-                  />
-                  <MenuList>
-                    {!isEditing && (
-                      <MenuGroup title="Canvas Operations">
+                {!inEditMode && isAdminOrCreator && (
+                  <Menu>
+                    <MenuButton
+                      as={IconButton}
+                      aria-label="Options"
+                      icon={<FaEllipsisV />}
+                      variant={isEditing ? "solid" : "outline"}
+                      size="sm"
+                      zIndex="base"
+                    />
+                    <MenuList>
+                      {!isEditing && (
+                        <MenuGroup title="Canvas Operations">
+                          <MenuItem
+                            icon={<FaCopy />}
+                            onClick={handleCopyToCanvas}
+                          >
+                            Copy to Canvas
+                          </MenuItem>
+                          <MenuItem
+                            icon={<FaExchangeAlt />}
+                            onClick={handleMoveToCanvas}
+                          >
+                            Move to Canvas
+                          </MenuItem>
+                        </MenuGroup>
+                      )}
+                      <MenuDivider />
+                      <MenuGroup title="Admin">
                         <MenuItem
-                          icon={<FaCopy />}
-                          onClick={handleCopyToCanvas}
+                          icon={<FaTrash />}
+                          onClick={onOpenDeleteDialog}
+                          color={"red.500"}
                         >
-                          Copy to Canvas
-                        </MenuItem>
-                        <MenuItem
-                          icon={<FaExchangeAlt />}
-                          onClick={handleMoveToCanvas}
-                        >
-                          Move to Canvas
+                          Delete
                         </MenuItem>
                       </MenuGroup>
-                    )}
-                    <MenuDivider />
-                    <MenuGroup title="Admin">
-                      <MenuItem
-                        icon={<FaTrash />}
-                        onClick={onOpenDeleteDialog}
-                        color={"red.500"}
-                      >
-                        Delete
-                      </MenuItem>
-                    </MenuGroup>
-                  </MenuList>
-                </Menu>
-              )}
-            </Box>
+                    </MenuList>
+                  </Menu>
+                )}
+              </Flex>
+            </Flex>
           </Flex>
         </CardBody>
       </Card>

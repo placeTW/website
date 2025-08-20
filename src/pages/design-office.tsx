@@ -31,7 +31,7 @@ const DesignOffice: React.FC = () => {
   const [editDesignId, setEditDesignId] = useState<number | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
-  const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
+  const [selectedCanvas, setSelectedCanvas] = useState<Canvas>(canvases[0]);
   const [isCardListVisible, setIsCardListVisible] = useState(true); // New state for card list visibility
   const [isMobile] = useMediaQuery("(max-width: 768px)"); // Media query for mobile devices
   const advancedViewportRef = useRef<ViewportHandle>(null);
@@ -131,9 +131,11 @@ const DesignOffice: React.FC = () => {
   };
 
   const selectCanvas = (canvasId: number | null, designs: Design[]) => {
-    setSelectedCanvas(
-      canvases?.find((canvas) => canvas.id === canvasId) || null,
-    );
+    const canvas = canvases.find((canvas) => canvas.id === canvasId) || null;
+    if (!canvas) {
+      return;
+    }
+    setSelectedCanvas(canvas);
 
     setVisibleLayers(
       designs
@@ -219,6 +221,32 @@ const DesignOffice: React.FC = () => {
     }
   };
 
+  const onMoveDesignUp = (designId: number) => onChangeDesignOrder(designId, true);
+  const onMoveDesignDown = (designId: number) => onChangeDesignOrder(designId, false);
+
+  const onChangeDesignOrder = (designId: number, up: boolean) => {
+    const layerOrder = selectedCanvas.layer_order;
+    const designIndex = layerOrder.indexOf(designId);
+    const targetIndex = up ? designIndex - 1 : designIndex + 1;
+    console.log(layerOrder, designIndex, targetIndex)
+
+    if (designIndex !== -1 && targetIndex >= 0 && targetIndex < layerOrder.length) {
+      const temp = layerOrder[designIndex];
+      layerOrder[designIndex] = layerOrder[targetIndex];
+      layerOrder[targetIndex] = temp;
+    }
+
+    if (designIndex === -1) {
+      if (up) {
+        layerOrder.unshift(designId)
+      } else {
+        layerOrder.push(designId)
+      }
+    }
+
+    setSelectedCanvas({...selectedCanvas, layer_order: layerOrder})
+  }
+
   if (loading) {
     return <Spinner size="xl" />;
   }
@@ -251,7 +279,7 @@ const DesignOffice: React.FC = () => {
           ref={advancedViewportRef}
           isEditing={isEditing}
           editDesignId={editDesignId}
-          visibleLayers={visibleLayers}
+          visibleLayers={new Set(visibleLayers)}
           colors={allColors}
           canvases={canvases || []}
           selectedCanvas={selectedCanvas}
@@ -260,7 +288,7 @@ const DesignOffice: React.FC = () => {
           }
           editedPixels={editedPixels}
           setEditedPixels={setEditedPixels}
-          onDesignSelect={handleSelectDesign} // Pass the handler to AdvancedViewport
+          onDesignSelect={handleSelectDesign}
         />
       </Box>
 
@@ -272,13 +300,14 @@ const DesignOffice: React.FC = () => {
         borderLeft={!isMobile ? "none" : "1px solid #ccc"}
         width={isMobile ? "100%" : "27rem"}
         height={isMobile ? "50%" : "auto"}
-        ref={designCardsListRef} // Add the ref to the container
+        ref={designCardsListRef}
       >
         <DesignsPanel
           designs={designs.filter(
-            (design) => selectedCanvas?.id === design.canvas || !design.canvas,
+            (design) => selectedCanvas.id === design.canvas || !design.canvas,
           )}
           visibleLayers={visibleLayers}
+          layerOrder={selectedCanvas.layer_order}
           editDesignId={editDesignId}
           setEditDesignId={setEditDesignId}
           onEditStateChange={handleEditStateChange}
@@ -290,6 +319,8 @@ const DesignOffice: React.FC = () => {
           showAll={showAll}
           hideAll={hideAll}
           onSelectDesign={handleSelectDesign}
+          onMoveDesignUp={onMoveDesignUp}
+          onMoveDesignDown={onMoveDesignDown}
         />
       </Box>
 

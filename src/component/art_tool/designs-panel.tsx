@@ -20,6 +20,7 @@ import DesignCardsList from "./design-cards-list";
 interface DesignsPanelProps {
   designs: Design[];
   visibleLayers: number[];
+  layerOrder: number[];
   editDesignId: number | null;
   setEditDesignId: Dispatch<SetStateAction<number | null>>;
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
@@ -28,6 +29,8 @@ interface DesignsPanelProps {
   onSetCanvas: (designId: number, canvasId: number | null) => void;
   onDeleted: (designId: number) => void;
   onSelectDesign: (designId: number) => void;
+  onMoveDesignUp: (designId: number) => void;
+  onMoveDesignDown: (designId: number) => void;
   editedPixels: Pixel[];
   showAll: () => void;
   hideAll: () => void;
@@ -36,6 +39,7 @@ interface DesignsPanelProps {
 const DesignsPanel: React.FC<DesignsPanelProps> = ({
   designs,
   visibleLayers,
+  layerOrder,
   editDesignId,
   setEditDesignId,
   onEditStateChange,
@@ -44,6 +48,8 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
   onSetCanvas,
   onDeleted,
   onSelectDesign,
+  onMoveDesignUp,
+  onMoveDesignDown,
   editedPixels,
   showAll,
   hideAll,
@@ -104,6 +110,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
         <DesignCardsList
           designs={designs}
           visibleLayers={visibleLayers}
+          layerOrder={layerOrder}
           editDesignId={editDesignId}
           setEditDesignId={setEditDesignId}
           onEditStateChange={onEditStateChange}
@@ -114,6 +121,8 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
           editedPixels={editedPixels}
           searchQuery={searchQuery}
           onSelectDesign={onSelectDesign}
+          onMoveDesignUp={onMoveDesignUp}
+          onMoveDesignDown={onMoveDesignDown}
         />
         <Box h="100px" />
       </Box>

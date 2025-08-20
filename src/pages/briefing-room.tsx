@@ -1,20 +1,25 @@
 import { Box, Flex, Heading, Text } from "@chakra-ui/react";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import { useAlertContext } from "../context/alert-context";
 import { useDesignContext } from "../context/design-context";
+import { Canvas } from "../types/art-tool";
 
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { currentAlertData } = useAlertContext();
-  const { designs } = useDesignContext();
+  const { designs, canvases } = useDesignContext();
+  const [canvas, setCanvas] = useState<Canvas>();
 
   // Filter designs based on the active alert level's canvas
   const filteredDesigns = useMemo(() => {
     if (!currentAlertData || !currentAlertData.canvas_id) {
       return [];
     }
+
+    const alertCanvas = canvases.find((c) => c.id === currentAlertData.canvas_id);
+    setCanvas(alertCanvas)
 
     return designs.filter(
       (design) => design.canvas === currentAlertData.canvas_id
@@ -34,10 +39,11 @@ const BriefingRoom: React.FC = () => {
             )}
           </Box>
           <Flex flex="1" border="1px solid #ccc" overflow="hidden">
-            {filteredDesigns.length > 0 ? (
+            {(filteredDesigns.length > 0 && !!canvas) ? (
               <Box flex="1" overflow="hidden">
                 <AdvancedViewport
-                  visibleLayers={filteredDesigns.map((design) => design.id)}
+                  selectedCanvas={canvas}
+                  visibleLayers={new Set(filteredDesigns.map((design) => design.id))}
                 />
               </Box>
             ) : (

@@ -13,6 +13,7 @@ import DesignCard from "./design-card";
 interface DesignCardsListProps {
   designs: Design[];
   visibleLayers: number[];
+  layerOrder: number[];
   editDesignId: number | null;
   setEditDesignId: Dispatch<SetStateAction<number | null>>;
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
@@ -21,6 +22,8 @@ interface DesignCardsListProps {
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
   onSelectDesign: (designId: number) => void;
+  onMoveDesignUp: (designId: number) => void;
+  onMoveDesignDown: (designId: number) => void;
   editedPixels: Pixel[];
   searchQuery: string;
 }
@@ -28,6 +31,7 @@ interface DesignCardsListProps {
 const DesignCardsList: FC<DesignCardsListProps> = ({
   designs,
   visibleLayers,
+  layerOrder,
   editDesignId,
   setEditDesignId,
   onEditStateChange,
@@ -36,12 +40,15 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onSetCanvas,
   onDeleted,
   onSelectDesign,
+  onMoveDesignUp,
+  onMoveDesignDown,
   editedPixels,
   searchQuery,
 }) => {
   const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
     {},
   );
+  const [sortedDesigns, setSortedDesigns] = useState<Design[]>([])
   const toast = useToast();
   const isFirstRender = useRef(true);
   const previousVisibleLayers = useRef<number[]>([]);
@@ -126,22 +133,29 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     setVisibilityMap(newVisibilityMap);
   }, [visibleLayers]);
 
-  const filteredDesigns = designs.filter((design) =>
-    design.design_name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  useEffect(() => {
+    const filteredDesigns = designs.filter((design) =>
+      design.design_name.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
 
-  // Sort filtered designs by the number of likes in descending order
-  const sortedDesigns = [...filteredDesigns].sort(
-    (a, b) => b.liked_by.length - a.liked_by.length,
-  );
+    const designsMap = new Map(filteredDesigns.map(design => [design.id, design]));
+
+    const orderedObjects = layerOrder
+      .map(id => designsMap.get(id))
+      .filter(design => design !== undefined);
+
+    filteredDesigns.forEach(design => !orderedObjects.includes(design) && orderedObjects.push(design))
+
+    setSortedDesigns(orderedObjects)
+  }, [designs, layerOrder])
 
   return (
     <Flex direction="column" m={4} gap={4}>
       {sortedDesigns.map((design) => (
         <Box
           key={design.id}
-          id={`design-card-${design.id}`} // Add an id to each design card
-          ref={(el) => (cardRefs.current[design.id] = el)} // Add a ref
+          id={`design-card-${design.id}`}
+          ref={(el) => (cardRefs.current[design.id] = el)}
         >
           <DesignCard
             design={design}
@@ -156,6 +170,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
             onDeleted={handleOnDeleted}
             editedPixels={editedPixels}
             onSelect={onSelectDesign}
+            onMoveDesignUp={onMoveDesignUp}
+            onMoveDesignDown={onMoveDesignDown}
           />
         </Box>
       ))}
