@@ -150,6 +150,28 @@ const AdvancedViewport = React.forwardRef<
       [],
     );
 
+    // Memoized function to check if pixels arrays are different without using JSON.stringify
+    const arePixelsChanged = useCallback((oldPixels: ViewportPixel[], newPixels: ViewportPixel[]) => {
+      if (oldPixels.length !== newPixels.length) return true;
+      
+      // Create a fast lookup map for the old pixels
+      const oldPixelMap = new Map<string, string>();
+      oldPixels.forEach(pixel => {
+        const key = `${pixel.x}-${pixel.y}-${pixel.designId}`;
+        oldPixelMap.set(key, pixel.color);
+      });
+      
+      // Check if any new pixel is different or missing
+      for (const pixel of newPixels) {
+        const key = `${pixel.x}-${pixel.y}-${pixel.designId}`;
+        if (!oldPixelMap.has(key) || oldPixelMap.get(key) !== pixel.color) {
+          return true;
+        }
+      }
+      
+      return false;
+    }, []);
+    
     const recalculatePixels = useCallback(async () => {
       const basePixels = await fetchPixels([...visibleLayers]);
       const mergedPixels = mergeWithExistingPixels(
@@ -157,7 +179,9 @@ const AdvancedViewport = React.forwardRef<
         editedPixels ?? [],
         [...visibleLayers],
       );
-      if (JSON.stringify(mergedPixels) !== JSON.stringify(pixels)) {
+      
+      // Use the optimized comparison function instead of JSON.stringify
+      if (arePixelsChanged(pixels, mergedPixels)) {
         setPixels(mergedPixels);
       }
     }, [
@@ -166,6 +190,7 @@ const AdvancedViewport = React.forwardRef<
       fetchPixels,
       pixels,
       mergeWithExistingPixels,
+      arePixelsChanged,
     ]);
 
     const handleColorSelect = useCallback(
@@ -372,13 +397,20 @@ const AdvancedViewport = React.forwardRef<
       }
     }, [selectedCanvas, canvases]);
 
+    // Helper function to compare Sets without using JSON.stringify
+    const areSetsEqual = (a: Set<number>, b: Set<number>): boolean => {
+      if (a.size !== b.size) return false;
+      for (const item of a) {
+        if (!b.has(item)) return false;
+      }
+      return true;
+    };
+    
     useEffect(() => {
       const updatePixels = async () => {
-        if (
-          JSON.stringify(previousVisibleLayersRef.current) !==
-          JSON.stringify(visibleLayers)
-        ) {
-          previousVisibleLayersRef.current = visibleLayers;
+        if (!areSetsEqual(previousVisibleLayersRef.current, visibleLayers)) {
+          // Create a new Set to avoid reference issues
+          previousVisibleLayersRef.current = new Set(visibleLayers);
           await recalculatePixels();
         }
       };
