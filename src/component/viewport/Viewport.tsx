@@ -78,7 +78,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       new Map(),
     );
     const [stageDraggable, setStageDraggable] = useState(false);
-    const { colors } = useColorContext();
+    const { colorsMap } = useColorContext();
     const { designs } = useDesignContext();
     const [contextMenu, setContextMenu] = useState<{
       isOpen: boolean;
@@ -242,7 +242,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       for (const layerId of layerOrder) {
         const pixel = pixelsAtCoordinate.find((p) => p.designId === layerId);
         if (pixel) {
-          return colors.find((c) => c.Color === pixel.color);
+          return colorsMap.get(pixel.color);
         }
       }
 
@@ -258,7 +258,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
       const pixelsAtCoordinate = pixelMap.get(key) || [];
       const designsAtPixel = pixelsAtCoordinate.map((pixel) => {
         const design = designs.find((d) => d.id === pixel.designId);
-        const color = colors.find((c) => c.Color === pixel.color);
+        const color = colorsMap.get(pixel.color);
         return {
           ...design,
           id: pixel.designId,

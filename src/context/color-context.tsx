@@ -28,16 +28,24 @@ const fetchColors = async (): Promise<Color[]> => {
   return [];
 };
 
+const getColorsMap = (colors: Color[]): Map<string, Color> => {
+  const map = new Map()
+  colors.forEach(color => map.set(color.Color, color))
+  return map
+}
+
 // Initialize the colors
 const initialColors: Color[] = await fetchColors();
 
 interface ColorContextProps {
   colors: Color[];
+  colorsMap: Map<string, Color>;
   setColors: React.Dispatch<React.SetStateAction<Color[]>>;
 }
 
 const ColorContext = createContext<ColorContextProps>({
   colors: initialColors,
+  colorsMap: getColorsMap(initialColors),
   setColors: () => {},
 });
 
@@ -57,6 +65,7 @@ interface ColorProviderProps {
 
 export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
   const [colors, setColors] = useState<Color[]>(initialColors);
+  const [colorsMap, setColorsMap] = useState<Map<string, Color>>(new Map());
 
   useEffect(() => {
     const subscription = supabase
@@ -114,8 +123,12 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    setColorsMap(getColorsMap(colors))
+  }, [colors])
+
   return (
-    <ColorContext.Provider value={{ colors, setColors }}>
+    <ColorContext.Provider value={{ colors, colorsMap, setColors }}>
       {children}
     </ColorContext.Provider>
   );
