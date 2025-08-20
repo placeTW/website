@@ -232,8 +232,9 @@ const DesignCard: FC<DesignCardProps> = ({
     }
   };
 
-  const isAdminOrCreator = !!currentUser && (["A", "B"].includes(currentUser.rank) || currentUser.user_id === design.created_by);
+  const isAdmin = !!currentUser && ["A", "B"].includes(currentUser.rank);
   const isCreator = !!currentUser && currentUser.user_id === design.created_by;
+  const isAdminOrCreator = isAdmin || isCreator;
 
   // Get the creator's user data from the context
   const creator = users.find((user) => user.user_id === design.created_by);
@@ -358,7 +359,7 @@ const DesignCard: FC<DesignCardProps> = ({
               </Text>
             </Box>
             <Flex direction="row" justifyContent="space-between">
-              <Flex gap={2}>
+              {isAdmin ? (<Flex gap={2}>
                 <IconButton
                   icon={<FaArrowUp />}
                   variant="outline"
@@ -375,7 +376,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   size="sm"
                   isDisabled={!isVisible}
                 />
-              </Flex>
+              </Flex>) : <Box />}
               <Flex gap={2}>
                 {isCreator && !inEditMode && (
                   <Tooltip label="Edit Design">
