@@ -54,6 +54,15 @@ const ExportCanvas: React.FC = () => {
         return;
       }
 
+      // Order the designs by the canvas layer order
+      const designsMap = new Map(designs.map(obj => [obj.id, obj]));
+
+      const orderedDesigns = canvas.layer_order
+        .map(id => designsMap.get(id))
+        .filter(design => design !== undefined);
+
+      designs.forEach((design) => !orderedDesigns.includes(design) && orderedDesigns.push(design))
+
       // Define an interface for the pixels we will work with
       interface ExportPixel {
         x: number;
