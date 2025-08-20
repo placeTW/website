@@ -143,6 +143,29 @@ export const databaseFetchCanvas = async (
   return data;
 };
 
+export const databaseUpdateCanvasLayerOrder = async (canvas: Canvas): Promise<Canvas> => {
+  const { id, layer_order } = canvas;
+
+  const updateCanvasLayerOrderQuery = await supabase
+    .from("art_tool_canvases")
+    .update({ layer_order })
+    .eq("id", id)
+    .returns<Canvas>()
+    .select()
+    .single();
+
+  const { data, error } = logSupabaseDatabaseQuery(
+    updateCanvasLayerOrderQuery,
+    "updateCanvasLayerOrder",
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 export const databaseFetchDesigns = async (
   canvasId?: number,
 ): Promise<Design[] | null> => {

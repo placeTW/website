@@ -10,7 +10,8 @@ import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
-  createThumbnailForDesign
+  createThumbnailForDesign,
+  databaseUpdateCanvasLayerOrder
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
@@ -214,14 +215,13 @@ const DesignOffice: React.FC = () => {
     }
   };
 
-  const onMoveDesignUp = (designId: number) => onChangeDesignOrder(designId, true);
-  const onMoveDesignDown = (designId: number) => onChangeDesignOrder(designId, false);
+  const onMoveDesignUp = async (designId: number) => await onChangeDesignOrder(designId, true);
+  const onMoveDesignDown = async (designId: number) => await onChangeDesignOrder(designId, false);
 
-  const onChangeDesignOrder = (designId: number, up: boolean) => {
+  const onChangeDesignOrder = async (designId: number, up: boolean) => {
     const layerOrder = selectedCanvas.layer_order;
     const designIndex = layerOrder.indexOf(designId);
     const targetIndex = up ? designIndex - 1 : designIndex + 1;
-    console.log(layerOrder, designIndex, targetIndex)
 
     if (designIndex !== -1 && targetIndex >= 0 && targetIndex < layerOrder.length) {
       const temp = layerOrder[designIndex];
@@ -238,6 +238,7 @@ const DesignOffice: React.FC = () => {
     }
 
     setSelectedCanvas({...selectedCanvas, layer_order: layerOrder})
+    await databaseUpdateCanvasLayerOrder(selectedCanvas);
   }
 
   if (loading) {
