@@ -273,23 +273,58 @@ export const saveEditedPixels = async (
   editedPixels: Pixel[],
   newName?: string, // Optional parameter for updating the design name
 ): Promise<Design> => {
-  // Combine the design's pixels with the editedPixels. If a pixel is in both, the edited pixel should replace the design pixel
-  const combinedPixels = [...design.pixels, ...editedPixels].reduce(
-    (acc, pixel) => {
-      const pixelKey = `${pixel.x}-${pixel.y}`;
-      acc[pixelKey] = pixel;
-      return acc;
-    },
-    {} as Record<string, Pixel>,
-  );
-
-  // Make a list of the combined pixels
-  const combinedPixelsList = Object.values(combinedPixels);
-
-  // Remove any pixels that are clear
-  const filteredPixels = combinedPixelsList.filter(
-    (pixel) => pixel.color !== CLEAR_ON_DESIGN,
-  );
+  // Create a fast lookup map to combine the original and edited pixels efficiently
+  const pixelMap = new Map<string, Pixel>();
+  
+  // First add all design pixels to the map
+  design.pixels.forEach(pixel => {
+    const pixelKey = `${pixel.x}-${pixel.y}`;
+    pixelMap.set(pixelKey, pixel);
+  });
+  
+  // Then add or overwrite with edited pixels
+  editedPixels.forEach(pixel => {
+    const pixelKey = `${pixel.x}-${pixel.y}`;
+    if (pixel.color !== CLEAR_ON_DESIGN) {
+      pixelMap.set(pixelKey, pixel);
+    } else {
+      pixelMap.delete(pixelKey); // If it's a clear pixel, remove it from the map
+    }
+  });
+  
+  // Convert the map back to an array
+  const filteredPixels = Array.from(pixelMap.values());
+  
+  // Skip unnecessary processing if no pixels
+  if (filteredPixels.length === 0) {
+    // Prepare the update object for empty design
+    const updateData: Partial<Design> = {
+      pixels: [],
+      x: design.x,
+      y: design.y,
+    };
+    if (newName) {
+      updateData.design_name = newName;
+    }
+    
+    // Update the design with the new pixels and name (if provided)
+    const savePixelsQuery = await supabase
+      .from("art_tool_designs")
+      .update(updateData)
+      .eq("id", design.id);
+    
+    const { error: updateError } = logSupabaseDatabaseQuery(
+      savePixelsQuery,
+      "saveEditedPixels",
+    );
+    
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
+    
+    const updatedDesign = { ...design, ...updateData };
+    return updatedDesign;
+  }
 
   // Get the top left pixel of the design
   const topLeftCoords = getTopLeftCoords(filteredPixels);
@@ -508,20 +543,24 @@ export const updateColor = async (
 export const updateColorSortOrder = async (
   updatedColors: Color[],
 ): Promise<void> => {
-  for (let i = 0; i < updatedColors.length; i++) {
-    const updateColorSortOrderQuery = await supabase
-      .from("art_tool_colors")
-      .update({ color_sort: i + 1 })
-      .eq("Color", updatedColors[i].Color);
+  // Batch updates using upsert instead of individual updates
+  const colorUpdates = updatedColors.map((color, index) => ({
+    Color: color.Color,
+    color_sort: index + 1,
+    color_name: color.color_name // Preserve the existing color_name
+  }));
 
-    const { error } = logSupabaseDatabaseQuery(
-      updateColorSortOrderQuery,
-      "updateColorSortOrder",
-    );
+  const updateColorSortOrderQuery = await supabase
+    .from("art_tool_colors")
+    .upsert(colorUpdates, { onConflict: 'Color' });
 
-    if (error) {
-      throw new Error(error.message);
-    }
+  const { error } = logSupabaseDatabaseQuery(
+    updateColorSortOrderQuery,
+    "updateColorSortOrder",
+  );
+
+  if (error) {
+    throw new Error(error.message);
   }
 };
 
