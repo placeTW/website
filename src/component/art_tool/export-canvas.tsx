@@ -70,17 +70,31 @@ const ExportCanvas: React.FC = () => {
         color: string;
       }
 
-      // Combine all designs' pixels into one array
+      // Combine all designs' pixels into one array, respecting layer order
       let combinedPixels: ExportPixel[] = [];
-
-      designs.forEach((design) => {
+      
+      // Create a map to track which pixels have already been added to respect layer order
+      const pixelPositionMap = new Map<string, boolean>();
+      
+      // Process designs in layer order (top to bottom)
+      orderedDesigns.forEach((design) => {
+        if (!design) return;
+        
         // Offset the design's pixels by its x and y coordinates
         const offsettedPixels: ExportPixel[] = design.pixels.map((pixel) => ({
           x: pixel.x + design.x,
           y: pixel.y + design.y,
           color: pixel.color,
         }));
-        combinedPixels = combinedPixels.concat(offsettedPixels);
+        
+        // Only add pixels that haven't been covered by a higher layer
+        offsettedPixels.forEach(pixel => {
+          const key = `${pixel.x},${pixel.y}`;
+          if (!pixelPositionMap.has(key)) {
+            pixelPositionMap.set(key, true);
+            combinedPixels.push(pixel);
+          }
+        });
       });
 
       // Remove any pixels that are clear
