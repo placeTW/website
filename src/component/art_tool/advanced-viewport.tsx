@@ -1,13 +1,14 @@
 import {
   Box,
   Flex,
-  Grid,
   IconButton,
   Spacer,
   Tab,
   TabList,
   Tabs,
   Tooltip,
+  Wrap,
+  WrapItem,
 } from "@chakra-ui/react";
 import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -538,28 +539,30 @@ const AdvancedViewport = React.forwardRef<
             transform="translateX(-50%)"
             zIndex="100"
           >
-            <Grid templateColumns={`repeat(${colors.length}, 1fr)`} gap={2}>
+            <Wrap spacing={2}>
               {colors.map((color) => (
-                <Tooltip key={color.Color} label={color.color_name}>
-                  <Box
-                    w="30px"
-                    h="30px"
-                    bg={
-                      color.Color === CLEAR_ON_DESIGN
-                        ? `url(${clearOnDesignPattern})`
-                        : color.Color
-                    }
-                    border={
-                      selectedColor === color.Color
-                        ? "2px solid black"
-                        : "1px solid #ccc"
-                    }
-                    cursor="pointer"
-                    onClick={() => handleColorSelect(color.Color)}
-                  />
-                </Tooltip>
+                <WrapItem key={color.Color}>
+                  <Tooltip label={color.color_name}>
+                    <Box
+                      w="30px"
+                      h="30px"
+                      bg={
+                        color.Color === CLEAR_ON_DESIGN
+                          ? `url(${clearOnDesignPattern})`
+                          : color.Color
+                      }
+                      border={
+                        selectedColor === color.Color
+                          ? "2px solid black"
+                          : "1px solid #ccc"
+                      }
+                      cursor="pointer"
+                      onClick={() => handleColorSelect(color.Color)}
+                    />
+                  </Tooltip>
+                </WrapItem>
               ))}
-            </Grid>
+            </Wrap>
           </Box>
         )}
       </Box>
