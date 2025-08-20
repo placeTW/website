@@ -79,7 +79,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
     );
     const [stageDraggable, setStageDraggable] = useState(false);
     const { colorsMap } = useColorContext();
-    const { designs } = useDesignContext();
+    const { designsMap } = useDesignContext();
     const [contextMenu, setContextMenu] = useState<{
       isOpen: boolean;
       position: { x: number; y: number };
@@ -257,7 +257,7 @@ const Viewport = forwardRef<ViewportHandle, ViewportProps>(
 
       const pixelsAtCoordinate = pixelMap.get(key) || [];
       const designsAtPixel = pixelsAtCoordinate.map((pixel) => {
-        const design = designs.find((d) => d.id === pixel.designId);
+        const design = designsMap.get(pixel.designId);
         const color = colorsMap.get(pixel.color);
         return {
           ...design,

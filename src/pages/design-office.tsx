@@ -24,7 +24,7 @@ import { getDimensions, offsetPixels } from "../utils/pixelUtils";
 import { useUserContext } from "../context/user-context";
 
 const DesignOffice: React.FC = () => {
-  const { designs, canvases, setDesigns } = useDesignContext();
+  const { designs, canvases, canvasesMap, canvasDesignsMap, setDesigns } = useDesignContext();
   const { colors } = useColorContext();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -131,7 +131,8 @@ const DesignOffice: React.FC = () => {
   };
 
   const selectCanvas = (canvasId: number | null, designs: Design[]) => {
-    const canvas = canvases.find((canvas) => canvas.id === canvasId) || null;
+    if (!canvasId) return;
+    const canvas = canvasesMap.get(canvasId);
     if (!canvas) {
       return;
     }
@@ -149,21 +150,13 @@ const DesignOffice: React.FC = () => {
   };
 
   useEffect(() => {
-    if (designs && selectedCanvas) {
-      setVisibleLayers(
-        designs
-          .filter((design) => selectedCanvas.id === design.canvas)
-          .map((design) => design.id) || [],
-      );
+    if (canvasDesignsMap && selectedCanvas) {
+      showAll();
     }
-  }, [designs, selectedCanvas]);
+  }, [canvasDesignsMap, selectedCanvas]);
 
   const showAll = () => {
-    setVisibleLayers(
-      designs
-        ?.filter((design) => selectedCanvas?.id === design.canvas)
-        .map((design) => design.id) || [],
-    );
+    setVisibleLayers((canvasDesignsMap.get(selectedCanvas.id) ?? []).map((design) => design.id));
   };
 
   const hideAll = () => {
@@ -364,7 +357,7 @@ const DesignOffice: React.FC = () => {
         >
           <CreateDesignButton
             onCreate={handleCreatedDesign}
-            canvasId={selectedCanvas?.id}
+            canvasId={selectedCanvas.id}
           />
         </Box>
       )}

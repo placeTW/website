@@ -199,18 +199,51 @@ const fetchAllData = async () => {
   };
 };
 
+const getCanvasDesignsMap = (designs: Design[]): Map<number, Design[]> => {
+  return designs.reduce((map, design) => {
+    const canvasId = design.canvas ?? -1;
+    if (!map.has(canvasId)) {
+      map.set(canvasId, []);
+    }
+    map.get(canvasId)!.push(design);
+    return map;
+  }, new Map<number, Design[]>());
+}
+
+const getDesignsMap = (designs: Design[]): Map<number, Design> => {
+  return designs.reduce((map, design) => {
+    const designId = design.id;
+    map.set(designId, design)
+    return map;
+  }, new Map<number, Design>());
+}
+
+const getCanvasesMap = (canvases: Canvas[]): Map<number, Canvas> => {
+  return canvases.reduce((map, canvas) => {
+    const canvasId = canvas.id;
+    map.set(canvasId, canvas)
+    return map;
+  }, new Map<number, Canvas>());
+}
+
 const initialData = await fetchAllData();
 
 interface DesignContextProps {
   designs: Design[];
+  designsMap: Map<number, Design>;
   canvases: Canvas[];
+  canvasesMap: Map<number, Canvas>;
+  canvasDesignsMap: Map<number, Design[]>,
   setDesigns: React.Dispatch<React.SetStateAction<Design[]>>;
   setCanvases: React.Dispatch<React.SetStateAction<Canvas[]>>;
 }
 
 const DesignContext = createContext<DesignContextProps>({
   designs: initialData.designs,
+  designsMap: getDesignsMap(initialData.designs),
   canvases: initialData.canvases,
+  canvasesMap: getCanvasesMap(initialData.canvases),
+  canvasDesignsMap: getCanvasDesignsMap(initialData.designs),
   setDesigns: () => {},
   setCanvases: () => {},
 });
@@ -231,7 +264,10 @@ interface DesignProviderProps {
 
 export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
   const [designs, setDesigns] = useState<Design[]>(initialData.designs);
+  const [designsMap, setDesignsMap] = useState<Map<number, Design>>(getDesignsMap(initialData.designs))
   const [canvases, setCanvases] = useState<Canvas[]>(initialData.canvases);
+  const [canvasesMap, setCanvasesMap] = useState<Map<number, Canvas>>(getCanvasesMap(initialData.canvases))
+  const [canvasDesignsMap, setCanvasDesignsMap] = useState<Map<number, Design[]>>(getCanvasDesignsMap(initialData.designs))
 
   const subscriptionManager = useRef(SupabaseSubscriptionManager.getInstance());
 
@@ -245,9 +281,16 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    setCanvasDesignsMap(getCanvasDesignsMap(designs));
+  }, [designs, canvases])
+
+  useEffect(() => setCanvasesMap(getCanvasesMap(canvases)), [canvases]);
+  useEffect(() => setDesignsMap(getDesignsMap(designs)), [designs]);
+
   return (
     <DesignContext.Provider
-      value={{ designs, canvases, setDesigns, setCanvases }}
+      value={{ designs, canvases, designsMap, canvasesMap, canvasDesignsMap, setDesigns, setCanvases }}
     >
       {children}
     </DesignContext.Provider>

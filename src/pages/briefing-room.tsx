@@ -9,7 +9,7 @@ import { Canvas } from "../types/art-tool";
 const BriefingRoom: React.FC = () => {
   const { t } = useTranslation();
   const { currentAlertData } = useAlertContext();
-  const { designs, canvases } = useDesignContext();
+  const { canvasDesignsMap, canvases } = useDesignContext();
   const [canvas, setCanvas] = useState<Canvas>();
 
   // Filter designs based on the active alert level's canvas
@@ -21,10 +21,8 @@ const BriefingRoom: React.FC = () => {
     const alertCanvas = canvases.find((c) => c.id === currentAlertData.canvas_id);
     setCanvas(alertCanvas)
 
-    return designs.filter(
-      (design) => design.canvas === currentAlertData.canvas_id
-    );
-  }, [currentAlertData, designs]);
+    return canvasDesignsMap.get(currentAlertData.canvas_id) || [];
+  }, [currentAlertData, canvasDesignsMap]);
 
   return (
     <Flex direction="column" height="100vh">
