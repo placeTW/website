@@ -145,7 +145,7 @@ const ExportCanvas: React.FC = () => {
       });
 
       // Upload the Blob to Supabase storage
-      const filename = `canvas_export_x${topLeftCoords.x}_y${topLeftCoords.y}.png`;
+      const filename = `${new Date().toISOString()}-canvas_export_x${topLeftCoords.x}_y${topLeftCoords.y}.png`;
       const { error } = await supabase.storage
         .from('canvas-exports')
         .upload(filename, blob, {
