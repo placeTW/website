@@ -5,7 +5,7 @@ import {
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
@@ -20,7 +20,7 @@ import { CLEAR_ON_DESIGN } from "../component/viewport/constants";
 import { ViewportHandle } from "../component/viewport/types";
 import { useColorContext } from "../context/color-context";
 import { useDesignContext } from "../context/design-context";
-import { Canvas, Design, Pixel } from "../types/art-tool";
+import { Design, Pixel } from "../types/art-tool";
 import { getDimensions, offsetPixels } from "../utils/pixelUtils";
 import { useUserContext } from "../context/user-context";
 
@@ -32,7 +32,12 @@ const DesignOffice: React.FC = () => {
   const [editDesignId, setEditDesignId] = useState<number | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
-  const [selectedCanvas, setSelectedCanvas] = useState<Canvas>(canvases[0]);
+  // Store just the ID in state instead of the entire canvas object
+  const [selectedCanvasId, setSelectedCanvasId] = useState<number | null>(canvases[0]?.id || null);
+  // Get the actual canvas directly from the context using useMemo for proper reactivity
+  const selectedCanvas = useMemo(() => {
+    return selectedCanvasId ? canvasesMap.get(selectedCanvasId) || canvases[0] : canvases[0];
+  }, [selectedCanvasId, canvasesMap, canvases]);
   const [isCardListVisible, setIsCardListVisible] = useState(true); // New state for card list visibility
   const [isMobile] = useMediaQuery("(max-width: 768px)"); // Media query for mobile devices
   const advancedViewportRef = useRef<ViewportHandle>(null);
@@ -133,11 +138,7 @@ const DesignOffice: React.FC = () => {
 
   const selectCanvas = (canvasId: number | null, designs: Design[]) => {
     if (!canvasId) return;
-    const canvas = canvasesMap.get(canvasId);
-    if (!canvas) {
-      return;
-    }
-    setSelectedCanvas(canvas);
+    setSelectedCanvasId(canvasId);
 
     setVisibleLayers(
       designs
@@ -150,19 +151,15 @@ const DesignOffice: React.FC = () => {
     );
   };
 
-  useEffect(() => {
-    const canvas = canvasesMap!.get(selectedCanvas.id);
-    if (!canvas) return;
-    setSelectedCanvas(canvas)
-  }, [canvasesMap])
 
   useEffect(() => {
     if (canvasDesignsMap && selectedCanvas) {
       showAll();
     }
-  }, [canvasDesignsMap, selectedCanvas]);
+  }, [canvasDesignsMap, selectedCanvas, selectedCanvasId]);
 
   const showAll = () => {
+    if (!selectedCanvas) return;
     setVisibleLayers((canvasDesignsMap.get(selectedCanvas.id) ?? []).map((design) => design.id));
   };
 
@@ -225,7 +222,12 @@ const DesignOffice: React.FC = () => {
   const onMoveDesignDown = async (designId: number) => await onChangeDesignOrder(designId, false);
 
   const onChangeDesignOrder = async (designId: number, up: boolean) => {
-    const layerOrder = selectedCanvas.layer_order;
+    if (!selectedCanvas) return;
+    
+    // Create a copy of the canvas to modify
+    const canvasCopy = { ...selectedCanvas };
+    const layerOrder = [...canvasCopy.layer_order];
+    
     const designIndex = layerOrder.indexOf(designId);
     const targetIndex = up ? designIndex - 1 : designIndex + 1;
 
@@ -243,8 +245,8 @@ const DesignOffice: React.FC = () => {
       }
     }
 
-    setSelectedCanvas({...selectedCanvas, layer_order: layerOrder})
-    await databaseUpdateCanvasLayerOrder(selectedCanvas);
+    canvasCopy.layer_order = layerOrder;
+    await databaseUpdateCanvasLayerOrder(canvasCopy);
   }
 
   if (loading) {
@@ -304,10 +306,10 @@ const DesignOffice: React.FC = () => {
       >
         <DesignsPanel
           designs={designs.filter(
-            (design) => selectedCanvas.id === design.canvas || !design.canvas,
+            (design) => selectedCanvas?.id === design.canvas || !design.canvas,
           )}
           visibleLayers={visibleLayers}
-          layerOrder={selectedCanvas.layer_order}
+          layerOrder={selectedCanvas?.layer_order || []}
           editDesignId={editDesignId}
           setEditDesignId={setEditDesignId}
           onEditStateChange={handleEditStateChange}
@@ -364,7 +366,7 @@ const DesignOffice: React.FC = () => {
         >
           <CreateDesignButton
             onCreate={handleCreatedDesign}
-            canvasId={selectedCanvas.id}
+            canvasId={selectedCanvas?.id || 0}
           />
         </Box>
       )}
