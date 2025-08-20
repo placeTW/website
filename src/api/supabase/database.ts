@@ -636,42 +636,55 @@ export const setActiveAlertLevel = async (
   activeAlertId: number,
 ): Promise<void> => {
   try {
-    const deactivateAlertsQuery = await supabase
-      .from("art_tool_alert_state")
-      .update({ Active: false })
-      .neq("alert_id", activeAlertId);
+    // Use a single RPC call to update all alert states in one database operation
+    // This reduces network overhead and ensures atomicity
+    const rpcQuery = await supabase
+      .rpc('set_active_alert_level', { active_id: activeAlertId });
 
-    const { error: deactivateError } = logSupabaseDatabaseQuery(
-      deactivateAlertsQuery,
-      "deactivateAlerts",
-    );
-
-    if (deactivateError) {
-      console.error(
-        "Supabase deactivateAlerts error:",
-        deactivateError.message,
-        deactivateError,
-      );
-      throw new Error(`deactivateAlerts: ${deactivateError.message}`);
-    }
-
-    const activateAlertQuery = await supabase
-      .from("art_tool_alert_state")
-      .update({ Active: true })
-      .eq("alert_id", activeAlertId);
-
-    const { error: activateError } = logSupabaseDatabaseQuery(
-      activateAlertQuery,
+    const { error } = logSupabaseDatabaseQuery(
+      rpcQuery,
       "setActiveAlertLevel",
     );
 
-    if (activateError) {
+    if (error) {
       console.error(
         "Supabase setActiveAlertLevel error:",
-        activateError.message,
-        activateError,
+        error.message,
+        error,
       );
-      throw new Error(`setActiveAlertLevel: ${activateError.message}`);
+      
+      // If the RPC function doesn't exist, fall back to the two-step approach
+      if (error.message.includes('function') && error.message.includes('does not exist')) {
+        console.info("Falling back to two-step alert activation approach");
+        
+        // Step 1: Deactivate all alerts
+        const deactivateAlertsQuery = await supabase
+          .from("art_tool_alert_state")
+          .update({ Active: false })
+          .neq("alert_id", activeAlertId);
+    
+        const { error: deactivateError } = logSupabaseDatabaseQuery(
+          deactivateAlertsQuery,
+          "deactivateAlerts",
+        );
+    
+        if (deactivateError) throw new Error(`deactivateAlerts: ${deactivateError.message}`);
+    
+        // Step 2: Activate the specified alert
+        const activateAlertQuery = await supabase
+          .from("art_tool_alert_state")
+          .update({ Active: true })
+          .eq("alert_id", activeAlertId);
+    
+        const { error: activateError } = logSupabaseDatabaseQuery(
+          activateAlertQuery,
+          "setActiveAlertLevel",
+        );
+    
+        if (activateError) throw new Error(`setActiveAlertLevel: ${activateError.message}`);
+      } else {
+        throw error;
+      }
     }
   } catch (err) {
     console.error("Error during setActiveAlertLevel:", err);

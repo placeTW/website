@@ -104,20 +104,40 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     setEditDesignId(null);
   };
 
+  // Helper function to compare arrays efficiently without JSON.stringify
+  const arraysAreEqual = (a: number[], b: number[]): boolean => {
+    if (a.length !== b.length) return false;
+    
+    // Sort arrays for consistent comparison
+    const sortedA = [...a].sort((x, y) => x - y);
+    const sortedB = [...b].sort((x, y) => x - y);
+    
+    // Compare each element
+    for (let i = 0; i < sortedA.length; i++) {
+      if (sortedA[i] !== sortedB[i]) return false;
+    }
+    
+    return true;
+  };
+  
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
 
-    const newVisibleLayers = Object.keys(visibilityMap)
-      .filter((layer) => visibilityMap[Number(layer)])
-      .map(Number);
+    // Create newVisibleLayers array directly with a known size for better performance
+    const visibleLayerKeys = Object.keys(visibilityMap).filter(
+      (layer) => visibilityMap[Number(layer)]
+    );
+    
+    const newVisibleLayers = new Array(visibleLayerKeys.length);
+    for (let i = 0; i < visibleLayerKeys.length; i++) {
+      newVisibleLayers[i] = Number(visibleLayerKeys[i]);
+    }
 
-    if (
-      JSON.stringify(newVisibleLayers) !==
-      JSON.stringify(previousVisibleLayers.current)
-    ) {
+    // Use the optimized comparison function instead of JSON.stringify
+    if (!arraysAreEqual(newVisibleLayers, previousVisibleLayers.current)) {
       previousVisibleLayers.current = newVisibleLayers;
       onVisibilityChange(newVisibleLayers);
     }
@@ -134,20 +154,38 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   }, [visibleLayers]);
 
   useEffect(() => {
-    const filteredDesigns = designs.filter((design) =>
-      design.design_name.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+    // Memoize searchQuery conversion and convert to lowercase once
+    const normalizedQuery = searchQuery.toLowerCase();
+    
+    // Avoid creating a new array if the query is empty
+    const filteredDesigns = normalizedQuery === '' 
+      ? designs 
+      : designs.filter((design) => design.design_name.toLowerCase().includes(normalizedQuery));
 
+    // Create a map for efficient lookups
     const designsMap = new Map(filteredDesigns.map(design => [design.id, design]));
-
-    const orderedObjects = layerOrder
-      .map(id => designsMap.get(id))
-      .filter(design => design !== undefined);
-
-    filteredDesigns.forEach(design => !orderedObjects.includes(design) && orderedObjects.push(design))
-
-    setSortedDesigns(orderedObjects)
-  }, [designs, layerOrder])
+    
+    // Create the ordered designs array with a known maximum size
+    const orderedObjects: Design[] = [];
+    
+    // First add designs in layer order
+    for (const id of layerOrder) {
+      const design = designsMap.get(id);
+      if (design) {
+        orderedObjects.push(design);
+        designsMap.delete(id); // Remove from map to avoid checking again
+      }
+    }
+    
+    // Then add remaining designs
+    if (designsMap.size > 0) {
+      designsMap.forEach(design => {
+        orderedObjects.push(design);
+      });
+    }
+    
+    setSortedDesigns(orderedObjects);
+  }, [designs, layerOrder, searchQuery])
 
   return (
     <Flex direction="column" m={4} gap={4}>

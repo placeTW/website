@@ -11,15 +11,27 @@ type Bounds = {
 };
 
 const getBounds = (pixels: Pixel[]): Bounds => {
-  const xCoordinates = pixels.map((pixel) => pixel.x);
-  const yCoordinates = pixels.map((pixel) => pixel.y);
-
-  return {
-    minX: Math.min(...xCoordinates),
-    maxX: Math.max(...xCoordinates),
-    minY: Math.min(...yCoordinates),
-    maxY: Math.max(...yCoordinates),
-  };
+  // Skip extra iterations and array creations by calculating min/max in a single pass
+  if (pixels.length === 0) {
+    return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+  }
+  
+  // Initialize with the first pixel's values
+  let minX = pixels[0].x;
+  let maxX = pixels[0].x;
+  let minY = pixels[0].y;
+  let maxY = pixels[0].y;
+  
+  // Find min/max in a single pass
+  for (let i = 1; i < pixels.length; i++) {
+    const pixel = pixels[i];
+    if (pixel.x < minX) minX = pixel.x;
+    if (pixel.x > maxX) maxX = pixel.x;
+    if (pixel.y < minY) minY = pixel.y;
+    if (pixel.y > maxY) maxY = pixel.y;
+  }
+  
+  return { minX, maxX, minY, maxY };
 };
 
 const createScaledCanvas = (
@@ -66,39 +78,96 @@ const getThumbnailDimensions = (
 };
 
 export const createThumbnail = async (pixels: Pixel[]): Promise<Blob> => {
+  // Early return for empty pixels to avoid unnecessary processing
+  if (pixels.length === 0) {
+    // Create a minimal 1x1 transparent image
+    const emptyCanvas = document.createElement("canvas");
+    emptyCanvas.width = 1;
+    emptyCanvas.height = 1;
+    return new Promise((resolve, reject) => {
+      emptyCanvas.toBlob(
+        (blob) => {
+          blob
+            ? resolve(blob)
+            : reject(new Error("Failed to create empty thumbnail blob"));
+        },
+        "image/png"
+      );
+    });
+  }
+  
+  // Skip redundant calculations by getting bounds and dimensions in one pass
   const bounds = getBounds(pixels);
-  const scaledCanvas = createScaledCanvas(pixels, bounds);
-
-  const { thumbnailWidth, thumbnailHeight } = getThumbnailDimensions(
-    bounds.maxX - bounds.minX + 1,
-    bounds.maxY - bounds.minY + 1,
-  );
-
-  const thumbnailCanvas = document.createElement("canvas");
-  thumbnailCanvas.width = thumbnailWidth;
-  thumbnailCanvas.height = thumbnailHeight;
-
-  const thumbnailCtx = thumbnailCanvas.getContext("2d");
-  if (!thumbnailCtx) throw new Error("Failed to get 2D context for thumbnail");
-
-  thumbnailCtx.imageSmoothingEnabled = false;
-  thumbnailCtx.drawImage(
-    scaledCanvas,
-    0,
-    0,
-    scaledCanvas.width,
-    scaledCanvas.height,
-    0,
-    0,
-    thumbnailCanvas.width,
-    thumbnailCanvas.height,
-  );
-
-  return new Promise((resolve, reject) => {
-    thumbnailCanvas.toBlob((blob) => {
-      blob
-        ? resolve(blob)
-        : reject(new Error("Failed to create thumbnail blob"));
-    }, "image/png");
-  });
+  
+  // Calculate dimensions once - these will be used multiple times
+  const width = bounds.maxX - bounds.minX + 1;
+  const height = bounds.maxY - bounds.minY + 1;
+  
+  // Skip creating scaled canvas for very small designs (1 or 2 pixels)
+  let scaledCanvas: HTMLCanvasElement;
+  if (width <= 2 && height <= 2) {
+    // For tiny designs, create the final thumbnail directly
+    const { thumbnailWidth, thumbnailHeight } = getThumbnailDimensions(width, height);
+    
+    scaledCanvas = document.createElement("canvas");
+    scaledCanvas.width = thumbnailWidth;
+    scaledCanvas.height = thumbnailHeight;
+    
+    const ctx = scaledCanvas.getContext("2d");
+    if (!ctx) throw new Error("Failed to get 2D context");
+    
+    // Draw directly at thumbnail size
+    const pixelSize = Math.max(thumbnailWidth / width, thumbnailHeight / height);
+    pixels.forEach(({ x, y, color }) => {
+      ctx.fillStyle = color;
+      ctx.fillRect(
+        (x - bounds.minX) * pixelSize, 
+        (y - bounds.minY) * pixelSize, 
+        pixelSize, 
+        pixelSize
+      );
+    });
+    
+    // Return directly without a second canvas creation
+    return new Promise((resolve, reject) => {
+      scaledCanvas.toBlob((blob) => {
+        blob
+          ? resolve(blob)
+          : reject(new Error("Failed to create thumbnail blob"));
+      }, "image/png");
+    });
+  } else {
+    // For larger designs, use the two-step process
+    scaledCanvas = createScaledCanvas(pixels, bounds);
+    
+    const { thumbnailWidth, thumbnailHeight } = getThumbnailDimensions(width, height);
+    
+    const thumbnailCanvas = document.createElement("canvas");
+    thumbnailCanvas.width = thumbnailWidth;
+    thumbnailCanvas.height = thumbnailHeight;
+    
+    const thumbnailCtx = thumbnailCanvas.getContext("2d");
+    if (!thumbnailCtx) throw new Error("Failed to get 2D context for thumbnail");
+    
+    thumbnailCtx.imageSmoothingEnabled = false;
+    thumbnailCtx.drawImage(
+      scaledCanvas,
+      0,
+      0,
+      scaledCanvas.width,
+      scaledCanvas.height,
+      0,
+      0,
+      thumbnailCanvas.width,
+      thumbnailCanvas.height,
+    );
+    
+    return new Promise((resolve, reject) => {
+      thumbnailCanvas.toBlob((blob) => {
+        blob
+          ? resolve(blob)
+          : reject(new Error("Failed to create thumbnail blob"));
+      }, "image/png");
+    });
+  }
 };
