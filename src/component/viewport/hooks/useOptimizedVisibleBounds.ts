@@ -1,4 +1,4 @@
-import { useMemo, useRef, useCallback } from 'react';
+import { useMemo, useRef, useCallback, useState } from 'react';
 import Konva from 'konva';
 
 interface VisibleBounds {
@@ -28,6 +28,7 @@ export const useOptimizedVisibleBounds = (
     height: 0
   });
   const lastUpdateTime = useRef<number>(0);
+  const [forceUpdateCounter, setForceUpdateCounter] = useState(0);
 
   const visibleBounds = useMemo(() => {
     if (!stageRef.current) {
@@ -96,12 +97,13 @@ export const useOptimizedVisibleBounds = (
     lastUpdateTime.current = currentTime;
 
     return newBounds;
-  }, [stageRef, gridSize, dimensions, zoomLevel]);
+  }, [stageRef, gridSize, dimensions, zoomLevel, forceUpdateCounter]);
 
   // Force recalculation function for when we need to update immediately
   const forceRecalculation = useCallback(() => {
     lastCalculationParams.current = { x: 0, y: 0, scaleX: 0, width: 0, height: 0 };
     lastUpdateTime.current = 0;
+    setForceUpdateCounter(prev => prev + 1);
   }, []);
 
   return { visibleBounds, forceRecalculation };
