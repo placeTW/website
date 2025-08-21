@@ -1,18 +1,13 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Layout from "./component/layout";
 import { AlertProvider } from "./context/alert-context";
-import { DesignProvider } from "./context/design-context";
+import { DesignProvider } from "./context/design-context";  
 import { ColorProvider } from "./context/color-context"; // Import ColorProvider
-import HomePage from "./pages";
-import AdminPage from "./pages/admin";
-import BriefingRoom from "./pages/briefing-room";
-import DesignOffice from "./pages/design-office";
-import Gallery from "./pages/gallery";
-import Translations from "./pages/translations";
+import { UserProvider } from "./context/user-context"; // Import UserProvider
 
 import theme from "./theme"; // Import your custom theme
 import "./i18n";
@@ -20,32 +15,46 @@ import "./index.scss";
 
 const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
+// Lazy load page components for better code splitting
+const HomePage = lazy(() => import("./pages"));
+const AdminPage = lazy(() => import("./pages/admin"));
+const Gallery = lazy(() => import("./pages/gallery"));
+const Translations = lazy(() => import("./pages/translations"));
+
+// Conditionally import art tool components only when feature is enabled
+const BriefingRoom = enableArtTool ? lazy(() => import("./pages/briefing-room")) : null;
+const DesignOffice = enableArtTool ? lazy(() => import("./pages/design-office")) : null;
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     {/* Apply the custom theme to ChakraProvider */}
     <ChakraProvider theme={theme}> 
-      <AlertProvider>
-        <DesignProvider>
-          <ColorProvider> {/* Wrap with ColorProvider */}
-            <BrowserRouter>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/gallery" element={<Gallery />} />
-                  <Route path="/translations" element={<Translations />} />
-                  <Route path="/admin" element={<AdminPage />} />
-                  {enableArtTool && (
-                    <>
-                      <Route path="/briefing-room" element={<BriefingRoom />} />
-                      <Route path="/design-office" element={<DesignOffice />} />
-                    </>
-                  )}
-                </Routes>
-              </Layout>
-            </BrowserRouter>
-          </ColorProvider>
-        </DesignProvider>
-      </AlertProvider>
+      <UserProvider> {/* Add UserProvider */}
+        <AlertProvider>
+          <DesignProvider>
+            <ColorProvider> {/* Wrap with ColorProvider */}
+              <BrowserRouter>
+                <Layout>
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/gallery" element={<Gallery />} />
+                      <Route path="/translations" element={<Translations />} />
+                      <Route path="/admin" element={<AdminPage />} />
+                      {enableArtTool && BriefingRoom && DesignOffice && (
+                        <>
+                          <Route path="/briefing-room" element={<BriefingRoom />} />
+                          <Route path="/design-office" element={<DesignOffice />} />
+                        </>
+                      )}
+                    </Routes>  
+                  </Suspense>
+                </Layout>
+              </BrowserRouter>
+            </ColorProvider>
+          </DesignProvider>
+        </AlertProvider>
+      </UserProvider>
     </ChakraProvider>
   </React.StrictMode>
 );

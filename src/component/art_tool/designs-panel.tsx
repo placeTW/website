@@ -13,7 +13,7 @@ import {
   Spacer,
 } from "@chakra-ui/react";
 import React, { Dispatch, SetStateAction, useState } from "react";
-import { FaEllipsisV, FaEye, FaEyeSlash, FaSearch } from "react-icons/fa";
+import { FaEllipsisVertical, FaEye, FaEyeSlash, FaMagnifyingGlass as FaSearch } from "react-icons/fa6";
 import { Design, Pixel } from "../../types/art-tool";
 import DesignCardsList from "./design-cards-list";
 
@@ -79,7 +79,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
             <MenuButton
               as={IconButton}
               aria-label="Options"
-              icon={<FaEllipsisV />}
+              icon={<FaEllipsisVertical />}
               variant="outline"
             />
             <MenuList>

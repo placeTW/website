@@ -16,7 +16,6 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@supabase/supabase-js": "^2.44.4",
-    "framer-motion": "^10.14.0",
     "i18next": "^23.3.0",
     "i18next-browser-languagedetector": "^7.1.0",
     "i18next-http-backend": "^2.2.1",

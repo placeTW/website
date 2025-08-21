@@ -4,6 +4,7 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -264,10 +265,12 @@ interface DesignProviderProps {
 
 export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
   const [designs, setDesigns] = useState<Design[]>(initialData.designs);
-  const [designsMap, setDesignsMap] = useState<Map<number, Design>>(getDesignsMap(initialData.designs))
   const [canvases, setCanvases] = useState<Canvas[]>(initialData.canvases);
-  const [canvasesMap, setCanvasesMap] = useState<Map<number, Canvas>>(getCanvasesMap(initialData.canvases))
-  const [canvasDesignsMap, setCanvasDesignsMap] = useState<Map<number, Design[]>>(getCanvasDesignsMap(initialData.designs))
+
+  // Use useMemo for derived state instead of useState + useEffect
+  const designsMap = useMemo(() => getDesignsMap(designs), [designs]);
+  const canvasesMap = useMemo(() => getCanvasesMap(canvases), [canvases]);
+  const canvasDesignsMap = useMemo(() => getCanvasDesignsMap(designs), [designs, canvases]);
 
   const subscriptionManager = useRef(SupabaseSubscriptionManager.getInstance());
 
@@ -281,17 +284,18 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
     };
   }, []);
 
-  useEffect(() => {
-    setCanvasDesignsMap(getCanvasDesignsMap(designs));
-  }, [designs, canvases])
-
-  useEffect(() => setCanvasesMap(getCanvasesMap(canvases)), [canvases]);
-  useEffect(() => setDesignsMap(getDesignsMap(designs)), [designs]);
+  const contextValue = useMemo(() => ({
+    designs,
+    canvases,
+    designsMap,
+    canvasesMap,
+    canvasDesignsMap,
+    setDesigns,
+    setCanvases,
+  }), [designs, canvases, designsMap, canvasesMap, canvasDesignsMap, setDesigns, setCanvases]);
 
   return (
-    <DesignContext.Provider
-      value={{ designs, canvases, designsMap, canvasesMap, canvasDesignsMap, setDesigns, setCanvases }}
-    >
+    <DesignContext.Provider value={contextValue}>
       {children}
     </DesignContext.Provider>
   );

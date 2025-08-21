@@ -28,8 +28,11 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
-import { FaCopy, FaEllipsisV, FaExchangeAlt, FaSave } from "react-icons/fa";
 import {
+  FaCopy,
+  FaEllipsisVertical,
+  FaArrowRightArrowLeft as FaExchangeAlt,
+  FaFloppyDisk as FaSave,
   FaArrowsLeftRightToLine,
   FaEye,
   FaEyeSlash,
@@ -416,7 +419,7 @@ const DesignCard: FC<DesignCardProps> = ({
                     <MenuButton
                       as={IconButton}
                       aria-label="Options"
-                      icon={<FaEllipsisV />}
+                      icon={<FaEllipsisVertical />}
                       variant={isEditing ? "solid" : "outline"}
                       size="sm"
                       zIndex="base"

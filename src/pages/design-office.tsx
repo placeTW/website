@@ -6,8 +6,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FaAngleDown, FaAngleUp } from "react-icons/fa";
-import { FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
+import { FaAngleDown, FaAngleUp, FaAngleLeft, FaAngleRight } from "react-icons/fa6"; // Import icons
 import {
   saveEditedPixels,
   createThumbnailForDesign,

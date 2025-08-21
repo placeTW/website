@@ -1,6 +1,6 @@
 import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, IconButton, Input, Td, Tr, useDisclosure } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
-import { FaAngleDown, FaAngleUp, FaPen, FaTrash } from "react-icons/fa";
+import { FaAngleDown, FaAngleUp, FaPen, FaTrash } from "react-icons/fa6";
 import { Color } from "../../types/art-tool";
 
 interface ColorRowProps {

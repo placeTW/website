@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { supabase } from "../api/supabase";
@@ -65,7 +66,9 @@ interface ColorProviderProps {
 
 export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
   const [colors, setColors] = useState<Color[]>(initialColors);
-  const [colorsMap, setColorsMap] = useState<Map<string, Color>>(new Map());
+  
+  // Use useMemo instead of useState + useEffect for derived state
+  const colorsMap = useMemo(() => getColorsMap(colors), [colors]);
 
   useEffect(() => {
     const subscription = supabase
@@ -123,12 +126,14 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
     };
   }, []);
 
-  useEffect(() => {
-    setColorsMap(getColorsMap(colors))
-  }, [colors])
+  const contextValue = useMemo(() => ({
+    colors,
+    colorsMap,
+    setColors,
+  }), [colors, colorsMap, setColors]);
 
   return (
-    <ColorContext.Provider value={{ colors, colorsMap, setColors }}>
+    <ColorContext.Provider value={contextValue}>
       {children}
     </ColorContext.Provider>
   );

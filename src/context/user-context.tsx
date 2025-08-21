@@ -4,6 +4,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   useRef,
   ReactNode,
@@ -201,10 +202,16 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     };
   }, []); // Empty dependency array to prevent infinite loops
 
+  const contextValue = useMemo(() => ({
+    users,
+    ranks,
+    currentUser,
+    setCurrentUser,
+    logoutUser,
+  }), [users, ranks, currentUser, setCurrentUser, logoutUser]);
+
   return (
-    <UserContext.Provider
-      value={{ users, ranks, currentUser, setCurrentUser, logoutUser }}
-    >
+    <UserContext.Provider value={contextValue}>
       {children}
     </UserContext.Provider>
   );

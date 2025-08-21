@@ -1,6 +1,6 @@
 import { Box, Flex, IconButton, Link, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-import { FaDiscord, FaGithub, FaReddit } from "react-icons/fa";
+import { FaDiscord, FaGithub, FaReddit } from "react-icons/fa6";
 import LanguageSwitcher from "./language-switcher";
 
 const Footer = () => {

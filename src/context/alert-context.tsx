@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -100,10 +101,14 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     };
   }, []);
 
+  const contextValue = useMemo(() => ({
+    alertLevels,
+    currentAlertData,
+    setActiveAlertId,
+  }), [alertLevels, currentAlertData, setActiveAlertId]);
+
   return (
-    <AlertContext.Provider
-      value={{ alertLevels, currentAlertData, setActiveAlertId }}
-    >
+    <AlertContext.Provider value={contextValue}>
       {children}
     </AlertContext.Provider>
   );
