@@ -31,8 +31,9 @@ const DesignOffice: React.FC = () => {
   const [editDesignId, setEditDesignId] = useState<number | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
-  // Store just the ID in state instead of the entire canvas object
-  const [selectedCanvasId, setSelectedCanvasId] = useState<number | null>(canvases[0]?.id || null);
+  // Store just the ID in state instead of the entire canvas object  
+  // Initialize to null and let useEffect handle initial selection when canvases load
+  const [selectedCanvasId, setSelectedCanvasId] = useState<number | null>(null);
   // Get the actual canvas directly from the context using useMemo for proper reactivity
   const selectedCanvas = useMemo(() => {
     return selectedCanvasId ? canvasesMap.get(selectedCanvasId) || canvases[0] : canvases[0];
@@ -50,12 +51,19 @@ const DesignOffice: React.FC = () => {
     }
   }, [colors, designs]);
 
-  // Select the first canvas by default
+  // Select the first canvas by default only if none is selected or current selection is invalid
   useEffect(() => {
     if (canvases && canvases.length > 0) {
-      selectCanvas(canvases[0].id, designs || []);
+      // Only select first canvas if:
+      // 1. No canvas is currently selected, OR
+      // 2. The currently selected canvas no longer exists in the canvases array
+      const currentCanvasExists = selectedCanvasId && canvases.some(canvas => canvas.id === selectedCanvasId);
+      
+      if (!selectedCanvasId || !currentCanvasExists) {
+        selectCanvas(canvases[0].id, designs || []);
+      }
     }
-  }, [canvases]);
+  }, [canvases, selectedCanvasId, designs]);
 
   // Hide card list by default on mobile devices
   useEffect(() => {

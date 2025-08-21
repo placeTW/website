@@ -99,37 +99,56 @@ export const useMouseHandlers = (
       }
     },
 
-    onMouseMove: (e: Konva.KonvaEventObject<MouseEvent>) => {
-      const stage = e.target.getStage();
-      if (!stage || !stageRef?.current) return;
+    onMouseMove: (() => {
+      let lastUpdate = 0;
+      let lastHoveredPixel = { x: -1, y: -1 };
+      const THROTTLE_MS = 16; // ~60fps
+      
+      return (e: Konva.KonvaEventObject<MouseEvent>) => {
+        const now = performance.now();
+        const stage = e.target.getStage();
+        if (!stage || !stageRef?.current) return;
 
-      const pointer = stage.getPointerPosition();
-      if (!pointer) return;
-      const scale = stage.scaleX();
-      const x = Math.floor((pointer.x - stage.x()) / (GRID_SIZE * scale));
-      const y = Math.floor((pointer.y - stage.y()) / (GRID_SIZE * scale));
-      setHoveredPixel && setHoveredPixel({ x, y });
+        const pointer = stage.getPointerPosition();
+        if (!pointer) return;
+        
+        const scale = stage.scaleX();
+        const x = Math.floor((pointer.x - stage.x()) / (GRID_SIZE * scale));
+        const y = Math.floor((pointer.y - stage.y()) / (GRID_SIZE * scale));
+        
+        // Update mouse position immediately for accuracy
+        mousePosition.current = { x, y };
 
-      mousePosition.current = { x, y }; // Update the latest mouse position
+        // Throttle expensive operations
+        if (now - lastUpdate >= THROTTLE_MS) {
+          lastUpdate = now;
+          
+          // Only update hovered pixel if coordinates actually changed
+          if (setHoveredPixel && (lastHoveredPixel.x !== x || lastHoveredPixel.y !== y)) {
+            lastHoveredPixel = { x, y };
+            setHoveredPixel({ x, y });
+          }
 
-      if (coordinatesRef?.current) {
-        coordinatesRef.current.style.left = `${pointer.x + 10}px`;
-        coordinatesRef.current.style.top = `${pointer.y + 10}px`;
-      }
+          if (coordinatesRef?.current) {
+            coordinatesRef.current.style.left = `${pointer.x + 10}px`;
+            coordinatesRef.current.style.top = `${pointer.y + 10}px`;
+          }
+        }
 
-      if (!isEditing) return;
+        if (!isEditing) return;
 
-      // Update selection only if the left mouse button is down, Ctrl is held, and we're in selection mode
-      if (isSelecting.current && isMouseDown.current && selection && setSelection) {
-        // Update rectangle selection dimensions based on mouse movement
-        const width = x - selection.x + 1;
-        const height = y - selection.y + 1;
-        setSelection({ ...selection, width, height });
-      } else if (isMouseDown.current && !e.evt.ctrlKey && onPixelPaint) {
-        // Continue painting if the left mouse button is down, not in selection mode, and isEditing is true
-        onPixelPaint(x, y, isErasing.current);
-      }
-    },
+        // Update selection only if the left mouse button is down, Ctrl is held, and we're in selection mode
+        if (isSelecting.current && isMouseDown.current && selection && setSelection) {
+          // Update rectangle selection dimensions based on mouse movement
+          const width = x - selection.x + 1;
+          const height = y - selection.y + 1;
+          setSelection({ ...selection, width, height });
+        } else if (isMouseDown.current && !e.evt.ctrlKey && onPixelPaint) {
+          // Continue painting if the left mouse button is down, not in selection mode, and isEditing is true
+          onPixelPaint(x, y, isErasing.current);
+        }
+      };
+    })(),
 
     onKeyDown: (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "c" && onCopy) {

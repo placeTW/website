@@ -89,6 +89,18 @@ const AdvancedViewport = React.forwardRef<
     const dragPixels = useRef<ViewportPixel[]>([]);
     const previousVisibleLayersRef = useRef<Set<number>>(visibleLayers);
     const viewportRef = useRef<ViewportHandle>(null);
+    
+    // Centralized animation frame management to prevent accumulation
+    const animationFrameRef = useRef<number | null>(null);
+    
+    // Cleanup animation frame on unmount
+    useEffect(() => {
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      };
+    }, []);
 
     const clearOnDesignPattern = createCheckerboardPattern(
       "#eee",
@@ -192,6 +204,16 @@ const AdvancedViewport = React.forwardRef<
       mergeWithExistingPixels,
       arePixelsChanged,
     ]);
+    
+    const schedulePixelRecalculation = useCallback(() => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      animationFrameRef.current = requestAnimationFrame(() => {
+        recalculatePixels();
+        animationFrameRef.current = null;
+      });
+    }, [recalculatePixels]);
 
     const handleColorSelect = useCallback(
       (color: string) => {
@@ -230,7 +252,7 @@ const AdvancedViewport = React.forwardRef<
             );
 
             const finalPixels = [...updatedPixels, ...newPixels];
-            requestAnimationFrame(() => recalculatePixels());
+            schedulePixelRecalculation();
             return finalPixels;
           });
         }
@@ -242,7 +264,7 @@ const AdvancedViewport = React.forwardRef<
         setEditedPixels,
         undoManager,
         editedPixels,
-        recalculatePixels,
+        schedulePixelRecalculation,
       ],
     );
 
@@ -268,7 +290,7 @@ const AdvancedViewport = React.forwardRef<
           );
           updatedPixels.push(newPixel);
 
-          requestAnimationFrame(() => recalculatePixels());
+          schedulePixelRecalculation();
           return updatedPixels;
         });
 
@@ -339,7 +361,7 @@ const AdvancedViewport = React.forwardRef<
 
         setEditedPixels((prevEditedPixels) => {
           const updatedPixels = [...prevEditedPixels, ...pastedPixels];
-          requestAnimationFrame(() => recalculatePixels());
+          schedulePixelRecalculation();
           return updatedPixels;
         });
       },
@@ -468,7 +490,7 @@ const AdvancedViewport = React.forwardRef<
           const previousState = undoManager.undo();
           if (previousState && setEditedPixels) {
             setEditedPixels(previousState.editedPixels);
-            requestAnimationFrame(() => recalculatePixels());
+            schedulePixelRecalculation();
           }
         }
       };

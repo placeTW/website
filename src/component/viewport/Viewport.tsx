@@ -19,10 +19,11 @@ import {
 } from "../../utils/pixelUtils";
 import { GRID_SIZE } from "./constants";
 import { useMouseHandlers, useTouchHandlers } from "./handlers";
-import { useImage } from "./hooks";
+import { useImage, useOptimizedPixelMap, useOptimizedVisibleBounds } from "./hooks";
 import { ViewportHandle, ViewportPixel } from "./types";
 import { roundToNearestPowerOf2 } from "./utils";
 import ViewportContextMenu, { ContextMenuDesign } from "./ViewportContextMenu";
+import { VirtualizedPixelRenderer } from "./VirtualizedPixelRenderer";
 
 interface ViewportProps {
   stageRef: React.RefObject<Konva.Stage>;
@@ -99,22 +100,12 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       setStageDraggable(false);
     }, [isEditing]);
 
-    // Optimize pixelMap creation with useMemo to avoid recreating on each render
-    const pixelMap = useMemo(() => {
-      const newPixelMap = new Map<string, ViewportPixel[]>();
+    // Use optimized pixel map with incremental updates
+    const pixelMap = useOptimizedPixelMap(pixels);
 
-      for (const pixel of pixels) {
-        const key = `${pixel.x} - ${pixel.y}`;
-        if (!newPixelMap.has(key)) {
-          newPixelMap.set(key, []);
-        }
-        newPixelMap.get(key)!.push(pixel);
-      }
-
-      return newPixelMap;
-    }, [pixels]);
-
-    // Optimize the visible tiles calculation
+    // Optimized tile calculation with proper requestAnimationFrame management
+    const animationFrameRef = useRef<number | null>(null);
+    
     const calculateVisibleTiles = useCallback(() => {
       if (!stageRef.current) return;
 
@@ -127,8 +118,13 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
         return;
       }
 
+      // Cancel previous animation frame to prevent accumulation
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+
       // Use requestAnimationFrame for smoother updates during interactions
-      requestAnimationFrame(() => {
+      animationFrameRef.current = requestAnimationFrame(() => {
         const viewWidth = stage.width() / scale;
         const viewHeight = stage.height() / scale;
         const offsetX = -stage.x() / scale;
@@ -139,30 +135,50 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
         const maxX = Math.ceil((offsetX + viewWidth) / BACKGROUND_TILE_SIZE);
         const maxY = Math.ceil((offsetY + viewHeight) / BACKGROUND_TILE_SIZE);
 
-        // Create a new array directly with the exact size needed
-        const newVisibleTiles = Array((maxX - minX) * (maxY - minY));
-        let index = 0;
+        // Optimized tile generation using single loop
+        const tilesCount = (maxX - minX) * (maxY - minY);
+        const newVisibleTiles = Array(tilesCount);
+        const widthRange = maxX - minX;
         
-        for (let x = minX; x < maxX; x++) {
-          for (let y = minY; y < maxY; y++) {
-            newVisibleTiles[index++] = { x, y };
-          }
+        // Single loop instead of nested loops for better performance
+        for (let i = 0; i < tilesCount; i++) {
+          const x = minX + (i % widthRange);
+          const y = minY + Math.floor(i / widthRange);
+          newVisibleTiles[i] = { x, y };
         }
 
-        // Only update state if the tiles have actually changed
+        // Efficient comparison using string serialization for small arrays
         setVisibleTiles((prev) => {
           if (prev.length !== newVisibleTiles.length) return newVisibleTiles;
           
-          // Simple deep comparison for small arrays
-          for (let i = 0; i < prev.length; i++) {
-            if (prev[i].x !== newVisibleTiles[i].x || prev[i].y !== newVisibleTiles[i].y) {
-              return newVisibleTiles;
+          // Fast comparison by checking first and last elements
+          if (prev.length > 0) {
+            const first = prev[0];
+            const last = prev[prev.length - 1];
+            const newFirst = newVisibleTiles[0];
+            const newLast = newVisibleTiles[newVisibleTiles.length - 1];
+            
+            if (first.x === newFirst.x && first.y === newFirst.y &&
+                last.x === newLast.x && last.y === newLast.y) {
+              return prev; // Likely no change
             }
           }
-          return prev; // No change, don't trigger a re-render
+          
+          return newVisibleTiles;
         });
+        
+        animationFrameRef.current = null;
       });
     }, [BACKGROUND_TILE_SIZE, stageRef]);
+    
+    // Cleanup animation frame on unmount
+    useEffect(() => {
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      };
+    }, []);
 
     useEffect(() => {
       calculateVisibleTiles();
@@ -199,43 +215,9 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       }
     };
 
-    // Improved drag handling with debounced tile calculation but immediate visual updates
+    // Refs for drag handling - will be defined after bounds hook
     const dragMoveTimeoutRef = useRef<number | null>(null);
     const lastVisibleUpdateRef = useRef<number>(0);
-    
-    const handleDragMove = useCallback(() => {
-      // Update visible bounds immediately for pixel rendering
-      if (!stageRef.current) return;
-      
-      // Force update the zoom level so dependent components recalculate
-      setZoomLevel(stageRef.current.scaleX());
-      
-      // Throttle the expensive tile calculations
-      const now = Date.now();
-      if (now - lastVisibleUpdateRef.current > 50) { // 50ms throttle
-        lastVisibleUpdateRef.current = now;
-        
-        // Clear any pending timeout
-        if (dragMoveTimeoutRef.current !== null) {
-          clearTimeout(dragMoveTimeoutRef.current);
-        }
-        
-        // Schedule the tiles update
-        dragMoveTimeoutRef.current = window.setTimeout(() => {
-          dragMoveTimeoutRef.current = null;
-          calculateVisibleTiles();
-        }, 20); // Short delay for better UX
-      }
-    }, [calculateVisibleTiles, stageRef]);
-    
-    // Clean up the timeout on unmount
-    useEffect(() => {
-      return () => {
-        if (dragMoveTimeoutRef.current !== null) {
-          clearTimeout(dragMoveTimeoutRef.current);
-        }
-      };
-    }, []);
 
     const handleDragEnd = () => {
       if (stageRef.current) {
@@ -549,53 +531,58 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
         : null,
     [zoomLevel, visibleTiles, backgroundImage, BACKGROUND_TILE_SIZE]);
 
-    // Get the current visible viewport bounds - calculate on every render for smoother dragging
-    const visibleBounds = useMemo(() => {
-      if (!stageRef.current) return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+    // Use optimized visible bounds calculation that only recalculates when necessary
+    const { visibleBounds, forceRecalculation } = useOptimizedVisibleBounds(stageRef, GRID_SIZE, dimensions, zoomLevel);
 
-      const stage = stageRef.current;
-      const scale = stage.scaleX();
+    // Improved drag handling with debounced tile calculation but immediate visual updates
+    const handleDragMove = useCallback(() => {
+      // Update visible bounds immediately for pixel rendering
+      if (!stageRef.current) return;
       
-      // Calculate visible area in grid coordinates with wider padding during drag
-      const padding = 10; // Increased padding to reduce edge pop-in during drag
-      const minX = Math.floor(-stage.x() / (GRID_SIZE * scale)) - padding;
-      const minY = Math.floor(-stage.y() / (GRID_SIZE * scale)) - padding;
-      const maxX = Math.ceil((stage.width() - stage.x()) / (GRID_SIZE * scale)) + padding;
-      const maxY = Math.ceil((stage.height() - stage.y()) / (GRID_SIZE * scale)) + padding;
+      // Force recalculation of visible bounds for smooth pixel rendering during drag
+      forceRecalculation();
       
-      return { minX, minY, maxX, maxY };
-    }, [stageRef, GRID_SIZE, zoomLevel, dimensions, stageRef.current?.x(), stageRef.current?.y()]); // Depend on dimensions and zoom to recalculate when they change
+      // Force update the zoom level so dependent components recalculate
+      setZoomLevel(stageRef.current.scaleX());
+      
+      // Throttle the expensive tile calculations
+      const now = Date.now();
+      if (now - lastVisibleUpdateRef.current > 50) { // 50ms throttle
+        lastVisibleUpdateRef.current = now;
+        
+        // Clear any pending timeout
+        if (dragMoveTimeoutRef.current !== null) {
+          clearTimeout(dragMoveTimeoutRef.current);
+        }
+        
+        // Schedule the tiles update
+        dragMoveTimeoutRef.current = window.setTimeout(() => {
+          dragMoveTimeoutRef.current = null;
+          calculateVisibleTiles();
+        }, 20); // Short delay for better UX
+      }
+    }, [calculateVisibleTiles, stageRef, forceRecalculation]);
+    
+    // Clean up the timeout on unmount
+    useEffect(() => {
+      return () => {
+        if (dragMoveTimeoutRef.current !== null) {
+          clearTimeout(dragMoveTimeoutRef.current);
+        }
+      };
+    }, []);
 
     // Memoize the pixel grid rendering for better performance, render only visible pixels
-    const renderedPixelGrid = useMemo(() => {
-      const { minX, minY, maxX, maxY } = visibleBounds;
-      const renderedPixels: JSX.Element[] = [];
-      
-      // Use the pre-computed colorLookupMap for faster rendering
-      colorLookupMap.forEach((colorInfo, key) => {
-        const [x, y] = key.split(" - ").map(Number);
-        
-        // Only render pixels that are in the visible area
-        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-          renderedPixels.push(
-            <Rect
-              key={`pixel-${key}`}
-              x={x * GRID_SIZE}
-              y={y * GRID_SIZE}
-              width={GRID_SIZE}
-              height={GRID_SIZE}
-              fill={colorInfo.color}
-              strokeWidth={0}
-              listening={false} // Disable event listening for pixels to improve performance
-            />
-          );
-        }
-      });
-      
-      return renderedPixels;
-    }, [colorLookupMap, GRID_SIZE, visibleBounds]);
-    
-    const renderPixelGrid = useCallback(() => renderedPixelGrid, [renderedPixelGrid]);
+    // Use virtualized pixel rendering for better performance
+    const renderPixelGrid = useCallback(() => {
+      return (
+        <VirtualizedPixelRenderer
+          colorLookupMap={colorLookupMap}
+          visibleBounds={visibleBounds}
+          gridSize={GRID_SIZE}
+        />
+      );
+    }, [colorLookupMap, visibleBounds, GRID_SIZE]);
 
     const renderSelectionRect = useMemo(() =>
       selection && (
