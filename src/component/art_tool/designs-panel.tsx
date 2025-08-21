@@ -31,6 +31,7 @@ interface DesignsPanelProps {
   onSelectDesign: (designId: number) => void;
   onMoveDesignUp: (designId: number) => void;
   onMoveDesignDown: (designId: number) => void;
+  onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
   editedPixels: Pixel[];
   showAll: () => void;
   hideAll: () => void;
@@ -50,6 +51,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
   onSelectDesign,
   onMoveDesignUp,
   onMoveDesignDown,
+  onMoveDesignToIndex,
   editedPixels,
   showAll,
   hideAll,
@@ -123,6 +125,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
           onSelectDesign={onSelectDesign}
           onMoveDesignUp={onMoveDesignUp}
           onMoveDesignDown={onMoveDesignDown}
+          onMoveDesignToIndex={onMoveDesignToIndex}
         />
         <Box h="100px" />
       </Box>

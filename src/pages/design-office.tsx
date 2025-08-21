@@ -227,6 +227,27 @@ const DesignOffice: React.FC = () => {
 
   const onMoveDesignUp = async (designId: number) => await onChangeDesignOrder(designId, true);
   const onMoveDesignDown = async (designId: number) => await onChangeDesignOrder(designId, false);
+  const onMoveDesignToIndex = async (designId: number, targetIndex: number) => {
+    if (!selectedCanvas) return;
+    
+    // Create a copy of the canvas to modify
+    const canvasCopy = { ...selectedCanvas };
+    const layerOrder = [...canvasCopy.layer_order];
+    
+    const currentIndex = layerOrder.indexOf(designId);
+    if (currentIndex === -1) {
+      // If design not in layer order, insert it at the target index
+      layerOrder.splice(targetIndex, 0, designId);
+    } else {
+      // Remove design from current position
+      layerOrder.splice(currentIndex, 1);
+      // Insert at target position
+      layerOrder.splice(targetIndex, 0, designId);
+    }
+    
+    canvasCopy.layer_order = layerOrder;
+    await databaseUpdateCanvasLayerOrder(canvasCopy);
+  };
 
   const onChangeDesignOrder = async (designId: number, up: boolean) => {
     if (!selectedCanvas) return;
@@ -330,6 +351,7 @@ const DesignOffice: React.FC = () => {
           onSelectDesign={handleSelectDesign}
           onMoveDesignUp={onMoveDesignUp}
           onMoveDesignDown={onMoveDesignDown}
+          onMoveDesignToIndex={onMoveDesignToIndex}
         />
       </Box>
 

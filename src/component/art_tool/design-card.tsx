@@ -70,6 +70,9 @@ interface DesignCardProps {
   onDeleted: (designId: number) => void;
   onMoveDesignUp: (designId: number) => void;
   onMoveDesignDown: (designId: number) => void;
+  onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
+  currentIndex: number;
+  totalDesigns: number;
   editedPixels: Pixel[];
 }
 
@@ -87,6 +90,9 @@ const DesignCard: FC<DesignCardProps> = ({
   onDeleted,
   onMoveDesignUp,
   onMoveDesignDown,
+  onMoveDesignToIndex,
+  currentIndex,
+  totalDesigns,
   editedPixels,
 }) => {
   const { currentUser, users, ranks } = useUserContext(); // Import users and ranks
@@ -97,6 +103,7 @@ const DesignCard: FC<DesignCardProps> = ({
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [designName, setDesignName] = useState(design.design_name || "");
+  const [newIndex, setNewIndex] = useState<string>("");
   const toast = useToast();
 
   const {
@@ -109,6 +116,12 @@ const DesignCard: FC<DesignCardProps> = ({
     isOpen: isUnsavedChangesDialogOpen,
     onOpen: onOpenUnsavedChangesDialog,
     onClose: onCloseUnsavedChangesDialog,
+  } = useDisclosure();
+
+  const {
+    isOpen: isIndexDialogOpen,
+    onOpen: onOpenIndexDialog,
+    onClose: onCloseIndexDialog,
   } = useDisclosure();
 
   const cancelRef = useRef(null);
@@ -233,6 +246,35 @@ const DesignCard: FC<DesignCardProps> = ({
         isClosable: true,
       });
     }
+  };
+
+  const handleMoveToIndex = () => {
+    const targetIndex = parseInt(newIndex) - 1; // Convert from 1-based to 0-based
+    if (isNaN(targetIndex) || targetIndex < 0 || targetIndex >= totalDesigns) {
+      toast({
+        title: "Invalid Index",
+        description: `Please enter a number between 1 and ${totalDesigns}.`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (targetIndex === currentIndex) {
+      onCloseIndexDialog();
+      setNewIndex("");
+      return;
+    }
+
+    onMoveDesignToIndex(design.id, targetIndex);
+    onCloseIndexDialog();
+    setNewIndex("");
+  };
+
+  const handleIndexDialogOpen = () => {
+    setNewIndex((currentIndex + 1).toString());
+    onOpenIndexDialog();
   };
 
   const isAdmin = !!currentUser && ["A", "B"].includes(currentUser.rank);
@@ -362,22 +404,34 @@ const DesignCard: FC<DesignCardProps> = ({
               </Text>
             </Box>
             <Flex direction="row" justifyContent="space-between">
-              {isAdmin ? (<Flex gap={2}>
+              {isAdmin ? (<Flex gap={1} alignItems="center">
                 <IconButton
                   icon={<FaArrowUp />}
                   variant="outline"
                   aria-label="Move Design Up in Order"
                   onClick={() => onMoveDesignUp(design.id)}
-                  size="sm"
-                  isDisabled={!isVisible}
+                  size="xs"
+                  isDisabled={!isVisible || currentIndex === 0}
                 />
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={handleIndexDialogOpen}
+                  isDisabled={!isVisible}
+                  minWidth="auto"
+                  px={2}
+                  fontSize="xs"
+                  fontWeight="bold"
+                >
+                  {currentIndex + 1}
+                </Button>
                 <IconButton
                   icon={<FaArrowDown />}
                   variant="outline"
                   aria-label="Move Design Down in Order"
                   onClick={() => onMoveDesignDown(design.id)}
-                  size="sm"
-                  isDisabled={!isVisible}
+                  size="xs"
+                  isDisabled={!isVisible || currentIndex === totalDesigns - 1}
                 />
               </Flex>) : <Box />}
               <Flex gap={2}>
@@ -523,6 +577,45 @@ const DesignCard: FC<DesignCardProps> = ({
               </Button>
               <Button colorScheme="red" onClick={handleConfirmExitEdit} ml={3}>
                 Exit Without Saving
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+      <AlertDialog
+        isOpen={isIndexDialogOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onCloseIndexDialog}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Move Design to Position
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              <Text mb={2}>
+                Enter the position where you want to move "{design.design_name}":
+              </Text>
+              <Input
+                value={newIndex}
+                onChange={(e) => setNewIndex(e.target.value)}
+                placeholder={`1-${totalDesigns}`}
+                type="number"
+                min="1"
+                max={totalDesigns}
+              />
+              <Text fontSize="sm" color="gray.600" mt={2}>
+                Current position: {currentIndex + 1} of {totalDesigns}
+              </Text>
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onCloseIndexDialog}>
+                Cancel
+              </Button>
+              <Button colorScheme="blue" onClick={handleMoveToIndex} ml={3}>
+                Move
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

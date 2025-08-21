@@ -24,6 +24,7 @@ interface DesignCardsListProps {
   onSelectDesign: (designId: number) => void;
   onMoveDesignUp: (designId: number) => void;
   onMoveDesignDown: (designId: number) => void;
+  onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
   editedPixels: Pixel[];
   searchQuery: string;
 }
@@ -42,6 +43,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onSelectDesign,
   onMoveDesignUp,
   onMoveDesignDown,
+  onMoveDesignToIndex,
   editedPixels,
   searchQuery,
 }) => {
@@ -189,30 +191,36 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
 
   return (
     <Flex direction="column" m={4} gap={4}>
-      {sortedDesigns.map((design) => (
-        <Box
-          key={design.id}
-          id={`design-card-${design.id}`}
-          ref={(el) => (cardRefs.current[design.id] = el)}
-        >
-          <DesignCard
-            design={design}
-            isEditing={editDesignId === design.id}
-            inEditMode={!!editDesignId && editDesignId > 0}
-            onEdit={handleEdit}
-            onCancelEdit={handleCancelEdit}
-            onToggleVisibility={handleToggleVisibility}
-            isVisible={visibilityMap[design.id] ?? false}
-            onSubmitEdit={onSubmitEdit}
-            onSetCanvas={onSetCanvas}
-            onDeleted={handleOnDeleted}
-            editedPixels={editedPixels}
-            onSelect={onSelectDesign}
-            onMoveDesignUp={onMoveDesignUp}
-            onMoveDesignDown={onMoveDesignDown}
-          />
-        </Box>
-      ))}
+      {sortedDesigns.map((design) => {
+        const currentIndex = layerOrder.indexOf(design.id);
+        return (
+          <Box
+            key={design.id}
+            id={`design-card-${design.id}`}
+            ref={(el) => (cardRefs.current[design.id] = el)}
+          >
+            <DesignCard
+              design={design}
+              isEditing={editDesignId === design.id}
+              inEditMode={!!editDesignId && editDesignId > 0}
+              onEdit={handleEdit}
+              onCancelEdit={handleCancelEdit}
+              onToggleVisibility={handleToggleVisibility}
+              isVisible={visibilityMap[design.id] ?? false}
+              onSubmitEdit={onSubmitEdit}
+              onSetCanvas={onSetCanvas}
+              onDeleted={handleOnDeleted}
+              editedPixels={editedPixels}
+              onSelect={onSelectDesign}
+              onMoveDesignUp={onMoveDesignUp}
+              onMoveDesignDown={onMoveDesignDown}
+              onMoveDesignToIndex={onMoveDesignToIndex}
+              currentIndex={currentIndex >= 0 ? currentIndex : layerOrder.length}
+              totalDesigns={layerOrder.length}
+            />
+          </Box>
+        );
+      })}
     </Flex>
   );
 };
