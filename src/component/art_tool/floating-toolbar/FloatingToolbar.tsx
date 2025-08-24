@@ -124,18 +124,28 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       // Only handle if not in an input field
       if (e.target && (e.target as HTMLElement).tagName === 'INPUT') return;
       
-      if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey) {
+      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+      
+      if (e.key.toLowerCase() === 'f' && !isCtrlOrCmd) {
         e.preventDefault();
         handleFill();
-      } else if ((e.key === 'Delete' || e.key === 'Backspace') && !e.ctrlKey && !e.metaKey) {
+      } else if ((e.key === 'Delete' || e.key === 'Backspace') && !isCtrlOrCmd) {
         e.preventDefault();
         handleEraseSelection();
+      } else if (isCtrlOrCmd && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        if (selection) {
+          toolbarActions.handleCopy(selection, pixels);
+        }
+      } else if (isCtrlOrCmd && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        handleEnhancedPaste();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditing, isVisible, handleFill, handleEraseSelection]);
+  }, [isEditing, isVisible, handleFill, handleEraseSelection, toolbarActions, handleEnhancedPaste, selection, pixels]);
 
   if (!isEditing || !isVisible) {
     return null;
