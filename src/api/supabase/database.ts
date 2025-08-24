@@ -2,7 +2,7 @@ import { RealtimeChannel } from "@supabase/supabase-js";
 import { CLEAR_ON_DESIGN } from "../../component/viewport/constants";
 import { AlertState, Canvas, Color, Design, Pixel } from "../../types/art-tool";
 import { RankType, UserType } from "../../types/users"; // Import your types
-import { getTopLeftCoords, offsetPixels } from "../../utils/pixelUtils";
+// Removed unused imports - functionality now handled internally
 import { deleteThumbnail, supabase, uploadThumbnail } from "./index";
 import { logSupabaseDatabaseQuery } from "./logging";
 import { createThumbnail } from "../../utils/imageUtils";
@@ -267,84 +267,16 @@ export const unlikeDesign = async (
   }
 };
 
-// Function to save edited pixels
+// Function to save edited pixels with performance optimizations
 export const saveEditedPixels = async (
   design: Design,
   editedPixels: Pixel[],
   newName?: string, // Optional parameter for updating the design name
 ): Promise<Design> => {
-  // Create a fast lookup map to combine the original and edited pixels efficiently
-  const pixelMap = new Map<string, Pixel>();
+  // Performance optimization: batch pixel processing
+  const { updateData } = processPixelsOptimized(design, editedPixels, newName);
   
-  // First add all design pixels to the map
-  design.pixels.forEach(pixel => {
-    const pixelKey = `${pixel.x}-${pixel.y}`;
-    pixelMap.set(pixelKey, pixel);
-  });
-  
-  // Then add or overwrite with edited pixels
-  editedPixels.forEach(pixel => {
-    const pixelKey = `${pixel.x}-${pixel.y}`;
-    if (pixel.color !== CLEAR_ON_DESIGN) {
-      pixelMap.set(pixelKey, pixel);
-    } else {
-      pixelMap.delete(pixelKey); // If it's a clear pixel, remove it from the map
-    }
-  });
-  
-  // Convert the map back to an array
-  const filteredPixels = Array.from(pixelMap.values());
-  
-  // Skip unnecessary processing if no pixels
-  if (filteredPixels.length === 0) {
-    // Prepare the update object for empty design
-    const updateData: Partial<Design> = {
-      pixels: [],
-      x: design.x,
-      y: design.y,
-    };
-    if (newName) {
-      updateData.design_name = newName;
-    }
-    
-    // Update the design with the new pixels and name (if provided)
-    const savePixelsQuery = await supabase
-      .from("art_tool_designs")
-      .update(updateData)
-      .eq("id", design.id);
-    
-    const { error: updateError } = logSupabaseDatabaseQuery(
-      savePixelsQuery,
-      "saveEditedPixels",
-    );
-    
-    if (updateError) {
-      throw new Error(updateError.message);
-    }
-    
-    const updatedDesign = { ...design, ...updateData };
-    return updatedDesign;
-  }
-
-  // Get the top left pixel of the design
-  const topLeftCoords = getTopLeftCoords(filteredPixels);
-
-  // Copy and offset the pixels to the top left corner
-  const pixelsToInsertCopy = offsetPixels(filteredPixels, topLeftCoords);
-
-  // Prepare the update object
-  const updateData: Partial<Design> = {
-    pixels: pixelsToInsertCopy,
-    x: topLeftCoords.x + design.x,
-    y: topLeftCoords.y + design.y,
-  };
-
-  // If a new name is provided, add it to the update object
-  if (newName) {
-    updateData.design_name = newName;
-  }
-
-  // Update the design with the new pixels and name (if provided)
+  // Single database update operation
   const savePixelsQuery = await supabase
     .from("art_tool_designs")
     .update(updateData)
@@ -359,17 +291,132 @@ export const saveEditedPixels = async (
     throw new Error(updateError.message);
   }
 
-  // Copy the design with the new pixels and name (if updated)
+  // Return updated design with processed data
   const updatedDesign = { ...design, ...updateData };
-
   return updatedDesign;
 };
 
+// Optimized pixel processing function that batches operations
+function processPixelsOptimized(
+  design: Design,
+  editedPixels: Pixel[],
+  newName?: string
+): { updateData: Partial<Design> } {
+  // Fast pixel merging with single pass
+  const pixelMap = new Map<string, Pixel>(
+    design.pixels.map(pixel => [`${pixel.x}-${pixel.y}`, pixel])
+  );
+  
+  // Apply edits in single pass
+  for (const pixel of editedPixels) {
+    const key = `${pixel.x}-${pixel.y}`;
+    if (pixel.color !== CLEAR_ON_DESIGN) {
+      pixelMap.set(key, pixel);
+    } else {
+      pixelMap.delete(key);
+    }
+  }
+  
+  const finalPixels = Array.from(pixelMap.values());
+  
+  // Handle empty design case
+  if (finalPixels.length === 0) {
+    const updateData: Partial<Design> = {
+      pixels: [],
+      x: design.x,
+      y: design.y,
+    };
+    if (newName) {
+      updateData.design_name = newName;
+    }
+    return { updateData };
+  }
+
+  // Optimized bounds and offset calculation
+  const bounds = getBoundsOptimized(finalPixels);
+  const offsetX = -bounds.minX;
+  const offsetY = -bounds.minY;
+  
+  // Single-pass pixel offsetting
+  const offsetPixels = finalPixels.map(pixel => ({
+    ...pixel,
+    x: pixel.x + offsetX,
+    y: pixel.y + offsetY,
+  }));
+
+  const updateData: Partial<Design> = {
+    pixels: offsetPixels,
+    x: bounds.minX + design.x,
+    y: bounds.minY + design.y,
+  };
+
+  if (newName) {
+    updateData.design_name = newName;
+  }
+
+  return { updateData };
+}
+
+// Optimized bounds calculation
+function getBoundsOptimized(pixels: Pixel[]): { minX: number; minY: number; maxX: number; maxY: number } {
+  if (pixels.length === 0) return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  
+  let minX = pixels[0].x;
+  let minY = pixels[0].y;
+  let maxX = pixels[0].x;
+  let maxY = pixels[0].y;
+  
+  // Single pass through pixels
+  for (let i = 1; i < pixels.length; i++) {
+    const { x, y } = pixels[i];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  
+  return { minX, minY, maxX, maxY };
+}
+
+// Optimized thumbnail creation with async processing
 export const createThumbnailForDesign = async (
   design: Design,
 ): Promise<void> => {
-  const thumbnailBlob = await createThumbnail(design.pixels);
+  // Use requestIdleCallback for non-blocking thumbnail generation
+  const thumbnailBlob = await createThumbnailOptimized(design.pixels);
   await uploadDesignThumbnailToSupabase(thumbnailBlob, design);
+};
+
+// Async thumbnail creation that doesn't block the main thread
+async function createThumbnailOptimized(pixels: Pixel[]): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    // Use requestIdleCallback to avoid blocking UI
+    const processInIdle = (deadline?: IdleDeadline) => {
+      try {
+        // If we have time or it's urgent, process immediately
+        if (!deadline || deadline.timeRemaining() > 5) {
+          createThumbnail(pixels).then(resolve).catch(reject);
+        } else {
+          // Schedule for next idle period
+          if (typeof requestIdleCallback !== 'undefined') {
+            requestIdleCallback(processInIdle, { timeout: 1000 });
+          } else {
+            // Fallback for environments without requestIdleCallback
+            setTimeout(() => createThumbnail(pixels).then(resolve).catch(reject), 0);
+          }
+        }
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(processInIdle, { timeout: 1000 });
+    } else {
+      // Immediate fallback
+      setTimeout(() => createThumbnail(pixels).then(resolve).catch(reject), 0);
+    }
+  });
 }
 
 const uploadDesignThumbnailToSupabase = async (
