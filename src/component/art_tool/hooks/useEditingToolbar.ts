@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { Design, Pixel } from '../../../types/art-tool';
 import { ViewportPixel } from '../../viewport/types';
@@ -44,6 +44,7 @@ export interface UseEditingToolbarProps {
   onSubmitEdit: (designName: string) => Promise<void>;
   onCancelEdit: () => void;
   isEditing: boolean;
+  onToolChange?: (tool: EditingToolbarState['selectedTool']) => void;
 }
 
 export function useEditingToolbar({
@@ -53,6 +54,7 @@ export function useEditingToolbar({
   onSubmitEdit,
   onCancelEdit,
   isEditing,
+  onToolChange,
 }: UseEditingToolbarProps): [EditingToolbarState, EditingToolbarActions] {
   const toast = useToast();
   const undoManager = useRef(new UndoManager(100)).current;
@@ -98,8 +100,9 @@ export function useEditingToolbar({
     // Auto-select paint tool when color is selected
     if (color && selectedTool === 'eyedropper') {
       setSelectedTool('paint');
+      onToolChange?.('paint');
     }
-  }, [selectedTool]);
+  }, [selectedTool, onToolChange]);
 
   const handleSave = useCallback(async () => {
     if (!designName.trim()) {
@@ -432,7 +435,7 @@ export function useEditingToolbar({
     showKeyboardShortcuts,
   };
 
-  const actions: EditingToolbarActions = {
+  const actions: EditingToolbarActions = useMemo(() => ({
     setSelectedColor,
     setSelectedTool,
     setDesignName,
@@ -447,7 +450,22 @@ export function useEditingToolbar({
     handleEraseSelection,
     toggleKeyboardShortcuts,
     addUndoState,
-  };
+  }), [
+    setSelectedColor,
+    setSelectedTool,
+    setDesignName,
+    setIsEditingName,
+    handleSave,
+    handleCancel,
+    handleUndo,
+    handleRedo,
+    handleCopy,
+    handlePaste,
+    handleFill,
+    handleEraseSelection,
+    toggleKeyboardShortcuts,
+    addUndoState,
+  ]);
 
   return [state, actions];
 }
