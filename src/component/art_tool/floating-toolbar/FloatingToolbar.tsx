@@ -19,6 +19,7 @@ import { ToolSelectionSection } from './sections/ToolSelectionSection';
 import { ColorPaletteSection } from './sections/ColorPaletteSection';
 import { ActionButtonsSection } from './sections/ActionButtonsSection';
 import { KeyboardShortcutsPanel } from './sections/KeyboardShortcutsPanel';
+import { PngImportSection } from './sections/PngImportSection';
 
 const MotionBox = motion(Box);
 
@@ -115,6 +116,24 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     if (!selection) return;
     toolbarActions.handleEraseSelection(selection);
   }, [toolbarActions, selection]);
+
+  // Handle PNG import
+  const handlePixelsImported = React.useCallback((
+    pixels: { x: number; y: number; color: string; designId: number }[]
+  ) => {
+    // Add undo state before importing
+    toolbarActions.addUndoState(editedPixels);
+    
+    // Convert to the correct pixel format and add to edited pixels
+    const newPixels = pixels.map(pixel => ({
+      x: pixel.x,
+      y: pixel.y,
+      color: pixel.color,
+      designId: pixel.designId,
+    }));
+    
+    setEditedPixels(prev => [...prev, ...newPixels]);
+  }, [toolbarActions, editedPixels, setEditedPixels]);
 
   // Handle keyboard shortcuts
   React.useEffect(() => {
@@ -226,6 +245,18 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                 isVertical={false}
               />
             </Box>
+
+            {/* PNG Import Section */}
+            {design && (
+              <Box flex={isMobile ? 'none' : '0 0 auto'}>
+                <PngImportSection
+                  availableColors={colors}
+                  onPixelsImported={handlePixelsImported}
+                  designId={design.id}
+                  isVertical={false}
+                />
+              </Box>
+            )}
           </HStack>
 
           {/* Color palette row (always separate) */}
