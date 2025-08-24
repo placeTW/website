@@ -19,7 +19,7 @@ import { ViewportHandle } from "../component/viewport/types";
 import { useColorContext } from "../context/color-context";
 import { useDesignContext } from "../context/design-context";
 import { Design, Pixel } from "../types/art-tool";
-import { getDimensions } from "../utils/pixelUtils";
+import { getDimensions, offsetPixels } from "../utils/pixelUtils";
 import { useUserContext } from "../context/user-context";
 
 const DesignOffice: React.FC = () => {
@@ -95,15 +95,18 @@ const DesignOffice: React.FC = () => {
     if (!currentDesign) return;
 
     try {
-      // Optimized save process: remove redundant offsetPixels call
-      // (now handled internally by saveEditedPixels)
+      const newPixels = offsetPixels(editedPixels, {
+        x: currentDesign.x,
+        y: currentDesign.y,
+      });
       const updatedDesign = await saveEditedPixels(
         currentDesign,
-        editedPixels, // Pass editedPixels directly
+        newPixels,
         designName,
       );
 
-      // Show immediate success feedback
+      await createThumbnailForDesign(updatedDesign);
+
       toast({
         title: "Changes Saved",
         description: `${designName} has been updated successfully.`,
@@ -112,33 +115,17 @@ const DesignOffice: React.FC = () => {
         isClosable: true,
       });
 
-      // Reset editing state immediately for better UX
       setEditedPixels([]);
       setEditDesignId(null);
       handleEditStateChange(false, null);
-
-      // Generate thumbnail asynchronously in background
-      // Don't await this to avoid blocking the UI
-      createThumbnailForDesign(updatedDesign).catch((thumbnailError) => {
-        console.warn("Thumbnail generation failed:", thumbnailError);
-        // Show a non-blocking warning toast
-        toast({
-          title: "Thumbnail Generation Failed",
-          description: "Design saved but thumbnail may not update immediately.",
-          status: "warning",
-          duration: 2000,
-          isClosable: true,
-        });
-      });
-
     } catch (error) {
       toast({
-        title: "Save Failed",
+        title: "Error",
         description: `Failed to save changes: ${
           (error as Error).message || error
         }`,
         status: "error",
-        duration: 5000,
+        duration: 3000,
         isClosable: true,
       });
     }
