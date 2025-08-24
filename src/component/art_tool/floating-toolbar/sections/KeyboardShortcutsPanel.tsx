@@ -64,6 +64,16 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
         keys: ['Ctrl', 'V'],
         description: 'Paste at cursor',
       },
+      {
+        keys: ['F'],
+        description: 'Fill selection',
+        note: 'with selected color',
+      },
+      {
+        keys: ['Delete'],
+        description: 'Erase selection',
+        note: 'or Backspace',
+      },
     ],
   },
   {
@@ -182,7 +192,6 @@ export const KeyboardShortcutsPanel: React.FC<KeyboardShortcutsPanelProps> = ({
       borderWidth="1px"
       borderColor={borderColor}
       borderRadius="lg"
-      maxWidth="600px"
     >
       {/* Header */}
       <Flex justify="space-between" align="center" mb={3}>
