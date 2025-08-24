@@ -41,11 +41,12 @@ export const useMouseHandlers = (
         e.evt.preventDefault();
       }
 
-      // Check if the left or right mouse button is down (button === 0 or 2)
-      if (e.evt.button === 0 || e.evt.button === 2) {
+      // Check if the left, middle, or right mouse button is down (button === 0, 1, or 2)
+      if (e.evt.button === 0 || e.evt.button === 1 || e.evt.button === 2) {
         isMouseDown.current = true; // Set flag when left mouse button is down
 
-        if (isEditing) {
+        if (isEditing && e.evt.button !== 1) {
+          // Exclude middle mouse button from painting operations
           const pos = stage.getPointerPosition();
 
           if (e.evt.button === 2) {
@@ -80,17 +81,21 @@ export const useMouseHandlers = (
       const stage = e.target.getStage();
       if (!stage || !stageRef?.current) return;
 
-      // Check if the left or right mouse button is released (button === 0 or 2)
-      if (e.evt.button === 0 || e.evt.button === 2) {
-        isMouseDown.current = false; // Reset flag when left mouse button is released
-        isSelecting.current = false; // Exit selection mode
-        isErasing.current = false; // Reset flag when right mouse button is released
-
-        // Keep the selection in place after mouse up, allowing it to persist
-        setStageDraggable && setStageDraggable(true); // Re-enable dragging after painting or panning
-
-        // Set cursor back to crosshair
-        stage.container().style.cursor = "crosshair";
+      // Check if the left, middle, or right mouse button is released (button === 0, 1, or 2)
+      if (e.evt.button === 0 || e.evt.button === 1 || e.evt.button === 2) {
+        isMouseDown.current = false; // Reset flag when mouse button is released
+        
+        // Only handle editing-specific cleanup for non-middle mouse buttons
+        if (e.evt.button !== 1) {
+          isSelecting.current = false; // Exit selection mode
+          isErasing.current = false; // Reset flag when right mouse button is released
+          
+          // Keep the selection in place after mouse up, allowing it to persist
+          setStageDraggable && setStageDraggable(true); // Re-enable dragging after painting or panning
+          
+          // Set cursor back to crosshair
+          stage.container().style.cursor = "crosshair";
+        }
       }
     },
 
