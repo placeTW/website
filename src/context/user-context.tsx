@@ -7,10 +7,11 @@ import React, {
   useMemo,
   useState,
   useRef,
+  useCallback,
   ReactNode,
 } from 'react';
 import { supabase } from '../api/supabase';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { RealtimeChannel, Session } from '@supabase/supabase-js';
 import { UserType, RankType } from '../types/users';
 import {
   databaseFetchUsers,
@@ -22,12 +23,46 @@ import {
   insertNewUser, // Import the updated insertNewUser
 } from '../api/supabase/functions'; // Adjust the import path if necessary
 
+// Session cache to prevent multiple API calls
+let sessionCache: { session: Session | null; timestamp: number } | null = null;
+const SESSION_CACHE_DURATION = 30000; // 30 seconds
+
+// Cached session getter to prevent multiple API calls
+async function getCachedSession(): Promise<Session | null> {
+  const now = Date.now();
+  
+  // Return cached session if still valid
+  if (sessionCache && (now - sessionCache.timestamp) < SESSION_CACHE_DURATION) {
+    console.log('[AUTH] Using cached session');
+    return sessionCache.session;
+  }
+  
+  // Fetch new session and cache it
+  console.log('[AUTH] Fetching fresh session');
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Error fetching session:', error);
+      return null;
+    }
+    
+    // Update cache
+    sessionCache = { session, timestamp: now };
+    return session;
+  } catch (error) {
+    console.error('Error in getCachedSession:', error);
+    return null;
+  }
+}
+
 interface UserContextType {
   users: UserType[];
   ranks: RankType[];
   currentUser: UserType | null;
   setCurrentUser: (user: UserType | null) => void;
   logoutUser: () => void;
+  getCachedSession: () => Promise<Session | null>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -59,10 +94,65 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   const logoutUser = () => {
     setCurrentUser(null);
+    // Clear session cache on logout
+    sessionCache = null;
     console.log('User logged out.');
   };
 
+  // Helper function to get handle
+  const getHandle = (user: { 
+    app_metadata?: { provider?: string }; 
+    user_metadata?: { name?: string; full_name?: string }; 
+    email?: string 
+  }): string => {
+    if (user?.app_metadata?.provider === 'discord') {
+      return user.user_metadata?.name || user.user_metadata?.full_name || '';
+    } else {
+      return user.email
+        ? user.email.substring(0, user.email.lastIndexOf('@'))
+        : '';
+    }
+  };
+
+  // Process session and update current user
+  const processSession = useCallback(async (session: Session | null) => {
+    if (!session) {
+      setCurrentUser(null);
+      return;
+    }
+
+    try {
+      const userId = session.user.id;
+      let userData = await databaseFetchCurrentUser(userId);
+
+      if (!userData) {
+        // User not found, insert new user
+        userData = await insertNewUser(
+          userId,
+          session.user.email || '',
+          getHandle(session.user)
+        );
+
+        if (!userData) {
+          console.error('Error inserting new user.');
+          return;
+        }
+      }
+
+      if (userData.rank === 'F') {
+        await supabase.auth.signOut();
+        console.error('User has been banned.');
+      } else {
+        setCurrentUser(userData);
+      }
+    } catch (error) {
+      console.error('Error processing session:', error);
+    }
+  }, []);
+
   useEffect(() => {
+    let mounted = true;
+    
     // Fetch initial users and ranks
     const fetchData = async () => {
       try {
@@ -70,70 +160,45 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           databaseFetchUsers(),
           databaseFetchRanks(),
         ]);
-        setUsers(userData);
-        setRanks(rankData);
+        if (mounted) {
+          setUsers(userData);
+          setRanks(rankData);
+        }
       } catch (error) {
         console.error('Error fetching initial data:', error);
       }
     };
 
-    // Fetch the current user and handle insertion if necessary
-    const fetchCurrentUser = async () => {
+    // Initial session check using cached session
+    const initializeAuth = async () => {
       try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
-
-        if (error) {
-          console.error('Error fetching session:', error);
-          return;
-        }
-
-        if (session) {
-          const userId = session.user.id;
-          let userData = await databaseFetchCurrentUser(userId);
-
-          if (!userData) {
-            // User not found, insert new user
-            userData = await insertNewUser(
-              userId,
-              session.user.email || '',
-              getHandle(session.user)
-            );
-
-            if (!userData) {
-              console.error('Error inserting new user.');
-              return;
-            }
-          }
-
-          if (userData.rank === 'F') {
-            await supabase.auth.signOut();
-            console.error('User has been banned.');
-          } else {
-            setCurrentUser(userData);
-          }
+        console.log('[AUTH] Initializing authentication');
+        const session = await getCachedSession();
+        if (mounted) {
+          await processSession(session);
         }
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        console.error('Error initializing auth:', error);
       }
     };
 
-    // Helper function to get handle
-    const getHandle = (user: any): string => {
-      if (user?.app_metadata?.provider === 'discord') {
-        return user.user_metadata?.name || user.user_metadata?.full_name || '';
-      } else {
-        return user.email
-          ? user.email.substring(0, user.email.lastIndexOf('@'))
-          : '';
+    // Set up auth state change listener to handle login/logout efficiently
+    const { data: authSubscription } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('[AUTH] Auth state changed:', event);
+        
+        // Clear cache on auth state changes to ensure fresh data
+        sessionCache = null;
+        
+        if (mounted) {
+          await processSession(session);
+        }
       }
-    };
+    );
 
-    // Call fetch functions
+    // Initialize data and auth
     fetchData();
-    fetchCurrentUser();
+    initializeAuth();
 
     // Set up subscriptions
     const userSubscription: RealtimeChannel = supabase
@@ -197,10 +262,15 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
     // Cleanup subscriptions on component unmount
     return () => {
+      mounted = false;
       removeSupabaseChannel(userSubscription);
       removeSupabaseChannel(rankSubscription);
+      // Remove auth subscription
+      if (authSubscription?.subscription) {
+        authSubscription.subscription.unsubscribe();
+      }
     };
-  }, []); // Empty dependency array to prevent infinite loops
+  }, [processSession]); // Include processSession in dependencies
 
   const contextValue = useMemo(() => ({
     users,
@@ -208,7 +278,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     currentUser,
     setCurrentUser,
     logoutUser,
-  }), [users, ranks, currentUser, setCurrentUser, logoutUser]);
+    getCachedSession,
+  }), [users, ranks, currentUser]);
 
   return (
     <UserContext.Provider value={contextValue}>

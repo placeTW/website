@@ -23,8 +23,8 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { authGetSession, authSignOut } from "../api/supabase/auth";
-import { functionsFetchOneUser, functionsUpdateNickname } from "../api/supabase/functions";
+import { authSignOut } from "../api/supabase/auth";
+import { functionsUpdateNickname } from "../api/supabase/functions";
 import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import { FaBars, FaPen, FaArrowRightToBracket, FaArrowRightFromBracket } from "react-icons/fa6"; // Import icons
@@ -32,41 +32,17 @@ import { FaBars, FaPen, FaArrowRightToBracket, FaArrowRightFromBracket } from "r
 const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 
 const Navbar = () => {
-  const { currentUser, ranks, logoutUser, setCurrentUser } = useUserContext();
+  const { currentUser, ranks, logoutUser } = useUserContext();
   const { t } = useTranslation();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [username, setUsername] = useState<string>("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
-  const [userInserted] = useState(false);
 
+  // Show auth modal only if no current user (UserProvider handles session management)
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session }, error } = await authGetSession();
-      if (error) {
-        console.error(t("Error fetching session:"), error);
-        return;
-      }
-      if (session) {
-        try {
-          const userData = await functionsFetchOneUser();
-          if (userData.rank === "F") {
-            await authSignOut();
-            alert(t("Your account has been banned."));
-          } else {
-            setCurrentUser(userData);
-            setAuthModalOpen(false);
-          }
-        } catch (fetchError) {
-          console.error("User not found in art_tool_users, but handled by UserProvider", fetchError);
-          setAuthModalOpen(false);
-        }
-      } else {
-        setAuthModalOpen(true);
-      }
-    };
-    checkSession();
-  }, [setCurrentUser, userInserted, t]);
+    setAuthModalOpen(!currentUser);
+  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser) {
