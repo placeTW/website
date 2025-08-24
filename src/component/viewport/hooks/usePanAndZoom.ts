@@ -74,8 +74,8 @@ export const usePanAndZoom = (
     if (e.evt.button === 0 && isEditing) {
       // Left-click
       isPainting.current = true;
-    } else if (e.evt.button === 2) {
-      // Right-click
+    } else if (e.evt.button === 1 || e.evt.button === 2) {
+      // Middle-click or Right-click
       isPanning.current = true;
       initialTouchPos.current = stage.getPointerPosition(); // Capture initial mouse position
       initialStagePos.current = stage.position(); // Capture initial stage position

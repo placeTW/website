@@ -129,12 +129,17 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
         description: 'Zoom in/out',
       },
       {
-        keys: ['Mouse Drag'],
+        keys: ['Middle Mouse', 'Drag'],
         description: 'Pan canvas',
-        note: 'when not painting',
+        note: 'works during editing',
       },
       {
-        keys: ['Mouse Drag'],
+        keys: ['Right Mouse', 'Drag'],
+        description: 'Pan canvas',
+        note: 'when not editing',
+      },
+      {
+        keys: ['Left Mouse', 'Drag'],
         description: 'Paint pixels',
         note: 'with paint/erase tool',
       },
