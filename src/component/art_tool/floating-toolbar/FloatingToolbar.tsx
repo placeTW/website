@@ -35,7 +35,7 @@ export interface FloatingToolbarProps extends Omit<UseEditingToolbarProps, 'desi
   colors: { Color: string; color_sort: number | null; color_name: string }[];
   isVisible: boolean;
   onColorSelect?: (color: string) => void;
-  onToolChange?: (tool: 'paint' | 'erase' | 'select' | 'eyedropper') => void;
+  onToolChange?: (tool: 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket') => void;
   selection?: { x: number; y: number; width: number; height: number } | null;
   pixels?: ViewportPixel[];
   stageRef?: React.RefObject<Konva.Stage>;
@@ -98,7 +98,7 @@ export const FloatingToolbar = React.forwardRef<FloatingToolbarHandle, FloatingT
   }, [toolbarActions, onColorSelect, onToolChange, toolbarState.selectedTool]);
 
   // Enhanced tool change handler
-  const handleToolChange = React.useCallback((tool: 'paint' | 'erase' | 'select' | 'eyedropper') => {
+  const handleToolChange = React.useCallback((tool: 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket') => {
     toolbarActions.setSelectedTool(tool);
     onToolChange?.(tool);
   }, [toolbarActions, onToolChange]);

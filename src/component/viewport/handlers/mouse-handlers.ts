@@ -24,7 +24,7 @@ export const useMouseHandlers = (
     } | null>
   >,
   setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
-  selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper',
+  selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket',
 ) => {
   const mousePosition = useRef({ x: 0, y: 0 }); // To store the latest mouse position
   const isMouseDown = useRef(false); // Track the mouse state

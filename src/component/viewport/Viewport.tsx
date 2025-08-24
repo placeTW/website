@@ -42,7 +42,7 @@ interface ViewportProps {
     } | null>
   >;
   onDesignSelect?: (designId: number) => void;
-  selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper';
+  selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket';
   ref?: Ref<ViewportHandle>;
 }
 

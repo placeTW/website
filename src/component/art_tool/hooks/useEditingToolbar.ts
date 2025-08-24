@@ -7,7 +7,7 @@ import UndoManager from '../../viewport/utils/undo-manager';
 
 export interface EditingToolbarState {
   selectedColor: string | null;
-  selectedTool: 'paint' | 'erase' | 'select' | 'eyedropper';
+  selectedTool: 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket';
   designName: string;
   isEditingName: boolean;
   copyBuffer: {
@@ -416,6 +416,9 @@ export function useEditingToolbar({
             break;
           case 'i':
             setSelectedTool('eyedropper');
+            break;
+          case 'g':
+            setSelectedTool('bucket');
             break;
         }
       }

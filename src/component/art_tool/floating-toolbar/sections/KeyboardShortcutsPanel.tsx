@@ -94,6 +94,10 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
         keys: ['I'],
         description: 'Eyedropper tool',
       },
+      {
+        keys: ['G'],
+        description: 'Bucket fill tool',
+      },
     ],
   },
   {

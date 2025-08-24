@@ -13,9 +13,10 @@ import {
   FaEraser,
   FaHandPointer as FaSelect,
   FaEyeDropper,
+  FaFill as FaBucket,
 } from 'react-icons/fa6';
 
-export type ToolType = 'paint' | 'erase' | 'select' | 'eyedropper';
+export type ToolType = 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket';
 
 export interface Tool {
   type: ToolType;
@@ -58,6 +59,14 @@ const TOOLS: Tool[] = [
     shortcut: 'I',
     description: 'Pick color from existing pixels',
     colorScheme: 'orange',
+  },
+  {
+    type: 'bucket',
+    icon: FaBucket,
+    label: 'Bucket Fill',
+    shortcut: 'G',
+    description: 'Fill connected area with selected color',
+    colorScheme: 'teal',
   },
 ];
 

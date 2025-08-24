@@ -15,6 +15,7 @@ import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import { CLEAR_ON_DESIGN } from "../viewport/constants";
 import { ViewportHandle, ViewportPixel } from "../viewport/types";
+import { floodFill } from "../viewport/utils/flood-fill";
 import { FloatingToolbar, FloatingToolbarHandle } from './floating-toolbar';
 import { ToolType } from './floating-toolbar/sections/ToolSelectionSection';
 
@@ -227,10 +228,11 @@ const AdvancedViewport = React.forwardRef<
         if (!isEditing || !editDesignId || !setEditedPixels)
           return;
 
-        // For erasing and eyedropper, we don't need a selected color
+        // For erasing, eyedropper, and bucket (has its own color check), we don't need a selected color upfront
         const shouldErase = erase || selectedTool === 'erase';
         const isEyedropper = selectedTool === 'eyedropper';
-        if (!shouldErase && !isEyedropper && !selectedColor) {
+        const isBucket = selectedTool === 'bucket';
+        if (!shouldErase && !isEyedropper && !isBucket && !selectedColor) {
           return;
         }
 
@@ -252,6 +254,47 @@ const AdvancedViewport = React.forwardRef<
             
             // Also update local state for consistent painting logic
             setSelectedColor(color);
+          }
+          return;
+        }
+
+        if (selectedTool === 'bucket') {
+          // Bucket fill tool - flood fill with selected color
+          if (!selectedColor) {
+            return; // Need a color selected to fill
+          }
+
+          // Get the color at the clicked position
+          const clickedPixel = pixels.find(pixel => 
+            pixel.x === x && pixel.y === y && visibleLayers.has(pixel.designId)
+          );
+          const targetColor = clickedPixel?.color || CLEAR_ON_DESIGN;
+
+          // Perform flood fill
+          const { filledPixels } = floodFill(
+            x, y, 
+            selectedColor, 
+            targetColor, 
+            editDesignId, 
+            pixels.filter(p => visibleLayers.has(p.designId))
+          );
+
+          if (filledPixels.length > 0) {
+            // Add filled pixels to edited pixels
+            setEditedPixels && setEditedPixels((prev) => {
+              // Remove any existing pixels in the filled area
+              const filteredPixels = prev.filter(pixel => {
+                return !filledPixels.some(filled => 
+                  filled.x === pixel.x && 
+                  filled.y === pixel.y && 
+                  filled.designId === pixel.designId
+                );
+              });
+              
+              return [...filteredPixels, ...filledPixels];
+            });
+            
+            schedulePixelRecalculation();
           }
           return;
         }
