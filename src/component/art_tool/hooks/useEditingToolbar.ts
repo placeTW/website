@@ -85,6 +85,7 @@ export function useEditingToolbar({
       setSelectedTool('paint');
       setIsEditingName(false);
       setCopyBuffer(null);
+      setShowKeyboardShortcuts(false);
       undoManager.clearHistory();
       setCanUndo(false);
       setCanRedo(false);
