@@ -7,8 +7,13 @@ import {
   useBreakpointValue,
   useColorModeValue,
   useToast,
-  Collapse,
   Divider,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
 } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Konva from 'konva';
@@ -327,15 +332,21 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             </Flex>
           </Box>
 
-          {/* Keyboard Shortcuts Panel */}
-          <Collapse in={toolbarState.showKeyboardShortcuts} animateOpacity>
-            <Box width="100%">
-              <Divider mb={2} />
-              <KeyboardShortcutsPanel
-                onClose={() => toolbarActions.toggleKeyboardShortcuts()}
-              />
-            </Box>
-          </Collapse>
+          {/* Keyboard Shortcuts Modal */}
+          <Modal
+            isOpen={toolbarState.showKeyboardShortcuts}
+            onClose={() => toolbarActions.toggleKeyboardShortcuts()}
+            size="4xl"
+          >
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Keyboard Shortcuts</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody pb={6}>
+                <KeyboardShortcutsPanel />
+              </ModalBody>
+            </ModalContent>
+          </Modal>
         </VStack>
       </MotionBox>
     </AnimatePresence>
