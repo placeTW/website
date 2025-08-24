@@ -3,12 +3,8 @@
 import React, { useRef } from "react";
 import Konva from "konva";
 import { GRID_SIZE } from "../constants";
-import UndoManager from "../utils/undo-manager";
 
 Konva.dragButtons = [0, 1, 2]; // Enable dragging with left (0), middle (1), and right (2) mouse buttons
-
-// Create an instance of UndoManager with a specified limit for undo history
-const undoManager = new UndoManager(100); // Adjust the limit value as needed
 
 export const useMouseHandlers = (
   onPixelPaint?: (x: number, y: number, erase: boolean) => void,
@@ -27,8 +23,6 @@ export const useMouseHandlers = (
       height: number;
     } | null>
   >,
-  onCopy?: () => void,
-  onPaste?: (x: number, y: number) => void,
   setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
   selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper',
 ) => {
@@ -151,19 +145,8 @@ export const useMouseHandlers = (
       };
     })(),
 
-    onKeyDown: (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "c" && onCopy) {
-        onCopy(); // Handle copy
-      } else if (e.ctrlKey && e.key === "v" && onPaste) {
-        // Use the stored mouse position to handle pasting
-        onPaste(mousePosition.current.x, mousePosition.current.y); // Handle paste
-      } else if (e.ctrlKey && e.key === "z" && undoManager.hasHistory()) {
-        const previousState = undoManager.undo();
-        if (previousState) {
-          // Perform any additional actions here, like updating the state with the undone pixels
-        }
-      }
-    },
+    // Keyboard shortcuts are now handled by the FloatingToolbar via useEditingToolbar hook
+    // This avoids conflicts and provides better integration with the editing state
 
     onContextMenu: (e: Konva.KonvaEventObject<PointerEvent>) => {
       e.evt.preventDefault(); // Prevent default context menu

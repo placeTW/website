@@ -132,7 +132,7 @@ export const useTouchHandlers = (
       }
     },
 
-    onTouchEnd: (_e: Konva.KonvaEventObject<TouchEvent>) => {
+    onTouchEnd: () => {
       isTouching.current = false;
       const stage = stageRef?.current;
       if (stage) {

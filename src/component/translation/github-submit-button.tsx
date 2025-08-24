@@ -9,7 +9,7 @@ const REPOSITORY_URL =
 
 interface Props {
   filename: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   data: string;
   locale: string;
 }

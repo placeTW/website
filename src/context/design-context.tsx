@@ -270,7 +270,7 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
   // Use useMemo for derived state instead of useState + useEffect
   const designsMap = useMemo(() => getDesignsMap(designs), [designs]);
   const canvasesMap = useMemo(() => getCanvasesMap(canvases), [canvases]);
-  const canvasDesignsMap = useMemo(() => getCanvasDesignsMap(designs), [designs, canvases]);
+  const canvasDesignsMap = useMemo(() => getCanvasDesignsMap(designs), [designs]);
 
   const subscriptionManager = useRef(SupabaseSubscriptionManager.getInstance());
 

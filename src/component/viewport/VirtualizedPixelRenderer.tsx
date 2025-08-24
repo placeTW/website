@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import Konva from 'konva';
 import { Shape } from 'react-konva';
 
 interface VirtualizedPixelRendererProps {
@@ -34,7 +35,7 @@ export const VirtualizedPixelRenderer: React.FC<VirtualizedPixelRendererProps> =
   }, [colorLookupMap, visibleBounds, gridSize]);
 
   const sceneFunc = useMemo(() => {
-    return (context: any, shape: any) => {
+    return (context: Konva.Context, shape: Konva.Shape) => {
       // Batch drawing operations for better performance
       const colorGroups = new Map<string, Array<{ x: number; y: number }>>();
       

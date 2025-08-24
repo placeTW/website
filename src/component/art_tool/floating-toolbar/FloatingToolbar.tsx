@@ -6,6 +6,7 @@ import {
   HStack,
   useBreakpointValue,
   useColorModeValue,
+  useToast,
   Collapse,
   Divider,
 } from '@chakra-ui/react';
@@ -13,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Konva from 'konva';
 import { Design } from '../../../types/art-tool';
 import { ViewportPixel } from '../../viewport/types';
+import { GRID_SIZE } from '../../viewport/constants';
 import { useEditingToolbar, UseEditingToolbarProps } from '../hooks/useEditingToolbar';
 import { DesignInfoSection } from './sections/DesignInfoSection';
 import { ToolSelectionSection } from './sections/ToolSelectionSection';
@@ -49,6 +51,8 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   pixels = [],
   stageRef,
 }) => {
+  const toast = useToast();
+  
   const [toolbarState, toolbarActions] = useEditingToolbar({
     design,
     editedPixels,
@@ -95,12 +99,23 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     if (stageRef?.current) {
       const stage = stageRef.current;
       const pointer = stage.getPointerPosition();
+      let pasteX = 0, pasteY = 0;
+      
       if (pointer) {
         const scale = stage.scaleX();
-        const pasteX = Math.floor((pointer.x - stage.x()) / (20 * scale)); // GRID_SIZE = 20
-        const pasteY = Math.floor((pointer.y - stage.y()) / (20 * scale));
-        toolbarActions.handlePaste(pasteX, pasteY);
+        // Calculate viewport coordinates (same as painting system)
+        pasteX = Math.floor((pointer.x - stage.x()) / (GRID_SIZE * scale));
+        pasteY = Math.floor((pointer.y - stage.y()) / (GRID_SIZE * scale));
+      } else {
+        // Fallback to center of viewport if no pointer position
+        const scale = stage.scaleX();
+        const centerX = stage.width() / 2;
+        const centerY = stage.height() / 2;
+        pasteX = Math.floor((centerX - stage.x()) / (GRID_SIZE * scale));
+        pasteY = Math.floor((centerY - stage.y()) / (GRID_SIZE * scale));
       }
+      
+      toolbarActions.handlePaste(pasteX, pasteY);
     }
   }, [toolbarActions, stageRef]);
 
@@ -160,16 +175,34 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
         e.preventDefault();
         if (selection) {
           toolbarActions.handleCopy(selection, pixels);
+        } else {
+          toast({
+            title: 'Copy Failed',
+            description: 'Select an area first using the Select tool (S) or Ctrl+drag to copy pixels.',
+            status: 'warning',
+            duration: 3000,
+            isClosable: true,
+          });
         }
       } else if (isCtrlOrCmd && e.key.toLowerCase() === 'v') {
         e.preventDefault();
-        handleEnhancedPaste();
+        if (toolbarState.copyBuffer && toolbarState.copyBuffer.pixels.length > 0) {
+          handleEnhancedPaste();
+        } else {
+          toast({
+            title: 'Paste Failed',
+            description: 'Nothing to paste. Copy an area first using Ctrl+C.',
+            status: 'warning',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditing, isVisible, handleFill, handleEraseSelection, toolbarActions, handleEnhancedPaste, selection, pixels]);
+  }, [isEditing, isVisible, handleFill, handleEraseSelection, toolbarActions, handleEnhancedPaste, selection, pixels, toolbarState.copyBuffer, toast]);
 
   if (!isEditing || !isVisible) {
     return null;
