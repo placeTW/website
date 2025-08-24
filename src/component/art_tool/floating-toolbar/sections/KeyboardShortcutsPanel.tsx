@@ -6,16 +6,11 @@ import {
   VStack,
   HStack,
   Badge,
-  IconButton,
-  Divider,
   SimpleGrid,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FaXmark } from 'react-icons/fa6';
 
-export interface KeyboardShortcutsPanelProps {
-  onClose: () => void;
-}
+export interface KeyboardShortcutsPanelProps {}
 
 interface ShortcutGroup {
   title: string;
@@ -33,6 +28,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         keys: ['Ctrl', 'S'],
         description: 'Save design',
+        note: 'Cmd+S on Mac',
       },
       {
         keys: ['Esc'],
@@ -50,19 +46,22 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         keys: ['Ctrl', 'Z'],
         description: 'Undo',
+        note: 'Cmd+Z on Mac',
       },
       {
         keys: ['Ctrl', 'Y'],
         description: 'Redo',
-        note: 'or Ctrl+Shift+Z',
+        note: 'Ctrl+Shift+Z or Cmd+Y on Mac',
       },
       {
         keys: ['Ctrl', 'C'],
         description: 'Copy selection',
+        note: 'Cmd+C on Mac',
       },
       {
         keys: ['Ctrl', 'V'],
         description: 'Paste at cursor',
+        note: 'Cmd+V on Mac',
       },
       {
         keys: ['F'],
@@ -98,6 +97,31 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
     ],
   },
   {
+    title: 'Selection & Editing',
+    shortcuts: [
+      {
+        keys: ['Ctrl', 'Drag'],
+        description: 'Create selection',
+        note: 'to copy pixels',
+      },
+      {
+        keys: ['Double Click'],
+        description: 'Fill selection',
+        note: 'with clicked color',
+      },
+      {
+        keys: ['Enter'],
+        description: 'Confirm name edit',
+        note: 'when editing design name',
+      },
+      {
+        keys: ['Esc'],
+        description: 'Cancel name edit',
+        note: 'when editing design name',
+      },
+    ],
+  },
+  {
     title: 'Navigation',
     shortcuts: [
       {
@@ -107,11 +131,12 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         keys: ['Mouse Drag'],
         description: 'Pan canvas',
-        note: 'when not editing',
+        note: 'when not painting',
       },
       {
-        keys: ['Right Click'],
-        description: 'Context menu',
+        keys: ['Mouse Drag'],
+        description: 'Paint pixels',
+        note: 'with paint/erase tool',
       },
     ],
   },
@@ -127,10 +152,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
   },
 ];
 
-export const KeyboardShortcutsPanel: React.FC<KeyboardShortcutsPanelProps> = ({
-  onClose,
-}) => {
-  const bgColor = useColorModeValue('gray.50', 'gray.700');
+export const KeyboardShortcutsPanel: React.FC<KeyboardShortcutsPanelProps> = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
 
   const ShortcutItem: React.FC<{
@@ -185,30 +207,7 @@ export const KeyboardShortcutsPanel: React.FC<KeyboardShortcutsPanelProps> = ({
   );
 
   return (
-    <Box
-      mt={3}
-      p={4}
-      bg={bgColor}
-      borderWidth="1px"
-      borderColor={borderColor}
-      borderRadius="lg"
-    >
-      {/* Header */}
-      <Flex justify="space-between" align="center" mb={3}>
-        <Text fontWeight="bold" fontSize="md">
-          Keyboard Shortcuts
-        </Text>
-        <IconButton
-          icon={<FaXmark />}
-          size="sm"
-          variant="ghost"
-          onClick={onClose}
-          aria-label="Close shortcuts panel"
-        />
-      </Flex>
-
-      <Divider mb={4} />
-
+    <>
       {/* Shortcuts Grid */}
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
         {SHORTCUT_GROUPS.map((group, index) => (
@@ -219,10 +218,10 @@ export const KeyboardShortcutsPanel: React.FC<KeyboardShortcutsPanelProps> = ({
       {/* Footer note */}
       <Box mt={4} pt={3} borderTop="1px solid" borderColor={borderColor}>
         <Text fontSize="xs" opacity={0.8} textAlign="center">
-          Tip: Most shortcuts work when the canvas is focused and you're not editing text
+          Tip: Shortcuts work when canvas is focused. Some shortcuts are disabled when editing design name.
         </Text>
       </Box>
-    </Box>
+    </>
   );
 };
 
