@@ -41,7 +41,11 @@ export interface FloatingToolbarProps extends Omit<UseEditingToolbarProps, 'desi
   stageRef?: React.RefObject<Konva.Stage>;
 }
 
-export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
+export interface FloatingToolbarHandle {
+  setSelectedColor: (color: string | null) => void;
+}
+
+export const FloatingToolbar = React.forwardRef<FloatingToolbarHandle, FloatingToolbarProps>(({
   design,
   editedPixels,
   setEditedPixels,
@@ -55,7 +59,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   selection,
   pixels = [],
   stageRef,
-}) => {
+}, ref) => {
   const toast = useToast();
   
   const [toolbarState, toolbarActions] = useEditingToolbar({
@@ -65,7 +69,13 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     onSubmitEdit,
     onCancelEdit,
     isEditing,
+    onToolChange,
   });
+
+  // Expose the toolbar's setSelectedColor function through imperative handle
+  React.useImperativeHandle(ref, () => ({
+    setSelectedColor: toolbarActions.setSelectedColor,
+  }), [toolbarActions.setSelectedColor]);
 
   // More granular responsive breakpoints
   const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
@@ -80,11 +90,11 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   // Enhanced color select handler - automatically switch to paint tool
   const handleColorSelect = React.useCallback((color: string) => {
     toolbarActions.setSelectedColor(color);
+    onColorSelect?.(color);
     if (toolbarState.selectedTool === 'erase') {
       toolbarActions.setSelectedTool('paint');
+      onToolChange?.('paint');
     }
-    onColorSelect?.(color);
-    onToolChange?.('paint');
   }, [toolbarActions, onColorSelect, onToolChange, toolbarState.selectedTool]);
 
   // Enhanced tool change handler
@@ -351,6 +361,6 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       </MotionBox>
     </AnimatePresence>
   );
-};
+});
 
 export default FloatingToolbar;

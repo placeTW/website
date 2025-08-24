@@ -15,7 +15,7 @@ import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import { CLEAR_ON_DESIGN } from "../viewport/constants";
 import { ViewportHandle, ViewportPixel } from "../viewport/types";
-import { FloatingToolbar } from './floating-toolbar';
+import { FloatingToolbar, FloatingToolbarHandle } from './floating-toolbar';
 import { ToolType } from './floating-toolbar/sections/ToolSelectionSection';
 
 interface AdvancedViewportProps {
@@ -65,6 +65,7 @@ const AdvancedViewport = React.forwardRef<
     const [pixels, setPixels] = useState<ViewportPixel[]>([]);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [selectedTool, setSelectedTool] = useState<ToolType>('paint');
+    const toolbarRef = useRef<FloatingToolbarHandle>(null);
     const [selection, setSelection] = useState<{
       x: number;
       y: number;
@@ -220,20 +221,38 @@ const AdvancedViewport = React.forwardRef<
       setSelectedTool(tool);
     }, []);
 
+
     const handlePixelPaint = useCallback(
       (x: number, y: number, erase: boolean) => {
         if (!isEditing || !editDesignId || !setEditedPixels)
           return;
 
-        // For erasing, we don't need a selected color
+        // For erasing and eyedropper, we don't need a selected color
         const shouldErase = erase || selectedTool === 'erase';
-        if (!shouldErase && !selectedColor) {
+        const isEyedropper = selectedTool === 'eyedropper';
+        if (!shouldErase && !isEyedropper && !selectedColor) {
           return;
         }
 
         // Handle different tools
         if (selectedTool === 'eyedropper') {
-          // TODO: Implement eyedropper functionality
+          // Find pixel at the clicked coordinates
+          const clickedPixel = pixels.find(pixel => 
+            pixel.x === x && pixel.y === y && visibleLayers.has(pixel.designId)
+          );
+          
+          if (clickedPixel && clickedPixel.color !== CLEAR_ON_DESIGN) {
+            // Set the clicked pixel's color as selected color in both states
+            const color = clickedPixel.color;
+            
+            // Update toolbar state using ref
+            if (toolbarRef.current) {
+              toolbarRef.current.setSelectedColor(color);
+            }
+            
+            // Also update local state for consistent painting logic
+            setSelectedColor(color);
+          }
           return;
         }
 
@@ -269,6 +288,9 @@ const AdvancedViewport = React.forwardRef<
         editDesignId,
         setEditedPixels,
         schedulePixelRecalculation,
+        pixels,
+        visibleLayers,
+        setSelectedColor,
       ],
     );
 
@@ -452,6 +474,7 @@ const AdvancedViewport = React.forwardRef<
           
           {/* Floating Toolbar positioned at bottom of viewport */}
           <FloatingToolbar
+            ref={toolbarRef}
             design={currentDesign}
             editedPixels={editedPixels ?? []}
             setEditedPixels={setEditedPixels || (() => {})}

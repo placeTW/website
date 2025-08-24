@@ -1,6 +1,6 @@
 // Floating Toolbar Components
 export { FloatingToolbar } from './FloatingToolbar';
-export type { FloatingToolbarProps } from './FloatingToolbar';
+export type { FloatingToolbarProps, FloatingToolbarHandle } from './FloatingToolbar';
 
 // Section Components
 export { DesignInfoSection } from './sections/DesignInfoSection';
