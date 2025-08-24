@@ -58,7 +58,12 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     isEditing,
   });
 
+  // More granular responsive breakpoints
   const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
+  const isSmallDesktop = useBreakpointValue({ base: false, md: true, xl: false }) ?? false;
+  const shouldWrap = useBreakpointValue({ base: true, md: true, xl: false }) ?? false;
+  const toolbarSpacing = useBreakpointValue({ base: 2, md: 3, xl: 4 }) ?? 3;
+  
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const shadowColor = useColorModeValue('rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 0.3)');
@@ -196,13 +201,14 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           {/* Main toolbar row */}
           <HStack
             width="100%"
-            justify={isMobile ? 'center' : 'space-between'}
+            justify={isMobile ? 'center' : shouldWrap ? 'center' : 'space-between'}
             align="center"
-            spacing={4}
-            wrap={isMobile ? 'wrap' : 'nowrap'}
+            spacing={toolbarSpacing}
+            wrap={shouldWrap ? 'wrap' : 'nowrap'}
+            gap={shouldWrap ? 2 : undefined}
           >
             {/* Design Info Section */}
-            <Box flex={isMobile ? 'none' : '0 0 auto'}>
+            <Box flex={isMobile || shouldWrap ? 'none' : '0 0 auto'}>
               <DesignInfoSection
                 designName={toolbarState.designName}
                 isEditingName={toolbarState.isEditingName}
@@ -217,7 +223,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             </Box>
 
             {/* Tool Selection Section */}
-            <Box flex={isMobile ? 'none' : '0 0 auto'}>
+            <Box flex={isMobile || shouldWrap ? 'none' : '0 0 auto'}>
               <ToolSelectionSection
                 selectedTool={toolbarState.selectedTool}
                 onToolChange={handleToolChange}
@@ -226,7 +232,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             </Box>
 
             {/* Action Buttons Section */}
-            <Box flex={isMobile ? 'none' : '0 0 auto'}>
+            <Box flex={isMobile || shouldWrap ? 'none' : '0 0 auto'}>
               <ActionButtonsSection
                 canUndo={toolbarState.canUndo}
                 canRedo={toolbarState.canRedo}
@@ -246,9 +252,9 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               />
             </Box>
 
-            {/* PNG Import Section */}
-            {design && (
-              <Box flex={isMobile ? 'none' : '0 0 auto'}>
+            {/* PNG Import Section - hide on small desktop to save space */}
+            {design && !isSmallDesktop && (
+              <Box flex={isMobile || shouldWrap ? 'none' : '0 0 auto'}>
                 <PngImportSection
                   availableColors={colors}
                   onPixelsImported={handlePixelsImported}
@@ -258,6 +264,18 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               </Box>
             )}
           </HStack>
+
+          {/* PNG Import Section for small desktop - show as separate row */}
+          {design && isSmallDesktop && (
+            <Flex justify="center" width="100%">
+              <PngImportSection
+                availableColors={colors}
+                onPixelsImported={handlePixelsImported}
+                designId={design.id}
+                isVertical={false}
+              />
+            </Flex>
+          )}
 
           {/* Color palette row (always separate) */}
           <Box width="100%">
