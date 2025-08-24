@@ -149,8 +149,8 @@ export const FloatingToolbar = React.forwardRef<FloatingToolbarHandle, FloatingT
   // Handle erase selection
   const handleEraseSelection = React.useCallback(() => {
     if (!selection) return;
-    toolbarActions.handleEraseSelection(selection);
-  }, [toolbarActions, selection]);
+    toolbarActions.handleEraseSelection(selection, pixels);
+  }, [toolbarActions, selection, pixels]);
 
   // Handle PNG import
   const handlePixelsImported = React.useCallback((

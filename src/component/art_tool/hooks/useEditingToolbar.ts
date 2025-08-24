@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { Design, Pixel } from '../../../types/art-tool';
 import { ViewportPixel } from '../../viewport/types';
+import { CLEAR_ON_DESIGN } from '../../viewport/constants';
 import UndoManager from '../../viewport/utils/undo-manager';
 
 export interface EditingToolbarState {
@@ -32,7 +33,7 @@ export interface EditingToolbarActions {
   handleCopy: (selection: { x: number; y: number; width: number; height: number } | null, pixels: ViewportPixel[]) => void;
   handlePaste: (x: number, y: number) => void;
   handleFill: (selection: { x: number; y: number; width: number; height: number } | null, color: string) => void;
-  handleEraseSelection: (selection: { x: number; y: number; width: number; height: number } | null) => void;
+  handleEraseSelection: (selection: { x: number; y: number; width: number; height: number } | null, allPixels: ViewportPixel[]) => void;
   toggleKeyboardShortcuts: () => void;
   addUndoState: (editedPixels: Pixel[]) => void;
 }
@@ -318,39 +319,49 @@ export function useEditingToolbar({
   }, [design, editedPixels, addUndoState, setEditedPixels, toast]);
 
   const handleEraseSelection = useCallback((
-    selection: { x: number; y: number; width: number; height: number } | null
+    selection: { x: number; y: number; width: number; height: number } | null,
+    allPixels: ViewportPixel[]
   ) => {
     if (!selection || !design) return;
 
     const { x, y, width, height } = selection;
     
-    // Count pixels that will be erased for feedback
-    let erasedCount = 0;
-
     addUndoState(editedPixels);
     
-    // Remove all pixels in the selection area
+    // Find all pixels in the selection area (both original and edited)
+    const pixelsInSelection = allPixels.filter(pixel => 
+      pixel.x >= x &&
+      pixel.x < x + width &&
+      pixel.y >= y &&
+      pixel.y < y + height &&
+      pixel.designId === design.id &&
+      pixel.color !== CLEAR_ON_DESIGN // Don't count already erased pixels
+    );
+    
     setEditedPixels((prev) => {
+      // Remove any edited pixels in the selection area
       const filteredPixels = prev.filter((pixel) => {
-        const shouldErase = pixel.x >= x &&
+        return !(pixel.x >= x &&
           pixel.x < x + width &&
           pixel.y >= y &&
           pixel.y < y + height &&
-          pixel.designId === design.id;
-        
-        if (shouldErase) {
-          erasedCount++;
-        }
-        
-        return !shouldErase;
+          pixel.designId === design.id);
       });
       
-      return filteredPixels;
+      // Add erase entries for all pixels in selection (handles both original and edited)
+      const eraseEntries: Pixel[] = pixelsInSelection.map(pixel => ({
+        x: pixel.x,
+        y: pixel.y,
+        color: CLEAR_ON_DESIGN,
+        designId: design.id,
+      }));
+      
+      return [...filteredPixels, ...eraseEntries];
     });
 
     toast({
       title: 'Erased',
-      description: `Erased ${erasedCount} pixels from selection`,
+      description: `Erased ${pixelsInSelection.length} pixels from selection`,
       status: 'info',
       duration: 2000,
       isClosable: true,
