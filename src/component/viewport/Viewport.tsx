@@ -76,7 +76,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
     >([]);
     const [zoomLevel, setZoomLevel] = useState(1);
     // Removed the pixelMap state as we're now using useMemo instead
-    const [stageDraggable, setStageDraggable] = useState(false);
+    const [stageDraggable, setStageDraggable] = useState(isEditing ?? false);
     const { colorsMap } = useColorContext();
     const { designsMap } = useDesignContext();
     const [contextMenu, setContextMenu] = useState<{
@@ -95,7 +95,9 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
     const PADDING_FACTOR = 0.75;
 
     useEffect(() => {
-      setStageDraggable(false);
+      // When entering editing mode, enable dragging for panning
+      // When exiting editing mode, disable dragging
+      setStageDraggable(isEditing ?? false);
     }, [isEditing]);
 
     // Use optimized pixel map with incremental updates
