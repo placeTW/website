@@ -1,16 +1,22 @@
 import {
   Box,
+  Button,
   Flex,
   IconButton,
+  Input,
   Spacer,
   Tab,
   TabList,
   Tabs,
+  Tooltip,
+  useToast,
 } from "@chakra-ui/react";
 import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { FaExpand } from "react-icons/fa";
+import { FaExpand, FaDownload } from "react-icons/fa";
+import { FaPen as FaEdit, FaCheck, FaXmark as FaCancel } from "react-icons/fa6";
 import { useDesignContext } from "../../context/design-context";
+import { databaseUpdateCanvasName } from "../../api/supabase/database";
 import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import { CLEAR_ON_DESIGN } from "../viewport/constants";
@@ -32,6 +38,7 @@ interface AdvancedViewportProps {
   onDesignSelect?: (designId: number) => void;
   onSubmitEdit?: (designName: string) => Promise<void>;
   onCancelEdit?: () => void;
+  onCanvasUpdate?: (canvas: Canvas) => void;
 }
 
 const AdvancedViewport = React.forwardRef<
@@ -60,13 +67,19 @@ const AdvancedViewport = React.forwardRef<
       onDesignSelect,
       onSubmitEdit,
       onCancelEdit,
+      onCanvasUpdate,
     },
     ref,
   ) => {
     const [pixels, setPixels] = useState<ViewportPixel[]>([]);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [selectedTool, setSelectedTool] = useState<ToolType>('paint');
+    const [isExporting, setIsExporting] = useState(false);
+    const [editingCanvasId, setEditingCanvasId] = useState<number | null>(null);
+    const [tempCanvasName, setTempCanvasName] = useState('');
+    const toast = useToast();
     const toolbarRef = useRef<FloatingToolbarHandle>(null);
+    const canvasNameInputRef = useRef<HTMLInputElement>(null);
     const [selection, setSelection] = useState<{
       x: number;
       y: number;
@@ -221,6 +234,233 @@ const AdvancedViewport = React.forwardRef<
     const handleToolChange = useCallback((tool: ToolType) => {
       setSelectedTool(tool);
     }, []);
+
+    // Canvas name editing functions
+    const handleStartCanvasNameEdit = useCallback((canvasId: number, currentName: string) => {
+      setEditingCanvasId(canvasId);
+      setTempCanvasName(currentName);
+    }, []);
+
+    const handleConfirmCanvasNameEdit = useCallback(async () => {
+      if (!editingCanvasId || !tempCanvasName.trim()) {
+        setEditingCanvasId(null);
+        setTempCanvasName('');
+        return;
+      }
+
+      try {
+        const updatedCanvas = await databaseUpdateCanvasName(editingCanvasId, tempCanvasName.trim());
+        if (onCanvasUpdate) {
+          onCanvasUpdate(updatedCanvas);
+        }
+        toast({
+          title: "Success",
+          description: "Canvas name updated successfully",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } catch (error) {
+        console.error("Error updating canvas name:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update canvas name",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setEditingCanvasId(null);
+        setTempCanvasName('');
+      }
+    }, [editingCanvasId, tempCanvasName, onCanvasUpdate, toast]);
+
+    const handleCancelCanvasNameEdit = useCallback(() => {
+      setEditingCanvasId(null);
+      setTempCanvasName('');
+    }, []);
+
+    const handleCanvasNameKeyDown = useCallback((e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConfirmCanvasNameEdit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleCancelCanvasNameEdit();
+      }
+    }, [handleConfirmCanvasNameEdit, handleCancelCanvasNameEdit]);
+
+    // Focus input when canvas name editing starts
+    useEffect(() => {
+      if (editingCanvasId && canvasNameInputRef.current) {
+        canvasNameInputRef.current.focus();
+        canvasNameInputRef.current.select();
+      }
+    }, [editingCanvasId]);
+
+    // Utility functions for export
+    const getTopLeftCoords = useCallback((pixels: { x: number; y: number }[]) => {
+      const minX = Math.min(...pixels.map((pixel) => pixel.x));
+      const minY = Math.min(...pixels.map((pixel) => pixel.y));
+      return { x: minX, y: minY };
+    }, []);
+
+    const offsetPixels = useCallback((
+      pixels: { x: number; y: number; color: string }[],
+      offset: { x: number; y: number }
+    ) => {
+      return pixels.map((pixel) => ({
+        x: pixel.x - offset.x,
+        y: pixel.y - offset.y,
+        color: pixel.color,
+      }));
+    }, []);
+
+    // Handle canvas export
+    const handleCanvasExport = useCallback(async () => {
+      if (!designs) return;
+      
+      setIsExporting(true);
+      try {
+        // Get all designs on the current canvas
+        const canvasDesigns = designs.filter(design => design.canvas === selectedCanvas.id);
+
+        if (canvasDesigns.length === 0) {
+          toast({
+            title: 'Error',
+            description: 'No designs found on this canvas.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+          return;
+        }
+
+        // Order the designs by the canvas layer order
+        const designsMap = new Map(canvasDesigns.map(obj => [obj.id, obj]));
+        const orderedDesigns = selectedCanvas.layer_order
+          .map(id => designsMap.get(id))
+          .filter(design => design !== undefined);
+
+        // Add any designs not in layer order to the end
+        canvasDesigns.forEach((design) => {
+          if (!orderedDesigns.includes(design)) {
+            orderedDesigns.push(design);
+          }
+        });
+
+        // Combine all designs' pixels into one array, respecting layer order
+        let combinedPixels: { x: number; y: number; color: string }[] = [];
+        const pixelPositionMap = new Map<string, boolean>();
+        
+        // Process designs in layer order (top to bottom)
+        orderedDesigns.forEach((design) => {
+          if (!design) return;
+          
+          // Offset the design's pixels by its x and y coordinates
+          const offsettedPixels = design.pixels.map((pixel) => ({
+            x: pixel.x + design.x,
+            y: pixel.y + design.y,
+            color: pixel.color,
+          }));
+          
+          // Only add pixels that haven't been covered by a higher layer
+          offsettedPixels.forEach(pixel => {
+            const key = `${pixel.x},${pixel.y}`;
+            if (!pixelPositionMap.has(key)) {
+              pixelPositionMap.set(key, true);
+              combinedPixels.push(pixel);
+            }
+          });
+        });
+
+        // Remove any pixels that are clear
+        combinedPixels = combinedPixels.filter(
+          (pixel) => pixel.color !== CLEAR_ON_DESIGN
+        );
+
+        if (combinedPixels.length === 0) {
+          toast({
+            title: 'Error',
+            description: 'No pixels to export.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+          return;
+        }
+
+        // Get the top-left coordinates and offset pixels to start from (0,0)
+        const topLeftCoords = getTopLeftCoords(combinedPixels);
+        const pixelsToExport = offsetPixels(combinedPixels, topLeftCoords);
+
+        // Get the width and height of the cropped area
+        const maxX = Math.max(...pixelsToExport.map((pixel) => pixel.x));
+        const maxY = Math.max(...pixelsToExport.map((pixel) => pixel.y));
+        const width = maxX + 1;
+        const height = maxY + 1;
+
+        // Create a canvas and draw the pixels
+        const canvasElement = document.createElement('canvas');
+        canvasElement.width = width;
+        canvasElement.height = height;
+        const ctx = canvasElement.getContext('2d');
+
+        if (!ctx) {
+          throw new Error('Failed to get canvas context.');
+        }
+
+        // Fill the canvas with transparent pixels
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw each pixel
+        pixelsToExport.forEach((pixel) => {
+          ctx.fillStyle = pixel.color;
+          ctx.fillRect(pixel.x, pixel.y, 1, 1);
+        });
+
+        // Convert canvas to Blob and trigger download
+        const blob: Blob = await new Promise((resolve, reject) => {
+          canvasElement.toBlob((blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Canvas is empty'));
+            }
+          }, 'image/png');
+        });
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${selectedCanvas.canvas_name}-export-${new Date().toISOString().slice(0, 10)}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: 'Success',
+          description: `Canvas exported successfully as ${selectedCanvas.canvas_name}-export-${new Date().toISOString().slice(0, 10)}.png`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+
+      } catch (error) {
+        console.error('Error exporting canvas:', error);
+        toast({
+          title: 'Error',
+          description: 'An error occurred while exporting the canvas.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsExporting(false);
+      }
+    }, [designs, selectedCanvas, toast, getTopLeftCoords, offsetPixels]);
 
 
     const handlePixelPaint = useCallback(
@@ -479,18 +719,91 @@ const AdvancedViewport = React.forwardRef<
       <Box position="relative" height="100%" display="flex" flexDirection="column">
         {/* Canvas tabs and controls */}
         {canvases && (
-          <Flex padding={2} borderBottomWidth="1px" borderColor="gray.200">
+          <Flex padding={2} borderBottomWidth="1px" borderColor="gray.200" alignItems="center">
             <Tabs
               index={selectedTabIndex !== null ? selectedTabIndex : -1}
               onChange={(index) => handleSelectCanvas(canvases[index])}
             >
               <TabList>
-                {canvases.map((canvas) => (
-                  <Tab key={canvas.id}>{canvas.canvas_name}</Tab>
-                ))}
+                {canvases.map((canvas) => {
+                  const isEditing = editingCanvasId === canvas.id;
+                  return (
+                    <Tab 
+                      key={canvas.id}
+                      position="relative"
+                      _focus={{ boxShadow: "none" }}
+                    >
+                      {isEditing ? (
+                        <Flex align="center" gap={1} onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            ref={canvasNameInputRef}
+                            value={tempCanvasName}
+                            onChange={(e) => setTempCanvasName(e.target.value)}
+                            onKeyDown={handleCanvasNameKeyDown}
+                            size="sm"
+                            variant="filled"
+                            placeholder="Enter canvas name..."
+                            bg="white"
+                            _dark={{ bg: 'gray.700' }}
+                            width="150px"
+                            mr={1}
+                          />
+                          <Tooltip label="Confirm (Enter)">
+                            <IconButton
+                              icon={<FaCheck />}
+                              size="xs"
+                              colorScheme="green"
+                              onClick={handleConfirmCanvasNameEdit}
+                              aria-label="Confirm name change"
+                            />
+                          </Tooltip>
+                          <Tooltip label="Cancel (Esc)">
+                            <IconButton
+                              icon={<FaCancel />}
+                              size="xs"
+                              variant="ghost"
+                              onClick={handleCancelCanvasNameEdit}
+                              aria-label="Cancel name change"
+                            />
+                          </Tooltip>
+                        </Flex>
+                      ) : (
+                        <Flex align="center" gap={1}>
+                          <Box>{canvas.canvas_name}</Box>
+                          <Tooltip label="Edit name">
+                            <IconButton
+                              icon={<FaEdit />}
+                              size="xs"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartCanvasNameEdit(canvas.id, canvas.canvas_name);
+                              }}
+                              aria-label="Edit canvas name"
+                            />
+                          </Tooltip>
+                        </Flex>
+                      )}
+                    </Tab>
+                  );
+                })}
               </TabList>
             </Tabs>
+
             <Spacer />
+            
+            {/* Export button */}
+            <Button
+              leftIcon={<FaDownload />}
+              size="sm"
+              onClick={handleCanvasExport}
+              isLoading={isExporting}
+              loadingText="Exporting..."
+              mr={2}
+            >
+              Export PNG
+            </Button>
+            
             <IconButton
               aria-label="Center on Canvas"
               icon={<FaExpand />}
