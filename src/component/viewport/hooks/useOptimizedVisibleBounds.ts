@@ -16,8 +16,7 @@ interface ViewportDimensions {
 export const useOptimizedVisibleBounds = (
   stageRef: React.RefObject<Konva.Stage>,
   gridSize: number,
-  dimensions: ViewportDimensions,
-  zoomLevel: number
+  dimensions: ViewportDimensions
 ) => {
   const lastBoundsRef = useRef<VisibleBounds>({ minX: 0, minY: 0, maxX: 0, maxY: 0 });
   const lastCalculationParams = useRef({
@@ -31,6 +30,8 @@ export const useOptimizedVisibleBounds = (
   const [forceUpdateCounter, setForceUpdateCounter] = useState(0);
 
   const visibleBounds = useMemo(() => {
+    // Use forceUpdateCounter to trigger forced recalculations
+    void forceUpdateCounter;
     if (!stageRef.current) {
       return lastBoundsRef.current;
     }
@@ -97,7 +98,7 @@ export const useOptimizedVisibleBounds = (
     lastUpdateTime.current = currentTime;
 
     return newBounds;
-  }, [stageRef, gridSize, dimensions, zoomLevel, forceUpdateCounter]);
+  }, [stageRef, gridSize, dimensions, forceUpdateCounter]);
 
   // Force recalculation function for when we need to update immediately
   const forceRecalculation = useCallback(() => {

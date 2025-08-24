@@ -41,8 +41,6 @@ interface ViewportProps {
       height: number;
     } | null>
   >;
-  onCopy?: () => void;
-  onPaste?: (x: number, y: number) => void;
   onDesignSelect?: (designId: number) => void;
   selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper';
   ref?: Ref<ViewportHandle>;
@@ -59,8 +57,6 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       layerOrder,
       selection,
       setSelection,
-      onCopy,
-      onPaste,
       onDesignSelect,
       selectedTool = 'paint',
       stageRef,
@@ -228,7 +224,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       calculateVisibleTiles();
     };
 
-    const handleZoom = () => {
+    const handleZoom = useCallback(() => {
       if (stageRef.current) {
         let scale = stageRef.current.scaleX();
         scale = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, scale));
@@ -236,7 +232,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
         stageRef.current.scale({ x: scale, y: scale });
         calculateVisibleTiles();
       }
-    };
+    }, [MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL, calculateVisibleTiles, stageRef]);
 
     // Throttle wheel events to prevent performance issues
     const wheelHandlerTimeoutRef = useRef<number | null>(null);
@@ -504,7 +500,6 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
     }, [
       stageRef,
       canvasBounds,
-      GRID_SIZE,
       PADDING_FACTOR,
       MAX_ZOOM_LEVEL,
       calculateVisibleTiles,
@@ -534,7 +529,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
     [zoomLevel, visibleTiles, backgroundImage, BACKGROUND_TILE_SIZE]);
 
     // Use optimized visible bounds calculation that only recalculates when necessary
-    const { visibleBounds, forceRecalculation } = useOptimizedVisibleBounds(stageRef, GRID_SIZE, dimensions, zoomLevel);
+    const { visibleBounds, forceRecalculation } = useOptimizedVisibleBounds(stageRef, GRID_SIZE, dimensions);
 
     // Improved drag handling with debounced tile calculation but immediate visual updates
     const handleDragMove = useCallback(() => {
@@ -584,7 +579,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
           gridSize={GRID_SIZE}
         />
       );
-    }, [colorLookupMap, visibleBounds, GRID_SIZE]);
+    }, [colorLookupMap, visibleBounds]);
 
     const renderSelectionRect = useMemo(() =>
       selection && (
@@ -599,7 +594,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
           listening={false} // Disable event listening for selection rect
         />
       ),
-    [selection, GRID_SIZE]);
+    [selection]);
 
     const renderCoordinates = () => {
       if (!hoveredPixel) return null;
@@ -662,8 +657,6 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
             coordinatesRef,
             selection,
             setSelection,
-            onCopy,
-            onPaste,
             setStageDraggable,
             selectedTool,
           )}

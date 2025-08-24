@@ -40,7 +40,7 @@ const AlertManage: React.FC = () => {
     setAlerts(alertLevels ?? []);
   }, [alertLevels]);
 
-  const handleInputChange = (alertId: number, field: string, value: any) => {
+  const handleInputChange = (alertId: number, field: string, value: string | number | boolean) => {
     setEditedFields((prevFields) => ({
       ...prevFields,
       [alertId]: {

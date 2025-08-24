@@ -63,7 +63,7 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
           <Box p={4} pb={0}>
             <Stack>
               <Heading
-                // eslint-disable-next-line react-hooks/rules-of-hooks
+                 
                 color={useColorModeValue("gray.700", "white")}
                 fontSize={"2xl"}
                 fontFamily={"body"}

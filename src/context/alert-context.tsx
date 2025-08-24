@@ -1,6 +1,7 @@
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -56,7 +57,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     initialData.currentAlertData,
   );
 
-  const setActiveAlertId = (id: number) => {
+  const setActiveAlertId = useCallback((id: number) => {
     const activeAlert =
       alertLevels?.find((alert) => alert.alert_id === id) || null;
     setCurrentAlertData(activeAlert);
@@ -68,10 +69,11 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         })),
       );
     }
-  };
+  }, [alertLevels]);
 
   // Set up the Supabase subscription with logging
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateAlertLevelFromEvent = (payload: any) => {
       const updatedAlert = payload.new as AlertState;
       setAlertLevels((prevAlerts) => {
@@ -90,8 +92,9 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     const alertSubscription = supabase
       .channel("public:art_tool_alert_state")
       .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "art_tool_alert_state" },
+        "postgres_changes" as "broadcast",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { event: "*", schema: "public", table: "art_tool_alert_state" } as any,
         updateAlertLevelFromEvent,
       )
       .subscribe();

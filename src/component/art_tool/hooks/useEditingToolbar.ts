@@ -12,6 +12,7 @@ export interface EditingToolbarState {
   copyBuffer: {
     pixels: ViewportPixel[];
     selectionTopLeft: { x: number; y: number };
+    contentBounds: { minX: number; minY: number; maxX: number; maxY: number };
   } | null;
   canUndo: boolean;
   canRedo: boolean;
@@ -168,9 +169,12 @@ export function useEditingToolbar({
     selection: { x: number; y: number; width: number; height: number } | null,
     pixels: ViewportPixel[]
   ) => {
-    if (!selection || !design) return;
+    if (!selection || !design) {
+      return;
+    }
 
     const { x, y, width, height } = selection;
+    
     const selectedPixels = pixels.filter(
       (pixel) =>
         pixel.designId === design.id &&
@@ -185,30 +189,65 @@ export function useEditingToolbar({
       uniquePixels.set(`${pixel.x}-${pixel.y}`, pixel)
     );
 
+    const pixelArray = Array.from(uniquePixels.values());
+    
+    // Calculate the actual bounds of the copied content
+    let contentBounds = { minX: x, minY: y, maxX: x + width - 1, maxY: y + height - 1 };
+    if (pixelArray.length > 0) {
+      contentBounds = {
+        minX: Math.min(...pixelArray.map(p => p.x)),
+        minY: Math.min(...pixelArray.map(p => p.y)),
+        maxX: Math.max(...pixelArray.map(p => p.x)),
+        maxY: Math.max(...pixelArray.map(p => p.y)),
+      };
+    }
+
+
     setCopyBuffer({
-      pixels: Array.from(uniquePixels.values()),
+      pixels: pixelArray,
       selectionTopLeft: { x, y },
+      contentBounds,
     });
 
-    toast({
-      title: 'Copied',
-      description: `Copied ${uniquePixels.size} pixels to clipboard`,
-      status: 'success',
-      duration: 2000,
-      isClosable: true,
-    });
+    if (uniquePixels.size === 0) {
+      toast({
+        title: 'Copied Empty Area',
+        description: 'Selected area contains no pixels. Paint some pixels first.',
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+    } else {
+      const { minX, minY, maxX, maxY } = contentBounds;
+      const contentWidth = maxX - minX + 1;
+      const contentHeight = maxY - minY + 1;
+      
+      toast({
+        title: 'Copied',
+        description: `Copied ${uniquePixels.size} pixels (${contentWidth}×${contentHeight} area) to clipboard`,
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    }
   }, [design, toast]);
 
   const handlePaste = useCallback((pasteX: number, pasteY: number) => {
-    if (!copyBuffer || !design || copyBuffer.pixels.length === 0) return;
+    if (!copyBuffer || !design || copyBuffer.pixels.length === 0) {
+      return;
+    }
 
-    const { x: selectionX, y: selectionY } = copyBuffer.selectionTopLeft;
-    const offsetX = pasteX - selectionX;
-    const offsetY = pasteY - selectionY;
+    // Use pre-calculated content bounds for accurate positioning
+    const { minX, minY } = copyBuffer.contentBounds;
+    
+    // Calculate offset to align the actual top-left corner with cursor position
+    const offsetX = pasteX - minX;
+    const offsetY = pasteY - minY;
 
+    // Keep pixels in viewport coordinates (same as painting system)
     const pastedPixels = copyBuffer.pixels.map((pixel) => ({
-      x: pixel.x + offsetX,
-      y: pixel.y + offsetY,
+      x: pixel.x + offsetX, // Stay in viewport coordinates
+      y: pixel.y + offsetY, // Stay in viewport coordinates
       color: pixel.color,
       designId: design.id,
     }));
@@ -216,9 +255,13 @@ export function useEditingToolbar({
     addUndoState(editedPixels);
     setEditedPixels((prev) => [...prev, ...pastedPixels]);
 
+    const { minX: origMinX, minY: origMinY, maxX: origMaxX, maxY: origMaxY } = copyBuffer.contentBounds;
+    const contentWidth = origMaxX - origMinX + 1;
+    const contentHeight = origMaxY - origMinY + 1;
+    
     toast({
       title: 'Pasted',
-      description: `Pasted ${pastedPixels.length} pixels`,
+      description: `Pasted ${pastedPixels.length} pixels (${contentWidth}×${contentHeight}) at (${pasteX}, ${pasteY})`,
       status: 'success',
       duration: 2000,
       isClosable: true,

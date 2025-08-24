@@ -272,14 +272,7 @@ const AdvancedViewport = React.forwardRef<
       ],
     );
 
-    // Copy/paste functionality is now handled by the toolbar
-    const handleCopy = useCallback(() => {
-      // This is now handled by the FloatingToolbar
-    }, []);
-
-    const handlePaste = useCallback(() => {
-      // This is now handled by the FloatingToolbar
-    }, []);
+    // Copy/paste functionality is now handled by the FloatingToolbar via useEditingToolbar
 
     const handleSelectCanvas = useCallback(
       (canvas: Canvas | null) => {
@@ -451,8 +444,6 @@ const AdvancedViewport = React.forwardRef<
             isEditing={isEditing}
             onPixelPaint={handlePixelPaint}
             layerOrder={layerOrder}
-            onCopy={handleCopy}
-            onPaste={handlePaste}
             selection={selection}
             setSelection={setSelection}
             onDesignSelect={onDesignSelect}
