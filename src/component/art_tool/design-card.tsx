@@ -23,7 +23,7 @@ import {
   MenuItem,
   MenuList,
   Text,
-  Tooltip, // Import Tooltip
+  Tooltip,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
@@ -32,7 +32,6 @@ import {
   FaCopy,
   FaEllipsisVertical,
   FaArrowRightArrowLeft as FaExchangeAlt,
-  FaFloppyDisk as FaSave,
   FaArrowsLeftRightToLine,
   FaEye,
   FaEyeSlash,
@@ -52,7 +51,7 @@ import {
   updateDesignCanvas,
 } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
-import { Canvas, Design, Pixel } from "../../types/art-tool";
+import { Canvas, Design } from "../../types/art-tool";
 import ImageModal from "../image-modal";
 import SetDesignCanvas from "./set-design-canvas";
 
@@ -65,7 +64,6 @@ interface DesignCardProps {
   onSelect: (designId: number) => void;
   onToggleVisibility: (designId: number, isVisible: boolean) => void;
   isVisible: boolean;
-  onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
   onMoveDesignUp: (designId: number) => void;
@@ -73,7 +71,6 @@ interface DesignCardProps {
   onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
   currentIndex: number;
   totalDesigns: number;
-  editedPixels: Pixel[];
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -85,7 +82,6 @@ const DesignCard: FC<DesignCardProps> = ({
   onSelect,
   onToggleVisibility,
   isVisible,
-  onSubmitEdit,
   onSetCanvas,
   onDeleted,
   onMoveDesignUp,
@@ -93,7 +89,6 @@ const DesignCard: FC<DesignCardProps> = ({
   onMoveDesignToIndex,
   currentIndex,
   totalDesigns,
-  editedPixels,
 }) => {
   const { currentUser, users, ranks } = useUserContext(); // Import users and ranks
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -102,7 +97,6 @@ const DesignCard: FC<DesignCardProps> = ({
   );
   const [isSetCanvasPopupOpen, setIsSetCanvasPopupOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
-  const [designName, setDesignName] = useState(design.design_name || "");
   const [newIndex, setNewIndex] = useState<string>("");
   const toast = useToast();
 
@@ -110,12 +104,6 @@ const DesignCard: FC<DesignCardProps> = ({
     isOpen: isDeleteDialogOpen,
     onOpen: onOpenDeleteDialog,
     onClose: onCloseDeleteDialog,
-  } = useDisclosure();
-
-  const {
-    isOpen: isUnsavedChangesDialogOpen,
-    onOpen: onOpenUnsavedChangesDialog,
-    onClose: onCloseUnsavedChangesDialog,
   } = useDisclosure();
 
   const {
@@ -191,20 +179,12 @@ const DesignCard: FC<DesignCardProps> = ({
 
   const handleEditToggle = () => {
     if (isEditing) {
-      if (editedPixels && editedPixels.length > 0) {
-        onOpenUnsavedChangesDialog();
-      } else {
-        onCancelEdit();
-      }
+      onCancelEdit();
     } else {
       onEdit(design.id);
     }
   };
 
-  const handleConfirmExitEdit = () => {
-    onCancelEdit();
-    onCloseUnsavedChangesDialog();
-  };
 
   const handleMoveToCanvas = () => {
     setIsCopying(false);
@@ -389,19 +369,15 @@ const DesignCard: FC<DesignCardProps> = ({
             bg={isEditing ? "blue.100" : isVisible ? "white" : "gray.100"}
           >
             <Box>
-              {isEditing ? (
-                <Input
-                  value={designName}
-                  onChange={(e) => setDesignName(e.target.value)}
-                  fontSize={"md"}
-                  backgroundColor="white"
-                />
-              ) : (
-                <Heading fontSize={"md"}>{design.design_name || "(Untitled Artwork)"}</Heading>
-              )}
+              <Heading fontSize={"md"}>{design.design_name || "(Untitled Artwork)"}</Heading>
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
                 {creatorRankName} {creator?.handle ?? "Unknown"}
               </Text>
+              {isEditing && (
+                <Text fontSize={"xs"} color="blue.600" fontWeight={500}>
+                  Currently editing - use toolbar to save
+                </Text>
+              )}
             </Box>
             <Flex direction="row" justifyContent="space-between">
               {isAdmin ? (<Flex gap={1} alignItems="center">
@@ -436,36 +412,16 @@ const DesignCard: FC<DesignCardProps> = ({
               </Flex>) : <Box />}
               <Flex gap={2}>
                 {isCreator && !inEditMode && (
-                  <Tooltip label="Edit Design">
+                  <Tooltip label={isEditing ? "Stop Editing" : "Edit Design"}>
                     <IconButton
-                      icon={<FaPen />}
-                      aria-label="Edit"
+                      icon={isEditing ? <FaXmark /> : <FaPen />}
+                      aria-label={isEditing ? "Stop Editing" : "Edit Design"}
                       onClick={handleEditToggle}
                       size="sm"
-                      colorScheme="blue"
-                      variant="outline"
+                      colorScheme={isEditing ? "red" : "blue"}
+                      variant={isEditing ? "solid" : "outline"}
                     />
                   </Tooltip>
-                )}
-                {isEditing && (
-                  <>
-                    <Tooltip label="Cancel Edit">
-                      <IconButton
-                        icon={<FaXmark />}
-                        aria-label="Cancel"
-                        onClick={handleEditToggle}
-                        size="sm"
-                      />
-                    </Tooltip>
-                    <Tooltip label="Save Changes">
-                      <IconButton
-                        icon={<FaSave />}
-                        aria-label="Submit"
-                        onClick={() => onSubmitEdit(designName)}
-                        size="sm"
-                      />
-                    </Tooltip>
-                  </>
                 )}
 
                 {!inEditMode && isAdminOrCreator && (
@@ -550,33 +506,6 @@ const DesignCard: FC<DesignCardProps> = ({
               </Button>
               <Button colorScheme="red" onClick={handleDelete} ml={3}>
                 Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-      <AlertDialog
-        isOpen={isUnsavedChangesDialogOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onCloseUnsavedChangesDialog}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Unsaved Changes
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              You have unsaved changes. Are you sure you want to exit without
-              saving?
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onCloseUnsavedChangesDialog}>
-                Cancel
-              </Button>
-              <Button colorScheme="red" onClick={handleConfirmExitEdit} ml={3}>
-                Exit Without Saving
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

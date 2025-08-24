@@ -44,6 +44,7 @@ interface ViewportProps {
   onCopy?: () => void;
   onPaste?: (x: number, y: number) => void;
   onDesignSelect?: (designId: number) => void;
+  selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper';
   ref?: Ref<ViewportHandle>;
 }
 
@@ -61,6 +62,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       onCopy,
       onPaste,
       onDesignSelect,
+      selectedTool = 'paint',
       stageRef,
     },
     ref,
@@ -663,6 +665,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
             onCopy,
             onPaste,
             setStageDraggable,
+            selectedTool,
           )}
           {...useTouchHandlers(
             onPixelPaint,
