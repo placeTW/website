@@ -357,6 +357,9 @@ const AdvancedViewport = React.forwardRef<
         if (editedPixels && editedPixels.length > 0 && setEditedPixels) {
           setEditedPixels([]);
         }
+        // Reset tool state when editing stops
+        setSelectedColor(null);
+        setSelectedTool('paint');
         recalculatePixels();
       }
     }, [
