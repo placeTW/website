@@ -28,6 +28,7 @@ export const useMouseHandlers = (
 ) => {
   const mousePosition = useRef({ x: 0, y: 0 }); // To store the latest mouse position
   const isMouseDown = useRef(false); // Track the mouse state
+  const currentButton = useRef<number | null>(null); // Track which button is currently pressed
   const isSelecting = useRef(false); // Track whether we are in selection mode
   const isErasing = useRef(false); // Track whether we are in erasing mode
 
@@ -43,7 +44,8 @@ export const useMouseHandlers = (
 
       // Check if the left, middle, or right mouse button is down (button === 0, 1, or 2)
       if (e.evt.button === 0 || e.evt.button === 1 || e.evt.button === 2) {
-        isMouseDown.current = true; // Set flag when left mouse button is down
+        isMouseDown.current = true; // Set flag when mouse button is down
+        currentButton.current = e.evt.button; // Track which button is pressed
 
         if (isEditing && e.evt.button !== 1) {
           // Exclude middle mouse button from painting operations
@@ -84,6 +86,7 @@ export const useMouseHandlers = (
       // Check if the left, middle, or right mouse button is released (button === 0, 1, or 2)
       if (e.evt.button === 0 || e.evt.button === 1 || e.evt.button === 2) {
         isMouseDown.current = false; // Reset flag when mouse button is released
+        currentButton.current = null; // Reset current button tracking
         
         // Only handle editing-specific cleanup for non-middle mouse buttons
         if (e.evt.button !== 1) {
@@ -143,8 +146,8 @@ export const useMouseHandlers = (
           const width = x - selection.x + 1;
           const height = y - selection.y + 1;
           setSelection({ ...selection, width, height });
-        } else if (isMouseDown.current && selectedTool !== 'select' && !e.evt.ctrlKey && onPixelPaint) {
-          // Continue painting if the left mouse button is down, not using select tool, not in selection mode, and isEditing is true
+        } else if (isMouseDown.current && currentButton.current !== 1 && selectedTool !== 'select' && !e.evt.ctrlKey && onPixelPaint) {
+          // Continue painting if non-middle mouse button is down, not using select tool, not in selection mode, and isEditing is true
           onPixelPaint(x, y, isErasing.current);
         }
       };
