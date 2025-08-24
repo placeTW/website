@@ -222,8 +222,14 @@ const AdvancedViewport = React.forwardRef<
 
     const handlePixelPaint = useCallback(
       (x: number, y: number, erase: boolean) => {
-        if (!isEditing || !selectedColor || !editDesignId || !setEditedPixels)
+        if (!isEditing || !editDesignId || !setEditedPixels)
           return;
+
+        // For erasing, we don't need a selected color
+        const shouldErase = erase || selectedTool === 'erase';
+        if (!shouldErase && !selectedColor) {
+          return;
+        }
 
         // Handle different tools
         if (selectedTool === 'eyedropper') {
@@ -235,12 +241,10 @@ const AdvancedViewport = React.forwardRef<
           // Selection is handled by the viewport directly
           return;
         }
-
-        const shouldErase = erase || selectedTool === 'erase';
         const newPixel: ViewportPixel = {
           x,
           y,
-          color: !shouldErase ? selectedColor : CLEAR_ON_DESIGN,
+          color: !shouldErase ? selectedColor! : CLEAR_ON_DESIGN,
           designId: editDesignId,
         };
 
