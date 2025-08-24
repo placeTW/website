@@ -15,7 +15,6 @@ import {
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
 import DesignsPanel from "../component/art_tool/designs-panel";
-import { CLEAR_ON_DESIGN } from "../component/viewport/constants";
 import { ViewportHandle } from "../component/viewport/types";
 import { useColorContext } from "../context/color-context";
 import { useDesignContext } from "../context/design-context";
@@ -281,14 +280,7 @@ const DesignOffice: React.FC = () => {
     return <Spinner size="xl" />;
   }
 
-  const allColors = [
-    ...(colors || []),
-    {
-      Color: CLEAR_ON_DESIGN,
-      color_sort: null,
-      color_name: "Clear on Design",
-    },
-  ];
+  const allColors = colors || [];
 
   return (
     <Box
@@ -319,6 +311,8 @@ const DesignOffice: React.FC = () => {
           editedPixels={editedPixels}
           setEditedPixels={setEditedPixels}
           onDesignSelect={handleSelectDesign}
+          onSubmitEdit={handleSubmitEdit}
+          onCancelEdit={() => handleEditStateChange(false, null)}
         />
       </Box>
 
@@ -342,10 +336,8 @@ const DesignOffice: React.FC = () => {
           setEditDesignId={setEditDesignId}
           onEditStateChange={handleEditStateChange}
           onVisibilityChange={handleVisibilityChange}
-          onSubmitEdit={handleSubmitEdit}
           onSetCanvas={handleSetCanvas}
           onDeleted={handleOnDeleted}
-          editedPixels={editedPixels}
           showAll={showAll}
           hideAll={hideAll}
           onSelectDesign={handleSelectDesign}

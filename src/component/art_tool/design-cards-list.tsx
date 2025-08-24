@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Design, Pixel } from "../../types/art-tool";
+import { Design } from "../../types/art-tool";
 import DesignCard from "./design-card";
 
 interface DesignCardsListProps {
@@ -18,14 +18,12 @@ interface DesignCardsListProps {
   setEditDesignId: Dispatch<SetStateAction<number | null>>;
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
   onVisibilityChange: (visibleLayers: number[]) => void;
-  onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number) => void;
   onDeleted: (designId: number) => void;
   onSelectDesign: (designId: number) => void;
   onMoveDesignUp: (designId: number) => void;
   onMoveDesignDown: (designId: number) => void;
   onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
-  editedPixels: Pixel[];
   searchQuery: string;
 }
 
@@ -37,14 +35,12 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   setEditDesignId,
   onEditStateChange,
   onVisibilityChange,
-  onSubmitEdit,
   onSetCanvas,
   onDeleted,
   onSelectDesign,
   onMoveDesignUp,
   onMoveDesignDown,
   onMoveDesignToIndex,
-  editedPixels,
   searchQuery,
 }) => {
   const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
@@ -207,10 +203,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
               onCancelEdit={handleCancelEdit}
               onToggleVisibility={handleToggleVisibility}
               isVisible={visibilityMap[design.id] ?? false}
-              onSubmitEdit={onSubmitEdit}
               onSetCanvas={onSetCanvas}
               onDeleted={handleOnDeleted}
-              editedPixels={editedPixels}
               onSelect={onSelectDesign}
               onMoveDesignUp={onMoveDesignUp}
               onMoveDesignDown={onMoveDesignDown}

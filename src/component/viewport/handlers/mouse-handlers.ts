@@ -30,6 +30,7 @@ export const useMouseHandlers = (
   onCopy?: () => void,
   onPaste?: (x: number, y: number) => void,
   setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
+  selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper',
 ) => {
   const mousePosition = useRef({ x: 0, y: 0 }); // To store the latest mouse position
   const isMouseDown = useRef(false); // Track the mouse state
@@ -64,8 +65,8 @@ export const useMouseHandlers = (
             const x = Math.floor((pos.x - stage.x()) / (GRID_SIZE * scale));
             const y = Math.floor((pos.y - stage.y()) / (GRID_SIZE * scale));
 
-            if (e.evt.ctrlKey && setSelection) {
-              // Start a new rectangle selection
+            if ((selectedTool === 'select' || e.evt.ctrlKey) && setSelection) {
+              // Start a new rectangle selection when select tool is active or Ctrl+click
               setSelection({ x, y, width: 0, height: 0 });
               isSelecting.current = true; // Enter selection mode
               setStageDraggable && setStageDraggable(false); // Disable dragging for selection
@@ -137,14 +138,14 @@ export const useMouseHandlers = (
 
         if (!isEditing) return;
 
-        // Update selection only if the left mouse button is down, Ctrl is held, and we're in selection mode
+        // Update selection only if we're in selection mode
         if (isSelecting.current && isMouseDown.current && selection && setSelection) {
           // Update rectangle selection dimensions based on mouse movement
           const width = x - selection.x + 1;
           const height = y - selection.y + 1;
           setSelection({ ...selection, width, height });
-        } else if (isMouseDown.current && !e.evt.ctrlKey && onPixelPaint) {
-          // Continue painting if the left mouse button is down, not in selection mode, and isEditing is true
+        } else if (isMouseDown.current && selectedTool !== 'select' && !e.evt.ctrlKey && onPixelPaint) {
+          // Continue painting if the left mouse button is down, not using select tool, not in selection mode, and isEditing is true
           onPixelPaint(x, y, isErasing.current);
         }
       };

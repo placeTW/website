@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import { FaEllipsisVertical, FaEye, FaEyeSlash, FaMagnifyingGlass as FaSearch } from "react-icons/fa6";
-import { Design, Pixel } from "../../types/art-tool";
+import { Design } from "../../types/art-tool";
 import DesignCardsList from "./design-cards-list";
 
 interface DesignsPanelProps {
@@ -25,14 +25,12 @@ interface DesignsPanelProps {
   setEditDesignId: Dispatch<SetStateAction<number | null>>;
   onEditStateChange: (isEditing: boolean, designId: number | null) => void;
   onVisibilityChange: (newVisibleLayers: number[]) => void;
-  onSubmitEdit: (designName: string) => void;
   onSetCanvas: (designId: number, canvasId: number | null) => void;
   onDeleted: (designId: number) => void;
   onSelectDesign: (designId: number) => void;
   onMoveDesignUp: (designId: number) => void;
   onMoveDesignDown: (designId: number) => void;
   onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
-  editedPixels: Pixel[];
   showAll: () => void;
   hideAll: () => void;
 }
@@ -45,14 +43,12 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
   setEditDesignId,
   onEditStateChange,
   onVisibilityChange,
-  onSubmitEdit,
   onSetCanvas,
   onDeleted,
   onSelectDesign,
   onMoveDesignUp,
   onMoveDesignDown,
   onMoveDesignToIndex,
-  editedPixels,
   showAll,
   hideAll,
 }) => {
@@ -117,10 +113,8 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
           setEditDesignId={setEditDesignId}
           onEditStateChange={onEditStateChange}
           onVisibilityChange={onVisibilityChange}
-          onSubmitEdit={onSubmitEdit}
           onSetCanvas={onSetCanvas}
           onDeleted={onDeleted}
-          editedPixels={editedPixels}
           searchQuery={searchQuery}
           onSelectDesign={onSelectDesign}
           onMoveDesignUp={onMoveDesignUp}
