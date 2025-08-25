@@ -1,8 +1,11 @@
 import Konva from "konva";
-import React, { useCallback, useMemo, useRef, useEffect } from "react";
+import React, { useCallback, useMemo, useRef, useEffect, useState } from "react";
 import { Group, Rect } from "react-konva";
 import { Design } from "../../types/art-tool";
 import { GRID_SIZE } from "./constants";
+
+// Minimum hitbox size for small designs (in grid units)
+const MIN_HITBOX_SIZE = 3;
 
 // Visual feedback styles for different states
 const getIndicatorStyle = (isDragging: boolean, isDragModeEnabled: boolean) => {
@@ -10,7 +13,7 @@ const getIndicatorStyle = (isDragging: boolean, isDragModeEnabled: boolean) => {
     return {
       stroke: "#ff6b6b",
       strokeWidth: 3,
-      dash: [2, 2],
+      dash: [2, 2], 
       fill: "rgba(255, 107, 107, 0.15)",
       opacity: 0.8,
     };
@@ -32,7 +35,6 @@ const getIndicatorStyle = (isDragging: boolean, isDragModeEnabled: boolean) => {
 
 interface DraggableDesignProps {
   design: Design;
-  isDragging?: boolean;
   isDragModeEnabled?: boolean;
   onDragStart: (designId: number) => void;
   onDragMove: (designId: number, x: number, y: number) => void;
@@ -44,7 +46,6 @@ interface DraggableDesignProps {
 
 const DraggableDesign: React.FC<DraggableDesignProps> = ({
   design,
-  isDragging = false,
   isDragModeEnabled = false,
   onDragStart,
   onDragMove,
@@ -54,46 +55,66 @@ const DraggableDesign: React.FC<DraggableDesignProps> = ({
   isDragEnabled,
 }) => {
   const groupRef = useRef<Konva.Group>(null);
+  // Track Konva's internal dragging state for accurate synchronization
+  const [isKonvaDragging, setIsKonvaDragging] = useState(false);
 
-  // Sync group position with design coordinates from database
+  // SINGLE RESPONSIBILITY: Sync database position -> visual position when not dragging
   useEffect(() => {
-    if (groupRef.current && !isDragging) {
-      const newX = design.x * GRID_SIZE;
-      const newY = design.y * GRID_SIZE;
-      const currentX = groupRef.current.x();
-      const currentY = groupRef.current.y();
+    if (groupRef.current && !isKonvaDragging) {
+      const targetX = design.x * GRID_SIZE;
+      const targetY = design.y * GRID_SIZE;
       
-      // Only update if position actually changed to avoid unnecessary renders
-      if (Math.abs(currentX - newX) > 0.1 || Math.abs(currentY - newY) > 0.1) {
-        groupRef.current.x(newX);
-        groupRef.current.y(newY);
-        groupRef.current.getLayer()?.batchDraw();
-      }
+      groupRef.current.x(targetX);
+      groupRef.current.y(targetY);
+      groupRef.current.getLayer()?.batchDraw();
     }
-  }, [design.x, design.y, isDragging, design.id]); // Add design.id to ensure fresh updates
+  }, [design.x, design.y, design.id, isKonvaDragging]);
 
-  // Calculate design bounds
+  // Calculate design bounds with minimum hitbox size for better dragging
   const designBounds = useMemo(() => {
     if (!design.pixels || design.pixels.length === 0) {
-      return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
+      return { 
+        minX: 0, minY: 0, maxX: 0, maxY: 0, 
+        width: MIN_HITBOX_SIZE, height: MIN_HITBOX_SIZE,
+        hitboxMinX: -Math.floor(MIN_HITBOX_SIZE / 2),
+        hitboxMinY: -Math.floor(MIN_HITBOX_SIZE / 2),
+        hitboxWidth: MIN_HITBOX_SIZE,
+        hitboxHeight: MIN_HITBOX_SIZE
+      };
     }
 
     const minX = Math.min(...design.pixels.map(p => p.x));
     const minY = Math.min(...design.pixels.map(p => p.y));
     const maxX = Math.max(...design.pixels.map(p => p.x));
     const maxY = Math.max(...design.pixels.map(p => p.y));
+    
+    const actualWidth = maxX - minX + 1;
+    const actualHeight = maxY - minY + 1;
+    
+    // Ensure minimum hitbox size for better dragging experience
+    const hitboxWidth = Math.max(actualWidth, MIN_HITBOX_SIZE);
+    const hitboxHeight = Math.max(actualHeight, MIN_HITBOX_SIZE);
+    
+    // Center the hitbox on the design
+    const hitboxMinX = minX - Math.floor((hitboxWidth - actualWidth) / 2);
+    const hitboxMinY = minY - Math.floor((hitboxHeight - actualHeight) / 2);
 
     return {
       minX,
       minY,
       maxX,
       maxY,
-      width: maxX - minX + 1,
-      height: maxY - minY + 1,
+      width: actualWidth,
+      height: actualHeight,
+      hitboxMinX,
+      hitboxMinY,
+      hitboxWidth,
+      hitboxHeight,
     };
   }, [design.pixels]);
 
   const handleDragStart = useCallback(() => {
+    setIsKonvaDragging(true);
     onDragStart(design.id);
   }, [design.id, onDragStart]);
 
@@ -109,9 +130,14 @@ const DraggableDesign: React.FC<DraggableDesignProps> = ({
     const x = Math.round(target.x() / GRID_SIZE);
     const y = Math.round(target.y() / GRID_SIZE);
     
-    // Snap to grid
+    // Snap to grid immediately
     target.x(x * GRID_SIZE);
     target.y(y * GRID_SIZE);
+    target.getLayer()?.batchDraw();
+    
+    // Clear Konva dragging state BEFORE calling onDragEnd
+    // This prevents race conditions with database updates
+    setIsKonvaDragging(false);
     
     onDragEnd(design.id, x, y);
   }, [design.id, onDragEnd]);
@@ -121,7 +147,6 @@ const DraggableDesign: React.FC<DraggableDesignProps> = ({
     onDesignClick(design.id);
   }, [design.id, onDesignClick]);
 
-
   if (!visible) {
     return null;
   }
@@ -129,8 +154,6 @@ const DraggableDesign: React.FC<DraggableDesignProps> = ({
   return (
     <Group
       ref={groupRef}
-      x={design.x * GRID_SIZE}
-      y={design.y * GRID_SIZE}
       draggable={isDragEnabled && isDragModeEnabled}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
@@ -138,19 +161,19 @@ const DraggableDesign: React.FC<DraggableDesignProps> = ({
       onClick={handleClick}
       onTap={handleClick}
     >
-      {/* Invisible hitbox for dragging */}
+      {/* Invisible hitbox for dragging - uses larger area for small designs */}
       <Rect
-        x={designBounds.minX * GRID_SIZE}
-        y={designBounds.minY * GRID_SIZE}
-        width={designBounds.width * GRID_SIZE}
-        height={designBounds.height * GRID_SIZE}
+        x={designBounds.hitboxMinX * GRID_SIZE}
+        y={designBounds.hitboxMinY * GRID_SIZE}
+        width={designBounds.hitboxWidth * GRID_SIZE}
+        height={designBounds.hitboxHeight * GRID_SIZE}
         fill="transparent"
         strokeEnabled={false}
       />
       
-      {/* Drag indicators */}
-      {(isDragging || isDragModeEnabled) && (() => {
-        const indicatorStyle = getIndicatorStyle(isDragging, isDragModeEnabled);
+      {/* Drag indicators - show around actual design, not hitbox */}
+      {(isKonvaDragging || isDragModeEnabled) && (() => {
+        const indicatorStyle = getIndicatorStyle(isKonvaDragging, isDragModeEnabled);
         return indicatorStyle ? (
           <Rect
             x={designBounds.minX * GRID_SIZE - 2}

@@ -493,12 +493,16 @@ const AdvancedViewport = React.forwardRef<
 
     const handleDesignDragEnd = useCallback(async (designId: number, x: number, y: number) => {
       try {
+        // First, clear the dragging state immediately to allow position sync
+        setDragState(prev => ({
+          ...prev,
+          draggingDesignId: null,
+        }));
+        
         await databaseUpdateDesignPosition(designId, x, y);
         
-        // Give a brief moment for the real-time update to propagate
-        setTimeout(() => {
-          recalculatePixels();
-        }, 100);
+        // Force immediate pixel recalculation for better visual feedback
+        await recalculatePixels();
         
         toast({
           title: "Success",
@@ -507,12 +511,6 @@ const AdvancedViewport = React.forwardRef<
           duration: 3000,
           isClosable: true,
         });
-
-        // Reset drag state after successful drag
-        setDragState(prev => ({
-          ...prev,
-          draggingDesignId: null,
-        }));
       } catch (error) {
         console.error("Error updating design position:", error);
         toast({
@@ -523,7 +521,7 @@ const AdvancedViewport = React.forwardRef<
           isClosable: true,
         });
         
-        // Clear dragging state on error
+        // Make sure dragging state is cleared even on error
         setDragState(prev => ({
           ...prev,
           draggingDesignId: null,

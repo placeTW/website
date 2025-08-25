@@ -624,7 +624,6 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
         <DraggableDesign
           key={design.id}
           design={design}
-          isDragging={draggingDesignId === design.id}
           isDragModeEnabled={dragModeDesignId === design.id}
           onDragStart={onDesignDragStart || (() => {})}
           onDragMove={onDesignDragMove || (() => {})}
@@ -638,7 +637,6 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       enableDesignDragging,
       designs,
       layerOrder,
-      draggingDesignId,
       dragModeDesignId,
       onDesignDragStart,
       onDesignDragMove,
@@ -714,7 +712,6 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
           {...useTouchHandlers(
             onPixelPaint,
             isEditing,
-            draggingDesignId !== null,
             setStageDraggable,
             stageRef,
             calculateVisibleTiles,
