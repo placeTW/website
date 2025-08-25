@@ -16,6 +16,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FaExpand, FaDownload } from "react-icons/fa";
 import { FaPen as FaEdit, FaCheck, FaXmark as FaCancel } from "react-icons/fa6";
 import { useDesignContext } from "../../context/design-context";
+import { useUserContext } from "../../context/user-context";
 import { databaseUpdateCanvasName } from "../../api/supabase/database";
 import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
@@ -115,6 +116,10 @@ const AdvancedViewport = React.forwardRef<
     }, []);
 
     const { designs } = useDesignContext();
+    const { currentUser } = useUserContext();
+    
+    // Check if current user is admin (rank A or B)
+    const isAdmin = currentUser && ["A", "B"].includes(currentUser.rank);
     
     // Get current design for toolbar
     const currentDesign = designs?.find(d => d.id === editDesignId) || null;
@@ -237,12 +242,13 @@ const AdvancedViewport = React.forwardRef<
 
     // Canvas name editing functions
     const handleStartCanvasNameEdit = useCallback((canvasId: number, currentName: string) => {
+      if (!isAdmin) return; // Prevent non-admin users from editing
       setEditingCanvasId(canvasId);
       setTempCanvasName(currentName);
-    }, []);
+    }, [isAdmin]);
 
     const handleConfirmCanvasNameEdit = useCallback(async () => {
-      if (!editingCanvasId || !tempCanvasName.trim()) {
+      if (!isAdmin || !editingCanvasId || !tempCanvasName.trim()) {
         setEditingCanvasId(null);
         setTempCanvasName('');
         return;
@@ -273,7 +279,7 @@ const AdvancedViewport = React.forwardRef<
         setEditingCanvasId(null);
         setTempCanvasName('');
       }
-    }, [editingCanvasId, tempCanvasName, onCanvasUpdate, toast]);
+    }, [isAdmin, editingCanvasId, tempCanvasName, onCanvasUpdate, toast]);
 
     const handleCancelCanvasNameEdit = useCallback(() => {
       setEditingCanvasId(null);
@@ -318,7 +324,7 @@ const AdvancedViewport = React.forwardRef<
 
     // Handle canvas export
     const handleCanvasExport = useCallback(async () => {
-      if (!designs) return;
+      if (!isAdmin || !designs) return; // Prevent non-admin users from exporting
       
       setIsExporting(true);
       try {
@@ -460,7 +466,7 @@ const AdvancedViewport = React.forwardRef<
       } finally {
         setIsExporting(false);
       }
-    }, [designs, selectedCanvas, toast, getTopLeftCoords, offsetPixels]);
+    }, [isAdmin, designs, selectedCanvas, toast, getTopLeftCoords, offsetPixels]);
 
 
     const handlePixelPaint = useCallback(
@@ -770,18 +776,20 @@ const AdvancedViewport = React.forwardRef<
                       ) : (
                         <Flex align="center" gap={1}>
                           <Box>{canvas.canvas_name}</Box>
-                          <Tooltip label="Edit name">
-                            <IconButton
-                              icon={<FaEdit />}
-                              size="xs"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStartCanvasNameEdit(canvas.id, canvas.canvas_name);
-                              }}
-                              aria-label="Edit canvas name"
-                            />
-                          </Tooltip>
+                          {isAdmin && (
+                            <Tooltip label="Edit name">
+                              <IconButton
+                                icon={<FaEdit />}
+                                size="xs"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStartCanvasNameEdit(canvas.id, canvas.canvas_name);
+                                }}
+                                aria-label="Edit canvas name"
+                              />
+                            </Tooltip>
+                          )}
                         </Flex>
                       )}
                     </Tab>
@@ -792,17 +800,19 @@ const AdvancedViewport = React.forwardRef<
 
             <Spacer />
             
-            {/* Export button */}
-            <Button
-              leftIcon={<FaDownload />}
-              size="sm"
-              onClick={handleCanvasExport}
-              isLoading={isExporting}
-              loadingText="Exporting..."
-              mr={2}
-            >
-              Export PNG
-            </Button>
+            {/* Export button - Admin only */}
+            {isAdmin && (
+              <Button
+                leftIcon={<FaDownload />}
+                size="sm"
+                onClick={handleCanvasExport}
+                isLoading={isExporting}
+                loadingText="Exporting..."
+                mr={2}
+              >
+                Export PNG
+              </Button>
+            )}
             
             <IconButton
               aria-label="Center on Canvas"
