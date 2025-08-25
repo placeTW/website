@@ -41,6 +41,8 @@ interface AdvancedViewportProps {
   onSubmitEdit?: (designName: string) => Promise<void>;
   onCancelEdit?: () => void;
   onCanvasUpdate?: (canvas: Canvas) => void;
+  dragModeDesignId?: number | null;
+  onDesignPositionUpdate?: (designId: number, deltaX: number, deltaY: number) => void;
 }
 
 const AdvancedViewport = React.forwardRef<
@@ -70,6 +72,8 @@ const AdvancedViewport = React.forwardRef<
       onSubmitEdit,
       onCancelEdit,
       onCanvasUpdate,
+      dragModeDesignId,
+      onDesignPositionUpdate,
     },
     ref,
   ) => {
@@ -838,6 +842,8 @@ const AdvancedViewport = React.forwardRef<
             setSelection={setSelection}
             onDesignSelect={onDesignSelect}
             selectedTool={selectedTool}
+            dragModeDesignId={dragModeDesignId}
+            onDesignPositionUpdate={onDesignPositionUpdate}
           />
           
           {/* Floating Toolbar positioned at bottom of viewport */}

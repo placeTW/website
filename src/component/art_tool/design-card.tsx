@@ -43,6 +43,7 @@ import {
   FaXmark,
   FaArrowUp,
   FaArrowDown,
+  FaUpDownLeftRight,
 } from "react-icons/fa6";
 import {
   copyDesignCanvas,
@@ -72,6 +73,8 @@ interface DesignCardProps {
   onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
   currentIndex: number;
   totalDesigns: number;
+  isDragMode?: boolean;
+  onToggleDragMode?: (designId: number, isDragMode: boolean) => void;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -90,6 +93,8 @@ const DesignCard: FC<DesignCardProps> = ({
   onMoveDesignToIndex,
   currentIndex,
   totalDesigns,
+  isDragMode = false,
+  onToggleDragMode,
 }) => {
   const { t } = useTranslation();
   const { currentUser, users, ranks } = useUserContext(); // Import users and ranks
@@ -187,6 +192,11 @@ const DesignCard: FC<DesignCardProps> = ({
     }
   };
 
+  const handleDragToggle = () => {
+    if (onToggleDragMode) {
+      onToggleDragMode(design.id, !isDragMode);
+    }
+  };
 
   const handleMoveToCanvas = () => {
     setIsCopying(false);
@@ -368,8 +378,8 @@ const DesignCard: FC<DesignCardProps> = ({
             justifyContent="space-between"
             p={2}
             width="100%"
-            bg={isEditing ? "blue.100" : isVisible ? "white" : "gray.100"}
-          >
+            bg={isEditing ? "blue.100" : isDragMode ? "orange.100" : isVisible ? "white" : "gray.100"}
+            >
             <Box>
               <Heading fontSize={"md"}>{design.design_name || t("(Untitled Artwork)")}</Heading>
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
@@ -378,6 +388,11 @@ const DesignCard: FC<DesignCardProps> = ({
               {isEditing && (
                 <Text fontSize={"xs"} color="blue.600" fontWeight={500}>
                   {t("Currently editing - use toolbar to save")}
+                </Text>
+              )}
+              {isDragMode && !isEditing && (
+                <Text fontSize={"xs"} color="orange.600" fontWeight={500}>
+                  Drag mode enabled - drag in viewport to move
                 </Text>
               )}
             </Box>
@@ -414,14 +429,30 @@ const DesignCard: FC<DesignCardProps> = ({
               </Flex>) : <Box />}
               <Flex gap={2}>
                 {isCreator && !inEditMode && (
-                  <Tooltip label={isEditing ? t("Stop Editing") : t("Edit Design")}>
+                  <>
+                    <Tooltip label={isEditing ? t("Stop Editing") : t("Edit Design")}>
+                      <IconButton
+                        icon={isEditing ? <FaXmark /> : <FaPen />}
+                        aria-label={isEditing ? t("Stop Editing") : t("Edit Design")}
+                        onClick={handleEditToggle}
+                        size="sm"
+                        colorScheme={isEditing ? "red" : "blue"}
+                        variant={isEditing ? "solid" : "outline"}
+                      />
+                    </Tooltip>
+                  </>
+                )}
+
+                {!inEditMode && isAdminOrCreator && onToggleDragMode && (
+                  <Tooltip label={isDragMode ? t("Exit Drag Mode") : t("Drag Design")}>
                     <IconButton
-                      icon={isEditing ? <FaXmark /> : <FaPen />}
-                      aria-label={isEditing ? t("Stop Editing") : t("Edit Design")}
-                      onClick={handleEditToggle}
+                      icon={<FaUpDownLeftRight />}
+                      aria-label={isDragMode ? t("Exit Drag Mode") : t("Drag Design")}
+                      onClick={handleDragToggle}
                       size="sm"
-                      colorScheme={isEditing ? "red" : "blue"}
-                      variant={isEditing ? "solid" : "outline"}
+                      colorScheme={isDragMode ? "orange" : "green"}
+                      variant={isDragMode ? "solid" : "outline"}
+                      isDisabled={!isVisible || isEditing}
                     />
                   </Tooltip>
                 )}

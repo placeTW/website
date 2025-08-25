@@ -44,6 +44,8 @@ interface ViewportProps {
   >;
   onDesignSelect?: (designId: number) => void;
   selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket';
+  dragModeDesignId?: number | null;
+  onDesignPositionUpdate?: (designId: number, x: number, y: number) => void;
   ref?: Ref<ViewportHandle>;
 }
 
@@ -61,6 +63,8 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       onDesignSelect,
       selectedTool = 'paint',
       stageRef,
+      dragModeDesignId,
+      onDesignPositionUpdate,
     },
     ref,
   ) => {
@@ -90,6 +94,12 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       position: { x: 0, y: 0 },
       designs: [],
     });
+    const [dragPreview, setDragPreview] = useState<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    } | null>(null);
 
     const BACKGROUND_TILE_SIZE = 1000;
     const MIN_ZOOM_LEVEL = 1 / 128;
@@ -600,6 +610,23 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       ),
     [selection]);
 
+    const renderDragPreview = useMemo(() =>
+      dragPreview && (
+        <Rect
+          x={dragPreview.x * GRID_SIZE}
+          y={dragPreview.y * GRID_SIZE}
+          width={dragPreview.width * GRID_SIZE}
+          height={dragPreview.height * GRID_SIZE}
+          stroke="orange"
+          fill="orange"
+          strokeWidth={3}
+          dash={[6, 6]}
+          listening={false}
+          opacity={0.5}
+        />
+      ),
+    [dragPreview]);
+
     const renderCoordinates = () => {
       if (!hoveredPixel) return null;
 
@@ -663,6 +690,10 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
             setSelection,
             setStageDraggable,
             selectedTool,
+            dragModeDesignId,
+            onDesignPositionUpdate,
+            setDragPreview,
+            designsMap,
           )}
           {...useTouchHandlers(
             onPixelPaint,
@@ -701,6 +732,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
           </Layer>
           <Layer listening={false}>{renderPixelGrid()}</Layer>
           <Layer listening={false}>{renderSelectionRect}</Layer>
+          <Layer listening={false}>{renderDragPreview}</Layer>
         </Stage>
         {renderCoordinates()}
         <ViewportContextMenu

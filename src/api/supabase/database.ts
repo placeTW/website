@@ -471,6 +471,26 @@ export const updateDesignCanvas = async (
   return data;
 };
 
+export const updateDesignPosition = async (
+  designId: number,
+  x: number,
+  y: number,
+): Promise<void> => {
+  const updatePositionQuery = await supabase
+    .from("art_tool_designs")
+    .update({ x, y })
+    .eq("id", designId);
+
+  const { error } = logSupabaseDatabaseQuery(
+    updatePositionQuery,
+    "updateDesignPosition",
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+};
+
 export const copyDesignCanvas = async (
   designId: number,
   canvasId: number,

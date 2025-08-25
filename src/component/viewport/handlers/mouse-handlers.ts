@@ -25,12 +25,23 @@ export const useMouseHandlers = (
   >,
   setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
   selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket',
+  dragModeDesignId?: number | null,
+  onDesignPositionUpdate?: (designId: number, x: number, y: number) => void,
+  setDragPreview?: React.Dispatch<React.SetStateAction<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>>,
+  designsMap?: Map<number, { id: number; x: number; y: number; pixels: { x: number; y: number; color: string; designId: number }[] }>,
 ) => {
   const mousePosition = useRef({ x: 0, y: 0 }); // To store the latest mouse position
   const isMouseDown = useRef(false); // Track the mouse state
   const currentButton = useRef<number | null>(null); // Track which button is currently pressed
   const isSelecting = useRef(false); // Track whether we are in selection mode
   const isErasing = useRef(false); // Track whether we are in erasing mode
+  const isDraggingDesign = useRef(false); // Track whether we are dragging a design
+  const dragStartPosition = useRef({ x: 0, y: 0 }); // Store initial drag position
 
   return {
     onMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -46,6 +57,52 @@ export const useMouseHandlers = (
       if (e.evt.button === 0 || e.evt.button === 1 || e.evt.button === 2) {
         isMouseDown.current = true; // Set flag when mouse button is down
         currentButton.current = e.evt.button; // Track which button is pressed
+
+        // Handle design dragging mode
+        if (dragModeDesignId && e.evt.button === 0) {
+          // Left mouse button in drag mode - start dragging the design
+          const pos = stage.getPointerPosition();
+          if (pos) {
+            const scale = stage.scaleX();
+            const x = Math.floor((pos.x - stage.x()) / (GRID_SIZE * scale));
+            const y = Math.floor((pos.y - stage.y()) / (GRID_SIZE * scale));
+            
+            // Get design information for preview
+            const design = designsMap?.get(dragModeDesignId);
+            if (design && setDragPreview) {
+              // Calculate design dimensions
+              let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+              if (design.pixels && design.pixels.length > 0) {
+                design.pixels.forEach((pixel) => {
+                  minX = Math.min(minX, pixel.x);
+                  minY = Math.min(minY, pixel.y);
+                  maxX = Math.max(maxX, pixel.x);
+                  maxY = Math.max(maxY, pixel.y);
+                });
+              } else {
+                // Default size if no pixels
+                minX = 0; minY = 0; maxX = 0; maxY = 0;
+              }
+              
+              const width = maxX - minX + 1;
+              const height = maxY - minY + 1;
+              
+              // Set initial preview at current design position
+              setDragPreview({
+                x: design.x,
+                y: design.y,
+                width,
+                height
+              });
+            }
+            
+            isDraggingDesign.current = true;
+            dragStartPosition.current = { x, y };
+            setStageDraggable && setStageDraggable(false); // Disable stage dragging while dragging design
+            stage.container().style.cursor = "move";
+          }
+          return; // Don't proceed with other mouse handling when in drag mode with left click
+        }
 
         if (isEditing && e.evt.button !== 1) {
           // Exclude middle mouse button from painting operations
@@ -87,6 +144,31 @@ export const useMouseHandlers = (
       if (e.evt.button === 0 || e.evt.button === 1 || e.evt.button === 2) {
         isMouseDown.current = false; // Reset flag when mouse button is released
         currentButton.current = null; // Reset current button tracking
+        
+        // Handle design drag end
+        if (isDraggingDesign.current && e.evt.button === 0 && dragModeDesignId && onDesignPositionUpdate) {
+          const pos = stage.getPointerPosition();
+          if (pos) {
+            const scale = stage.scaleX();
+            const endX = Math.floor((pos.x - stage.x()) / (GRID_SIZE * scale));
+            const endY = Math.floor((pos.y - stage.y()) / (GRID_SIZE * scale));
+            
+            // Calculate the delta from drag start
+            const deltaX = endX - dragStartPosition.current.x;
+            const deltaY = endY - dragStartPosition.current.y;
+            
+            // Only update if there was actual movement
+            if (deltaX !== 0 || deltaY !== 0) {
+              onDesignPositionUpdate(dragModeDesignId, deltaX, deltaY);
+            }
+          }
+          
+          isDraggingDesign.current = false;
+          setStageDraggable && setStageDraggable(true); // Re-enable stage dragging
+          stage.container().style.cursor = "crosshair";
+          setDragPreview && setDragPreview(null); // Clear drag preview
+          return;
+        }
         
         // Only handle editing-specific cleanup for non-middle mouse buttons
         if (e.evt.button !== 1) {
@@ -135,6 +217,39 @@ export const useMouseHandlers = (
           if (coordinatesRef?.current) {
             coordinatesRef.current.style.left = `${pointer.x + 10}px`;
             coordinatesRef.current.style.top = `${pointer.y + 10}px`;
+          }
+        }
+
+        // Update drag preview during design dragging
+        if (isDraggingDesign.current && dragModeDesignId && setDragPreview) {
+          const design = designsMap?.get(dragModeDesignId);
+          if (design) {
+            const deltaX = x - dragStartPosition.current.x;
+            const deltaY = y - dragStartPosition.current.y;
+            
+            // Calculate design dimensions (same as in onMouseDown)
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            if (design.pixels && design.pixels.length > 0) {
+              design.pixels.forEach((pixel) => {
+                minX = Math.min(minX, pixel.x);
+                minY = Math.min(minY, pixel.y);
+                maxX = Math.max(maxX, pixel.x);
+                maxY = Math.max(maxY, pixel.y);
+              });
+            } else {
+              minX = 0; minY = 0; maxX = 0; maxY = 0;
+            }
+            
+            const width = maxX - minX + 1;
+            const height = maxY - minY + 1;
+            
+            // Update preview position
+            setDragPreview({
+              x: design.x + deltaX,
+              y: design.y + deltaY,
+              width,
+              height
+            });
           }
         }
 

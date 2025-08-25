@@ -26,6 +26,8 @@ interface DesignCardsListProps {
   onMoveDesignDown: (designId: number) => void;
   onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
   searchQuery: string;
+  dragModeDesignId?: number | null;
+  onToggleDragMode?: (designId: number, isDragMode: boolean) => void;
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -43,6 +45,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onMoveDesignDown,
   onMoveDesignToIndex,
   searchQuery,
+  dragModeDesignId,
+  onToggleDragMode,
 }) => {
   const { t } = useTranslation();
   const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
@@ -213,6 +217,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
               onMoveDesignToIndex={onMoveDesignToIndex}
               currentIndex={currentIndex >= 0 ? currentIndex : layerOrder.length}
               totalDesigns={layerOrder.length}
+              isDragMode={dragModeDesignId === design.id}
+              onToggleDragMode={onToggleDragMode}
             />
           </Box>
         );

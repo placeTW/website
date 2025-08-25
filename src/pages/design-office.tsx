@@ -10,7 +10,8 @@ import { FaAngleDown, FaAngleUp, FaAngleLeft, FaAngleRight } from "react-icons/f
 import {
   saveEditedPixels,
   createThumbnailForDesign,
-  databaseUpdateCanvasLayerOrder
+  databaseUpdateCanvasLayerOrder,
+  updateDesignPosition,
 } from "../api/supabase/database";
 import AdvancedViewport from "../component/art_tool/advanced-viewport";
 import CreateDesignButton from "../component/art_tool/create-design-button";
@@ -32,6 +33,7 @@ const DesignOffice: React.FC = () => {
   const [editDesignId, setEditDesignId] = useState<number | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
+  const [dragModeDesignId, setDragModeDesignId] = useState<number | null>(null);
   // Store just the ID in state instead of the entire canvas object  
   // Initialize to null and let useEffect handle initial selection when canvases load
   const [selectedCanvasId, setSelectedCanvasId] = useState<number | null>(null);
@@ -226,6 +228,38 @@ const DesignOffice: React.FC = () => {
     }
   };
 
+  const handleToggleDragMode = (designId: number, isDragMode: boolean) => {
+    setDragModeDesignId(isDragMode ? designId : null);
+  };
+
+  const handleDesignPositionUpdate = async (designId: number, deltaX: number, deltaY: number) => {
+    try {
+      const design = designs?.find((d) => d.id === designId);
+      if (!design) return;
+
+      const newX = design.x + deltaX;
+      const newY = design.y + deltaY;
+
+      await updateDesignPosition(designId, newX, newY);
+      
+      toast({
+        title: t("Success"),
+        description: t("Design position updated successfully."),
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: t("Error"),
+        description: t("Failed to update design position."),
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   const onMoveDesignUp = async (designId: number) => await onChangeDesignOrder(designId, true);
   const onMoveDesignDown = async (designId: number) => await onChangeDesignOrder(designId, false);
   const onMoveDesignToIndex = async (designId: number, targetIndex: number) => {
@@ -315,6 +349,8 @@ const DesignOffice: React.FC = () => {
           onDesignSelect={handleSelectDesign}
           onSubmitEdit={handleSubmitEdit}
           onCancelEdit={() => handleEditStateChange(false, null)}
+          dragModeDesignId={dragModeDesignId}
+          onDesignPositionUpdate={handleDesignPositionUpdate}
         />
       </Box>
 
@@ -346,6 +382,8 @@ const DesignOffice: React.FC = () => {
           onMoveDesignUp={onMoveDesignUp}
           onMoveDesignDown={onMoveDesignDown}
           onMoveDesignToIndex={onMoveDesignToIndex}
+          dragModeDesignId={dragModeDesignId}
+          onToggleDragMode={handleToggleDragMode}
         />
       </Box>
 
