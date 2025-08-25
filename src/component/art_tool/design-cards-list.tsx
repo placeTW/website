@@ -25,6 +25,8 @@ interface DesignCardsListProps {
   onMoveDesignDown: (designId: number) => void;
   onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
   searchQuery: string;
+  dragModeDesignId: number | null;
+  onDragModeChange: (designId: number | null) => void;
 }
 
 const DesignCardsList: FC<DesignCardsListProps> = ({
@@ -42,6 +44,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onMoveDesignDown,
   onMoveDesignToIndex,
   searchQuery,
+  dragModeDesignId,
+  onDragModeChange,
 }) => {
   const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
     {},
@@ -73,6 +77,11 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
     setEditDesignId(null);
     onEditStateChange(false, null);
     return true;
+  };
+
+  const handleToggleDragMode = (designId: number) => {
+    const newDragModeId = dragModeDesignId === designId ? null : designId;
+    onDragModeChange(newDragModeId);
   };
 
   const handleToggleVisibility = (designId: number, isVisible: boolean) => {
@@ -211,6 +220,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
               onMoveDesignToIndex={onMoveDesignToIndex}
               currentIndex={currentIndex >= 0 ? currentIndex : layerOrder.length}
               totalDesigns={layerOrder.length}
+              isDragModeEnabled={dragModeDesignId === design.id}
+              onToggleDragMode={handleToggleDragMode}
             />
           </Box>
         );

@@ -24,6 +24,7 @@ import { ViewportHandle, ViewportPixel } from "./types";
 import { roundToNearestPowerOf2 } from "./utils";
 import ViewportContextMenu, { ContextMenuDesign } from "./ViewportContextMenu";
 import { VirtualizedPixelRenderer } from "./VirtualizedPixelRenderer";
+import DraggableDesign from "./DraggableDesign";
 
 interface ViewportProps {
   stageRef: React.RefObject<Konva.Stage>;
@@ -43,6 +44,12 @@ interface ViewportProps {
   >;
   onDesignSelect?: (designId: number) => void;
   selectedTool?: 'paint' | 'erase' | 'select' | 'eyedropper' | 'bucket';
+  enableDesignDragging?: boolean;
+  onDesignDragStart?: (designId: number) => void;
+  onDesignDragMove?: (designId: number, x: number, y: number) => void;
+  onDesignDragEnd?: (designId: number, x: number, y: number) => void;
+  draggingDesignId?: number | null;
+  dragModeDesignId?: number | null;
   ref?: Ref<ViewportHandle>;
 }
 
@@ -59,6 +66,12 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       setSelection,
       onDesignSelect,
       selectedTool = 'paint',
+      enableDesignDragging = false,
+      onDesignDragStart,
+      onDesignDragMove,
+      onDesignDragEnd,
+      draggingDesignId,
+      dragModeDesignId,
       stageRef,
     },
     ref,
@@ -78,7 +91,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
     // Removed the pixelMap state as we're now using useMemo instead
     const [stageDraggable, setStageDraggable] = useState(isEditing ?? false);
     const { colorsMap } = useColorContext();
-    const { designsMap } = useDesignContext();
+    const { designsMap, designs } = useDesignContext();
     const [contextMenu, setContextMenu] = useState<{
       isOpen: boolean;
       position: { x: number; y: number };
@@ -598,6 +611,39 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       ),
     [selection]);
 
+    // Render draggable designs
+    const renderDraggableDesigns = useMemo(() => {
+      if (!enableDesignDragging || !designs) return null;
+
+      // Only show designs that are visible in layerOrder
+      const visibleDesigns = designs.filter(design => layerOrder.includes(design.id));
+
+      return visibleDesigns.map(design => (
+        <DraggableDesign
+          key={design.id}
+          design={design}
+          isDragging={draggingDesignId === design.id}
+          isDragModeEnabled={dragModeDesignId === design.id}
+          onDragStart={onDesignDragStart || (() => {})}
+          onDragMove={onDesignDragMove || (() => {})}
+          onDragEnd={onDesignDragEnd || (() => {})}
+          onDesignClick={onDesignSelect || (() => {})}
+          visible={true}
+          isDragEnabled={true}
+        />
+      ));
+    }, [
+      enableDesignDragging,
+      designs,
+      layerOrder,
+      draggingDesignId,
+      dragModeDesignId,
+      onDesignDragStart,
+      onDesignDragMove,
+      onDesignDragEnd,
+      onDesignSelect,
+    ]);
+
     const renderCoordinates = () => {
       if (!hoveredPixel) return null;
 
@@ -654,6 +700,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
           {...useMouseHandlers(
             onPixelPaint,
             isEditing,
+            draggingDesignId !== null,
             stageRef,
             setHoveredPixel,
             coordinatesRef,
@@ -665,6 +712,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
           {...useTouchHandlers(
             onPixelPaint,
             isEditing,
+            draggingDesignId !== null,
             setStageDraggable,
             stageRef,
             calculateVisibleTiles,
@@ -699,6 +747,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
           </Layer>
           <Layer listening={false}>{renderPixelGrid()}</Layer>
           <Layer listening={false}>{renderSelectionRect}</Layer>
+          <Layer>{renderDraggableDesigns}</Layer>
         </Stage>
         {renderCoordinates()}
         <ViewportContextMenu

@@ -5,6 +5,7 @@ import { GRID_SIZE } from "../constants";
 export const useTouchHandlers = (
   onPixelPaint?: (x: number, y: number, erase: boolean) => void,
   isEditing?: boolean,
+  isDragging?: boolean,
   setStageDraggable?: React.Dispatch<React.SetStateAction<boolean>>,
   stageRef?: React.RefObject<Konva.Stage>,
   onTransform?: () => void,

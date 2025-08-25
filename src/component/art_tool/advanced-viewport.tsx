@@ -17,7 +17,7 @@ import { FaExpand, FaDownload } from "react-icons/fa";
 import { FaPen as FaEdit, FaCheck, FaXmark as FaCancel } from "react-icons/fa6";
 import { useDesignContext } from "../../context/design-context";
 import { useUserContext } from "../../context/user-context";
-import { databaseUpdateCanvasName } from "../../api/supabase/database";
+import { databaseUpdateCanvasName, databaseUpdateDesignPosition } from "../../api/supabase/database";
 import { Canvas, Pixel } from "../../types/art-tool";
 import Viewport from "../viewport/Viewport";
 import { CLEAR_ON_DESIGN } from "../viewport/constants";
@@ -25,6 +25,11 @@ import { ViewportHandle, ViewportPixel } from "../viewport/types";
 import { floodFill } from "../viewport/utils/flood-fill";
 import { FloatingToolbar, FloatingToolbarHandle } from './floating-toolbar';
 import { ToolType } from './floating-toolbar/sections/ToolSelectionSection';
+
+// Simplified drag state - only track which design is currently being dragged
+interface DragState {
+  draggingDesignId: number | null;
+}
 
 interface AdvancedViewportProps {
   visibleLayers: Set<number>;
@@ -36,10 +41,10 @@ interface AdvancedViewportProps {
   editedPixels?: Pixel[];
   setEditedPixels?: React.Dispatch<React.SetStateAction<Pixel[]>>;
   onSelectCanvas?: (canvas: Canvas | null) => void;
-  onDesignSelect?: (designId: number) => void;
   onSubmitEdit?: (designName: string) => Promise<void>;
   onCancelEdit?: () => void;
   onCanvasUpdate?: (canvas: Canvas) => void;
+  dragModeDesignId?: number | null;
 }
 
 const AdvancedViewport = React.forwardRef<
@@ -65,10 +70,10 @@ const AdvancedViewport = React.forwardRef<
       selectedCanvas,
       editedPixels = [],
       setEditedPixels,
-      onDesignSelect,
       onSubmitEdit,
       onCancelEdit,
       onCanvasUpdate,
+      dragModeDesignId,
     },
     ref,
   ) => {
@@ -78,6 +83,9 @@ const AdvancedViewport = React.forwardRef<
     const [isExporting, setIsExporting] = useState(false);
     const [editingCanvasId, setEditingCanvasId] = useState<number | null>(null);
     const [tempCanvasName, setTempCanvasName] = useState('');
+    const [dragState, setDragState] = useState<DragState>({
+      draggingDesignId: null,
+    });
     const toast = useToast();
     const toolbarRef = useRef<FloatingToolbarHandle>(null);
     const canvasNameInputRef = useRef<HTMLInputElement>(null);
@@ -468,6 +476,61 @@ const AdvancedViewport = React.forwardRef<
       }
     }, [isAdmin, designs, selectedCanvas, toast, getTopLeftCoords, offsetPixels]);
 
+    // Design dragging handlers
+    const handleDesignDragStart = useCallback((designId: number) => {
+      setDragState(prev => ({
+        ...prev,
+        draggingDesignId: designId,
+      }));
+    }, []);
+
+    const handleDesignDragMove = useCallback(() => {
+      // Live position updates during drag could be implemented here if needed
+      // Currently keeping it simple for performance
+    }, []);
+
+    const handleDesignDragEnd = useCallback(async (designId: number, x: number, y: number) => {
+      try {
+        await databaseUpdateDesignPosition(designId, x, y);
+        
+        // Give a brief moment for the real-time update to propagate
+        setTimeout(() => {
+          recalculatePixels();
+        }, 100);
+        
+        toast({
+          title: "Success",
+          description: "Design position updated. Double-click to drag again.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+
+        // Reset drag state after successful drag
+        setDragState(prev => ({
+          ...prev,
+          draggingDesignId: null,
+        }));
+      } catch (error) {
+        console.error("Error updating design position:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update design position",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        
+        // Clear dragging state on error
+        setDragState(prev => ({
+          ...prev,
+          draggingDesignId: null,
+        }));
+      }
+    }, [toast, recalculatePixels]);
+
+
+
 
     const handlePixelPaint = useCallback(
       (x: number, y: number, erase: boolean) => {
@@ -755,22 +818,44 @@ const AdvancedViewport = React.forwardRef<
                             mr={1}
                           />
                           <Tooltip label="Confirm (Enter)">
-                            <IconButton
-                              icon={<FaCheck />}
-                              size="xs"
-                              colorScheme="green"
+                            <Box
+                              as="button"
+                              type="button"
                               onClick={handleConfirmCanvasNameEdit}
                               aria-label="Confirm name change"
-                            />
+                              display="inline-flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              w="24px"
+                              h="24px"
+                              bg="green.500"
+                              color="white"
+                              borderRadius="md"
+                              _hover={{ bg: "green.600" }}
+                              _active={{ bg: "green.700" }}
+                            >
+                              <FaCheck size={12} />
+                            </Box>
                           </Tooltip>
                           <Tooltip label="Cancel (Esc)">
-                            <IconButton
-                              icon={<FaCancel />}
-                              size="xs"
-                              variant="ghost"
+                            <Box
+                              as="button"
+                              type="button"
                               onClick={handleCancelCanvasNameEdit}
                               aria-label="Cancel name change"
-                            />
+                              display="inline-flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              w="24px"
+                              h="24px"
+                              bg="transparent"
+                              color="gray.500"
+                              borderRadius="md"
+                              _hover={{ bg: "gray.100", color: "gray.700" }}
+                              _active={{ bg: "gray.200" }}
+                            >
+                              <FaCancel size={12} />
+                            </Box>
                           </Tooltip>
                         </Flex>
                       ) : (
@@ -778,16 +863,27 @@ const AdvancedViewport = React.forwardRef<
                           <Box>{canvas.canvas_name}</Box>
                           {isAdmin && (
                             <Tooltip label="Edit name">
-                              <IconButton
-                                icon={<FaEdit />}
-                                size="xs"
-                                variant="ghost"
-                                onClick={(e) => {
+                              <Box
+                                as="button"
+                                type="button"
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation();
                                   handleStartCanvasNameEdit(canvas.id, canvas.canvas_name);
                                 }}
                                 aria-label="Edit canvas name"
-                              />
+                                display="inline-flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                w="20px"
+                                h="20px"
+                                bg="transparent"
+                                color="gray.500"
+                                borderRadius="md"
+                                _hover={{ bg: "gray.100", color: "gray.700" }}
+                                _active={{ bg: "gray.200" }}
+                              >
+                                <FaEdit size={10} />
+                              </Box>
                             </Tooltip>
                           )}
                         </Flex>
@@ -834,8 +930,14 @@ const AdvancedViewport = React.forwardRef<
             layerOrder={layerOrder}
             selection={selection}
             setSelection={setSelection}
-            onDesignSelect={onDesignSelect}
+            onDesignSelect={() => {}}
             selectedTool={selectedTool}
+            enableDesignDragging={!isEditing}
+            onDesignDragStart={handleDesignDragStart}
+            onDesignDragMove={handleDesignDragMove}
+            onDesignDragEnd={handleDesignDragEnd}
+            draggingDesignId={dragState.draggingDesignId}
+            dragModeDesignId={dragModeDesignId}
           />
           
           {/* Floating Toolbar positioned at bottom of viewport */}

@@ -30,6 +30,7 @@ const DesignOffice: React.FC = () => {
   const [editDesignId, setEditDesignId] = useState<number | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<number[]>([]);
   const [editedPixels, setEditedPixels] = useState<Pixel[]>([]);
+  const [dragModeDesignId, setDragModeDesignId] = useState<number | null>(null);
   // Store just the ID in state instead of the entire canvas object  
   // Initialize to null and let useEffect handle initial selection when canvases load
   const [selectedCanvasId, setSelectedCanvasId] = useState<number | null>(null);
@@ -81,7 +82,13 @@ const DesignOffice: React.FC = () => {
         ...prevLayers.filter((id) => id !== designId),
         designId,
       ]);
+      // Disable drag mode when entering edit mode
+      setDragModeDesignId(null);
     }
+  };
+
+  const handleDragModeChange = (designId: number | null) => {
+    setDragModeDesignId(designId);
   };
 
   const handleVisibilityChange = (newVisibleLayers: number[]) => {
@@ -310,9 +317,9 @@ const DesignOffice: React.FC = () => {
           }
           editedPixels={editedPixels}
           setEditedPixels={setEditedPixels}
-          onDesignSelect={handleSelectDesign}
           onSubmitEdit={handleSubmitEdit}
           onCancelEdit={() => handleEditStateChange(false, null)}
+          dragModeDesignId={dragModeDesignId}
         />
       </Box>
 
@@ -344,6 +351,8 @@ const DesignOffice: React.FC = () => {
           onMoveDesignUp={onMoveDesignUp}
           onMoveDesignDown={onMoveDesignDown}
           onMoveDesignToIndex={onMoveDesignToIndex}
+          dragModeDesignId={dragModeDesignId}
+          onDragModeChange={handleDragModeChange}
         />
       </Box>
 

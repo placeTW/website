@@ -190,6 +190,31 @@ export const databaseUpdateCanvasName = async (
   return data;
 }
 
+export const databaseUpdateDesignPosition = async (
+  designId: number,
+  x: number,
+  y: number,
+): Promise<Design> => {
+  const updateDesignPositionQuery = await supabase
+    .from("art_tool_designs")
+    .update({ x, y })
+    .eq("id", designId)
+    .returns<Design>()
+    .select()
+    .single();
+
+  const { data, error } = logSupabaseDatabaseQuery(
+    updateDesignPositionQuery,
+    "updateDesignPosition",
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 export const databaseFetchDesigns = async (
   canvasId?: number,
 ): Promise<Design[] | null> => {

@@ -9,6 +9,7 @@ Konva.dragButtons = [0, 1, 2]; // Enable dragging with left (0), middle (1), and
 export const useMouseHandlers = (
   onPixelPaint?: (x: number, y: number, erase: boolean) => void,
   isEditing?: boolean,
+  isDragging?: boolean,
   stageRef?: React.RefObject<Konva.Stage>,
   setHoveredPixel?: React.Dispatch<
     React.SetStateAction<{ x: number; y: number } | null>
@@ -138,7 +139,8 @@ export const useMouseHandlers = (
           }
         }
 
-        if (!isEditing) return;
+        // Skip editing interactions if a design is currently being dragged
+        if (!isEditing || isDragging) return;
 
         // Update selection only if we're in selection mode
         if (isSelecting.current && isMouseDown.current && selection && setSelection) {

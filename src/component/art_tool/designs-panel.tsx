@@ -33,6 +33,8 @@ interface DesignsPanelProps {
   onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
   showAll: () => void;
   hideAll: () => void;
+  dragModeDesignId: number | null;
+  onDragModeChange: (designId: number | null) => void;
 }
 
 const DesignsPanel: React.FC<DesignsPanelProps> = ({
@@ -51,6 +53,8 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
   onMoveDesignToIndex,
   showAll,
   hideAll,
+  dragModeDesignId,
+  onDragModeChange,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -120,6 +124,8 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
           onMoveDesignUp={onMoveDesignUp}
           onMoveDesignDown={onMoveDesignDown}
           onMoveDesignToIndex={onMoveDesignToIndex}
+          dragModeDesignId={dragModeDesignId}
+          onDragModeChange={onDragModeChange}
         />
         <Box h="100px" />
       </Box>

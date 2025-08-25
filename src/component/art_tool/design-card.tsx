@@ -42,6 +42,7 @@ import {
   FaXmark,
   FaArrowUp,
   FaArrowDown,
+  FaUpDownLeftRight,
 } from "react-icons/fa6";
 import {
   copyDesignCanvas,
@@ -71,6 +72,8 @@ interface DesignCardProps {
   onMoveDesignToIndex: (designId: number, targetIndex: number) => void;
   currentIndex: number;
   totalDesigns: number;
+  isDragModeEnabled: boolean;
+  onToggleDragMode: (designId: number) => void;
 }
 
 const DesignCard: FC<DesignCardProps> = ({
@@ -89,6 +92,8 @@ const DesignCard: FC<DesignCardProps> = ({
   onMoveDesignToIndex,
   currentIndex,
   totalDesigns,
+  isDragModeEnabled,
+  onToggleDragMode,
 }) => {
   const { currentUser, users, ranks } = useUserContext(); // Import users and ranks
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -183,6 +188,10 @@ const DesignCard: FC<DesignCardProps> = ({
     } else {
       onEdit(design.id);
     }
+  };
+
+  const handleDragModeToggle = () => {
+    onToggleDragMode(design.id);
   };
 
 
@@ -366,7 +375,7 @@ const DesignCard: FC<DesignCardProps> = ({
             justifyContent="space-between"
             p={2}
             width="100%"
-            bg={isEditing ? "blue.100" : isVisible ? "white" : "gray.100"}
+            bg={isEditing ? "blue.100" : isDragModeEnabled ? "orange.100" : isVisible ? "white" : "gray.100"}
           >
             <Box>
               <Heading fontSize={"md"}>{design.design_name || "(Untitled Artwork)"}</Heading>
@@ -376,6 +385,11 @@ const DesignCard: FC<DesignCardProps> = ({
               {isEditing && (
                 <Text fontSize={"xs"} color="blue.600" fontWeight={500}>
                   Currently editing - use toolbar to save
+                </Text>
+              )}
+              {isDragModeEnabled && !isEditing && (
+                <Text fontSize={"xs"} color="orange.600" fontWeight={500}>
+                  Drag mode enabled - drag in viewport to move
                 </Text>
               )}
             </Box>
@@ -420,6 +434,19 @@ const DesignCard: FC<DesignCardProps> = ({
                       size="sm"
                       colorScheme={isEditing ? "red" : "blue"}
                       variant={isEditing ? "solid" : "outline"}
+                    />
+                  </Tooltip>
+                )}
+
+                {isAdminOrCreator && !inEditMode && !isEditing && (
+                  <Tooltip label={isDragModeEnabled ? "Disable Drag Mode" : "Enable Drag Mode"}>
+                    <IconButton
+                      icon={<FaUpDownLeftRight />}
+                      aria-label={isDragModeEnabled ? "Disable Drag Mode" : "Enable Drag Mode"}
+                      onClick={handleDragModeToggle}
+                      size="sm"
+                      colorScheme={isDragModeEnabled ? "orange" : "gray"}
+                      variant={isDragModeEnabled ? "solid" : "outline"}
                     />
                   </Tooltip>
                 )}
