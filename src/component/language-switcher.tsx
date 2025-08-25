@@ -3,11 +3,11 @@ import { locales } from "../i18n";
 import { useTranslation } from "react-i18next";
 
 const LanguageSwitcher = () => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   return (
     <Select
       variant="filled"
-      aria-label="Language"
+      aria-label={t("Language")}
       onChange={(e) => {
         const newLanguage = e.target.value;
         i18n.changeLanguage(newLanguage);

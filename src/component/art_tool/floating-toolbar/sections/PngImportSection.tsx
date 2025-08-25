@@ -6,6 +6,7 @@ import {
   useToast,
   useColorModeValue,
 } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import { FaFileImage } from 'react-icons/fa6';
 import { extractPngData, extractColors, convertToPixels, ExtractedColor } from '../../../../utils/pngUtils';
 import { ColorMappingDialog } from '../dialogs/ColorMappingDialog';
@@ -23,6 +24,7 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
   designId,
   isVertical = false,
 }) => {
+  const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [pngData, setPngData] = useState<{
     imageData: ImageData;
@@ -41,8 +43,8 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
 
     if (!file.type.startsWith('image/png')) {
       toast({
-        title: 'Invalid File Type',
-        description: 'Please select a PNG image file.',
+        title: t('Invalid File Type'),
+        description: t('Please select a PNG image file.'),
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -56,8 +58,8 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
 
       if (extractedColors.length === 0) {
         toast({
-          title: 'No Colors Found',
-          description: 'The image appears to be empty or contains no visible pixels.',
+          title: t('No Colors Found'),
+          description: t('The image appears to be empty or contains no visible pixels.'),
           status: 'warning',
           duration: 3000,
           isClosable: true,
@@ -67,8 +69,8 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
 
       if (extractedColors.length > 50) {
         toast({
-          title: 'Too Many Colors',
-          description: `The image contains ${extractedColors.length} colors. Consider using an image with fewer colors for better results.`,
+          title: t('Too Many Colors'),
+          description: t('The image contains {{count}} colors. Consider using an image with fewer colors for better results.', { count: extractedColors.length }),
           status: 'warning',
           duration: 5000,
           isClosable: true,
@@ -84,8 +86,8 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
       setIsDialogOpen(true);
     } catch (error) {
       toast({
-        title: 'Import Error',
-        description: `Failed to process PNG file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: t('Import Error'),
+        description: t('Failed to process PNG file: {{error}}', { error: error instanceof Error ? error.message : t('Unknown error') }),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -116,8 +118,8 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
       onPixelsImported(designPixels);
       
       toast({
-        title: 'PNG Imported Successfully',
-        description: `Imported ${designPixels.length} pixels from PNG image.`,
+        title: t('PNG Imported Successfully'),
+        description: t('Imported {{count}} pixels from PNG image.', { count: designPixels.length }),
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -127,8 +129,8 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
       setPngData(null);
     } catch (error) {
       toast({
-        title: 'Import Error',
-        description: `Failed to import PNG: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: t('Import Error'),
+        description: t('Failed to import PNG: {{error}}', { error: error instanceof Error ? error.message : t('Unknown error') }),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -156,9 +158,9 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
         <Tooltip
           label={
             <Box textAlign="center">
-              <Box fontWeight="semibold">Import PNG Image</Box>
+              <Box fontWeight="semibold">{t("Import PNG Image")}</Box>
               <Box fontSize="xs" opacity={0.8}>
-                Import pixels from a PNG file with color mapping
+                {t("Import pixels from a PNG file with color mapping")}
               </Box>
             </Box>
           }
@@ -166,7 +168,7 @@ export const PngImportSection: React.FC<PngImportSectionProps> = ({
         >
           <IconButton
             icon={<FaFileImage />}
-            aria-label="Import PNG Image"
+            aria-label={t("Import PNG Image")}
             size="sm"
             colorScheme="purple"
             variant="outline"

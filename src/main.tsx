@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Layout from "./component/layout";
+import ProtectedRoute from "./component/auth/ProtectedRoute";
 import { AlertProvider } from "./context/alert-context";
 import { DesignProvider } from "./context/design-context";  
 import { ColorProvider } from "./context/color-context"; // Import ColorProvider
@@ -13,17 +14,13 @@ import theme from "./theme"; // Import your custom theme
 import "./i18n";
 import "./index.scss";
 
-const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
-
 // Lazy load page components for better code splitting
 const HomePage = lazy(() => import("./pages"));
 const AdminPage = lazy(() => import("./pages/admin"));
 const Gallery = lazy(() => import("./pages/gallery"));
 const Translations = lazy(() => import("./pages/translations"));
-
-// Conditionally import art tool components only when feature is enabled
-const BriefingRoom = enableArtTool ? lazy(() => import("./pages/briefing-room")) : null;
-const DesignOffice = enableArtTool ? lazy(() => import("./pages/design-office")) : null;
+const BriefingRoom = lazy(() => import("./pages/briefing-room"));
+const DesignOffice = lazy(() => import("./pages/design-office"));
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -39,14 +36,38 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/gallery" element={<Gallery />} />
-                      <Route path="/translations" element={<Translations />} />
-                      <Route path="/admin" element={<AdminPage />} />
-                      {enableArtTool && BriefingRoom && DesignOffice && (
-                        <>
-                          <Route path="/briefing-room" element={<BriefingRoom />} />
-                          <Route path="/design-office" element={<DesignOffice />} />
-                        </>
-                      )}
+                      <Route 
+                        path="/translations" 
+                        element={
+                          <ProtectedRoute>
+                            <Translations />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      <Route 
+                        path="/admin" 
+                        element={
+                          <ProtectedRoute requiresRank={['A', 'B']}>
+                            <AdminPage />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      <Route 
+                        path="/briefing-room" 
+                        element={
+                          <ProtectedRoute>
+                            <BriefingRoom />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      <Route 
+                        path="/design-office" 
+                        element={
+                          <ProtectedRoute>
+                            <DesignOffice />
+                          </ProtectedRoute>
+                        } 
+                      />
                     </Routes>  
                   </Suspense>
                 </Layout>

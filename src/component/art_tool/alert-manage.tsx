@@ -16,6 +16,7 @@ import {
   Select,
   Heading,
 } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { FaEdit, FaSave } from "react-icons/fa";
 import {
   updateAlertLevel,
@@ -26,6 +27,7 @@ import { useAlertContext } from "../../context/alert-context";
 import { useDesignContext } from "../../context/design-context";
 
 const AlertManage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentAlertData, setActiveAlertId, alertLevels } = useAlertContext();
   const { canvases } = useDesignContext();
   
@@ -57,8 +59,8 @@ const AlertManage: React.FC = () => {
         await updateAlertLevel(alertId, editedAlert);
         setEditingId(null);
         toast({
-          title: "Success",
-          description: "Alert level updated successfully",
+          title: t("Success"),
+          description: t("Alert level updated successfully"),
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -66,8 +68,8 @@ const AlertManage: React.FC = () => {
       } catch (error) {
         console.error("Error updating alert level:", error);
         toast({
-          title: "Error",
-          description: "Failed to update alert level",
+          title: t("Error"),
+          description: t("Failed to update alert level"),
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -81,8 +83,8 @@ const AlertManage: React.FC = () => {
       await setActiveAlertLevel(alertId);
       setActiveAlertId(alertId);
       toast({
-        title: "Success",
-        description: "Alert level activated successfully",
+        title: t("Success"),
+        description: t("Alert level activated successfully"),
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -90,8 +92,8 @@ const AlertManage: React.FC = () => {
     } catch (error) {
       console.error("Error activating alert level:", error);
       toast({
-        title: "Error",
-        description: "Failed to activate alert level",
+        title: t("Error"),
+        description: t("Failed to activate alert level"),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -106,16 +108,16 @@ const AlertManage: React.FC = () => {
   return (
     <Box>
       <Heading size="md" mb={4}>
-        Alert Management
+        {t("Alert Management")}
       </Heading>
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th width="25%">Alert Name</Th>
-            <Th>Description</Th>
-            <Th width="20%">Canvas</Th>
-            <Th width="10%">Active</Th>
-            <Th>Actions</Th>
+            <Th width="25%">{t("Alert Name")}</Th>
+            <Th>{t("Description")}</Th>
+            <Th width="20%">{t("Canvas")}</Th>
+            <Th width="10%">{t("Active")}</Th>
+            <Th>{t("Actions")}</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -147,7 +149,7 @@ const AlertManage: React.FC = () => {
                     value={editedFields[alert.alert_id]?.canvas_id ?? alert.canvas_id ?? ""}
                     onChange={(e) => handleInputChange(alert.alert_id, "canvas_id", e.target.value)}
                   >
-                    <option value="">Unassigned</option>
+                    <option value="">{t("Unassigned")}</option>
                     {canvases?.map((canvas) => (
                       <option key={canvas.id} value={canvas.id}>
                         {canvas.canvas_name}
@@ -155,7 +157,7 @@ const AlertManage: React.FC = () => {
                     ))}
                   </Select>
                 ) : (
-                  canvases?.find((c) => c.id === alert.canvas_id)?.canvas_name || "Unassigned"
+                  canvases?.find((c) => c.id === alert.canvas_id)?.canvas_name || t("Unassigned")
                 )}
               </Td>
               <Td>
@@ -167,10 +169,10 @@ const AlertManage: React.FC = () => {
               <Td>
                 {editingId === alert.alert_id ? (
                   <Button leftIcon={<FaSave />} colorScheme="blue" onClick={() => handleSave(alert.alert_id)}>
-                    Save
+                    {t("Save")}
                   </Button>
                 ) : (
-                  <IconButton icon={<FaEdit />} aria-label="Edit" onClick={() => handleEditClick(alert.alert_id)} />
+                  <IconButton icon={<FaEdit />} aria-label={t("Edit")} onClick={() => handleEditClick(alert.alert_id)} />
                 )}
               </Td>
             </Tr>

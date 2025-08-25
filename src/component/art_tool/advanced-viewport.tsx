@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import Konva from "konva";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FaExpand, FaDownload } from "react-icons/fa";
 import { FaPen as FaEdit, FaCheck, FaXmark as FaCancel } from "react-icons/fa6";
 import { useDesignContext } from "../../context/design-context";
@@ -77,6 +78,7 @@ const AdvancedViewport = React.forwardRef<
     },
     ref,
   ) => {
+    const { t } = useTranslation();
     const [pixels, setPixels] = useState<ViewportPixel[]>([]);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [selectedTool, setSelectedTool] = useState<ToolType>('paint');
@@ -268,8 +270,8 @@ const AdvancedViewport = React.forwardRef<
           onCanvasUpdate(updatedCanvas);
         }
         toast({
-          title: "Success",
-          description: "Canvas name updated successfully",
+          title: t("Success"),
+          description: t("Canvas name updated successfully"),
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -277,8 +279,8 @@ const AdvancedViewport = React.forwardRef<
       } catch (error) {
         console.error("Error updating canvas name:", error);
         toast({
-          title: "Error",
-          description: "Failed to update canvas name",
+          title: t("Error"),
+          description: t("Failed to update canvas name"),
           status: "error",
           duration: 5000,
           isClosable: true,
@@ -341,8 +343,8 @@ const AdvancedViewport = React.forwardRef<
 
         if (canvasDesigns.length === 0) {
           toast({
-            title: 'Error',
-            description: 'No designs found on this canvas.',
+            title: t('Error'),
+            description: t('No designs found on this canvas.'),
             status: 'error',
             duration: 5000,
             isClosable: true,
@@ -395,8 +397,8 @@ const AdvancedViewport = React.forwardRef<
 
         if (combinedPixels.length === 0) {
           toast({
-            title: 'Error',
-            description: 'No pixels to export.',
+            title: t('Error'),
+            description: t('No pixels to export.'),
             status: 'error',
             duration: 5000,
             isClosable: true,
@@ -455,8 +457,8 @@ const AdvancedViewport = React.forwardRef<
         URL.revokeObjectURL(url);
 
         toast({
-          title: 'Success',
-          description: `Canvas exported successfully as ${selectedCanvas.canvas_name}-export-${new Date().toISOString().slice(0, 10)}.png`,
+          title: t('Success'),
+          description: t('Canvas exported successfully as {{filename}}', { filename: `${selectedCanvas.canvas_name}-export-${new Date().toISOString().slice(0, 10)}.png` }),
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -465,8 +467,8 @@ const AdvancedViewport = React.forwardRef<
       } catch (error) {
         console.error('Error exporting canvas:', error);
         toast({
-          title: 'Error',
-          description: 'An error occurred while exporting the canvas.',
+          title: t('Error'),
+          description: t('An error occurred while exporting the canvas.'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -811,79 +813,46 @@ const AdvancedViewport = React.forwardRef<
                             onKeyDown={handleCanvasNameKeyDown}
                             size="sm"
                             variant="filled"
-                            placeholder="Enter canvas name..."
+                            placeholder={t("Enter canvas name...")}
                             bg="white"
                             _dark={{ bg: 'gray.700' }}
                             width="150px"
                             mr={1}
                           />
-                          <Tooltip label="Confirm (Enter)">
-                            <Box
-                              as="button"
-                              type="button"
+                          <Tooltip label={t("Confirm (Enter)")}>
+                            <IconButton
+                              icon={<FaCheck />}
+                              size="xs"
+                              colorScheme="green"
                               onClick={handleConfirmCanvasNameEdit}
-                              aria-label="Confirm name change"
-                              display="inline-flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              w="24px"
-                              h="24px"
-                              bg="green.500"
-                              color="white"
-                              borderRadius="md"
-                              _hover={{ bg: "green.600" }}
-                              _active={{ bg: "green.700" }}
-                            >
-                              <FaCheck size={12} />
-                            </Box>
+                              aria-label={t("Confirm name change")}
+                            />
                           </Tooltip>
-                          <Tooltip label="Cancel (Esc)">
-                            <Box
-                              as="button"
-                              type="button"
+                          <Tooltip label={t("Cancel (Esc)")}>
+                            <IconButton
+                              icon={<FaCancel />}
+                              size="xs"
+                              variant="ghost"
                               onClick={handleCancelCanvasNameEdit}
-                              aria-label="Cancel name change"
-                              display="inline-flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              w="24px"
-                              h="24px"
-                              bg="transparent"
-                              color="gray.500"
-                              borderRadius="md"
-                              _hover={{ bg: "gray.100", color: "gray.700" }}
-                              _active={{ bg: "gray.200" }}
-                            >
-                              <FaCancel size={12} />
-                            </Box>
+                              aria-label={t("Cancel name change")}
+                            />
                           </Tooltip>
                         </Flex>
                       ) : (
                         <Flex align="center" gap={1}>
                           <Box>{canvas.canvas_name}</Box>
                           {isAdmin && (
-                            <Tooltip label="Edit name">
-                              <Box
-                                as="button"
-                                type="button"
-                                onClick={(e: React.MouseEvent) => {
+                            <Tooltip label={t("Edit name")}>
+                              <IconButton
+                                icon={<FaEdit />}
+                                size="xs"
+                                variant="ghost"
+                                onClick={(e) => {
                                   e.stopPropagation();
                                   handleStartCanvasNameEdit(canvas.id, canvas.canvas_name);
                                 }}
-                                aria-label="Edit canvas name"
-                                display="inline-flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                w="20px"
-                                h="20px"
-                                bg="transparent"
-                                color="gray.500"
-                                borderRadius="md"
-                                _hover={{ bg: "gray.100", color: "gray.700" }}
-                                _active={{ bg: "gray.200" }}
-                              >
-                                <FaEdit size={10} />
-                              </Box>
+                                aria-label={t("Edit canvas name")}
+                              />
                             </Tooltip>
                           )}
                         </Flex>
@@ -903,15 +872,15 @@ const AdvancedViewport = React.forwardRef<
                 size="sm"
                 onClick={handleCanvasExport}
                 isLoading={isExporting}
-                loadingText="Exporting..."
+                loadingText={t("Exporting...")}
                 mr={2}
               >
-                Export PNG
+                {t("Export PNG")}
               </Button>
             )}
             
             <IconButton
-              aria-label="Center on Canvas"
+              aria-label={t("Center on Canvas")}
               icon={<FaExpand />}
               onClick={centerOnCanvas}
             />

@@ -21,8 +21,10 @@ import { useDesignContext } from "../context/design-context";
 import { Design, Pixel } from "../types/art-tool";
 import { getDimensions, offsetPixels } from "../utils/pixelUtils";
 import { useUserContext } from "../context/user-context";
+import { useTranslation } from "react-i18next";
 
 const DesignOffice: React.FC = () => {
+  const { t } = useTranslation();
   const { designs, canvases, canvasesMap, canvasDesignsMap, setDesigns } = useDesignContext();
   const { colors } = useColorContext();
   const [loading, setLoading] = useState(true);
@@ -115,8 +117,8 @@ const DesignOffice: React.FC = () => {
       await createThumbnailForDesign(updatedDesign);
 
       toast({
-        title: "Changes Saved",
-        description: `${designName} has been updated successfully.`,
+        title: t("Changes Saved"),
+        description: t("{{name}} has been updated successfully.", { name: designName }),
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -127,8 +129,8 @@ const DesignOffice: React.FC = () => {
       handleEditStateChange(false, null);
     } catch (error) {
       toast({
-        title: "Error",
-        description: `Failed to save changes: ${
+        title: t("Error"),
+        description: `${t("Failed to save changes")}: ${
           (error as Error).message || error
         }`,
         status: "error",
@@ -197,7 +199,7 @@ const DesignOffice: React.FC = () => {
 
   const handleCreatedDesign = (design: Design) => {
     if (!currentUser || !["A", "B"].includes(currentUser.rank)) {
-      throw new Error("User is not allowed to create a design");
+      throw new Error(t("User is not allowed to create a design"));
     }
     handleEditStateChange(true, design.id);
   };
@@ -358,7 +360,7 @@ const DesignOffice: React.FC = () => {
 
       {/* Hide/Show Button */}
       <IconButton
-        aria-label={isCardListVisible ? "Hide Panel" : "Show Panel"}
+        aria-label={isCardListVisible ? t("Hide Panel") : t("Show Panel")}
         icon={
           isMobile ? (
             isCardListVisible ? (

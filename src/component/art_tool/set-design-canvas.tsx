@@ -11,6 +11,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDesignContext } from "../../context/design-context"; // Import DesignContext
 import { Canvas } from "../../types/art-tool";
 
@@ -27,6 +28,7 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
   onClose,
   onSetCanvas,
 }) => {
+  const { t } = useTranslation();
   const { canvases } = useDesignContext(); // Get canvases from context
   const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
 
@@ -48,14 +50,14 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{copy ? "Copy to Canvas" : "Move to Canvas"}</ModalHeader>
+        <ModalHeader>{copy ? t("Copy to Canvas") : t("Move to Canvas")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {canvases?.length === 0 || !canvases ? (
-            <Text>No canvases available</Text>
+            <Text>{t("No canvases available")}</Text>
           ) : (
             <Select
-              placeholder="Select a canvas"
+              placeholder={t("Select a canvas")}
               value={selectedCanvas?.id || ""}
               onChange={handleCanvasChange}
             >
@@ -73,10 +75,10 @@ const SetDesignCanvas: FC<SetDesignCanvasProps> = ({
             onClick={handleSetCanvas}
             isDisabled={!selectedCanvas?.id}
           >
-            {copy ? "Copy" : "Move"}
+            {copy ? t("Copy") : t("Move")}
           </Button>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t("Cancel")}
           </Button>
         </ModalFooter>
       </ModalContent>

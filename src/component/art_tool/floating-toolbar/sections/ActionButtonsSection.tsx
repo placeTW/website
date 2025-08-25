@@ -8,6 +8,7 @@ import {
   Box,
   useColorModeValue,
 } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import {
   FaArrowRotateLeft as FaUndo,
   FaArrowRotateRight as FaRedo,
@@ -63,60 +64,61 @@ export const ActionButtonsSection: React.FC<ActionButtonsSectionProps> = ({
   showShortcuts,
   isVertical = false,
 }) => {
+  const { t } = useTranslation();
   const borderColor = useColorModeValue('gray.200', 'gray.600');
 
   const actions: ActionButton[] = [
     {
       icon: FaUndo,
-      label: 'Undo',
+      label: t('Undo'),
       shortcut: 'Ctrl+Z',
       onClick: onUndo,
       isDisabled: !canUndo,
-      description: 'Undo last action',
+      description: t('Undo last action'),
     },
     {
       icon: FaRedo,
-      label: 'Redo',
+      label: t('Redo'),
       shortcut: 'Ctrl+Y',
       onClick: onRedo,
       isDisabled: !canRedo,
-      description: 'Redo last undone action',
+      description: t('Redo last undone action'),
     },
     {
       icon: FaCopy,
-      label: 'Copy',
+      label: t('Copy'),
       shortcut: 'Ctrl+C',
       onClick: onCopy,
       isDisabled: !canCopy,
       colorScheme: 'blue',
-      description: 'Copy selected area',
+      description: t('Copy selected area'),
     },
     {
       icon: FaPaste,
-      label: 'Paste',
+      label: t('Paste'),
       shortcut: 'Ctrl+V',
       onClick: onPaste,
       isDisabled: !canPaste,
       colorScheme: 'green',
-      description: 'Paste copied pixels',
+      description: t('Paste copied pixels'),
     },
     {
       icon: FaFill,
-      label: 'Fill',
+      label: t('Fill'),
       shortcut: 'F',
       onClick: onFill,
       isDisabled: !canFill,
       colorScheme: 'orange',
-      description: 'Fill selected area with color',
+      description: t('Fill selected area with color'),
     },
     {
       icon: FaEraseSelection,
-      label: 'Erase Selection',
+      label: t('Erase Selection'),
       shortcut: 'Delete',
       onClick: onEraseSelection,
       isDisabled: !canEraseSelection,
       colorScheme: 'red',
-      description: 'Erase all pixels in selected area',
+      description: t('Erase all pixels in selected area'),
     },
   ];
 
@@ -166,9 +168,9 @@ export const ActionButtonsSection: React.FC<ActionButtonsSectionProps> = ({
     <Tooltip
       label={
         <Box textAlign="center">
-          <Box fontWeight="semibold">Keyboard Shortcuts</Box>
+          <Box fontWeight="semibold">{t("Keyboard Shortcuts")}</Box>
           <Box fontSize="xs" opacity={0.8}>
-            {showShortcuts ? 'Hide shortcuts panel' : 'Show all keyboard shortcuts'}
+            {showShortcuts ? t('Hide shortcuts panel') : t('Show all keyboard shortcuts')}
           </Box>
           <Badge size="sm" variant="subtle" mt={1}>
             ? or F1
@@ -179,7 +181,7 @@ export const ActionButtonsSection: React.FC<ActionButtonsSectionProps> = ({
     >
       <IconButton
         icon={<FaKeyboard />}
-        aria-label="Toggle keyboard shortcuts"
+        aria-label={t("Toggle keyboard shortcuts")}
         size="sm"
         colorScheme={showShortcuts ? 'purple' : 'gray'}
         variant={showShortcuts ? 'solid' : 'ghost'}

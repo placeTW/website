@@ -1,5 +1,6 @@
 import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, IconButton, Input, Td, Tr, useDisclosure } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FaAngleDown, FaAngleUp, FaPen, FaTrash } from "react-icons/fa6";
 import { Color } from "../../types/art-tool";
 
@@ -26,6 +27,7 @@ const ColorRow: FC<ColorRowProps> = ({
   handleEditColor,
   handleRemoveColor,
 }: ColorRowProps) => {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedColor, setEditedColor] = useState(color.Color);
   const [editedColorName, setEditedColorName] = useState(color.color_name);
@@ -93,27 +95,27 @@ const ColorRow: FC<ColorRowProps> = ({
         </Td>
         <Td>
           <IconButton
-            aria-label="Edit"
+            aria-label={t("Edit")}
             icon={<FaPen />}
             onClick={() => setIsEditing(!isEditing)}
             mr={2}
           />
           <IconButton
-            aria-label="Delete"
+            aria-label={t("Delete")}
             icon={<FaTrash />}
             onClick={onOpenDeleteDialog}
           />
         </Td>
         <Td>
           <IconButton
-            aria-label="Move Up"
+            aria-label={t("Move Up")}
             icon={<FaAngleUp />}
             onClick={() => moveColorUp(index)}
             isDisabled={index === 0}
             mr={2}
           />
           <IconButton
-            aria-label="Move Down"
+            aria-label={t("Move Down")}
             icon={<FaAngleDown />}
             onClick={() => moveColorDown(index)}
             isDisabled={index === totalColors - 1}
@@ -128,20 +130,19 @@ const ColorRow: FC<ColorRowProps> = ({
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Design
+              {t("Delete Design")}
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure you want to delete this design? This action cannot be
-              undone.
+              {t("Are you sure you want to delete this design? This action cannot be undone.")}
             </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onCloseDeleteDialog}>
-                Cancel
+                {t("Cancel")}
               </Button>
               <Button colorScheme="red" onClick={handleDelete} ml={3}>
-                Delete
+                {t("Delete")}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

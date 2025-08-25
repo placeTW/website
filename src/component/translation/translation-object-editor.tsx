@@ -12,6 +12,7 @@ import {
   ListItem,
   Textarea,
 } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { FaMinus, FaPlus } from "react-icons/fa";
 
 interface TranslationObjectEditorProps {
@@ -25,6 +26,7 @@ const TranslationObjectEditor = ({
   data,
   editText,
 }: TranslationObjectEditorProps) => {
+  const { t } = useTranslation();
   const getValue = (key: string): string | string[] => {
     if (data && data[key]) {
       return data[key];
@@ -85,7 +87,7 @@ const TranslationObjectEditor = ({
                         }}
                       />
                       <IconButton
-                        aria-label="delete"
+                        aria-label={t("Delete")}
                         onClick={() => removeList(dataKey, listIndex)}
                         icon={<FaMinus />}
                       />
@@ -95,7 +97,7 @@ const TranslationObjectEditor = ({
                     onClick={() => addList(dataKey)}
                     leftIcon={<FaPlus />}
                   >
-                    Add
+                    {t("Add")}
                   </Button>
                 </List>
               ) : (data[dataKey] as string).length < 20 ? (

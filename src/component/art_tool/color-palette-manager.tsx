@@ -12,6 +12,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FaPlus } from "react-icons/fa6";
 import {
   deleteColor,
@@ -24,6 +25,7 @@ import { Color } from "../../types/art-tool";
 import ColorRow from "./color-row";
 
 const ColorPaletteManager = () => {
+  const { t } = useTranslation();
   const { colors, setColors } = useColorContext(); // Get colors and setter from context
   const [newColor, setNewColor] = useState<string>("");
   const [newColorName, setNewColorName] = useState<string>("");
@@ -37,10 +39,8 @@ const ColorPaletteManager = () => {
         setNewColorName("");
       } catch (error) {
         toast({
-          title: "Error",
-        description: `Failed to add color: 
-            (error as Error).message || error
-          }`,
+          title: t("Error"),
+          description: t("Failed to add color: {{error}}", { error: (error as Error).message || error }),
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -58,10 +58,8 @@ const ColorPaletteManager = () => {
       await updateColor(color.Color, newColor, newColorName);
     } catch (error) {
       toast({
-        title: "Error",
-        description: `Failed to update color: ${
-          (error as Error).message || error
-        }`,
+        title: t("Error"),
+        description: t("Failed to update color: {{error}}", { error: (error as Error).message || error }),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -82,10 +80,8 @@ const ColorPaletteManager = () => {
         setColors(updatedColors);
       } catch (error) {
         toast({
-          title: "Error",
-          description: `Failed to delete color: ${
-            (error as Error).message || error
-          }`,
+          title: t("Error"),
+          description: t("Failed to delete color: {{error}}", { error: (error as Error).message || error }),
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -123,10 +119,8 @@ const ColorPaletteManager = () => {
       setColors(updatedColors);
     } catch (error) {
       toast({
-        title: "Error",
-        description: `Failed to reorder colors: ${
-          (error as Error).message || error
-        }`,
+        title: t("Error"),
+        description: t("Failed to reorder colors: {{error}}", { error: (error as Error).message || error }),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -135,22 +129,22 @@ const ColorPaletteManager = () => {
   };
 
   if (!colors) {
-    return <div>Loading...</div>; // Fallback UI while colors are being fetched
+    return <div>{t("Loading...")}</div>; // Fallback UI while colors are being fetched
   }
 
   return (
     <Box>
       <Heading size="md" mb={4}>
-        Color Palette Manager
+        {t("Color Palette Manager")}
       </Heading>
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>Color</Th>
-            <Th>Hex Code</Th>
-            <Th>Name</Th>
-            <Th>Actions</Th>
-            <Th>Order</Th>
+            <Th>{t("Color")}</Th>
+            <Th>{t("Hex Code")}</Th>
+            <Th>{t("Name")}</Th>
+            <Th>{t("Actions")}</Th>
+            <Th>{t("Order")}</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -170,14 +164,14 @@ const ColorPaletteManager = () => {
       </Table>
       <Flex mt={4} justifyContent="space-between" alignItems="center">
         <Input
-          placeholder="Enter Hex Code"
+          placeholder={t("Enter Hex Code")}
           value={newColor}
           onChange={(e) => setNewColor(e.target.value)}
           mr={2}
           flex="1"
         />
         <Input
-          placeholder="Enter Color Name"
+          placeholder={t("Enter Color Name")}
           value={newColorName}
           onChange={(e) => setNewColorName(e.target.value)}
           mr={2}
@@ -189,7 +183,7 @@ const ColorPaletteManager = () => {
           leftIcon={<FaPlus />}
           minWidth="120px"
         >
-          Add Color
+          {t("Add Color")}
         </Button>
       </Flex>
     </Box>

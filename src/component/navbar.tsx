@@ -29,32 +29,19 @@ import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import { FaBars, FaPen, FaArrowRightToBracket, FaArrowRightFromBracket } from "react-icons/fa6"; // Import icons
 
-const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
-
 const Navbar = () => {
   const { currentUser, ranks, logoutUser } = useUserContext();
   const { t } = useTranslation();
-  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [username, setUsername] = useState<string>("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
-
-  // Show auth modal only if no current user (UserProvider handles session management)
-  useEffect(() => {
-    setAuthModalOpen(!currentUser);
-  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser) {
       setUsername(currentUser.handle || "");
     }
   }, [currentUser]);
-
-  const handleOpenModal = () => {
-    setAuthModalOpen(true);
-  };
-
-  const handleCloseModal = () => setAuthModalOpen(false);
 
   const handleLogout = async () => {
     await authSignOut();
@@ -95,20 +82,16 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <Box display={{ base: "none", md: "flex" }} alignItems="center" justifyContent="flex-end" flexShrink={0}>
-          {enableArtTool && (
-            <>
-              <Box textAlign="center" mr={6}>
-                <RouterLink to="/briefing-room" style={{ color: "white" }}>
-                  {t("Briefing Room")}
-                </RouterLink>
-              </Box>
-              <Box textAlign="center" mr={6}>
-                <RouterLink to="/design-office" style={{ color: "white" }}>
-                  {t("Design Office")}
-                </RouterLink>
-              </Box>
-            </>
-          )}
+          <Box textAlign="center" mr={6}>
+            <RouterLink to="/briefing-room" style={{ color: "white" }}>
+              {t("Briefing Room")}
+            </RouterLink>
+          </Box>
+          <Box textAlign="center" mr={6}>
+            <RouterLink to="/design-office" style={{ color: "white" }}>
+              {t("Design Office")}
+            </RouterLink>
+          </Box>
           {currentUser && ["A", "B"].includes(currentUser.rank) && (
             <Box textAlign="center" mr={6}>
               <RouterLink to="/admin" style={{ color: "white" }}>
@@ -132,13 +115,13 @@ const Navbar = () => {
                 {t("Welcome")}, {userRankName} {currentUser?.handle || ""}
               </Text>
               <IconButton
-                aria-label="Edit Username"
+                aria-label={t("Edit Username")}
                 icon={<FaPen />}
                 onClick={onOpen}
                 colorScheme="blue"
               />
               <IconButton
-                aria-label="Logout"
+                aria-label={t("Logout")}
                 icon={<FaArrowRightFromBracket />}
                 onClick={handleLogout}
                 colorScheme="blue"
@@ -146,9 +129,9 @@ const Navbar = () => {
             </>
           ) : (
             <IconButton
-              aria-label="Login"
+              aria-label={t("Login")}
               icon={<FaArrowRightToBracket />}
-              onClick={handleOpenModal}
+              onClick={() => setShowLoginModal(true)}
               colorScheme="blue"
             />
           )}
@@ -158,16 +141,12 @@ const Navbar = () => {
             <Menu>
               <MenuButton as={IconButton} icon={<FaBars />} variant="outline" color="white" />
               <MenuList>
-                {enableArtTool && (
-                  <>
-                    <MenuItem as={RouterLink} to="/briefing-room">
-                      {t("Briefing Room")}
-                    </MenuItem>
-                    <MenuItem as={RouterLink} to="/design-office">
-                      {t("Design Office")}
-                    </MenuItem>
-                  </>
-                )}
+                <MenuItem as={RouterLink} to="/briefing-room">
+                  {t("Briefing Room")}
+                </MenuItem>
+                <MenuItem as={RouterLink} to="/design-office">
+                  {t("Design Office")}
+                </MenuItem>
                 <MenuItem as={RouterLink} to="/gallery">
                   {t("Gallery")}
                 </MenuItem>
@@ -182,7 +161,7 @@ const Navbar = () => {
         </HStack>
       </Flex>
 
-      <AuthProviderModal isOpen={isAuthModalOpen} onClose={handleCloseModal} authType="login" />
+      <AuthProviderModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} authType="login" />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

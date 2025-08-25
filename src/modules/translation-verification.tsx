@@ -91,7 +91,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
   return (
     <div className="col-6 form-widget">
       <h1 className="header">
-        Logged in as {(session?.user?.identities ?? [])[0].id}
+        {t("Logged in as")} {(session?.user?.identities ?? [])[0].id}
       </h1>
       <Button onClick={() => authSignOut()} className="button block full-width">
         {t("Logout")}
@@ -121,7 +121,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
           </TabPanels>
         </Tabs>
       )}
-      {loading && <p>Loading...</p>}
+      {loading && <p>{t("Loading...")}</p>}
     </div>
   );
 };

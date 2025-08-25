@@ -20,7 +20,7 @@ const UserManage: React.FC = () => {
         setModeratableRanks(data.can_moderate);
       } catch (error) {
         console.error("Fetch user details error:", error);
-        setError("Fetch user details error");
+        setError(t("Fetch user details error"));
       }
     };
 
@@ -32,7 +32,7 @@ const UserManage: React.FC = () => {
       await functionsUpdateUserStatus(userId, rank);
     } catch (error) {
       console.error("Update user status error:", error);
-      setError("Update user status error");
+      setError(t("Update user status error"));
     }
   };
 

@@ -26,6 +26,7 @@ import {
   Grid,
   GridItem,
 } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import { ExtractedColor, suggestColorMappings } from '../../../../utils/pngUtils';
 
 export interface ColorMappingDialogProps {
@@ -53,6 +54,7 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
   imageWidth,
   imageHeight,
 }) => {
+  const { t } = useTranslation();
   const [colorMappings, setColorMappings] = useState<Map<string, string>>(new Map());
   const [insertX, setInsertX] = useState(0);
   const [insertY, setInsertY] = useState(0);
@@ -102,17 +104,17 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
       <ModalContent bg={bgColor} maxHeight="90vh">
-        <ModalHeader>Import PNG Image</ModalHeader>
+        <ModalHeader>{t("Import PNG Image")}</ModalHeader>
         <ModalCloseButton />
         
         <ModalBody overflowY="auto">
           <VStack spacing={6} align="stretch">
             {/* Image Info */}
             <Box>
-              <Text fontWeight="semibold" mb={2}>Image Information</Text>
+              <Text fontWeight="semibold" mb={2}>{t("Image Information")}</Text>
               <HStack spacing={4}>
-                <Badge colorScheme="blue">{imageWidth} × {imageHeight} pixels</Badge>
-                <Badge colorScheme="green">{pngColors.length} unique colors</Badge>
+                <Badge colorScheme="blue">{imageWidth} × {imageHeight} {t("pixels")}</Badge>
+                <Badge colorScheme="green">{pngColors.length} {t("unique colors")}</Badge>
               </HStack>
             </Box>
 
@@ -120,11 +122,11 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
 
             {/* Insertion Position */}
             <Box>
-              <Text fontWeight="semibold" mb={3}>Insertion Position</Text>
+              <Text fontWeight="semibold" mb={3}>{t("Insertion Position")}</Text>
               <Grid templateColumns="repeat(2, 1fr)" gap={4}>
                 <GridItem>
                   <FormControl>
-                    <FormLabel fontSize="sm">X Coordinate</FormLabel>
+                    <FormLabel fontSize="sm">{t("X Coordinate")}</FormLabel>
                     <NumberInput 
                       value={insertX} 
                       onChange={(_, value) => setInsertX(value || 0)}
@@ -140,7 +142,7 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
                 </GridItem>
                 <GridItem>
                   <FormControl>
-                    <FormLabel fontSize="sm">Y Coordinate</FormLabel>
+                    <FormLabel fontSize="sm">{t("Y Coordinate")}</FormLabel>
                     <NumberInput 
                       value={insertY} 
                       onChange={(_, value) => setInsertY(value || 0)}
@@ -156,7 +158,7 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
                 </GridItem>
               </Grid>
               <Text fontSize="xs" color="gray.500" mt={2}>
-                The image will be inserted starting at these coordinates (top-left corner)
+                {t("The image will be inserted starting at these coordinates (top-left corner)")}
               </Text>
             </Box>
 
@@ -164,9 +166,9 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
 
             {/* Color Mappings */}
             <Box>
-              <Text fontWeight="semibold" mb={3}>Color Mapping</Text>
+              <Text fontWeight="semibold" mb={3}>{t("Color Mapping")}</Text>
               <Text fontSize="sm" color="gray.600" mb={4}>
-                Map each color from your PNG to an available color in the current palette:
+                {t("Map each color from your PNG to an available color in the current palette:")}
               </Text>
               
               <VStack spacing={3} align="stretch">
@@ -174,14 +176,14 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
                   <HStack key={index} spacing={4} p={3} borderWidth="1px" borderColor={borderColor} borderRadius="md">
                     <VStack spacing={1} align="center" minWidth="80px">
                       <ColorSwatch color={pngColor} />
-                      <Text fontSize="xs" color="gray.600">PNG</Text>
+                      <Text fontSize="xs" color="gray.600">{t("PNG")}</Text>
                     </VStack>
                     
                     <Text fontSize="lg" color="gray.400">→</Text>
                     
                     <VStack spacing={1} align="center" minWidth="80px">
                       <ColorSwatch color={selectedColor} />
-                      <Text fontSize="xs" color="gray.600">Design</Text>
+                      <Text fontSize="xs" color="gray.600">{t("Design")}</Text>
                     </VStack>
                     
                     <Box flex="1">
@@ -210,14 +212,14 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
 
         <ModalFooter>
           <Button variant="ghost" mr={3} onClick={onClose}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button 
             colorScheme="blue" 
             onClick={handleConfirm}
             isDisabled={colorMappings.size === 0}
           >
-            Import Image
+            {t("Import Image")}
           </Button>
         </ModalFooter>
       </ModalContent>
