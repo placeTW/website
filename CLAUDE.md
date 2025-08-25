@@ -55,7 +55,7 @@ This is a React + TypeScript + Vite project for the Taiwan's r/place community w
 
 ### Workflows
 
-- The codebase includes an art tool feature that can be enabled via environment variable (`VITE_ENABLE_ART_TOOL`)
+- The codebase includes art tool features for canvas creation and design management
 - Translation management is a key feature with a dedicated interface
 - Authentication flow is handled via Supabase
 
@@ -65,5 +65,4 @@ The project requires several environment variables:
 
 - `VITE_SUPABASE_URL` - Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
-- `VITE_ENABLE_ART_TOOL` - Flag to enable art tool features
 - `VITE_CODE_SERVER` - Optional flag for code-server configuration

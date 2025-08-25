@@ -14,17 +14,13 @@ import theme from "./theme"; // Import your custom theme
 import "./i18n";
 import "./index.scss";
 
-const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
-
 // Lazy load page components for better code splitting
 const HomePage = lazy(() => import("./pages"));
 const AdminPage = lazy(() => import("./pages/admin"));
 const Gallery = lazy(() => import("./pages/gallery"));
 const Translations = lazy(() => import("./pages/translations"));
-
-// Conditionally import art tool components only when feature is enabled
-const BriefingRoom = enableArtTool ? lazy(() => import("./pages/briefing-room")) : null;
-const DesignOffice = enableArtTool ? lazy(() => import("./pages/design-office")) : null;
+const BriefingRoom = lazy(() => import("./pages/briefing-room"));
+const DesignOffice = lazy(() => import("./pages/design-office"));
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -56,26 +52,22 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                           </ProtectedRoute>
                         } 
                       />
-                      {enableArtTool && BriefingRoom && DesignOffice && (
-                        <>
-                          <Route 
-                            path="/briefing-room" 
-                            element={
-                              <ProtectedRoute>
-                                <BriefingRoom />
-                              </ProtectedRoute>
-                            } 
-                          />
-                          <Route 
-                            path="/design-office" 
-                            element={
-                              <ProtectedRoute>
-                                <DesignOffice />
-                              </ProtectedRoute>
-                            } 
-                          />
-                        </>
-                      )}
+                      <Route 
+                        path="/briefing-room" 
+                        element={
+                          <ProtectedRoute>
+                            <BriefingRoom />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      <Route 
+                        path="/design-office" 
+                        element={
+                          <ProtectedRoute>
+                            <DesignOffice />
+                          </ProtectedRoute>
+                        } 
+                      />
                     </Routes>  
                   </Suspense>
                 </Layout>

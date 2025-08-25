@@ -29,8 +29,6 @@ import { useUserContext } from "../context/user-context";
 import AuthProviderModal from "./auth-provider-modal";
 import { FaBars, FaPen, FaArrowRightToBracket, FaArrowRightFromBracket } from "react-icons/fa6"; // Import icons
 
-const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
-
 const Navbar = () => {
   const { currentUser, ranks, logoutUser } = useUserContext();
   const { t } = useTranslation();
@@ -84,20 +82,16 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <Box display={{ base: "none", md: "flex" }} alignItems="center" justifyContent="flex-end" flexShrink={0}>
-          {enableArtTool && (
-            <>
-              <Box textAlign="center" mr={6}>
-                <RouterLink to="/briefing-room" style={{ color: "white" }}>
-                  {t("Briefing Room")}
-                </RouterLink>
-              </Box>
-              <Box textAlign="center" mr={6}>
-                <RouterLink to="/design-office" style={{ color: "white" }}>
-                  {t("Design Office")}
-                </RouterLink>
-              </Box>
-            </>
-          )}
+          <Box textAlign="center" mr={6}>
+            <RouterLink to="/briefing-room" style={{ color: "white" }}>
+              {t("Briefing Room")}
+            </RouterLink>
+          </Box>
+          <Box textAlign="center" mr={6}>
+            <RouterLink to="/design-office" style={{ color: "white" }}>
+              {t("Design Office")}
+            </RouterLink>
+          </Box>
           {currentUser && ["A", "B"].includes(currentUser.rank) && (
             <Box textAlign="center" mr={6}>
               <RouterLink to="/admin" style={{ color: "white" }}>
@@ -147,16 +141,12 @@ const Navbar = () => {
             <Menu>
               <MenuButton as={IconButton} icon={<FaBars />} variant="outline" color="white" />
               <MenuList>
-                {enableArtTool && (
-                  <>
-                    <MenuItem as={RouterLink} to="/briefing-room">
-                      {t("Briefing Room")}
-                    </MenuItem>
-                    <MenuItem as={RouterLink} to="/design-office">
-                      {t("Design Office")}
-                    </MenuItem>
-                  </>
-                )}
+                <MenuItem as={RouterLink} to="/briefing-room">
+                  {t("Briefing Room")}
+                </MenuItem>
+                <MenuItem as={RouterLink} to="/design-office">
+                  {t("Design Office")}
+                </MenuItem>
                 <MenuItem as={RouterLink} to="/gallery">
                   {t("Gallery")}
                 </MenuItem>
