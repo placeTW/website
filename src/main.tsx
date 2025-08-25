@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Layout from "./component/layout";
+import ProtectedRoute from "./component/auth/ProtectedRoute";
 import { AlertProvider } from "./context/alert-context";
 import { DesignProvider } from "./context/design-context";  
 import { ColorProvider } from "./context/color-context"; // Import ColorProvider
@@ -39,12 +40,40 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/gallery" element={<Gallery />} />
-                      <Route path="/translations" element={<Translations />} />
-                      <Route path="/admin" element={<AdminPage />} />
+                      <Route 
+                        path="/translations" 
+                        element={
+                          <ProtectedRoute>
+                            <Translations />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      <Route 
+                        path="/admin" 
+                        element={
+                          <ProtectedRoute requiresRank={['A', 'B']}>
+                            <AdminPage />
+                          </ProtectedRoute>
+                        } 
+                      />
                       {enableArtTool && BriefingRoom && DesignOffice && (
                         <>
-                          <Route path="/briefing-room" element={<BriefingRoom />} />
-                          <Route path="/design-office" element={<DesignOffice />} />
+                          <Route 
+                            path="/briefing-room" 
+                            element={
+                              <ProtectedRoute>
+                                <BriefingRoom />
+                              </ProtectedRoute>
+                            } 
+                          />
+                          <Route 
+                            path="/design-office" 
+                            element={
+                              <ProtectedRoute>
+                                <DesignOffice />
+                              </ProtectedRoute>
+                            } 
+                          />
                         </>
                       )}
                     </Routes>  

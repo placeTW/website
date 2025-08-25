@@ -34,27 +34,16 @@ const enableArtTool = import.meta.env.VITE_ENABLE_ART_TOOL;
 const Navbar = () => {
   const { currentUser, ranks, logoutUser } = useUserContext();
   const { t } = useTranslation();
-  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [username, setUsername] = useState<string>("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
-
-  // Show auth modal only if no current user (UserProvider handles session management)
-  useEffect(() => {
-    setAuthModalOpen(!currentUser);
-  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser) {
       setUsername(currentUser.handle || "");
     }
   }, [currentUser]);
-
-  const handleOpenModal = () => {
-    setAuthModalOpen(true);
-  };
-
-  const handleCloseModal = () => setAuthModalOpen(false);
 
   const handleLogout = async () => {
     await authSignOut();
@@ -148,7 +137,7 @@ const Navbar = () => {
             <IconButton
               aria-label={t("Login")}
               icon={<FaArrowRightToBracket />}
-              onClick={handleOpenModal}
+              onClick={() => setShowLoginModal(true)}
               colorScheme="blue"
             />
           )}
@@ -182,7 +171,7 @@ const Navbar = () => {
         </HStack>
       </Flex>
 
-      <AuthProviderModal isOpen={isAuthModalOpen} onClose={handleCloseModal} authType="login" />
+      <AuthProviderModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} authType="login" />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
