@@ -13,6 +13,7 @@ import {
   Spacer,
 } from "@chakra-ui/react";
 import React, { Dispatch, SetStateAction, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FaEllipsisVertical, FaEye, FaEyeSlash, FaMagnifyingGlass as FaSearch } from "react-icons/fa6";
 import { Design } from "../../types/art-tool";
 import DesignCardsList from "./design-cards-list";
@@ -52,6 +53,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
   showAll,
   hideAll,
 }) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
@@ -71,21 +73,21 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
           }}
           alignItems="center"
         >
-          <Heading size="md">Designs</Heading>
+          <Heading size="md">{t("Designs")}</Heading>
           <Spacer />
           <Menu>
             <MenuButton
               as={IconButton}
-              aria-label="Options"
+              aria-label={t("Options")}
               icon={<FaEllipsisVertical />}
               variant="outline"
             />
             <MenuList>
               <MenuItem icon={<FaEye />} onClick={showAll}>
-                Show All
+                {t("Show All")}
               </MenuItem>
               <MenuItem icon={<FaEyeSlash />} onClick={hideAll}>
-                Hide All
+                {t("Hide All")}
               </MenuItem>
             </MenuList>
           </Menu>
@@ -96,7 +98,7 @@ const DesignsPanel: React.FC<DesignsPanelProps> = ({
               <FaSearch color="gray.300" />
             </InputLeftElement>
             <Input
-              placeholder="Search designs..."
+              placeholder={t("Search designs...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

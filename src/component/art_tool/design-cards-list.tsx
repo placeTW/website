@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { Design } from "../../types/art-tool";
 import DesignCard from "./design-card";
 
@@ -43,6 +44,7 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   onMoveDesignToIndex,
   searchQuery,
 }) => {
+  const { t } = useTranslation();
   const [visibilityMap, setVisibilityMap] = useState<Record<number, boolean>>(
     {},
   );
@@ -55,8 +57,8 @@ const DesignCardsList: FC<DesignCardsListProps> = ({
   const handleEdit = (designId: number): boolean => {
     if (editDesignId && editDesignId !== designId) {
       toast({
-        title: "Edit in Progress",
-        description: "You can only edit one card at a time.",
+        title: t("Edit in Progress"),
+        description: t("You can only edit one card at a time."),
         status: "warning",
         duration: 3000,
         isClosable: true,

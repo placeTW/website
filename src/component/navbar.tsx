@@ -132,13 +132,13 @@ const Navbar = () => {
                 {t("Welcome")}, {userRankName} {currentUser?.handle || ""}
               </Text>
               <IconButton
-                aria-label="Edit Username"
+                aria-label={t("Edit Username")}
                 icon={<FaPen />}
                 onClick={onOpen}
                 colorScheme="blue"
               />
               <IconButton
-                aria-label="Logout"
+                aria-label={t("Logout")}
                 icon={<FaArrowRightFromBracket />}
                 onClick={handleLogout}
                 colorScheme="blue"
@@ -146,7 +146,7 @@ const Navbar = () => {
             </>
           ) : (
             <IconButton
-              aria-label="Login"
+              aria-label={t("Login")}
               icon={<FaArrowRightToBracket />}
               onClick={handleOpenModal}
               colorScheme="blue"

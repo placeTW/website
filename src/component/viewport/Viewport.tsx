@@ -9,6 +9,7 @@ import React, {
   useState,
   useMemo,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { useColorContext } from "../../context/color-context";
 import { useDesignContext } from "../../context/design-context";
@@ -63,6 +64,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
     },
     ref,
   ) => {
+    const { t } = useTranslation();
     const [hoveredPixel, setHoveredPixel] = useState<{
       x: number;
       y: number;
@@ -375,8 +377,8 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
         return {
           ...design,
           id: pixel.designId,
-          design_name: design?.design_name || "Unknown Design",
-          user_handle: design?.user_handle || "Unknown User",
+          design_name: design?.design_name || t("Untitled Design"),
+          user_handle: design?.user_handle || t("Unassigned"),
           color: color?.Color || "#000000",
         } as ContextMenuDesign;
       });
@@ -618,7 +620,7 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
           alignItems="left"
         >
           <Text fontWeight="bold">
-            Coordinates: {hoveredPixel.x}, {hoveredPixel.y}
+            {t("Coordinates")}: {hoveredPixel.x}, {hoveredPixel.y}
           </Text>
           {color && (
             <Flex direction="row" gap={2} alignItems="center">

@@ -28,6 +28,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FaCopy,
   FaEllipsisVertical,
@@ -90,6 +91,7 @@ const DesignCard: FC<DesignCardProps> = ({
   currentIndex,
   totalDesigns,
 }) => {
+  const { t } = useTranslation();
   const { currentUser, users, ranks } = useUserContext(); // Import users and ranks
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(
@@ -142,8 +144,8 @@ const DesignCard: FC<DesignCardProps> = ({
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "An error occurred while updating your like.",
+        title: t("Error"),
+        description: t("An error occurred while updating your like."),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -153,22 +155,22 @@ const DesignCard: FC<DesignCardProps> = ({
 
   const handleDelete = async () => {
     if (!isAdminOrCreator) {
-      throw new Error("User not allowed to delete design")
+      throw new Error(t("User is not allowed to create a design"))
     }
     try {
       await databaseDeleteDesign(design.id);
       onDeleted(design.id);
       toast({
-        title: "Design deleted.",
-        description: `${design.design_name} has been removed successfully.`,
+        title: t("Success"),
+        description: t("{{name}} has been updated successfully.", { name: design.design_name }),
         status: "success",
         duration: 3000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "An error occurred while deleting the design.",
+        title: t("Error"),
+        description: t("An error occurred while deleting the design."),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -211,16 +213,16 @@ const DesignCard: FC<DesignCardProps> = ({
       onSetCanvas(returnedDesign.id, canvas.id);
 
       toast({
-        title: "Set Canvas for Design",
-        description: `${canvas.canvas_name} has been set as the canvas for ${design.design_name}`,
+        title: t("Success"),
+        description: t("{{name}} has been updated successfully.", { name: design.design_name }),
         status: "success",
         duration: 3000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to add design to canvas.",
+        title: t("Error"),
+        description: t("Failed to save changes"),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -232,8 +234,8 @@ const DesignCard: FC<DesignCardProps> = ({
     const targetIndex = parseInt(newIndex) - 1; // Convert from 1-based to 0-based
     if (isNaN(targetIndex) || targetIndex < 0 || targetIndex >= totalDesigns) {
       toast({
-        title: "Invalid Index",
-        description: `Please enter a number between 1 and ${totalDesigns}.`,
+        title: t("Error"),
+        description: t("Please enter a valid number."),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -267,7 +269,7 @@ const DesignCard: FC<DesignCardProps> = ({
   // Compute the creator's rank name
   const creatorRankName =
     ranks.find((rank) => rank.rank_id === creator?.rank)?.rank_name ||
-    "Unknown";
+    t("Unassigned");
 
   // Check for required fields
   if (!design.id) {
@@ -296,10 +298,10 @@ const DesignCard: FC<DesignCardProps> = ({
             justifyContent="center"
             alignItems="center"
           >
-            <Tooltip label={isVisible ? "Hide Design" : "Show Design"}>
+            <Tooltip label={isVisible ? t("Hide Design") : t("Show Design")}>
               <IconButton
                 icon={isVisible ? <FaEye /> : <FaEyeSlash />}
-                aria-label="Toggle Visibility"
+                aria-label={t("Toggle Visibility")}
                 onClick={handleToggleVisibility}
                 position="absolute"
                 top="5px"
@@ -311,10 +313,10 @@ const DesignCard: FC<DesignCardProps> = ({
                 borderColor={isVisible ? "green.500" : "red.500"}
               />
             </Tooltip>
-            <Tooltip label="Center on Design">
+            <Tooltip label={t("Center on Design")}>
               <IconButton
                 icon={<FaArrowsLeftRightToLine />}
-                aria-label="Center on Design"
+                aria-label={t("Center on Design")}
                 onClick={() => onSelect(design.id)}
                 position="absolute"
                 top="5px"
@@ -327,7 +329,7 @@ const DesignCard: FC<DesignCardProps> = ({
               />
             </Tooltip>
             <Image
-              alt={design.design_name ?? "(Untitled artwork)"}
+              alt={design.design_name ?? t("(Untitled Artwork)")}
               fallback={
                 <Box
                   height="100%"
@@ -344,7 +346,7 @@ const DesignCard: FC<DesignCardProps> = ({
               onClick={handleImageClick}
               src={design.design_thumbnail || ""}
             />
-            <Tooltip label={isLiked ? "Unlike" : "Like"}>
+            <Tooltip label={isLiked ? t("Unlike") : t("Like")}>
               <Button
                 leftIcon={<FaHeart color={isLiked ? "red" : "gray"} />}
                 onClick={handleLike}
@@ -369,13 +371,13 @@ const DesignCard: FC<DesignCardProps> = ({
             bg={isEditing ? "blue.100" : isVisible ? "white" : "gray.100"}
           >
             <Box>
-              <Heading fontSize={"md"}>{design.design_name || "(Untitled Artwork)"}</Heading>
+              <Heading fontSize={"md"}>{design.design_name || t("(Untitled Artwork)")}</Heading>
               <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
-                {creatorRankName} {creator?.handle ?? "Unknown"}
+                {creatorRankName} {creator?.handle ?? t("Unassigned")}
               </Text>
               {isEditing && (
                 <Text fontSize={"xs"} color="blue.600" fontWeight={500}>
-                  Currently editing - use toolbar to save
+                  {t("Currently editing - use toolbar to save")}
                 </Text>
               )}
             </Box>
@@ -384,7 +386,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 <IconButton
                   icon={<FaArrowUp />}
                   variant="outline"
-                  aria-label="Move Design Up in Order"
+                  aria-label={t("Move Design Up in Order")}
                   onClick={() => onMoveDesignUp(design.id)}
                   size="xs"
                   isDisabled={!isVisible || currentIndex === 0}
@@ -404,7 +406,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 <IconButton
                   icon={<FaArrowDown />}
                   variant="outline"
-                  aria-label="Move Design Down in Order"
+                  aria-label={t("Move Design Down in Order")}
                   onClick={() => onMoveDesignDown(design.id)}
                   size="xs"
                   isDisabled={!isVisible || currentIndex === totalDesigns - 1}
@@ -412,10 +414,10 @@ const DesignCard: FC<DesignCardProps> = ({
               </Flex>) : <Box />}
               <Flex gap={2}>
                 {isCreator && !inEditMode && (
-                  <Tooltip label={isEditing ? "Stop Editing" : "Edit Design"}>
+                  <Tooltip label={isEditing ? t("Stop Editing") : t("Edit Design")}>
                     <IconButton
                       icon={isEditing ? <FaXmark /> : <FaPen />}
-                      aria-label={isEditing ? "Stop Editing" : "Edit Design"}
+                      aria-label={isEditing ? t("Stop Editing") : t("Edit Design")}
                       onClick={handleEditToggle}
                       size="sm"
                       colorScheme={isEditing ? "red" : "blue"}
@@ -428,7 +430,7 @@ const DesignCard: FC<DesignCardProps> = ({
                   <Menu>
                     <MenuButton
                       as={IconButton}
-                      aria-label="Options"
+                      aria-label={t("Options")}
                       icon={<FaEllipsisVertical />}
                       variant={isEditing ? "solid" : "outline"}
                       size="sm"
@@ -436,29 +438,29 @@ const DesignCard: FC<DesignCardProps> = ({
                     />
                     <MenuList>
                       {!isEditing && (
-                        <MenuGroup title="Canvas Operations">
+                        <MenuGroup title={t("Canvas Operations")}>
                           <MenuItem
                             icon={<FaCopy />}
                             onClick={handleCopyToCanvas}
                           >
-                            Copy to Canvas
+                            {t("Copy to Canvas")}
                           </MenuItem>
                           <MenuItem
                             icon={<FaExchangeAlt />}
                             onClick={handleMoveToCanvas}
                           >
-                            Move to Canvas
+                            {t("Move to Canvas")}
                           </MenuItem>
                         </MenuGroup>
                       )}
                       <MenuDivider />
-                      <MenuGroup title="Admin">
+                      <MenuGroup title={t("Admin")}>
                         <MenuItem
                           icon={<FaTrash />}
                           onClick={onOpenDeleteDialog}
                           color={"red.500"}
                         >
-                          Delete
+                          {t("Delete")}
                         </MenuItem>
                       </MenuGroup>
                     </MenuList>

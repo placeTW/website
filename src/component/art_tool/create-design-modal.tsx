@@ -10,6 +10,7 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { databaseCreateDesign } from "../../api/supabase/database";
 import { useUserContext } from "../../context/user-context";
 import { Design } from "../../types/art-tool";
@@ -22,6 +23,7 @@ interface CreateDesignModalProps {
 }
 
 const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, canvasId, onClose, onCreate }) => {
+  const { t } = useTranslation();
   const [designName, setDesignName] = useState("");
   const { currentUser } = useUserContext();
 
@@ -43,21 +45,21 @@ const CreateDesignModal: FC<CreateDesignModalProps> = ({ isOpen, canvasId, onClo
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Create New Design</ModalHeader>
+        <ModalHeader>{t("Create New Design")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Input
-            placeholder="Design Name"
+            placeholder={t("Design Name")}
             value={designName}
             onChange={(e) => setDesignName(e.target.value)}
           />
         </ModalBody>
         <ModalFooter>
           <Button colorScheme="blue" mr={3} onClick={handleCreateDesign}>
-            Create
+            {t("Create")}
           </Button>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t("Cancel")}
           </Button>
         </ModalFooter>
       </ModalContent>

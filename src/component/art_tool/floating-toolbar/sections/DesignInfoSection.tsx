@@ -10,6 +10,7 @@ import {
   VStack,
   useColorModeValue,
 } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import {
   FaFloppyDisk as FaSave,
   FaPen as FaEdit,
@@ -40,6 +41,7 @@ export const DesignInfoSection: React.FC<DesignInfoSectionProps> = ({
   onCancel,
   isVertical = false,
 }) => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [tempName, setTempName] = useState(designName);
   
@@ -65,7 +67,7 @@ export const DesignInfoSection: React.FC<DesignInfoSectionProps> = ({
   };
 
   const handleConfirmEdit = () => {
-    onNameChange(tempName.trim() || 'Untitled Design');
+    onNameChange(tempName.trim() || t('Untitled Design'));
     onStopEditingName();
   };
 
@@ -107,27 +109,27 @@ export const DesignInfoSection: React.FC<DesignInfoSectionProps> = ({
               onKeyDown={handleKeyDown}
               size="sm"
               variant="filled"
-              placeholder="Enter design name..."
+              placeholder={t("Enter design name...")}
               bg="white"
               _dark={{ bg: 'gray.700' }}
               flex={1}
             />
-            <Tooltip label="Confirm (Enter)">
+            <Tooltip label={t("Confirm (Enter)")}>
               <IconButton
                 icon={<FaCheck />}
                 size="sm"
                 colorScheme="green"
                 onClick={handleConfirmEdit}
-                aria-label="Confirm name change"
+                aria-label={t("Confirm name change")}
               />
             </Tooltip>
-            <Tooltip label="Cancel (Esc)">
+            <Tooltip label={t("Cancel (Esc)")}>
               <IconButton
                 icon={<FaCancel />}
                 size="sm"
                 variant="ghost"
                 onClick={handleCancelEdit}
-                aria-label="Cancel name change"
+                aria-label={t("Cancel name change")}
               />
             </Tooltip>
           </Flex>
@@ -140,20 +142,20 @@ export const DesignInfoSection: React.FC<DesignInfoSectionProps> = ({
                 noOfLines={1}
                 title={designName}
               >
-                {designName || 'Untitled Design'}
+                {designName || t('Untitled Design')}
               </Text>
               {hasUnsavedChanges && (
                 <Text fontSize="xs" color={mutedTextColor}>
-                  Unsaved changes
+                  {t("Unsaved changes")}
                 </Text>
               )}
             </Box>
-            <Tooltip label="Edit name (F2)">
+            <Tooltip label={t("Edit name (F2)")}>
               <IconButton
                 icon={<FaEdit />}
                 size="xs"
                 variant="ghost"
-                aria-label="Edit design name"
+                aria-label={t("Edit design name")}
               />
             </Tooltip>
           </Flex>
@@ -163,7 +165,7 @@ export const DesignInfoSection: React.FC<DesignInfoSectionProps> = ({
       {/* Save/Cancel Actions */}
       {!isEditingName && (
         <Flex gap={1} direction={isVertical ? 'column' : 'row'}>
-          <Tooltip label="Save design (Ctrl+S)">
+          <Tooltip label={t("Save design (Ctrl+S)")}>
             <Button
               leftIcon={<FaSave />}
               size="sm"
@@ -173,10 +175,10 @@ export const DesignInfoSection: React.FC<DesignInfoSectionProps> = ({
               variant={hasUnsavedChanges ? 'solid' : 'outline'}
               minWidth={isVertical ? 'auto' : '80px'}
             >
-              Save
+              {t("Save")}
             </Button>
           </Tooltip>
-          <Tooltip label="Cancel editing (Esc)">
+          <Tooltip label={t("Cancel editing (Esc)")}>
             <Button
               leftIcon={<FaCancel />}
               size="sm"
@@ -184,7 +186,7 @@ export const DesignInfoSection: React.FC<DesignInfoSectionProps> = ({
               onClick={onCancel}
               minWidth={isVertical ? 'auto' : '80px'}
             >
-              Cancel
+              {t("Cancel")}
             </Button>
           </Tooltip>
         </Flex>

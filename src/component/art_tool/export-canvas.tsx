@@ -1,6 +1,7 @@
 // src/component/art_tool/export-canvas.tsx
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Button, Text, useToast } from '@chakra-ui/react';
 import {
   databaseFetchCanvas,
@@ -17,6 +18,7 @@ interface ExportPixel {
   }
 
 const ExportCanvas: React.FC = () => {
+  const { t } = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
   const toast = useToast();
 
@@ -29,8 +31,8 @@ const ExportCanvas: React.FC = () => {
 
       if (!canvas) {
         toast({
-          title: 'Error',
-          description: 'Main canvas not found.',
+          title: t('Error'),
+          description: t('Main canvas not found.'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -44,8 +46,8 @@ const ExportCanvas: React.FC = () => {
 
       if (!designs || designs.length === 0) {
         toast({
-          title: 'Error',
-          description: 'No designs found on the main canvas.',
+          title: t('Error'),
+          description: t('No designs found on the main canvas.'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -105,8 +107,8 @@ const ExportCanvas: React.FC = () => {
       // If no pixels, show error
       if (combinedPixels.length === 0) {
         toast({
-          title: 'Error',
-          description: 'No pixels to export.',
+          title: t('Error'),
+          description: t('No pixels to export.'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -172,8 +174,8 @@ const ExportCanvas: React.FC = () => {
       }
 
       toast({
-        title: 'Success',
-        description: `Canvas exported successfully. File saved as ${filename}`,
+        title: t('Success'),
+        description: t('Canvas exported successfully. File saved as {{filename}}', { filename }),
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -181,8 +183,8 @@ const ExportCanvas: React.FC = () => {
     } catch (error) {
       console.error('Error exporting canvas:', error);
       toast({
-        title: 'Error',
-        description: 'An error occurred while exporting the canvas.',
+        title: t('Error'),
+        description: t('An error occurred while exporting the canvas.'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -214,10 +216,10 @@ const ExportCanvas: React.FC = () => {
   return (
     <Box mt={4}>
       <Text fontSize="xl" fontWeight="bold" mb={2}>
-        Export Canvas
+        {t('Export Canvas')}
       </Text>
       <Button colorScheme="blue" onClick={handleExport} isLoading={isExporting}>
-        Export Main Canvas
+        {t('Export Main Canvas')}
       </Button>
     </Box>
   );
