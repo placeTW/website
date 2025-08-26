@@ -761,22 +761,42 @@ const AdvancedViewport = React.forwardRef<
                             mr={1}
                           />
                           <Tooltip label={t("Confirm (Enter)")}>
-                            <IconButton
-                              icon={<FaCheck />}
-                              size="xs"
-                              colorScheme="green"
+                            <Box
+                              as="span"
+                              display="inline-flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              w="24px"
+                              h="24px"
+                              borderRadius="md"
+                              bg="green.500"
+                              color="white"
+                              cursor="pointer"
+                              _hover={{ bg: "green.600" }}
                               onClick={handleConfirmCanvasNameEdit}
                               aria-label={t("Confirm name change")}
-                            />
+                            >
+                              <FaCheck size="12px" />
+                            </Box>
                           </Tooltip>
                           <Tooltip label={t("Cancel (Esc)")}>
-                            <IconButton
-                              icon={<FaCancel />}
-                              size="xs"
-                              variant="ghost"
+                            <Box
+                              as="span"
+                              display="inline-flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              w="24px"
+                              h="24px"
+                              borderRadius="md"
+                              bg="transparent"
+                              color="gray.500"
+                              cursor="pointer"
+                              _hover={{ bg: "gray.100", color: "gray.700" }}
                               onClick={handleCancelCanvasNameEdit}
                               aria-label={t("Cancel name change")}
-                            />
+                            >
+                              <FaCancel size="12px" />
+                            </Box>
                           </Tooltip>
                         </Flex>
                       ) : (
@@ -784,16 +804,26 @@ const AdvancedViewport = React.forwardRef<
                           <Box>{canvas.canvas_name}</Box>
                           {isAdmin && (
                             <Tooltip label={t("Edit name")}>
-                              <IconButton
-                                icon={<FaEdit />}
-                                size="xs"
-                                variant="ghost"
-                                onClick={(e) => {
+                              <Box
+                                as="span"
+                                display="inline-flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                w="20px"
+                                h="20px"
+                                borderRadius="md"
+                                bg="transparent"
+                                color="gray.500"
+                                cursor="pointer"
+                                _hover={{ bg: "gray.100", color: "gray.700" }}
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation();
                                   handleStartCanvasNameEdit(canvas.id, canvas.canvas_name);
                                 }}
                                 aria-label={t("Edit canvas name")}
-                              />
+                              >
+                                <FaEdit size="10px" />
+                              </Box>
                             </Tooltip>
                           )}
                         </Flex>
