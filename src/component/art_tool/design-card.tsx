@@ -392,7 +392,7 @@ const DesignCard: FC<DesignCardProps> = ({
               )}
               {isDragMode && !isEditing && (
                 <Text fontSize={"xs"} color="orange.600" fontWeight={500}>
-                  Drag mode enabled - drag in viewport to move
+                  {t("Drag mode enabled - drag in viewport to move")}
                 </Text>
               )}
             </Box>
@@ -525,20 +525,19 @@ const DesignCard: FC<DesignCardProps> = ({
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Design
+              {t("Delete Design")}
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure you want to delete this design? This action cannot be
-              undone.
+              {t("Are you sure you want to delete this design? This action cannot be undone.")}
             </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onCloseDeleteDialog}>
-                Cancel
+                {t("Cancel")}
               </Button>
               <Button colorScheme="red" onClick={handleDelete} ml={3}>
-                Delete
+                {t("Delete")}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -552,12 +551,12 @@ const DesignCard: FC<DesignCardProps> = ({
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Move Design to Position
+              {t("Move Design to Position")}
             </AlertDialogHeader>
 
             <AlertDialogBody>
               <Text mb={2}>
-                Enter the position where you want to move "{design.design_name}":
+                {t("Enter the position where you want to move {{designName}}:", { designName: design.design_name })}
               </Text>
               <Input
                 value={newIndex}
@@ -568,16 +567,16 @@ const DesignCard: FC<DesignCardProps> = ({
                 max={totalDesigns}
               />
               <Text fontSize="sm" color="gray.600" mt={2}>
-                Current position: {currentIndex + 1} of {totalDesigns}
+                {t("Current position: {{currentIndex}} of {{totalDesigns}}", { currentIndex: currentIndex + 1, totalDesigns })}
               </Text>
             </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onCloseIndexDialog}>
-                Cancel
+                {t("Cancel")}
               </Button>
               <Button colorScheme="blue" onClick={handleMoveToIndex} ml={3}>
-                Move
+                {t("Move")}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

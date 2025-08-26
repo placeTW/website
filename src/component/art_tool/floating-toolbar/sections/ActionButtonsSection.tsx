@@ -173,7 +173,7 @@ export const ActionButtonsSection: React.FC<ActionButtonsSectionProps> = ({
             {showShortcuts ? t('Hide shortcuts panel') : t('Show all keyboard shortcuts')}
           </Box>
           <Badge size="sm" variant="subtle" mt={1}>
-            ? or F1
+            {t("? or F1")}
           </Badge>
         </Box>
       }

@@ -16,6 +16,7 @@ import {
   ModalBody,
 } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import Konva from 'konva';
 import { Design } from '../../../types/art-tool';
 import { ViewportPixel } from '../../viewport/types';
@@ -61,6 +62,7 @@ export const FloatingToolbar = React.forwardRef<FloatingToolbarHandle, FloatingT
   stageRef,
 }, ref) => {
   const toast = useToast();
+  const { t } = useTranslation();
   
   const [toolbarState, toolbarActions] = useEditingToolbar({
     design,
@@ -192,8 +194,8 @@ export const FloatingToolbar = React.forwardRef<FloatingToolbarHandle, FloatingT
           toolbarActions.handleCopy(selection, pixels);
         } else {
           toast({
-            title: 'Copy Failed',
-            description: 'Select an area first using the Select tool (S) or Ctrl+drag to copy pixels.',
+            title: t('Copy Failed'),
+            description: t('Select an area first using the Select tool (S) or Ctrl+drag to copy pixels.'),
             status: 'warning',
             duration: 3000,
             isClosable: true,
@@ -205,8 +207,8 @@ export const FloatingToolbar = React.forwardRef<FloatingToolbarHandle, FloatingT
           handleEnhancedPaste();
         } else {
           toast({
-            title: 'Paste Failed',
-            description: 'Nothing to paste. Copy an area first using Ctrl+C.',
+            title: t('Paste Failed'),
+            description: t('Nothing to paste. Copy an area first using Ctrl+C.'),
             status: 'warning',
             duration: 3000,
             isClosable: true,
@@ -217,7 +219,7 @@ export const FloatingToolbar = React.forwardRef<FloatingToolbarHandle, FloatingT
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditing, isVisible, handleFill, handleEraseSelection, toolbarActions, handleEnhancedPaste, selection, pixels, toolbarState.copyBuffer, toast]);
+  }, [isEditing, isVisible, handleFill, handleEraseSelection, toolbarActions, handleEnhancedPaste, selection, pixels, toolbarState.copyBuffer, toast, t]);
 
   if (!isEditing || !isVisible) {
     return null;
@@ -350,7 +352,7 @@ export const FloatingToolbar = React.forwardRef<FloatingToolbarHandle, FloatingT
           >
             <ModalOverlay />
             <ModalContent>
-              <ModalHeader>Keyboard Shortcuts</ModalHeader>
+              <ModalHeader>{t("Keyboard Shortcuts")}</ModalHeader>
               <ModalCloseButton />
               <ModalBody pb={6}>
                 <KeyboardShortcutsPanel />

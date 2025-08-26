@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ButtonGroup,
   IconButton,
@@ -27,48 +28,6 @@ export interface Tool {
   colorScheme?: string;
 }
 
-const TOOLS: Tool[] = [
-  {
-    type: 'paint',
-    icon: FaPaint,
-    label: 'Paint',
-    shortcut: 'B',
-    description: 'Paint pixels with selected color',
-    colorScheme: 'blue',
-  },
-  {
-    type: 'erase',
-    icon: FaEraser,
-    label: 'Erase',
-    shortcut: 'E',
-    description: 'Erase pixels (make transparent)',
-    colorScheme: 'red',
-  },
-  {
-    type: 'select',
-    icon: FaSelect,
-    label: 'Select',
-    shortcut: 'S',
-    description: 'Select rectangular area',
-    colorScheme: 'purple',
-  },
-  {
-    type: 'eyedropper',
-    icon: FaEyeDropper,
-    label: 'Eyedropper',
-    shortcut: 'I',
-    description: 'Pick color from existing pixels',
-    colorScheme: 'orange',
-  },
-  {
-    type: 'bucket',
-    icon: FaBucket,
-    label: 'Bucket Fill',
-    shortcut: 'G',
-    description: 'Fill connected area with selected color',
-    colorScheme: 'teal',
-  },
-];
 
 export interface ToolSelectionSectionProps {
   selectedTool: ToolType;
@@ -81,7 +40,51 @@ export const ToolSelectionSection: React.FC<ToolSelectionSectionProps> = ({
   onToolChange,
   isVertical = false,
 }) => {
+  const { t } = useTranslation();
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+
+  const TOOLS: Tool[] = [
+    {
+      type: 'paint',
+      icon: FaPaint,
+      label: t('Paint'),
+      shortcut: 'B',
+      description: t('Paint pixels with selected color'),
+      colorScheme: 'blue',
+    },
+    {
+      type: 'erase',
+      icon: FaEraser,
+      label: t('Erase'),
+      shortcut: 'E',
+      description: t('Erase pixels (make transparent)'),
+      colorScheme: 'red',
+    },
+    {
+      type: 'select',
+      icon: FaSelect,
+      label: t('Select'),
+      shortcut: 'S',
+      description: t('Select rectangular area'),
+      colorScheme: 'purple',
+    },
+    {
+      type: 'eyedropper',
+      icon: FaEyeDropper,
+      label: t('Eyedropper'),
+      shortcut: 'I',
+      description: t('Pick color from existing pixels'),
+      colorScheme: 'orange',
+    },
+    {
+      type: 'bucket',
+      icon: FaBucket,
+      label: t('Bucket Fill'),
+      shortcut: 'G',
+      description: t('Fill connected area with selected color'),
+      colorScheme: 'teal',
+    },
+  ];
 
   const ToolButton: React.FC<{ tool: Tool }> = ({ tool }) => {
     const isSelected = selectedTool === tool.type;

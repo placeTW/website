@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import { Design, Pixel } from '../../../types/art-tool';
 import { ViewportPixel } from '../../viewport/types';
 import { CLEAR_ON_DESIGN } from '../../viewport/constants';
@@ -58,6 +59,7 @@ export function useEditingToolbar({
   onToolChange,
 }: UseEditingToolbarProps): [EditingToolbarState, EditingToolbarActions] {
   const toast = useToast();
+  const { t } = useTranslation();
   const undoManager = useRef(new UndoManager(100)).current;
   
   const [selectedColor, setSelectedColorState] = useState<string | null>(null);
@@ -123,14 +125,14 @@ export function useEditingToolbar({
       setIsEditingName(false);
     } catch (error) {
       toast({
-        title: 'Save Failed',
-        description: `Failed to save design: ${(error as Error).message || error}`,
+        title: t('Save Failed'),
+        description: t('Failed to save design: {{error}}', { error: (error as Error).message || error }),
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
     }
-  }, [designName, onSubmitEdit, toast]);
+  }, [designName, onSubmitEdit, toast, t]);
 
   const handleCancel = useCallback(() => {
     if (editedPixels.length > 0) {
