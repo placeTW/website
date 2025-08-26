@@ -368,7 +368,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 aria-label={t("Center on Design")}
                 onClick={() => onSelect(design.id)}
                 position="absolute"
-                bottom="5px"
+                top="5px"
                 right="5px"
                 size="sm"
                 backgroundColor="rgba(255, 255, 255, 0.8)"
