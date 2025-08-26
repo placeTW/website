@@ -23,35 +23,46 @@ import {
   insertNewUser, // Import the updated insertNewUser
 } from '../api/supabase/functions'; // Adjust the import path if necessary
 
-// Session cache to prevent multiple API calls
-let sessionCache: { session: Session | null; timestamp: number } | null = null;
+// Session management constants
 const SESSION_CACHE_DURATION = 30000; // 30 seconds
+const SESSION_TIMEOUT = 3000; // 3 seconds
+const AUTH_LOADING_TIMEOUT = 3000; // 3 seconds
 
-// Cached session getter to prevent multiple API calls
+// Session cache
+let sessionCache: { session: Session | null; timestamp: number } | null = null;
+
+// Utility: Create a promise with timeout
+function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): Promise<T> {
+  const timeout = new Promise<never>((_, reject) => 
+    setTimeout(() => reject(new Error(errorMessage)), ms)
+  );
+  return Promise.race([promise, timeout]);
+}
+
+// Cached session getter
 async function getCachedSession(): Promise<Session | null> {
   const now = Date.now();
   
-  // Return cached session if still valid
   if (sessionCache && (now - sessionCache.timestamp) < SESSION_CACHE_DURATION) {
     console.log('[AUTH] Using cached session');
     return sessionCache.session;
   }
   
-  // Fetch new session and cache it
   console.log('[AUTH] Fetching fresh session');
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const { data: { session }, error } = await withTimeout(
+      supabase.auth.getSession(),
+      SESSION_TIMEOUT,
+      'Session fetch timeout'
+    );
     
-    if (error) {
-      console.error('Error fetching session:', error);
-      return null;
-    }
+    if (error) throw error;
     
-    // Update cache
     sessionCache = { session, timestamp: now };
     return session;
   } catch (error) {
-    console.error('Error in getCachedSession:', error);
+    console.error('[AUTH] Session fetch failed:', error);
+    sessionCache = null;
     return null;
   }
 }
@@ -85,129 +96,171 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [ranks, setRanks] = useState<RankType[]>([]);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
-
-  // Create a ref to hold the currentUser value
+  
+  // Refs for managing auth state
   const currentUserRef = useRef<UserType | null>(currentUser);
+  const processingRef = useRef<boolean>(false);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Update the ref whenever currentUser changes
+  // Update user ref when currentUser changes
   useEffect(() => {
     currentUserRef.current = currentUser;
   }, [currentUser]);
 
-  const logoutUser = () => {
-    setCurrentUser(null);
-    setIsAuthLoading(false);
-    // Clear session cache on logout
-    sessionCache = null;
-    console.log('User logged out.');
-  };
+  // Safe loading state setter with automatic timeout protection
+  const setLoadingWithTimeout = useCallback((loading: boolean) => {
+    setIsAuthLoading(loading);
+    
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+      loadingTimeoutRef.current = null;
+    }
+    
+    if (loading) {
+      loadingTimeoutRef.current = setTimeout(() => {
+        console.warn('[AUTH] Loading timeout - clearing auth state');
+        setIsAuthLoading(false);
+        loadingTimeoutRef.current = null;
+      }, AUTH_LOADING_TIMEOUT);
+    }
+  }, []);
 
-  // Helper function to get handle
-  const getHandle = (user: { 
+  // Logout function
+  const logoutUser = useCallback(() => {
+    setCurrentUser(null);
+    setLoadingWithTimeout(false);
+    sessionCache = null;
+    console.log('[AUTH] User logged out');
+  }, [setLoadingWithTimeout]);
+
+  // Handle tab visibility to validate session
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (!document.hidden && currentUserRef.current && !processingRef.current) {
+        try {
+          console.log('[AUTH] Tab visible - validating session');
+          const session = await getCachedSession();
+          if (!session && currentUserRef.current) {
+            console.log('[AUTH] Invalid session detected - logging out');
+            logoutUser();
+          }
+        } catch (error) {
+          console.error('[AUTH] Session validation failed:', error);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [logoutUser]);
+
+  // Extract user handle from auth data
+  const getHandle = useCallback((user: { 
     app_metadata?: { provider?: string }; 
     user_metadata?: { name?: string; full_name?: string }; 
     email?: string 
   }): string => {
     if (user?.app_metadata?.provider === 'discord') {
       return user.user_metadata?.name || user.user_metadata?.full_name || '';
-    } else {
-      return user.email
-        ? user.email.substring(0, user.email.lastIndexOf('@'))
-        : '';
     }
-  };
+    return user.email?.substring(0, user.email.lastIndexOf('@')) || '';
+  }, []);
 
-  // Process session and update current user
+  // Process authentication session
   const processSession = useCallback(async (session: Session | null) => {
+    if (processingRef.current) {
+      console.log('[AUTH] Already processing, skipping');
+      return;
+    }
+    
+    processingRef.current = true;
+    
     try {
       if (!session) {
+        console.log('[AUTH] No session - clearing user');
         setCurrentUser(null);
         return;
       }
 
-      const userId = session.user.id;
-      let userData = await databaseFetchCurrentUser(userId);
+      console.log('[AUTH] Processing session for:', session.user.id);
+      let userData = await databaseFetchCurrentUser(session.user.id);
 
+      // Create user if not found
       if (!userData) {
-        // User not found, insert new user
+        console.log('[AUTH] Creating new user');
         userData = await insertNewUser(
-          userId,
+          session.user.id,
           session.user.email || '',
           getHandle(session.user)
         );
-
-        if (!userData) {
-          console.error('Error inserting new user.');
-          return;
-        }
+        if (!userData) throw new Error('Failed to create user');
       }
 
+      // Handle banned users
       if (userData.rank === 'F') {
+        console.log('[AUTH] User banned - signing out');
         await supabase.auth.signOut();
-        console.error('User has been banned.');
-      } else {
-        setCurrentUser(userData);
+        setCurrentUser(null);
+        return;
       }
+
+      console.log('[AUTH] User authenticated:', userData.user_id);
+      setCurrentUser(userData);
+      
     } catch (error) {
-      console.error('Error processing session:', error);
+      console.error('[AUTH] Session processing failed:', error);
+      setCurrentUser(null);
     } finally {
-      setIsAuthLoading(false);
+      processingRef.current = false;
+      setLoadingWithTimeout(false);
     }
-  }, []);
+  }, [getHandle, setLoadingWithTimeout]);
 
   useEffect(() => {
     let mounted = true;
     
-    // Fetch initial users and ranks
-    const fetchData = async () => {
+    // Initialize data and authentication
+    const initialize = async () => {
       try {
+        // Fetch initial users and ranks
         const [userData, rankData] = await Promise.all([
           databaseFetchUsers(),
           databaseFetchRanks(),
         ]);
+        
         if (mounted) {
           setUsers(userData);
           setRanks(rankData);
-        }
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-      }
-    };
-
-    // Initial session check using cached session
-    const initializeAuth = async () => {
-      try {
-        console.log('[AUTH] Initializing authentication');
-        const session = await getCachedSession();
-        if (mounted) {
+          
+          // Initialize auth with timeout protection
+          console.log('[AUTH] Initializing authentication');
+          setLoadingWithTimeout(true);
+          const session = await getCachedSession();
           await processSession(session);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('[AUTH] Initialization failed:', error);
+        if (mounted) setLoadingWithTimeout(false);
       }
     };
 
-    // Set up auth state change listener to handle login/logout efficiently
+    // Handle auth state changes
     const { data: authSubscription } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[AUTH] Auth state changed:', event);
-        
-        // Clear cache on auth state changes to ensure fresh data
-        sessionCache = null;
+        console.log('[AUTH] State changed:', event);
+        sessionCache = null; // Clear cache for fresh data
         
         if (mounted) {
-          // Set loading to true when auth state changes (except for initial_session)
           if (event !== 'INITIAL_SESSION') {
-            setIsAuthLoading(true);
+            setLoadingWithTimeout(true);
           }
           await processSession(session);
         }
       }
     );
 
-    // Initialize data and auth
-    fetchData();
-    initializeAuth();
+    // Start initialization
+    initialize();
 
     // Set up subscriptions
     const userSubscription: RealtimeChannel = supabase
@@ -269,17 +322,21 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       )
       .subscribe();
 
-    // Cleanup subscriptions on component unmount
+    // Cleanup on unmount
     return () => {
       mounted = false;
+      processingRef.current = false;
+      
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
+      }
+      
       removeSupabaseChannel(userSubscription);
       removeSupabaseChannel(rankSubscription);
-      // Remove auth subscription
-      if (authSubscription?.subscription) {
-        authSubscription.subscription.unsubscribe();
-      }
+      authSubscription?.subscription?.unsubscribe();
     };
-  }, [processSession]); // Include processSession in dependencies
+  }, [processSession, setLoadingWithTimeout]);
 
   const contextValue = useMemo(() => ({
     users,
@@ -289,7 +346,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     logoutUser,
     getCachedSession,
     isAuthLoading,
-  }), [users, ranks, currentUser, isAuthLoading]);
+  }), [users, ranks, currentUser, logoutUser, isAuthLoading]);
 
   return (
     <UserContext.Provider value={contextValue}>
