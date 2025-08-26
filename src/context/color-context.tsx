@@ -16,7 +16,7 @@ interface Color {
   color_sort: number | null;
 }
 
-// Utility function to fetch colors
+// Fetch colors immediately and make them available to the entire app
 const fetchColors = async (): Promise<Color[]> => {
   const fetchedColors = await databaseFetchColors();
   if (fetchedColors) {
@@ -35,8 +35,8 @@ const getColorsMap = (colors: Color[]): Map<string, Color> => {
   return map
 }
 
-// Start with empty colors array - will be loaded asynchronously
-const initialColors: Color[] = [];
+// Initialize the colors
+const initialColors: Color[] = await fetchColors();
 
 interface ColorContextProps {
   colors: Color[];
@@ -69,23 +69,6 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
   
   // Use useMemo instead of useState + useEffect for derived state
   const colorsMap = useMemo(() => getColorsMap(colors), [colors]);
-
-  // Load initial colors asynchronously
-  useEffect(() => {
-    const loadInitialColors = async () => {
-      try {
-        // Only fetch if we don't have any colors yet
-        if (colors.length === 0) {
-          const loadedColors = await fetchColors();
-          setColors(loadedColors);
-        }
-      } catch (error) {
-        console.error('Failed to load initial colors:', error);
-      }
-    };
-
-    loadInitialColors();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const subscription = supabase

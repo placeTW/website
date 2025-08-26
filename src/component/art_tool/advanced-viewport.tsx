@@ -29,7 +29,7 @@ import { ToolType } from './floating-toolbar/sections/ToolSelectionSection';
 
 interface AdvancedViewportProps {
   visibleLayers: Set<number>;
-  selectedCanvas: Canvas | null;
+  selectedCanvas: Canvas;
   isEditing?: boolean;
   editDesignId?: number | null;
   canvases?: Canvas[];
@@ -330,7 +330,7 @@ const AdvancedViewport = React.forwardRef<
 
     // Handle canvas export
     const handleCanvasExport = useCallback(async () => {
-      if (!isAdmin || !designs || !selectedCanvas) return; // Prevent non-admin users from exporting
+      if (!isAdmin || !designs) return; // Prevent non-admin users from exporting
       
       setIsExporting(true);
       try {
@@ -350,11 +350,9 @@ const AdvancedViewport = React.forwardRef<
 
         // Order the designs by the canvas layer order
         const designsMap = new Map(canvasDesigns.map(obj => [obj.id, obj]));
-        const orderedDesigns = selectedCanvas?.layer_order
-          ? selectedCanvas.layer_order
-              .map(id => designsMap.get(id))
-              .filter(design => design !== undefined)
-          : [];
+        const orderedDesigns = selectedCanvas.layer_order
+          .map(id => designsMap.get(id))
+          .filter(design => design !== undefined);
 
         // Add any designs not in layer order to the end
         canvasDesigns.forEach((design) => {
@@ -722,10 +720,7 @@ const AdvancedViewport = React.forwardRef<
       if (editDesignId && isEditing) {
         order.add(editDesignId);
       }
-      // Check if selectedCanvas exists and has layer_order before accessing it
-      if (selectedCanvas?.layer_order) {
-        selectedCanvas.layer_order.filter(i => visibleLayers.has(i)).forEach(i => order.add(i));
-      }
+      selectedCanvas.layer_order.filter(i => visibleLayers.has(i)).forEach(i => order.add(i));
       designs.filter(d => visibleLayers.has(d.id)).forEach(i => order.add(i.id));
 
       setLayerOrder([...order]);

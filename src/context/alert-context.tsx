@@ -20,7 +20,7 @@ interface AlertContextProps {
   setActiveAlertId: (id: number) => void;
 }
 
-// Utility function to fetch all alert levels and set the active alert
+// Fetch all alert levels and set the active alert
 const fetchAllData = async () => {
   const fetchedAlertLevels = await fetchAlertLevels();
   const activeAlert = fetchedAlertLevels?.find((alert) => alert.Active) || null;
@@ -31,11 +31,7 @@ const fetchAllData = async () => {
   };
 };
 
-// Start with empty data - will be loaded asynchronously
-const initialData = {
-  alertLevels: [] as AlertState[],
-  currentAlertData: null as AlertState | null,
-};
+const initialData = await fetchAllData();
 
 const AlertContext = createContext<AlertContextProps>({
   alertLevels: initialData.alertLevels,
@@ -60,24 +56,6 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [currentAlertData, setCurrentAlertData] = useState(
     initialData.currentAlertData,
   );
-
-  // Load initial alert data asynchronously
-  useEffect(() => {
-    const loadInitialAlertData = async () => {
-      try {
-        // Only fetch if we don't have alert data yet
-        if (alertLevels.length === 0) {
-          const data = await fetchAllData();
-          setAlertLevels(data.alertLevels);
-          setCurrentAlertData(data.currentAlertData);
-        }
-      } catch (error) {
-        console.error('Failed to load initial alert data:', error);
-      }
-    };
-
-    loadInitialAlertData();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setActiveAlertId = useCallback((id: number) => {
     const activeAlert =

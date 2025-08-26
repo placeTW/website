@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Text, useToast } from '@chakra-ui/react';
-import { useDesignContext } from '../../context/design-context';
+import {
+  databaseFetchCanvas,
+  databaseFetchDesigns,
+} from '../../api/supabase/database';
 import { Canvas, Design } from '../../types/art-tool';
 import { supabase } from '../../api/supabase';
 import { CLEAR_ON_DESIGN } from '../viewport/constants';
@@ -18,14 +21,13 @@ const ExportCanvas: React.FC = () => {
   const { t } = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
   const toast = useToast();
-  const { canvases, canvasDesignsMap } = useDesignContext();
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      // Get the main canvas (replace with your actual canvas ID)
+      // Fetch the main canvas (replace with your actual canvas ID)
       const canvasId = 1; // Assuming '1' is the ID of the main canvas
-      const canvas: Canvas | undefined = canvases.find(c => c.id === canvasId);
+      const canvas: Canvas | null = await databaseFetchCanvas(canvasId);
 
       if (!canvas) {
         toast({
@@ -39,10 +41,10 @@ const ExportCanvas: React.FC = () => {
         return;
       }
 
-      // Get all designs on the canvas from context
-      const designs: Design[] = canvasDesignsMap.get(canvasId) || [];
+      // Fetch all designs on the canvas
+      const designs: Design[] | null = await databaseFetchDesigns(canvasId);
 
-      if (designs.length === 0) {
+      if (!designs || designs.length === 0) {
         toast({
           title: t('Error'),
           description: t('No designs found on the main canvas.'),

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Table, Tbody, Td, Th, Thead, Tr, Select, Heading } from "@chakra-ui/react";
 import { functionsFetchCanModerate, functionsUpdateUserStatus } from "../../api/supabase";
 import { useUserContext } from "../../context/user-context";
-import { RankType } from "../../types/users";
+import { UserType, RankType } from "../../types/users"; // Ensure these are imported correctly
 import { useTranslation } from "react-i18next";
 
 const UserManage: React.FC = () => {
@@ -13,7 +13,7 @@ const UserManage: React.FC = () => {
 
   useEffect(() => {
     const fetchModeratableRanks = async () => {
-      if (!currentUser?.rank) return;
+      if (!currentUser) return;
 
       try {
         const data = await functionsFetchCanModerate(currentUser.rank);
@@ -25,25 +25,25 @@ const UserManage: React.FC = () => {
     };
 
     fetchModeratableRanks();
-  }, [currentUser?.rank, t]); // Only refetch when rank changes, not entire user object
+  }, [currentUser]);
 
-  const updateUserRank = useCallback(async (userId: string, rank: string) => {
+  const updateUserRank = async (userId: string, rank: string) => {
     try {
       await functionsUpdateUserStatus(userId, rank);
     } catch (error) {
       console.error("Update user status error:", error);
       setError(t("Update user status error"));
     }
-  }, [t]);
+  };
 
-  const sortedUsers = useMemo(() => {
-    return [...users].sort((a, b) => {
+  const sortUsers = (users: UserType[]): UserType[] => {
+    return users.sort((a, b) => {
       if (a.rank === b.rank) {
         return (a.email || "").localeCompare(b.email || "");
       }
       return a.rank.localeCompare(b.rank);
     });
-  }, [users]);
+  };
 
   return (
     <Box>
@@ -60,7 +60,7 @@ const UserManage: React.FC = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {sortedUsers.map((user) => (
+          {sortUsers(users).map((user) => (
             <Tr key={user.user_id}>
               <Td>{user.user_id}</Td>
               <Td>{user.handle}</Td>
