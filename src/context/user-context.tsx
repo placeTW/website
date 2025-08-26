@@ -97,10 +97,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   
-  // Refs for managing auth state
+  // Refs for managing auth state and preventing duplicates
   const currentUserRef = useRef<UserType | null>(currentUser);
   const processingRef = useRef<boolean>(false);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const initializedRef = useRef<boolean>(false);
+  const lastProcessedUserIdRef = useRef<string | null>(null);
 
   // Update user ref when currentUser changes
   useEffect(() => {
@@ -172,6 +174,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       console.log('[AUTH] Already processing, skipping');
       return;
     }
+
+    // Skip if we already processed this user
+    if (session?.user.id && session.user.id === lastProcessedUserIdRef.current) {
+      console.log('[AUTH] Already processed this user, skipping');
+      return;
+    }
     
     processingRef.current = true;
     
@@ -179,10 +187,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       if (!session) {
         console.log('[AUTH] No session - clearing user');
         setCurrentUser(null);
+        lastProcessedUserIdRef.current = null;
         return;
       }
 
       console.log('[AUTH] Processing session for:', session.user.id);
+      lastProcessedUserIdRef.current = session.user.id;
       let userData = await databaseFetchCurrentUser(session.user.id);
 
       // Create user if not found
@@ -221,17 +231,28 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     
     // Initialize data and authentication
     const initialize = async () => {
+      if (initializedRef.current) {
+        console.log('[AUTH] Already initialized, skipping');
+        return;
+      }
+      
+      initializedRef.current = true;
+      
       try {
-        // Fetch initial users and ranks
-        const [userData, rankData] = await Promise.all([
-          databaseFetchUsers(),
-          databaseFetchRanks(),
-        ]);
+        // Only fetch if we don't have data yet
+        if (users.length === 0 || ranks.length === 0) {
+          const [userData, rankData] = await Promise.all([
+            databaseFetchUsers(),
+            databaseFetchRanks(),
+          ]);
+          
+          if (mounted) {
+            setUsers(userData);
+            setRanks(rankData);
+          }
+        }
         
         if (mounted) {
-          setUsers(userData);
-          setRanks(rankData);
-          
           // Initialize auth with timeout protection
           console.log('[AUTH] Initializing authentication');
           setLoadingWithTimeout(true);

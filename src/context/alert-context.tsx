@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -60,10 +61,20 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [currentAlertData, setCurrentAlertData] = useState(
     initialData.currentAlertData,
   );
+  
+  // Refs to prevent duplicate loading
+  const loadingRef = useRef<boolean>(false);
 
   // Load initial alert data asynchronously
   useEffect(() => {
     const loadInitialAlertData = async () => {
+      if (loadingRef.current) {
+        console.log('[ALERT] Already loading, skipping');
+        return;
+      }
+      
+      loadingRef.current = true;
+      
       try {
         // Only fetch if we don't have alert data yet
         if (alertLevels.length === 0) {
@@ -73,6 +84,8 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         }
       } catch (error) {
         console.error('Failed to load initial alert data:', error);
+      } finally {
+        loadingRef.current = false;
       }
     };
 

@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { supabase } from "../api/supabase";
@@ -67,12 +68,22 @@ interface ColorProviderProps {
 export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
   const [colors, setColors] = useState<Color[]>(initialColors);
   
+  // Refs to prevent duplicate loading
+  const loadingRef = useRef<boolean>(false);
+  
   // Use useMemo instead of useState + useEffect for derived state
   const colorsMap = useMemo(() => getColorsMap(colors), [colors]);
 
   // Load initial colors asynchronously
   useEffect(() => {
     const loadInitialColors = async () => {
+      if (loadingRef.current) {
+        console.log('[COLOR] Already loading, skipping');
+        return;
+      }
+      
+      loadingRef.current = true;
+      
       try {
         // Only fetch if we don't have any colors yet
         if (colors.length === 0) {
@@ -81,6 +92,8 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
         }
       } catch (error) {
         console.error('Failed to load initial colors:', error);
+      } finally {
+        loadingRef.current = false;
       }
     };
 
