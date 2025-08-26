@@ -297,9 +297,6 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
   const { users, ranks } = useUserContext();
   const [designs, setDesigns] = useState<Design[]>(initialData.designs);
   const [canvases, setCanvases] = useState<Canvas[]>(initialData.canvases);
-  
-  // Refs to prevent duplicate loading
-  const loadingRef = useRef<boolean>(false);
 
   // Use useMemo for derived state instead of useState + useEffect
   const designsMap = useMemo(() => getDesignsMap(designs), [designs]);
@@ -311,13 +308,6 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
   // Load initial data asynchronously
   useEffect(() => {
     const loadInitialData = async () => {
-      if (loadingRef.current) {
-        console.log('[DESIGN] Already loading, skipping');
-        return;
-      }
-      
-      loadingRef.current = true;
-      
       try {
         // Only fetch if we don't have any data yet
         if (designs.length === 0 && canvases.length === 0) {
@@ -327,8 +317,6 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
         }
       } catch (error) {
         console.error('Failed to load initial designs and canvases:', error);
-      } finally {
-        loadingRef.current = false;
       }
     };
 
