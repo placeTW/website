@@ -9,13 +9,8 @@ import {
 } from '../../api/supabase/database';
 import { Canvas, Design } from '../../types/art-tool';
 import { supabase } from '../../api/supabase';
-import { CLEAR_ON_DESIGN } from '../viewport/constants';
+import { exportCanvasAsPNG } from '../../utils/png-export';
 
-interface ExportPixel {
-    x: number;
-    y: number;
-    color: string;
-  }
 
 const ExportCanvas: React.FC = () => {
   const { t } = useTranslation();
@@ -56,112 +51,11 @@ const ExportCanvas: React.FC = () => {
         return;
       }
 
-      // Order the designs by the canvas layer order
-      const designsMap = new Map(designs.map(obj => [obj.id, obj]));
-
-      const orderedDesigns = canvas.layer_order
-        .map(id => designsMap.get(id))
-        .filter(design => design !== undefined);
-
-      designs.forEach((design) => !orderedDesigns.includes(design) && orderedDesigns.push(design))
-
-      // Define an interface for the pixels we will work with
-      interface ExportPixel {
-        x: number;
-        y: number;
-        color: string;
-      }
-
-      // Combine all designs' pixels into one array, respecting layer order
-      let combinedPixels: ExportPixel[] = [];
-      
-      // Create a map to track which pixels have already been added to respect layer order
-      const pixelPositionMap = new Map<string, boolean>();
-      
-      // Process designs in layer order (top to bottom)
-      orderedDesigns.forEach((design) => {
-        if (!design) return;
-        
-        // Offset the design's pixels by its x and y coordinates
-        const offsettedPixels: ExportPixel[] = design.pixels.map((pixel) => ({
-          x: pixel.x + design.x,
-          y: pixel.y + design.y,
-          color: pixel.color,
-        }));
-        
-        // Only add pixels that haven't been covered by a higher layer
-        offsettedPixels.forEach(pixel => {
-          const key = `${pixel.x},${pixel.y}`;
-          if (!pixelPositionMap.has(key)) {
-            pixelPositionMap.set(key, true);
-            combinedPixels.push(pixel);
-          }
-        });
-      });
-
-      // Remove any pixels that are clear
-      combinedPixels = combinedPixels.filter(
-        (pixel) => pixel.color !== CLEAR_ON_DESIGN
-      );
-
-      // If no pixels, show error
-      if (combinedPixels.length === 0) {
-        toast({
-          title: t('Error'),
-          description: t('No pixels to export.'),
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        setIsExporting(false);
-        return;
-      }
-
-      // Get the top-left coordinates of the combined pixels
-      const topLeftCoords = getTopLeftCoords(combinedPixels);
-
-      // Offset the pixels to start from (0,0)
-      const pixelsToExport = offsetPixels(combinedPixels, topLeftCoords);
-
-      // Get the width and height of the cropped area
-      const maxX = Math.max(...pixelsToExport.map((pixel) => pixel.x));
-      const maxY = Math.max(...pixelsToExport.map((pixel) => pixel.y));
-
-      const width = maxX + 1;
-      const height = maxY + 1;
-
-      // Create a canvas and draw the pixels
-      const canvasElement = document.createElement('canvas');
-      canvasElement.width = width;
-      canvasElement.height = height;
-      const ctx = canvasElement.getContext('2d');
-
-      if (!ctx) {
-        throw new Error('Failed to get canvas context.');
-      }
-
-      // Fill the canvas with transparent pixels
-      ctx.clearRect(0, 0, width, height);
-
-      // Draw each pixel
-      pixelsToExport.forEach((pixel) => {
-        ctx.fillStyle = pixel.color; // Assuming color is in a Canvas-compatible format
-        ctx.fillRect(pixel.x, pixel.y, 1, 1);
-      });
-
-      // Convert canvas to Blob
-      const blob: Blob = await new Promise((resolve, reject) => {
-        canvasElement.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Canvas is empty'));
-          }
-        }, 'image/png');
-      });
+      // Use the helper function to create the PNG
+      const blob = await exportCanvasAsPNG(designs, canvas.layer_order, canvas.canvas_name);
 
       // Upload the Blob to Supabase storage
-      const filename = `${new Date().toISOString()}-canvas_export_x${topLeftCoords.x}_y${topLeftCoords.y}.png`;
+      const filename = `${new Date().toISOString()}-canvas_export_${canvas.canvas_name}.png`;
       const { error } = await supabase.storage
         .from('canvas-exports')
         .upload(filename, blob, {
@@ -194,24 +88,6 @@ const ExportCanvas: React.FC = () => {
     }
   };
 
-  // Utility functions for processing pixels
-  // These functions accept ExportPixel[] instead of Pixel[]
-  const getTopLeftCoords = (pixels: ExportPixel[]) => {
-    const minX = Math.min(...pixels.map((pixel) => pixel.x));
-    const minY = Math.min(...pixels.map((pixel) => pixel.y));
-    return { x: minX, y: minY };
-  };
-
-  const offsetPixels = (
-    pixels: ExportPixel[],
-    offset: { x: number; y: number }
-  ) => {
-    return pixels.map((pixel) => ({
-      x: pixel.x - offset.x,
-      y: pixel.y - offset.y,
-      color: pixel.color,
-    }));
-  };
 
   return (
     <Box mt={4}>

@@ -31,6 +31,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FaCopy,
+  FaDownload,
   FaEllipsisVertical,
   FaArrowRightArrowLeft as FaExchangeAlt,
   FaArrowsLeftRightToLine,
@@ -56,6 +57,7 @@ import { useUserContext } from "../../context/user-context";
 import { Canvas, Design } from "../../types/art-tool";
 import ImageModal from "../image-modal";
 import SetDesignCanvas from "./set-design-canvas";
+import { exportDesignAsPNG } from "../../utils/png-export";
 
 interface DesignCardProps {
   design: Design;
@@ -269,6 +271,43 @@ const DesignCard: FC<DesignCardProps> = ({
     onOpenIndexDialog();
   };
 
+  const handleDownload = async () => {
+    if (!design.pixels || design.pixels.length === 0) {
+      toast({
+        title: t("Error"),
+        description: t("No pixel data available for download"),
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      await exportDesignAsPNG(design, {
+        filename: `${design.design_name || "design"}.png`,
+        download: true
+      });
+      
+      toast({
+        title: t("Success"),
+        description: t("Design downloaded successfully"),
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error exporting design:", error);
+      toast({
+        title: t("Error"),
+        description: t("Failed to download design"),
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   const isAdmin = !!currentUser && ["A", "B"].includes(currentUser.rank);
   const isCreator = !!currentUser && currentUser.user_id === design.created_by;
   const isAdminOrCreator = isAdmin || isCreator;
@@ -329,7 +368,7 @@ const DesignCard: FC<DesignCardProps> = ({
                 aria-label={t("Center on Design")}
                 onClick={() => onSelect(design.id)}
                 position="absolute"
-                top="5px"
+                bottom="5px"
                 right="5px"
                 size="sm"
                 backgroundColor="rgba(255, 255, 255, 0.8)"
@@ -380,22 +419,35 @@ const DesignCard: FC<DesignCardProps> = ({
             width="100%"
             bg={isEditing ? "blue.100" : isDragMode ? "orange.100" : isVisible ? "white" : "gray.100"}
             >
-            <Box>
-              <Heading fontSize={"md"}>{design.design_name || t("(Untitled Artwork)")}</Heading>
-              <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
-                {creatorRankName} {creator?.handle ?? t("Unassigned")}
-              </Text>
-              {isEditing && (
-                <Text fontSize={"xs"} color="blue.600" fontWeight={500}>
-                  {t("Currently editing - use toolbar to save")}
+            <Flex justifyContent="space-between" alignItems="flex-start">
+              <Box flex="1">
+                <Heading fontSize={"md"}>{design.design_name || t("(Untitled Artwork)")}</Heading>
+                <Text color={"gray.600"} fontWeight={500} fontSize={"sm"}>
+                  {creatorRankName} {creator?.handle ?? t("Unassigned")}
                 </Text>
-              )}
-              {isDragMode && !isEditing && (
-                <Text fontSize={"xs"} color="orange.600" fontWeight={500}>
-                  {t("Drag mode enabled - drag in viewport to move")}
-                </Text>
-              )}
-            </Box>
+                {isEditing && (
+                  <Text fontSize={"xs"} color="blue.600" fontWeight={500}>
+                    {t("Currently editing - use toolbar to save")}
+                  </Text>
+                )}
+                {isDragMode && !isEditing && (
+                  <Text fontSize={"xs"} color="orange.600" fontWeight={500}>
+                    {t("Drag mode enabled - drag in viewport to move")}
+                  </Text>
+                )}
+              </Box>
+              <Tooltip label={design.pixels.length > 0 ? t("Download Design") : t("No pixel data available for download")}>
+                <IconButton
+                  icon={<FaDownload />}
+                  aria-label={t("Download Design")}
+                  onClick={handleDownload}
+                  size="sm"
+                  variant="outline"
+                  colorScheme="blue"
+                  isDisabled={!design.pixels || design.pixels.length === 0}
+                />
+              </Tooltip>
+            </Flex>
             <Flex direction="row" justifyContent="space-between">
               {isAdmin ? (<Flex gap={1} alignItems="center">
                 <IconButton

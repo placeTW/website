@@ -26,6 +26,7 @@ import { ViewportHandle, ViewportPixel } from "../viewport/types";
 import { floodFill } from "../viewport/utils/flood-fill";
 import { FloatingToolbar, FloatingToolbarHandle } from './floating-toolbar';
 import { ToolType } from './floating-toolbar/sections/ToolSelectionSection';
+import { exportCanvasAsPNG } from "../../utils/png-export";
 
 interface AdvancedViewportProps {
   visibleLayers: Set<number>;
@@ -310,23 +311,6 @@ const AdvancedViewport = React.forwardRef<
       }
     }, [editingCanvasId]);
 
-    // Utility functions for export
-    const getTopLeftCoords = useCallback((pixels: { x: number; y: number }[]) => {
-      const minX = Math.min(...pixels.map((pixel) => pixel.x));
-      const minY = Math.min(...pixels.map((pixel) => pixel.y));
-      return { x: minX, y: minY };
-    }, []);
-
-    const offsetPixels = useCallback((
-      pixels: { x: number; y: number; color: string }[],
-      offset: { x: number; y: number }
-    ) => {
-      return pixels.map((pixel) => ({
-        x: pixel.x - offset.x,
-        y: pixel.y - offset.y,
-        color: pixel.color,
-      }));
-    }, []);
 
     // Handle canvas export
     const handleCanvasExport = useCallback(async () => {
@@ -348,113 +332,19 @@ const AdvancedViewport = React.forwardRef<
           return;
         }
 
-        // Order the designs by the canvas layer order
-        const designsMap = new Map(canvasDesigns.map(obj => [obj.id, obj]));
-        const orderedDesigns = selectedCanvas.layer_order
-          .map(id => designsMap.get(id))
-          .filter(design => design !== undefined);
-
-        // Add any designs not in layer order to the end
-        canvasDesigns.forEach((design) => {
-          if (!orderedDesigns.includes(design)) {
-            orderedDesigns.push(design);
-          }
-        });
-
-        // Combine all designs' pixels into one array, respecting layer order
-        let combinedPixels: { x: number; y: number; color: string }[] = [];
-        const pixelPositionMap = new Map<string, boolean>();
-        
-        // Process designs in layer order (top to bottom)
-        orderedDesigns.forEach((design) => {
-          if (!design) return;
-          
-          // Offset the design's pixels by its x and y coordinates
-          const offsettedPixels = design.pixels.map((pixel) => ({
-            x: pixel.x + design.x,
-            y: pixel.y + design.y,
-            color: pixel.color,
-          }));
-          
-          // Only add pixels that haven't been covered by a higher layer
-          offsettedPixels.forEach(pixel => {
-            const key = `${pixel.x},${pixel.y}`;
-            if (!pixelPositionMap.has(key)) {
-              pixelPositionMap.set(key, true);
-              combinedPixels.push(pixel);
-            }
-          });
-        });
-
-        // Remove any pixels that are clear
-        combinedPixels = combinedPixels.filter(
-          (pixel) => pixel.color !== CLEAR_ON_DESIGN
+        // Use the helper function to export
+        await exportCanvasAsPNG(
+          canvasDesigns, 
+          selectedCanvas.layer_order, 
+          selectedCanvas.canvas_name,
+          { download: true }
         );
-
-        if (combinedPixels.length === 0) {
-          toast({
-            title: t('Error'),
-            description: t('No pixels to export.'),
-            status: 'error',
-            duration: 5000,
-            isClosable: true,
-          });
-          return;
-        }
-
-        // Get the top-left coordinates and offset pixels to start from (0,0)
-        const topLeftCoords = getTopLeftCoords(combinedPixels);
-        const pixelsToExport = offsetPixels(combinedPixels, topLeftCoords);
-
-        // Get the width and height of the cropped area
-        const maxX = Math.max(...pixelsToExport.map((pixel) => pixel.x));
-        const maxY = Math.max(...pixelsToExport.map((pixel) => pixel.y));
-        const width = maxX + 1;
-        const height = maxY + 1;
-
-        // Create a canvas and draw the pixels
-        const canvasElement = document.createElement('canvas');
-        canvasElement.width = width;
-        canvasElement.height = height;
-        const ctx = canvasElement.getContext('2d');
-
-        if (!ctx) {
-          throw new Error('Failed to get canvas context.');
-        }
-
-        // Fill the canvas with transparent pixels
-        ctx.clearRect(0, 0, width, height);
-
-        // Draw each pixel
-        pixelsToExport.forEach((pixel) => {
-          ctx.fillStyle = pixel.color;
-          ctx.fillRect(pixel.x, pixel.y, 1, 1);
-        });
-
-        // Convert canvas to Blob and trigger download
-        const blob: Blob = await new Promise((resolve, reject) => {
-          canvasElement.toBlob((blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Canvas is empty'));
-            }
-          }, 'image/png');
-        });
-
-        // Create download link
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${selectedCanvas.canvas_name}-export-${new Date().toISOString().slice(0, 10)}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
 
         toast({
           title: t('Success'),
-          description: t('Canvas exported successfully as {{filename}}', { filename: `${selectedCanvas.canvas_name}-export-${new Date().toISOString().slice(0, 10)}.png` }),
+          description: t('Canvas exported successfully as {{filename}}', { 
+            filename: `${selectedCanvas.canvas_name}-export-${new Date().toISOString().slice(0, 10)}.png` 
+          }),
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -472,7 +362,7 @@ const AdvancedViewport = React.forwardRef<
       } finally {
         setIsExporting(false);
       }
-    }, [isAdmin, designs, selectedCanvas, toast, getTopLeftCoords, offsetPixels]);
+    }, [isAdmin, designs, selectedCanvas, toast]);
 
 
     const handlePixelPaint = useCallback(
