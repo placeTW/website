@@ -18,9 +18,8 @@ import {
   authGetSession,
   authSignInWithOAuth,
   authSignOut,
-  functionsFetchOneUser,
   supabase,
-} from "../api/supabase"; // Remove insertNewUser
+} from "../api/supabase";
 import { useUserContext } from "../context/user-context";
 
 
@@ -37,7 +36,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
-  const { setCurrentUser } = useUserContext(); // Access setCurrentUser
+  const { setCurrentUser, currentUser } = useUserContext(); // Access setCurrentUser and currentUser
 
   const handleAuth = async (provider: Provider) => {
     const { data, error } = await authSignInWithOAuth(
@@ -56,7 +55,8 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
   };
 
   useEffect(() => {
-    const checkSession = async () => {
+    // Check if user is already authenticated when modal opens
+    const checkAuthState = async () => {
       const {
         data: { session },
         error,
@@ -68,33 +68,19 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
         return;
       }
 
-      if (session) {
-        try {
-          const userData = await functionsFetchOneUser();
-
-          if (userData.rank === "F") {
-            await authSignOut();
-            setError(t("Your account has been banned."));
-          } else {
-            setCurrentUser(userData);
-            onClose();
-          }
-        } catch (fetchError) {
-          console.error(
-            t("User not found in art_tool_users, but handled by UserProvider"),
-            fetchError,
-          );
-          // No need to call insertNewUser here as it's handled by UserProvider
-          // Just close the modal if UserProvider has handled the insertion
-          onClose();
+      if (session && currentUser) {
+        // User is already authenticated and UserContext has user data
+        if (currentUser.rank === "F") {
+          await authSignOut();
+          setError(t("Your account has been banned."));
+        } else {
+          onClose(); // Close modal if user is already authenticated
         }
-      } else {
-        // No session is present, handle accordingly if needed
       }
     };
 
     if (isOpen) {
-      checkSession();
+      checkAuthState();
     }
 
     // Subscribe to the 'bans' channel
@@ -116,7 +102,7 @@ const AuthProviderModal: React.FC<AuthProviderModalProps> = ({
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [isOpen, onClose, t, setCurrentUser]);
+  }, [isOpen, onClose, t, setCurrentUser, currentUser]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

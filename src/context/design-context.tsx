@@ -10,11 +10,40 @@ import React, {
 } from "react";
 import {
   databaseFetchCanvases,
-  databaseFetchDesign,
   databaseFetchDesigns,
   supabase,
 } from "../api/supabase";
 import { Canvas, Design } from "../types/art-tool";
+import { useUserContext } from "./user-context";
+import { UserType, RankType } from "../types/users";
+
+// Helper function to enrich raw design data with user/rank/canvas information
+const enrichDesignData = (
+  rawDesign: Partial<Design>, 
+  users: UserType[], 
+  ranks: RankType[], 
+  canvases: Canvas[]
+): Design => {
+  const user = users.find(u => u.user_id === rawDesign.created_by);
+  const rank = ranks.find(r => r.rank_id === user?.rank);
+  const canvas = canvases.find(c => c.id === rawDesign.canvas);
+  
+  return {
+    id: rawDesign.id!,
+    design_name: rawDesign.design_name || '',
+    design_thumbnail: rawDesign.design_thumbnail || '',
+    created_by: rawDesign.created_by || '',
+    rank_name: rank?.rank_name || '',
+    user_handle: user?.handle || '',
+    liked_by: rawDesign.liked_by || [],
+    pixels: rawDesign.pixels || [],
+    x: rawDesign.x || 0,
+    y: rawDesign.y || 0,
+    canvas: rawDesign.canvas,
+    canvas_name: canvas?.canvas_name || '',
+    status: rawDesign.status || 0,
+  };
+};
 
 // Singleton class for managing subscriptions
 class SupabaseSubscriptionManager {
@@ -33,6 +62,9 @@ class SupabaseSubscriptionManager {
 
   public subscribeToDesignUpdates(
     setDesigns: React.Dispatch<React.SetStateAction<Design[]>>,
+    users: UserType[],
+    ranks: RankType[], 
+    canvases: Canvas[]
   ) {
     if (!this.designSubscriptionRef) {
       this.designSubscriptionRef = supabase
@@ -40,7 +72,7 @@ class SupabaseSubscriptionManager {
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "art_tool_designs" },
-          async (payload) => {
+          (payload) => {
             const {
               eventType,
               new: newDesignData,
@@ -54,11 +86,8 @@ class SupabaseSubscriptionManager {
               return;
             }
 
-            // Fetch the design data
-            const newDesignId = (newDesignData as Design).id;
-            const newDesign =
-              (await databaseFetchDesign(newDesignId)) ??
-              (newDesignData as Design);
+            // Enrich the design data using context data instead of database fetch
+            const newDesign = enrichDesignData(newDesignData, users, ranks, canvases);
 
             setDesigns((prevDesigns) => {
               let updatedDesigns = [...prevDesigns];
@@ -95,7 +124,7 @@ class SupabaseSubscriptionManager {
             status === "CHANNEL_ERROR"
           ) {
             this.handleSubscriptionError(
-              this.subscribeToDesignUpdates.bind(this, setDesigns),
+              this.subscribeToDesignUpdates.bind(this, setDesigns, users, ranks, canvases),
             );
             return;
           }
@@ -227,7 +256,8 @@ const getCanvasesMap = (canvases: Canvas[]): Map<number, Canvas> => {
   }, new Map<number, Canvas>());
 }
 
-const initialData = await fetchAllData();
+// Start with empty data - will be loaded asynchronously
+const initialData = { designs: [], canvases: [] };
 
 interface DesignContextProps {
   designs: Design[];
@@ -264,6 +294,7 @@ interface DesignProviderProps {
 }
 
 export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
+  const { users, ranks } = useUserContext();
   const [designs, setDesigns] = useState<Design[]>(initialData.designs);
   const [canvases, setCanvases] = useState<Canvas[]>(initialData.canvases);
 
@@ -274,15 +305,33 @@ export const DesignProvider: React.FC<DesignProviderProps> = ({ children }) => {
 
   const subscriptionManager = useRef(SupabaseSubscriptionManager.getInstance());
 
+  // Load initial data asynchronously
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // Only fetch if we don't have any data yet
+        if (designs.length === 0 && canvases.length === 0) {
+          const data = await fetchAllData();
+          setDesigns(data.designs);
+          setCanvases(data.canvases);
+        }
+      } catch (error) {
+        console.error('Failed to load initial designs and canvases:', error);
+      }
+    };
+
+    loadInitialData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     const currentSubscriptionManager = subscriptionManager.current;
-    currentSubscriptionManager.subscribeToDesignUpdates(setDesigns);
+    currentSubscriptionManager.subscribeToDesignUpdates(setDesigns, users, ranks, canvases);
     currentSubscriptionManager.subscribeToCanvasUpdates(setCanvases);
 
     return () => {
       currentSubscriptionManager.unsubscribeAll();
     };
-  }, []);
+  }, [users, ranks, canvases]);
 
   const contextValue = useMemo(() => ({
     designs,
