@@ -11,7 +11,7 @@ import { createThumbnail } from "../../utils/imageUtils";
 export const databaseFetchUsers = async (): Promise<UserType[]> => {
   const fetchUsersQuery = await supabase
     .from("art_tool_users")
-    .select("*")
+    .select("user_id,handle,rank")
     .returns<UserType[]>();
 
   const { data, error } = logSupabaseDatabaseQuery(
