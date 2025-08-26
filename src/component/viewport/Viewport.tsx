@@ -421,6 +421,55 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
       return roundToNearestPowerOf2(rawZoomLevel);
     };
 
+
+    // Optimize centerOnCanvas by pre-calculating bounds for visible pixels
+    const canvasBounds = useMemo(() => {
+      if (pixelMap.size === 0) return null;
+      
+      // Only do this calculation once for all pixels
+      const allPixels = Array.from(pixelMap.values()).flat();
+      const { x: minX, y: minY } = getTopLeftCoords(allPixels);
+      const { width: boxWidth, height: boxHeight } = getDimensions(
+        offsetPixels(allPixels, { x: minX, y: minY }),
+      );
+      
+      return {
+        minX,
+        minY,
+        boxWidth,
+        boxHeight,
+        centerX: minX + boxWidth / 2,
+        centerY: minY + boxHeight / 2
+      };
+    }, [pixelMap]);
+    
+
+    React.useImperativeHandle(ref, () => ({
+      centerOnDesign,
+      centerOnCanvas,
+    }));
+
+    const renderBackgroundTiles = useMemo(() => 
+      zoomLevel > 0.125
+        ? visibleTiles.map((tile) => (
+            <KonvaImage
+              key={`tile-${tile.x} - ${tile.y}`}
+              image={backgroundImage}
+              x={tile.x * BACKGROUND_TILE_SIZE}
+              y={tile.y * BACKGROUND_TILE_SIZE}
+              width={BACKGROUND_TILE_SIZE}
+              height={BACKGROUND_TILE_SIZE}
+              perfectDrawEnabled={false}
+              imageSmoothingEnabled={false}
+              listening={false} // Disable event listening for background tiles
+            />
+          ))
+        : null,
+    [zoomLevel, visibleTiles, backgroundImage, BACKGROUND_TILE_SIZE]);
+
+    // Use optimized visible bounds calculation that only recalculates when necessary
+    const { visibleBounds, forceRecalculation } = useOptimizedVisibleBounds(stageRef, GRID_SIZE, dimensions);
+
     const centerOnDesign = useCallback(
       (x: number, y: number, width: number, height: number) => {
         if (!stageRef.current) return;
@@ -454,38 +503,32 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
 
         setZoomLevel(newScale);
         calculateVisibleTiles();
+        // Force visible bounds recalculation after viewport change
+        forceRecalculation();
       },
-      [stageRef, calculateVisibleTiles, MAX_ZOOM_LEVEL],
+      [stageRef, calculateVisibleTiles, MAX_ZOOM_LEVEL, forceRecalculation],
     );
 
-    // Optimize centerOnCanvas by pre-calculating bounds for visible pixels
-    const canvasBounds = useMemo(() => {
-      if (pixelMap.size === 0) return null;
-      
-      // Only do this calculation once for all pixels
-      const allPixels = Array.from(pixelMap.values()).flat();
-      const { x: minX, y: minY } = getTopLeftCoords(allPixels);
-      const { width: boxWidth, height: boxHeight } = getDimensions(
-        offsetPixels(allPixels, { x: minX, y: minY }),
-      );
-      
-      return {
-        minX,
-        minY,
-        boxWidth,
-        boxHeight,
-        centerX: minX + boxWidth / 2,
-        centerY: minY + boxHeight / 2
-      };
-    }, [pixelMap]);
-    
     const centerOnCanvas = useCallback(() => {
-      if (!stageRef.current || !canvasBounds) return;
+      if (!stageRef.current) return;
 
       const stage = stageRef.current;
       const stageWidth = stage.width();
       const stageHeight = stage.height();
       
+      if (!canvasBounds) {
+        // Fallback behavior when no pixels are visible - center at origin with default zoom
+        const defaultScale = 1;
+        stage.scale({ x: defaultScale, y: defaultScale });
+        stage.position({ x: stageWidth / 2, y: stageHeight / 2 });
+        stage.batchDraw();
+        setZoomLevel(defaultScale);
+        calculateVisibleTiles();
+        // Force visible bounds recalculation after viewport change
+        forceRecalculation();
+        return;
+      }
+
       const { boxWidth, boxHeight, centerX, centerY } = canvasBounds;
 
       const boxWidthPx = boxWidth * GRID_SIZE;
@@ -511,39 +554,16 @@ const Viewport = React.memo(forwardRef<ViewportHandle, ViewportProps>(
 
       setZoomLevel(newScale);
       calculateVisibleTiles();
+      // Force visible bounds recalculation after viewport change
+      forceRecalculation();
     }, [
       stageRef,
       canvasBounds,
       PADDING_FACTOR,
       MAX_ZOOM_LEVEL,
       calculateVisibleTiles,
+      forceRecalculation,
     ]);
-
-    React.useImperativeHandle(ref, () => ({
-      centerOnDesign,
-      centerOnCanvas,
-    }));
-
-    const renderBackgroundTiles = useMemo(() => 
-      zoomLevel > 0.125
-        ? visibleTiles.map((tile) => (
-            <KonvaImage
-              key={`tile-${tile.x} - ${tile.y}`}
-              image={backgroundImage}
-              x={tile.x * BACKGROUND_TILE_SIZE}
-              y={tile.y * BACKGROUND_TILE_SIZE}
-              width={BACKGROUND_TILE_SIZE}
-              height={BACKGROUND_TILE_SIZE}
-              perfectDrawEnabled={false}
-              imageSmoothingEnabled={false}
-              listening={false} // Disable event listening for background tiles
-            />
-          ))
-        : null,
-    [zoomLevel, visibleTiles, backgroundImage, BACKGROUND_TILE_SIZE]);
-
-    // Use optimized visible bounds calculation that only recalculates when necessary
-    const { visibleBounds, forceRecalculation } = useOptimizedVisibleBounds(stageRef, GRID_SIZE, dimensions);
 
     // Improved drag handling with debounced tile calculation but immediate visual updates
     const handleDragMove = useCallback(() => {

@@ -854,12 +854,13 @@ const AdvancedViewport = React.forwardRef<
                 {t("Export PNG")}
               </Button>
             )}
-            
-            <IconButton
-              aria-label={t("Center on Canvas")}
-              icon={<FaExpand />}
-              onClick={centerOnCanvas}
-            />
+            <Tooltip label={t("Center on Canvas")}>
+              <IconButton
+                aria-label={t("Center on Canvas")}
+                icon={<FaExpand />}
+                onClick={centerOnCanvas}
+              />
+            </Tooltip>
           </Flex>
         )}
         
