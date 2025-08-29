@@ -1,6 +1,7 @@
-import { Box, Flex, Link, IconButton, Text } from "@chakra-ui/react";
-import { FaGithub, FaReddit, FaDiscord } from "react-icons/fa";
+import { Box, Flex, IconButton, Link, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { FaDiscord, FaGithub, FaReddit } from "react-icons/fa6";
+import LanguageSwitcher from "./language-switcher";
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -15,7 +16,7 @@ const Footer = () => {
             icon={<FaReddit />}
             colorScheme="white"
             variant="ghost"
-            aria-label="Reddit"
+            aria-label={t("Reddit")}
             fontSize="20px"
             mr={2}
           />
@@ -25,7 +26,7 @@ const Footer = () => {
             icon={<FaDiscord />}
             colorScheme="white"
             variant="ghost"
-            aria-label="Discord"
+            aria-label={t("Discord")}
             fontSize="20px"
             mr={2}
           />
@@ -35,11 +36,16 @@ const Footer = () => {
             icon={<FaGithub />}
             colorScheme="white"
             variant="ghost"
-            aria-label="GitHub"
+            aria-label={t("GitHub")}
             fontSize="20px"
             mr={2}
           />
         </Link>
+      </Flex>
+      <Flex alignItems="center" justifyContent="center">
+        <Box width={60}>
+          <LanguageSwitcher />
+        </Box>
       </Flex>
     </Box>
   );

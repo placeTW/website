@@ -12,13 +12,13 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useTranslation } from "react-i18next";
-import { ArtInfo } from "../types/art";
-import ImageModal from "./image-modal";
 import { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { GalleryArtInfo } from "../../types/gallery";
+import ImageModal from "../image-modal";
 
 interface ArtCardProps {
-  artPiece: ArtInfo;
+  artPiece: GalleryArtInfo;
 }
 
 const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
@@ -63,7 +63,6 @@ const ArtCard: FC<ArtCardProps> = ({ artPiece }) => {
           <Box p={4} pb={0}>
             <Stack>
               <Heading
-                // eslint-disable-next-line react-hooks/rules-of-hooks
                 color={useColorModeValue("gray.700", "white")}
                 fontSize={"2xl"}
                 fontFamily={"body"}

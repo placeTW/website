@@ -1,17 +1,15 @@
+// src/component/layout.tsx
+
+import React from "react";
 import { Box } from "@chakra-ui/react";
-import Navbar from "./navbar";
 import Footer from "./footer";
+import Navbar from "./navbar";
 
-const Layout = ({ children }: { children: React.ReactNode }) => {
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <Box w="100vw">
-      {/* Navbar */}
+    <Box>
       <Navbar />
-
-      {/* Rest of the content */}
       <Box p={4}>{children}</Box>
-
-      {/* Footer */}
       <Footer />
     </Box>
   );

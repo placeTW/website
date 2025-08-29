@@ -163,7 +163,7 @@ const TranslationFileEditor = ({ filename, editableLangs, placeholder }: Props) 
             <Tbody>
               <Tr>
                 {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                   
                   Object.keys(locales).map((language) => (
                     <Td key={language + "-button"}>
                       <GithubSubmitButton

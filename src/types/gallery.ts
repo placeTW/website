@@ -1,4 +1,4 @@
-export interface ArtInfo {
+export interface GalleryArtInfo {
   art_id: string;
   title: string;
   blurb: string;

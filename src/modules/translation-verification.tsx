@@ -1,7 +1,3 @@
-import { Session } from "@supabase/supabase-js";
-import { supabase } from "../supabase";
-import { useEffect, useState } from "react";
-import TranslationFileEditor from "../component/translation/translation-file-editor";
 import {
   Button,
   Tab,
@@ -10,7 +6,11 @@ import {
   TabPanels,
   Tabs,
 } from "@chakra-ui/react";
+import { Session } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { authSignOut } from "../api/supabase";
+import TranslationFileEditor from "../component/translation/translation-file-editor";
 
 export interface Placeholder {
   [key: string]: Record<string, Placeholder>;
@@ -26,20 +26,20 @@ const TranslationVerification = ({ session }: { session: Session }) => {
 
   const [verified, setVerified] = useState(false);
   const [translationFilenames, setTranslationFilenames] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [metadata, setMetadata] = useState<Map<string, Metadata>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTranslationFilenames = async () => {
-      const translations =  import.meta.glob("/public/templates/*.json");
+      const translations = import.meta.glob("/public/templates/*.json");
 
       for (const path in translations) {
         await translations[path]().then((mod) => {
           console.log(path, mod);
           setTranslationFilenames(
-            translationFilenames.add(getFileNameWithExtension(path))
+            translationFilenames.add(getFileNameWithExtension(path)),
           );
         });
       }
@@ -69,8 +69,8 @@ const TranslationVerification = ({ session }: { session: Session }) => {
     fetchTranslationFilenames().then(() => {
       Promise.all(
         Array.from(translationFilenames).map((filename) =>
-          updateMetadata(filename)
-        )
+          updateMetadata(filename),
+        ),
       ).then(() => {
         setLoading(false);
       });
@@ -91,13 +91,10 @@ const TranslationVerification = ({ session }: { session: Session }) => {
   return (
     <div className="col-6 form-widget">
       <h1 className="header">
-        Logged in as {(session?.user?.identities ?? [])[0].id}
+        {t("Logged in as")} {(session?.user?.identities ?? [])[0].id}
       </h1>
-      <Button
-        onClick={() => supabase.auth.signOut()}
-        className="button block full-width"
-      >
-        {t("Log out")}
+      <Button onClick={() => authSignOut()} className="button block full-width">
+        {t("Logout")}
       </Button>
       {verified && !loading && translationFilenames && (
         <Tabs>
@@ -113,7 +110,10 @@ const TranslationVerification = ({ session }: { session: Session }) => {
                   <TabPanel key={filename}>
                     {metadata.get(filename) &&
                       metadata.get(filename)?.type === "file" && (
-                        <TranslationFileEditor filename={filename} placeholder={metadata.get(filename)?.placeholder}/>
+                        <TranslationFileEditor
+                          filename={filename}
+                          placeholder={metadata.get(filename)?.placeholder}
+                        />
                       )}
                   </TabPanel>
                 );
@@ -121,7 +121,7 @@ const TranslationVerification = ({ session }: { session: Session }) => {
           </TabPanels>
         </Tabs>
       )}
-      {loading && <p>Loading...</p>}
+      {loading && <p>{t("Loading...")}</p>}
     </div>
   );
 };

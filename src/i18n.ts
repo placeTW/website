@@ -1,8 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import detector from "i18next-browser-languagedetector";
-import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
+import Backend from "i18next-http-backend";
 
 export interface Locale {
   displayName: string;
@@ -70,19 +69,21 @@ export const locales = {
 export const officialLocales = ["en", "zh"];
 
 i18n
-  .use(detector)
   .use(Backend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     fallbackLng: "en",
-    debug: true,
+    debug: false,
 
     interpolation: {
       escapeValue: false,
     },
     load: "languageOnly",
     returnEmptyString: false,
+    backend: {
+      loadPath: `${import.meta.env?.VITE_CODE_SERVER ? '/absproxy/5173' : ''}/locales/{{lng}}/{{ns}}.json`,
+    }
   });
 
 export default i18n;
