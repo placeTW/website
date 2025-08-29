@@ -129,7 +129,7 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
                     <FormLabel fontSize="sm">{t("X Coordinate")}</FormLabel>
                     <NumberInput 
                       value={insertX} 
-                      onChange={(_, value) => setInsertX(value || 0)}
+                      onChange={(_, value) => setInsertX(value)}
                       min={0}
                     >
                       <NumberInputField />
@@ -145,7 +145,7 @@ export const ColorMappingDialog: React.FC<ColorMappingDialogProps> = ({
                     <FormLabel fontSize="sm">{t("Y Coordinate")}</FormLabel>
                     <NumberInput 
                       value={insertY} 
-                      onChange={(_, value) => setInsertY(value || 0)}
+                      onChange={(_, value) => setInsertY(value)}
                       min={0}
                     >
                       <NumberInputField />
