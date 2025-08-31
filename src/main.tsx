@@ -35,49 +35,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/gallery" element={<Gallery />} />
-<<<<<<< HEAD
-                      <Route 
-                        path="/translations" 
-                        element={
-                          <ProtectedRoute>
-                            <Translations />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/admin" 
-                        element={
-                          <ProtectedRoute requiresRank={['A', 'B']}>
-                            <AdminPage />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/briefing-room" 
-                        element={
-                          <ProtectedRoute>
-                            <BriefingRoom />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/design-office" 
-                        element={
-                          <ProtectedRoute>
-                            <DesignOffice />
-                          </ProtectedRoute>
-                        } 
-                      />
-=======
                       <Route path="/translations" element={<Translations />} />
                       <Route path="/admin" element={<AdminPage />} />
-                      {enableArtTool && BriefingRoom && DesignOffice && (
+                      {BriefingRoom && DesignOffice && (
                         <>
                           <Route path="/briefing-room" element={<BriefingRoom />} />
                           <Route path="/design-office" element={<DesignOffice />} />
                         </>
                       )}
->>>>>>> parent of 54b0602 (feat: route-based authorization checks)
                     </Routes>  
                   </Suspense>
                 </Layout>
