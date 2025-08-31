@@ -63,7 +63,6 @@ interface UserContextType {
   setCurrentUser: (user: UserType | null) => void;
   logoutUser: () => void;
   getCachedSession: () => Promise<Session | null>;
-  isAuthLoading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -84,7 +83,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [users, setUsers] = useState<UserType[]>([]);
   const [ranks, setRanks] = useState<RankType[]>([]);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
   // Create a ref to hold the currentUser value
   const currentUserRef = useRef<UserType | null>(currentUser);
@@ -96,7 +94,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   const logoutUser = () => {
     setCurrentUser(null);
-    setIsAuthLoading(false);
     // Clear session cache on logout
     sessionCache = null;
     console.log('User logged out.');
@@ -119,12 +116,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   // Process session and update current user
   const processSession = useCallback(async (session: Session | null) => {
-    try {
-      if (!session) {
-        setCurrentUser(null);
-        return;
-      }
+    if (!session) {
+      setCurrentUser(null);
+      return;
+    }
 
+    try {
       const userId = session.user.id;
       let userData = await databaseFetchCurrentUser(userId);
 
@@ -150,8 +147,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Error processing session:', error);
-    } finally {
-      setIsAuthLoading(false);
     }
   }, []);
 
@@ -196,10 +191,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         sessionCache = null;
         
         if (mounted) {
-          // Set loading to true when auth state changes (except for initial_session)
-          if (event !== 'INITIAL_SESSION') {
-            setIsAuthLoading(true);
-          }
           await processSession(session);
         }
       }
@@ -288,8 +279,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     setCurrentUser,
     logoutUser,
     getCachedSession,
-    isAuthLoading,
-  }), [users, ranks, currentUser, isAuthLoading]);
+  }), [users, ranks, currentUser]);
 
   return (
     <UserContext.Provider value={contextValue}>

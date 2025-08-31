@@ -4,7 +4,6 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Layout from "./component/layout";
-import ProtectedRoute from "./component/auth/ProtectedRoute";
 import { AlertProvider } from "./context/alert-context";
 import { DesignProvider } from "./context/design-context";  
 import { ColorProvider } from "./context/color-context"; // Import ColorProvider
@@ -36,6 +35,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/gallery" element={<Gallery />} />
+<<<<<<< HEAD
                       <Route 
                         path="/translations" 
                         element={
@@ -68,6 +68,16 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                           </ProtectedRoute>
                         } 
                       />
+=======
+                      <Route path="/translations" element={<Translations />} />
+                      <Route path="/admin" element={<AdminPage />} />
+                      {enableArtTool && BriefingRoom && DesignOffice && (
+                        <>
+                          <Route path="/briefing-room" element={<BriefingRoom />} />
+                          <Route path="/design-office" element={<DesignOffice />} />
+                        </>
+                      )}
+>>>>>>> parent of 54b0602 (feat: route-based authorization checks)
                     </Routes>  
                   </Suspense>
                 </Layout>
