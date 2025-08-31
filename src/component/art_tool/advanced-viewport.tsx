@@ -768,13 +768,14 @@ const AdvancedViewport = React.forwardRef<
           />
           
           {/* Floating Toolbar positioned at bottom of viewport */}
-          <FloatingToolbar
+          {setEditedPixels && onSubmitEdit && onCancelEdit && (
+            <FloatingToolbar
             ref={toolbarRef}
             design={currentDesign}
             editedPixels={editedPixels ?? []}
-            setEditedPixels={setEditedPixels || (() => {})}
-            onSubmitEdit={onSubmitEdit || (async () => {})}
-            onCancelEdit={onCancelEdit || (() => {})}
+            setEditedPixels={setEditedPixels}
+            onSubmitEdit={onSubmitEdit}
+            onCancelEdit={onCancelEdit}
             isEditing={isEditing}
             colors={colors}
             isVisible={isEditing}
@@ -784,6 +785,7 @@ const AdvancedViewport = React.forwardRef<
             pixels={pixels}
             stageRef={stageRef}
           />
+          )}
         </Box>
       </Box>
     );
